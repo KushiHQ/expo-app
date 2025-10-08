@@ -2,7 +2,13 @@ import React, { useEffect, useRef } from "react";
 import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ThemedView from "@/components/atoms/a-themed-view";
-import { Pressable, View, Animated, Dimensions } from "react-native";
+import {
+	Pressable,
+	View,
+	Animated,
+	Dimensions,
+	ScrollView,
+} from "react-native";
 import ThemedText from "@/components/atoms/a-themed-text";
 import AnimatedStepper from "@/components/atoms/a-animated-stepper";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
@@ -104,55 +110,57 @@ export default function GetStarted() {
 	return (
 		<ThemedView className="flex-1">
 			<SafeAreaView edges={["bottom", "left", "right"]} className="flex-1">
-				<View>
-					<Animated.View
-						style={{
-							opacity: fadeAnim,
-							transform: [{ translateX: slideAnim }],
-						}}
-					>
-						<Image
-							source={Steps[step].img}
-							style={{
-								height: 250,
-								width: "100%",
-								objectFit: "cover",
-								borderBottomRightRadius: 16,
-								borderBottomLeftRadius: 16,
-							}}
-						/>
-					</Animated.View>
-
-					<View className="p-5 gap-8">
-						<View className="flex-row items-center justify-between">
-							<ThemedText>{step}/5</ThemedText>
-							<AnimatedStepper currentStep={step} steps={5} />
-							<Pressable onPress={() => setStep(5)}>
-								<ThemedText style={{ color: colors["accent"] }}>
-									Skip
-								</ThemedText>
-							</Pressable>
-						</View>
-
+				<ScrollView showsVerticalScrollIndicator={false}>
+					<View>
 						<Animated.View
 							style={{
 								opacity: fadeAnim,
 								transform: [{ translateX: slideAnim }],
 							}}
 						>
-							{Steps[step].component}
+							<Image
+								source={Steps[step].img}
+								style={{
+									height: 250,
+									width: "100%",
+									objectFit: "cover",
+									borderBottomRightRadius: 16,
+									borderBottomLeftRadius: 16,
+								}}
+							/>
 						</Animated.View>
-					</View>
 
-					{step > 1 && (
-						<Pressable
-							onPress={handlePrevious}
-							className="h-8 w-8 absolute top-16 left-6 items-center justify-center rounded-full bg-white text-black"
-						>
-							<ChevronLeft />
-						</Pressable>
-					)}
-				</View>
+						<View className="p-5 gap-8">
+							<View className="flex-row items-center justify-between">
+								<ThemedText>{step}/5</ThemedText>
+								<AnimatedStepper currentStep={step} steps={5} />
+								<Pressable onPress={() => setStep(5)}>
+									<ThemedText style={{ color: colors["accent"] }}>
+										Skip
+									</ThemedText>
+								</Pressable>
+							</View>
+
+							<Animated.View
+								style={{
+									opacity: fadeAnim,
+									transform: [{ translateX: slideAnim }],
+								}}
+							>
+								{Steps[step].component}
+							</Animated.View>
+						</View>
+
+						{step > 1 && (
+							<Pressable
+								onPress={handlePrevious}
+								className="h-8 w-8 absolute top-16 left-6 items-center justify-center rounded-full bg-white text-black"
+							>
+								<ChevronLeft />
+							</Pressable>
+						)}
+					</View>
+				</ScrollView>
 			</SafeAreaView>
 		</ThemedView>
 	);
