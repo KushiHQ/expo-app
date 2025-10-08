@@ -18,6 +18,7 @@ import { ChevronLeft } from "lucide-react-native";
 import GettingStartedStep3 from "@/components/screens/getting-started/step-3";
 import GettingStartedStep4 from "@/components/screens/getting-started/step-4";
 import GettingStartedStep5 from "@/components/screens/getting-started/step-5";
+import { hexToRgba } from "@/lib/utils/colors";
 
 type Step = {
 	img: string;
@@ -154,9 +155,10 @@ export default function GetStarted() {
 						{step > 1 && (
 							<Pressable
 								onPress={handlePrevious}
-								className="h-8 w-8 absolute top-16 left-6 items-center justify-center rounded-full bg-white text-black"
+								style={{ backgroundColor: hexToRgba(colors["icon"], 0.6) }}
+								className="h-8 w-8 absolute top-16 left-6 items-center justify-center rounded-full"
 							>
-								<ChevronLeft />
+								<ChevronLeft color={colors["text"]} />
 							</Pressable>
 						)}
 					</View>
