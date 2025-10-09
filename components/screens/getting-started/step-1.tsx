@@ -4,6 +4,8 @@ import ThemedText from "@/components/atoms/a-themed-text";
 import { BusinessDealHandshake } from "@/components/icons/i-business-deal-handshake";
 import { CashPaymentBag } from "@/components/icons/i-cash-payment-bag";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { userAtom } from "@/lib/stores/users";
+import { useAtom } from "jotai";
 import React from "react";
 import { View } from "react-native";
 
@@ -13,7 +15,7 @@ type Props = {
 
 const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 	const colors = useThemeColors();
-	const [selected, setSelected] = React.useState<"tenant" | "landlord">();
+	const [user, setUser] = useAtom(userAtom);
 
 	return (
 		<View>
@@ -32,14 +34,14 @@ const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 					<View className="flex-row items-center justify-between">
 						<ThemedText>I&apos;m looking for a house</ThemedText>
 						<Checkbox
-							checked={selected === "tenant"}
+							checked={user.userType === "tenant"}
 							color={colors["primary"]}
 							size={28}
 							onValueChange={() => {
-								if (selected !== "tenant") {
-									setSelected("tenant");
+								if (user.userType !== "tenant") {
+									setUser((c) => ({ ...c, userType: "tenant" }));
 								} else {
-									setSelected(undefined);
+									setUser((c) => ({ ...c, userType: undefined }));
 								}
 							}}
 						/>
@@ -53,14 +55,14 @@ const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 					<View className="flex-row items-center justify-between">
 						<ThemedText>I want to rent out my house</ThemedText>
 						<Checkbox
-							checked={selected === "landlord"}
+							checked={user.userType === "landlord"}
 							color={colors["primary"]}
 							size={28}
 							onValueChange={() => {
-								if (selected !== "landlord") {
-									setSelected("landlord");
+								if (user.userType !== "landlord") {
+									setUser((c) => ({ ...c, userType: "landlord" }));
 								} else {
-									setSelected(undefined);
+									setUser((c) => ({ ...c, userType: undefined }));
 								}
 							}}
 						/>
@@ -69,7 +71,7 @@ const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 			</View>
 			<Button
 				onPress={onNext}
-				disabled={!selected}
+				disabled={!user.userType}
 				style={{ backgroundColor: colors["primary"] }}
 				className="mt-8"
 			>

@@ -21,10 +21,11 @@ import {
 } from "@expo-google-fonts/inter";
 
 import { useColorScheme } from "@/lib/hooks/use-color-scheme";
-import { Fonts } from "@/constants/theme";
+import { Fonts } from "@/lib/constants/theme";
 import React from "react";
 import "../global.css";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Provider as JotaiProvider } from "jotai";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -53,14 +54,18 @@ export default function RootLayout() {
 	}
 
 	return (
-		<SafeAreaProvider>
-			<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-				<Stack>
-					<Stack.Screen name="index" options={{ headerShown: false }} />
-					<Stack.Screen name="onboarding" options={{ headerShown: false }} />
-				</Stack>
-				<StatusBar style="auto" />
-			</ThemeProvider>
-		</SafeAreaProvider>
+		<JotaiProvider>
+			<SafeAreaProvider>
+				<ThemeProvider
+					value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+				>
+					<Stack>
+						<Stack.Screen name="index" options={{ headerShown: false }} />
+						<Stack.Screen name="onboarding" options={{ headerShown: false }} />
+					</Stack>
+					<StatusBar style="auto" />
+				</ThemeProvider>
+			</SafeAreaProvider>
+		</JotaiProvider>
 	);
 }
