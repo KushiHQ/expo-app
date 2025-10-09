@@ -24,14 +24,8 @@ const GettingStartedStep4: React.FC<Props> = ({ onNext }) => {
 					Verified listings and trusted payments ensure worry-free transactions.
 				</ThemedText>
 			</View>
-			<Button
-				onPress={onNext}
-				style={{ backgroundColor: colors["primary"] }}
-				className="mt-24"
-			>
-				<ThemedText style={{ color: colors["primary-content"] }}>
-					Next
-				</ThemedText>
+			<Button onPress={onNext} type="primary" className="mt-24">
+				<ThemedText content="primary">Next</ThemedText>
 			</Button>
 		</View>
 	);

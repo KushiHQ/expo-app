@@ -72,12 +72,10 @@ const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 			<Button
 				onPress={onNext}
 				disabled={!user.userType}
-				style={{ backgroundColor: colors["primary"] }}
+				type="primary"
 				className="mt-8"
 			>
-				<ThemedText style={{ color: colors["primary-content"] }}>
-					Continue
-				</ThemedText>
+				<ThemedText content="primary">Continue</ThemedText>
 			</Button>
 		</View>
 	);

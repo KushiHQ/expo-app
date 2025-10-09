@@ -14,11 +14,10 @@ import AnimatedStepper from "@/components/atoms/a-animated-stepper";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import GettingStartedStep1 from "@/components/screens/getting-started/step-1";
 import GettingStartedStep2 from "@/components/screens/getting-started/step-2";
-import { ChevronLeft } from "lucide-react-native";
 import GettingStartedStep3 from "@/components/screens/getting-started/step-3";
 import GettingStartedStep4 from "@/components/screens/getting-started/step-4";
 import GettingStartedStep5 from "@/components/screens/getting-started/step-5";
-import { hexToRgba } from "@/lib/utils/colors";
+import BackButton from "@/components/atoms/a-backbutton";
 
 type Step = {
 	img: string;
@@ -152,15 +151,7 @@ export default function GetStarted() {
 							</Animated.View>
 						</View>
 
-						{step > 1 && (
-							<Pressable
-								onPress={handlePrevious}
-								style={{ backgroundColor: hexToRgba(colors["icon"], 0.6) }}
-								className="h-8 w-8 absolute top-16 left-6 items-center justify-center rounded-full"
-							>
-								<ChevronLeft color={colors["text"]} />
-							</Pressable>
-						)}
+						{step > 1 && <BackButton onPress={handlePrevious} />}
 					</View>
 				</ScrollView>
 			</SafeAreaView>

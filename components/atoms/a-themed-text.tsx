@@ -5,24 +5,34 @@ import { Fonts } from "@/lib/constants/theme";
 
 export type ThemedTextProps = TextProps & {
 	type?: "default" | "title" | "semibold" | "subtitle" | "link";
+	content?: "primary" | "shade" | "tinted";
 };
 
 const ThemedText: React.FC<ThemedTextProps> = ({
 	style,
 	type = "default",
+	content,
 	...rest
 }) => {
-	const color = useThemeColors();
+	const colors = useThemeColors();
 
 	return (
 		<Text
 			style={[
-				{ color: color["text"] },
+				{ color: colors["text"] },
 				type === "default" ? styles.default : undefined,
 				type === "title" ? styles.title : undefined,
 				type === "semibold" ? styles.semibold : undefined,
 				type === "subtitle" ? styles.subtitle : undefined,
 				type === "link" ? styles.link : undefined,
+				content && {
+					color:
+						content === "primary"
+							? colors["primary-content"]
+							: content === "shade"
+								? colors["shade-content"]
+								: colors["primary"],
+				},
 				style,
 			]}
 			{...rest}

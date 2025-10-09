@@ -1,3 +1,5 @@
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { hexToRgba } from "@/lib/utils/colors";
 import React from "react";
 import {
 	Pressable,
@@ -10,12 +12,27 @@ import {
 type BaseProps = Omit<PressableProps, "style">;
 type Props = BaseProps & {
 	style?: StyleProp<ViewStyle>;
+	type?: "primary" | "shade" | "tinted";
 };
 
-const Button: React.FC<Props> = ({ style, children, ...rest }) => {
+const Button: React.FC<Props> = ({ style, children, type, ...rest }) => {
+	const colors = useThemeColors();
+
 	return (
 		<Pressable
-			style={[styles.button, style, rest.disabled && { opacity: 0.6 }]}
+			style={[
+				styles.button,
+				style,
+				rest.disabled && { opacity: 0.6 },
+				type && {
+					backgroundColor:
+						type === "primary"
+							? colors["primary"]
+							: type === "shade"
+								? colors["shade"]
+								: hexToRgba(colors["primary"], 0.15),
+				},
+			]}
 			{...rest}
 		>
 			{children}

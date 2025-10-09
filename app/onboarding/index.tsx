@@ -32,24 +32,16 @@ export default function Welcome() {
 					</View>
 					<View className="gap-3">
 						<Button
+							type="primary"
 							onPress={() => router.push("/onboarding/get-started")}
-							style={{ backgroundColor: colors["primary"] }}
 						>
-							<ThemedText style={{ color: colors["primary-content"] }}>
-								Get Started
-							</ThemedText>
+							<ThemedText content="primary">Get Started</ThemedText>
 						</Button>
-						<Button style={{ backgroundColor: colors["shade"] }}>
-							<ThemedText style={{ color: colors["shade-content"] }}>
-								Sign up / Login
-							</ThemedText>
+						<Button type="shade" onPress={() => router.push("/auth/sign-up")}>
+							<ThemedText content="shade">Sign up / Login</ThemedText>
 						</Button>
-						<Button
-							style={{ backgroundColor: hexToRgba(colors["primary"], 0.15) }}
-						>
-							<ThemedText style={{ color: colors["primary"] }}>
-								Explore
-							</ThemedText>
+						<Button type="tinted">
+							<ThemedText content="tinted">Explore</ThemedText>
 						</Button>
 					</View>
 				</View>

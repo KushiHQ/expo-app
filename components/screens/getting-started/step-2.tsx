@@ -24,14 +24,8 @@ const GettingStartedStep2: React.FC<Props> = ({ onNext }) => {
 					Use smart filters to search by location, budget, and amenities.
 				</ThemedText>
 			</View>
-			<Button
-				onPress={onNext}
-				style={{ backgroundColor: colors["primary"] }}
-				className="mt-16"
-			>
-				<ThemedText style={{ color: colors["primary-content"] }}>
-					Next
-				</ThemedText>
+			<Button onPress={onNext} type="primary" className="mt-16">
+				<ThemedText content="primary">Next</ThemedText>
 			</Button>
 		</View>
 	);

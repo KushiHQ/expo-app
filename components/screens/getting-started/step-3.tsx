@@ -24,14 +24,8 @@ const GettingStartedStep3: React.FC<Props> = ({ onNext }) => {
 					Upload photos, set your price, and get verified buyers quickly.
 				</ThemedText>
 			</View>
-			<Button
-				onPress={onNext}
-				style={{ backgroundColor: colors["primary"] }}
-				className="mt-24"
-			>
-				<ThemedText style={{ color: colors["primary-content"] }}>
-					Next
-				</ThemedText>
+			<Button onPress={onNext} type="primary" className="mt-24">
+				<ThemedText content="primary">Next</ThemedText>
 			</Button>
 		</View>
 	);

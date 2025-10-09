@@ -1,4 +1,4 @@
-import { CustomSvgProps } from "@/lib/types/svg";
+import { CustomSvgProps } from "@/lib/types/svgType";
 import React from "react";
 import Svg, { Path } from "react-native-svg";
 
