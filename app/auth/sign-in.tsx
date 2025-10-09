@@ -1,5 +1,6 @@
 import Button from "@/components/atoms/a-button";
 import Centered from "@/components/atoms/a-centered";
+import Checkbox from "@/components/atoms/a-checkbox";
 import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
 import ThemedText from "@/components/atoms/a-themed-text";
 import { LogosApple, LogosGoogle } from "@/components/icons/i-logos";
@@ -9,23 +10,16 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { Link } from "expo-router";
 import { View } from "react-native";
 
-export default function SignUp() {
+export default function Login() {
   const colors = useThemeColors();
 
   return (
     <AuthLayout
-      title="Create Account"
-      description="Sign up easily with your email or social accounts"
+      title="Sign In"
+      description="Sign in easily with your email or social accounts"
     >
-      <View className="mt-10 flex-1 justify-between">
+      <View className="mt-10 h-full flex-1 justify-between">
         <View className="gap-4">
-          <FloatingLabelInput
-            focused
-            inputMode="text"
-            autoComplete="name"
-            placeholder="Enter your name"
-            label="Full Name"
-          />
           <FloatingLabelInput
             focused
             inputMode="email"
@@ -34,21 +28,23 @@ export default function SignUp() {
             label="Email"
           />
           <FloatingLabelInput
-            focused
-            inputMode="tel"
-            autoComplete="tel"
-            placeholder="+234 901 345 9878"
-            label="Phone Number"
-          />
-          <FloatingLabelInput
             secureTextEntry
             inputMode="text"
             autoComplete="password"
             placeholder="**********"
             label="Password"
           />
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center gap-1">
+              <Checkbox color={colors["primary"]} />
+              <ThemedText>Remeber Password</ThemedText>
+            </View>
+            <Link href="/auth/forgot-password">
+              <ThemedText>Forgot password?</ThemedText>
+            </Link>
+          </View>
           <Button type="primary">
-            <ThemedText content="primary">Sign Up</ThemedText>
+            <ThemedText content="primary">Sign In</ThemedText>
           </Button>
           <Centered className="mt-1">
             <ThemedText>or</ThemedText>
@@ -70,9 +66,9 @@ export default function SignUp() {
         </View>
         <View className="flex-row items-center justify-center mt-20 gap-1">
           <ThemedText>Already a member?</ThemedText>
-          <Link href="/auth/sign-in">
+          <Link href="/auth/sign-up">
             <ThemedText content="tinted" className="underline">
-              Log in
+              Sign up
             </ThemedText>
           </Link>
         </View>

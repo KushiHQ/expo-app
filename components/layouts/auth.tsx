@@ -21,7 +21,11 @@ const AuthLayout: React.FC<Props> = ({ title, description, children }) => {
 	return (
 		<ThemedView className="flex-1">
 			<SafeAreaView className="flex-1">
-				<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+				<ScrollView
+					className="flex-1"
+					showsVerticalScrollIndicator={false}
+					contentContainerStyle={{ flexGrow: 1 }}
+				>
 					<View className="p-5 flex-1">
 						<BackButton className="top-5" />
 						<View className="gap-9 mt-28">
