@@ -6,8 +6,6 @@ import Logo from "../icons/i-logo";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import ThemedText from "../atoms/a-themed-text";
-import { Fonts } from "@/lib/constants/theme";
-import BackButton from "../atoms/a-backbutton";
 import { ChevronLeft } from "lucide-react-native";
 import { IonNotificationsOutline } from "../icons/i-notifications";
 import { Image } from "expo-image";

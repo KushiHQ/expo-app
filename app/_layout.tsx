@@ -26,6 +26,7 @@ import React from "react";
 import "../global.css";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider as JotaiProvider } from "jotai";
+import { PaperProvider } from "react-native-paper";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -54,20 +55,25 @@ export default function RootLayout() {
 	}
 
 	return (
-		<JotaiProvider>
-			<SafeAreaProvider>
-				<ThemeProvider
-					value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-				>
-					<Stack>
-						<Stack.Screen name="index" options={{ headerShown: false }} />
-						<Stack.Screen name="onboarding" options={{ headerShown: false }} />
-						<Stack.Screen name="auth" options={{ headerShown: false }} />
-						<Stack.Screen name="guest" options={{ headerShown: false }} />
-					</Stack>
-					<StatusBar style="auto" />
-				</ThemeProvider>
-			</SafeAreaProvider>
-		</JotaiProvider>
+		<PaperProvider>
+			<JotaiProvider>
+				<SafeAreaProvider>
+					<ThemeProvider
+						value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+					>
+						<Stack>
+							<Stack.Screen name="index" options={{ headerShown: false }} />
+							<Stack.Screen
+								name="onboarding"
+								options={{ headerShown: false }}
+							/>
+							<Stack.Screen name="auth" options={{ headerShown: false }} />
+							<Stack.Screen name="guest" options={{ headerShown: false }} />
+						</Stack>
+						<StatusBar style="auto" />
+					</ThemeProvider>
+				</SafeAreaProvider>
+			</JotaiProvider>
+		</PaperProvider>
 	);
 }
