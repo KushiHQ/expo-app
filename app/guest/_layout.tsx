@@ -24,7 +24,7 @@ export default function Layout() {
         tabBarActiveTintColor: colors["primary"],
         tabBarStyle: {
           backgroundColor: colors["background"],
-          borderTopColor: "transparent",
+          borderTopColor: "#0000",
           borderTopWidth: 1,
           height: 80,
           paddingBottom: 8,

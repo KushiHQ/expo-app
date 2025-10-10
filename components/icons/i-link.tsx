@@ -8,7 +8,7 @@ export const LinkIcon: React.FC<CustomSvgProps> = (props) => {
       width={props.width ?? props.size ?? 25}
       height={props.height ?? props.size ?? 24}
       viewBox="0 0 25 24"
-      fill="trasparent"
+      fill="#0000"
       {...props}
     >
       <Path

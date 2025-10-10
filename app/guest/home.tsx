@@ -1,10 +1,10 @@
 import ThemedText from "@/components/atoms/a-themed-text";
-import ThemedView from "@/components/atoms/a-themed-view";
+import ProfileLayout from "@/components/layouts/profile";
 
 export default function GuestHome() {
   return (
-    <ThemedView>
+    <ProfileLayout>
       <ThemedText>Home</ThemedText>
-    </ThemedView>
+    </ProfileLayout>
   );
 }
