@@ -123,7 +123,7 @@ const FloatingLabelInput = React.forwardRef<TextInput, Props>((props, ref) => {
 					onPress={() => setSecureTextEntry((c) => !c)}
 					className="absolute right-4 top-5"
 				>
-					{secureTextEntry ? (
+					{!secureTextEntry ? (
 						<MageEye color={colors["text"]} />
 					) : (
 						<MageEyeOff color={colors["text"]} />
