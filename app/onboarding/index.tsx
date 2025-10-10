@@ -40,7 +40,7 @@ export default function Welcome() {
 						<Button type="shade" onPress={() => router.push("/auth/sign-up")}>
 							<ThemedText content="shade">Sign up / Login</ThemedText>
 						</Button>
-						<Button type="tinted">
+						<Button onPress={() => router.push("/guest/home")} type="tinted">
 							<ThemedText content="tinted">Explore</ThemedText>
 						</Button>
 					</View>

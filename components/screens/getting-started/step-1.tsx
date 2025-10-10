@@ -5,6 +5,7 @@ import { BusinessDealHandshake } from "@/components/icons/i-business-deal-handsh
 import { CashPaymentBag } from "@/components/icons/i-cash-payment-bag";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { userAtom } from "@/lib/stores/users";
+import { UserType } from "@/lib/types/users";
 import { useAtom } from "jotai";
 import React from "react";
 import { View } from "react-native";
@@ -34,12 +35,12 @@ const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 					<View className="flex-row items-center justify-between">
 						<ThemedText>I&apos;m looking for a house</ThemedText>
 						<Checkbox
-							checked={user.userType === "tenant"}
+							checked={user.userType === UserType.Guest}
 							color={colors["primary"]}
 							size={28}
 							onValueChange={() => {
-								if (user.userType !== "tenant") {
-									setUser((c) => ({ ...c, userType: "tenant" }));
+								if (user.userType !== UserType.Guest) {
+									setUser((c) => ({ ...c, userType: UserType.Guest }));
 								} else {
 									setUser((c) => ({ ...c, userType: undefined }));
 								}
@@ -55,12 +56,12 @@ const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 					<View className="flex-row items-center justify-between">
 						<ThemedText>I want to rent out my house</ThemedText>
 						<Checkbox
-							checked={user.userType === "landlord"}
+							checked={user.userType === UserType.Host}
 							color={colors["primary"]}
 							size={28}
 							onValueChange={() => {
-								if (user.userType !== "landlord") {
-									setUser((c) => ({ ...c, userType: "landlord" }));
+								if (user.userType !== UserType.Host) {
+									setUser((c) => ({ ...c, userType: UserType.Host }));
 								} else {
 									setUser((c) => ({ ...c, userType: undefined }));
 								}

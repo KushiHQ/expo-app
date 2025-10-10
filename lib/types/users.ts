@@ -2,4 +2,7 @@ export type UserStore = {
   userType?: UserType;
 };
 
-export type UserType = "tenant" | "landlord";
+export enum UserType {
+  Host,
+  Guest,
+}
