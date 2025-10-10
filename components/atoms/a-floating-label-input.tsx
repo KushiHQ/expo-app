@@ -110,6 +110,7 @@ const FloatingLabelInput = React.forwardRef<TextInput, Props>((props, ref) => {
 					placeholderTextColor={hexToRgba(colors["text"], 0.5)}
 					placeholder={shouldFloat ? placeholder : undefined}
 					style={[{ color: colors["text"], fontSize: 16 }, style]}
+					cursorColor={colors["primary"]}
 					onFocus={handleFocus}
 					onBlur={handleBlur}
 					secureTextEntry={secureTextEntry}
