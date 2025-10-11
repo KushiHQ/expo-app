@@ -2,7 +2,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ThemedView from "../atoms/a-themed-view";
 import React from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import Logo from "../icons/i-logo";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import ThemedText from "../atoms/a-themed-text";

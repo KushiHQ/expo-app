@@ -1,5 +1,11 @@
-import React, { FC, ReactNode, useCallback, useEffect } from "react";
-import { StyleSheet, Dimensions, View, TouchableOpacity } from "react-native";
+import React, { FC, ReactNode, useCallback, useEffect, useState } from "react";
+import {
+  StyleSheet,
+  Dimensions,
+  View,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import {
   Gesture,
   GestureDetector,
@@ -10,15 +16,17 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
+  useDerivedValue,
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import { Portal } from "react-native-paper";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { useGradualKeyboardAnimation } from "@/lib/hooks/keyboard";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-const SHEET_HEIGHT = SCREEN_HEIGHT * 0.5;
-const MAX_TRANSLATE_Y = -SHEET_HEIGHT;
+const MAX_HEIGHT = SCREEN_HEIGHT * 0.7;
+const MIN_HEIGHT = SCREEN_HEIGHT * 0.2;
 
 interface BottomSheetProps {
   isVisible: boolean;
@@ -34,6 +42,11 @@ const BottomSheet: FC<BottomSheetProps> = ({
   const colors = useThemeColors();
   const translateY = useSharedValue(0);
   const context = useSharedValue({ y: 0 });
+  const [contentHeight, setContentHeight] = useState(0);
+  const { height: keyboardHeight } = useGradualKeyboardAnimation();
+
+  const finalHeight = Math.min(contentHeight, MAX_HEIGHT);
+  const MAX_TRANSLATE_Y = -finalHeight;
 
   useEffect(() => {
     if (isVisible) {
@@ -44,18 +57,11 @@ const BottomSheet: FC<BottomSheetProps> = ({
     } else {
       translateY.value = withTiming(0, { duration: 250 });
     }
-  }, [isVisible, translateY]);
+  }, [isVisible, translateY, MAX_TRANSLATE_Y]);
 
-  const scrollTo = useCallback(
-    (destination: number) => {
-      "worklet";
-      translateY.value = withSpring(destination, {
-        damping: 50,
-        stiffness: 400,
-      });
-    },
-    [translateY],
-  );
+  const onContentLayout = useCallback((event: any) => {
+    setContentHeight(event.nativeEvent.layout.height + 60);
+  }, []);
 
   const panGesture = Gesture.Pan()
     .onStart(() => {
@@ -70,13 +76,19 @@ const BottomSheet: FC<BottomSheetProps> = ({
         translateY.value = withTiming(0, { duration: 250 });
         scheduleOnRN(onClose);
       } else {
-        scrollTo(MAX_TRANSLATE_Y);
+        translateY.value = withSpring(MAX_TRANSLATE_Y, {
+          damping: 50,
+          stiffness: 400,
+        });
       }
     });
 
   const rBottomSheetStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateY: translateY.value }],
+      transform: [
+        { translateY: translateY.value },
+        { translateY: -keyboardHeight.value },
+      ],
     };
   });
 
@@ -86,7 +98,9 @@ const BottomSheet: FC<BottomSheetProps> = ({
     };
   }, [isVisible]);
 
-  if (!isVisible && translateY.value === 0) {
+  const isSheetFullyClosed = useDerivedValue(() => translateY.value <= 0);
+
+  if (!isVisible && isSheetFullyClosed.value) {
     return null;
   }
 
@@ -108,31 +122,41 @@ const BottomSheet: FC<BottomSheetProps> = ({
           />
         </TouchableOpacity>
 
-        <GestureDetector gesture={panGesture}>
-          <Animated.View
-            style={[
-              styles.bottomSheetContainer,
-              {
-                backgroundColor: colors["background"],
-                shadowColor: hexToRgba(colors["text"], 0.1),
-                borderTopWidth: 2,
-                borderColor: hexToRgba(colors["text"], 0.05),
-              },
-              rBottomSheetStyle,
-            ]}
+        <Animated.View
+          style={[
+            styles.bottomSheetContainer,
+            {
+              backgroundColor: colors["background"],
+              shadowColor: hexToRgba(colors["text"], 0.1),
+              borderTopWidth: 2,
+              borderColor: hexToRgba(colors["text"], 0.09),
+              height: finalHeight > 0 ? finalHeight : MIN_HEIGHT,
+            },
+            rBottomSheetStyle,
+          ]}
+        >
+          <GestureDetector gesture={panGesture}>
+            <View style={{ width: "100%" }}>
+              <View
+                style={[
+                  styles.handle,
+                  {
+                    backgroundColor: hexToRgba(colors["text"], 0.4),
+                    borderRadius: 2.5,
+                  },
+                ]}
+              />
+            </View>
+          </GestureDetector>
+
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            style={styles.contentContainer}
+            keyboardShouldPersistTaps="handled"
           >
-            <View
-              style={[
-                styles.handle,
-                {
-                  backgroundColor: hexToRgba(colors["text"], 0.4),
-                  borderRadius: 2.5,
-                },
-              ]}
-            />
-            {children}
-          </Animated.View>
-        </GestureDetector>
+            <View onLayout={onContentLayout}>{children}</View>
+          </ScrollView>
+        </Animated.View>
       </GestureHandlerRootView>
     </Portal>
   );
@@ -140,10 +164,9 @@ const BottomSheet: FC<BottomSheetProps> = ({
 
 const styles = StyleSheet.create({
   bottomSheetContainer: {
-    minHeight: SHEET_HEIGHT,
     width: "100%",
     position: "absolute",
-    top: SCREEN_HEIGHT,
+    top: SCREEN_HEIGHT + 10,
     borderRadius: 25,
     paddingHorizontal: 20,
     shadowOffset: { width: 0, height: -3 },
@@ -153,9 +176,13 @@ const styles = StyleSheet.create({
   },
   handle: {
     width: 40,
-    height: 5,
+    height: 6,
     alignSelf: "center",
     marginVertical: 10,
+  },
+  contentContainer: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
 });
 

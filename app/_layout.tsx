@@ -27,6 +27,8 @@ import "../global.css";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider as JotaiProvider } from "jotai";
 import { PaperProvider } from "react-native-paper";
+import TansStackProvider from "@/components/providers/tanstack";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -55,25 +57,29 @@ export default function RootLayout() {
 	}
 
 	return (
-		<PaperProvider>
-			<JotaiProvider>
-				<SafeAreaProvider>
-					<ThemeProvider
-						value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-					>
-						<Stack>
-							<Stack.Screen name="index" options={{ headerShown: false }} />
-							<Stack.Screen
-								name="onboarding"
-								options={{ headerShown: false }}
-							/>
-							<Stack.Screen name="auth" options={{ headerShown: false }} />
-							<Stack.Screen name="guest" options={{ headerShown: false }} />
-						</Stack>
-						<StatusBar style="auto" />
-					</ThemeProvider>
-				</SafeAreaProvider>
-			</JotaiProvider>
-		</PaperProvider>
+		<KeyboardProvider>
+			<TansStackProvider>
+				<PaperProvider>
+					<JotaiProvider>
+						<SafeAreaProvider>
+							<ThemeProvider
+								value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+							>
+								<Stack>
+									<Stack.Screen name="index" options={{ headerShown: false }} />
+									<Stack.Screen
+										name="onboarding"
+										options={{ headerShown: false }}
+									/>
+									<Stack.Screen name="auth" options={{ headerShown: false }} />
+									<Stack.Screen name="guest" options={{ headerShown: false }} />
+								</Stack>
+								<StatusBar style="auto" />
+							</ThemeProvider>
+						</SafeAreaProvider>
+					</JotaiProvider>
+				</PaperProvider>
+			</TansStackProvider>
+		</KeyboardProvider>
 	);
 }

@@ -6,6 +6,7 @@ import {
 	BlurEvent,
 	Pressable,
 	View,
+	GestureResponderEvent,
 } from "react-native";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
@@ -21,6 +22,7 @@ import { MageEye, MageEyeOff } from "../icons/i-eye";
 type Props = TextInputProps & {
 	focused?: boolean;
 	label?: string;
+	suffix?: React.ReactNode;
 };
 
 const FloatingLabelInput = React.forwardRef<TextInput, Props>((props, ref) => {
@@ -31,6 +33,8 @@ const FloatingLabelInput = React.forwardRef<TextInput, Props>((props, ref) => {
 		focused: fixedFocused,
 		onChangeText,
 		secureTextEntry: defaultSecureText,
+		suffix,
+		onPress,
 		...rest
 	} = props;
 	const colors = useThemeColors();
@@ -42,12 +46,13 @@ const FloatingLabelInput = React.forwardRef<TextInput, Props>((props, ref) => {
 	const [focused, setFocused] = React.useState(false);
 	const animatedValue = useSharedValue(props.value ? 1 : 0);
 	const shouldFloat = fixedFocused || focused || value.toString().length > 0;
+	const showCustomPlaceholder = shouldFloat && !value && placeholder;
 
 	React.useEffect(() => {
 		animatedValue.value = withTiming(shouldFloat ? 1 : 0, {
 			duration: 200,
 		});
-	}, [shouldFloat]);
+	}, [shouldFloat, animatedValue]);
 
 	const focusedColor = hexToRgba(colors["text"], 0.6);
 
@@ -77,8 +82,9 @@ const FloatingLabelInput = React.forwardRef<TextInput, Props>((props, ref) => {
 		props.onBlur?.(e);
 	};
 
-	const handleConntainerPress = () => {
+	const handleConntainerPress = (e: GestureResponderEvent) => {
 		(ref as any)?.current.focus();
+		onPress?.(e);
 	};
 
 	const handleChange = (text: string) => {
@@ -105,19 +111,46 @@ const FloatingLabelInput = React.forwardRef<TextInput, Props>((props, ref) => {
 				>
 					{label}
 				</Animated.Text>
+
+				{showCustomPlaceholder && (
+					<Animated.Text
+						numberOfLines={1}
+						ellipsizeMode="tail"
+						style={{
+							position: "absolute",
+							left: 13,
+							top: 26,
+							fontSize: 16,
+							color: hexToRgba(colors["text"], 0.5),
+							pointerEvents: "none",
+							right: suffix || defaultSecureText ? 46 : 10,
+						}}
+					>
+						{placeholder}
+					</Animated.Text>
+				)}
+
 				<TextInput
 					onChangeText={handleChange}
 					placeholderTextColor={hexToRgba(colors["text"], 0.5)}
-					placeholder={shouldFloat ? placeholder : undefined}
-					style={[{ color: colors["text"], fontSize: 16 }, style]}
+					style={[
+						{
+							color: colors["text"],
+							fontSize: 16,
+							paddingRight: suffix || defaultSecureText ? 36 : 0,
+						},
+						style,
+					]}
 					cursorColor={colors["primary"]}
 					onFocus={handleFocus}
 					onBlur={handleBlur}
 					secureTextEntry={secureTextEntry}
+					numberOfLines={1}
 					ref={ref}
 					{...rest}
 				/>
 			</Pressable>
+			{suffix && <View className="absolute right-4 bottom-4">{suffix}</View>}
 			{defaultSecureText && (
 				<Pressable
 					onPress={() => setSecureTextEntry((c) => !c)}

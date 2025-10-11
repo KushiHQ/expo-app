@@ -1,13 +1,14 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import ThemedView from "../atoms/a-themed-view";
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
 import Logo from "../icons/i-logo";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import ThemedText from "../atoms/a-themed-text";
 import { Fonts } from "@/lib/constants/theme";
 import BackButton from "../atoms/a-backbutton";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 
 type Props = {
 	title?: string;
@@ -21,7 +22,7 @@ const AuthLayout: React.FC<Props> = ({ title, description, children }) => {
 	return (
 		<ThemedView className="flex-1">
 			<SafeAreaView className="flex-1">
-				<ScrollView
+				<KeyboardAwareScrollView
 					className="flex-1"
 					showsVerticalScrollIndicator={false}
 					contentContainerStyle={{ flexGrow: 1 }}
@@ -53,7 +54,7 @@ const AuthLayout: React.FC<Props> = ({ title, description, children }) => {
 						</View>
 						<View className="flex-1">{children}</View>
 					</View>
-				</ScrollView>
+				</KeyboardAwareScrollView>
 			</SafeAreaView>
 		</ThemedView>
 	);
