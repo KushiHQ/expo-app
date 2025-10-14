@@ -11,9 +11,10 @@ import { useRouter } from "expo-router";
 type Props = {
   children?: React.ReactNode;
   title?: string;
+  footer?: React.ReactNode;
 };
 
-const DetailsLayout: React.FC<Props> = ({ children, title }) => {
+const DetailsLayout: React.FC<Props> = ({ children, title, footer }) => {
   const router = useRouter();
   const colors = useThemeColors();
   const scrollViewRef = useRef<ScrollView>(null);
@@ -52,6 +53,7 @@ const DetailsLayout: React.FC<Props> = ({ children, title }) => {
             <View className="flex-1">{children}</View>
           </View>
         </ScrollView>
+        {footer}
       </SafeAreaView>
     </ThemedView>
   );
