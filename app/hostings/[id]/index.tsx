@@ -8,6 +8,7 @@ import { SolarPhoneOutline } from "@/components/icons/i-phone";
 import { MynauiStarSolid } from "@/components/icons/i-start";
 import DetailsLayout from "@/components/layouts/details";
 import ReviewItem from "@/components/molecules/m-review-item";
+import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hostingsAtom } from "@/lib/stores/hostings";
@@ -16,17 +17,14 @@ import { FACILITIES_BY_VARIANT } from "@/lib/types/enums/hostings";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { Image } from "expo-image";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import React from "react";
 import { Pressable, View } from "react-native";
 import { SimpleGrid } from "react-native-super-grid";
 
-const PROPERTY_BLURHASH = "LKO2?U%2Tw=w]~RBVZRi};RPxuwH";
-const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1560185127-6a7e5ad8e19c?w=800&h=600&fit=crop&q=80";
-
 export default function HostingDetails() {
+  const router = useRouter();
   const { id } = useLocalSearchParams();
   const colors = useThemeColors();
   const hostings = useAtomValue(hostingsAtom);
@@ -61,7 +59,14 @@ export default function HostingDetails() {
             </View>
           </View>
           <View className="flex-1 items-end">
-            <Button type="primary">
+            <Button
+              onPress={() =>
+                router.push(
+                  `/hostings/${hosting?.id}/reservation/user-details/`,
+                )
+              }
+              type="primary"
+            >
               <ThemedText content="primary">Reserve Now</ThemedText>
             </Button>
           </View>
@@ -226,13 +231,15 @@ export default function HostingDetails() {
             <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
               Gallery
             </ThemedText>
-            <ThemedText
-              className="underline"
-              content="tinted"
-              style={{ fontSize: 12 }}
-            >
-              See All
-            </ThemedText>
+            <Link href={`/hostings/${hosting?.id}/gallery/`}>
+              <ThemedText
+                className="underline"
+                content="tinted"
+                style={{ fontSize: 12 }}
+              >
+                See All
+              </ThemedText>
+            </Link>
           </View>
           <View className="mt-4 flex-row gap-3">
             {(hosting?.images ?? []).slice(0, 3).map((img, index) => (

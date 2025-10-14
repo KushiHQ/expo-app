@@ -98,9 +98,9 @@ const FloatingLabelInput = React.forwardRef<TextInput, Props>((props, ref) => {
 				onPress={handleConntainerPress}
 				className="border px-2.5 pt-[18px] rounded-lg"
 				style={{
-					borderColor: hexToRgba(colors["text"], 0.2),
+					borderColor: hexToRgba(colors["text"], 0.15),
 					borderWidth: 1.5,
-					backgroundColor: hexToRgba(colors["text"], 0.06),
+					backgroundColor: hexToRgba(colors["text"], 0.055),
 				}}
 			>
 				<Animated.Text
