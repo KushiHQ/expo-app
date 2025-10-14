@@ -12,3 +12,17 @@ export const formatSeconds = (seconds: number): string => {
 
   return `${formattedMinutes}:${formattedSeconds}`;
 };
+
+/**
+ * Formats an ISO date-time string to "Month Day, Year".
+ * @param {string} datetimeString The date-time string to format.
+ * @returns {string} The formatted date string.
+ */
+export function formatDate(datetimeString: string): string {
+  const date = new Date(datetimeString);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}

@@ -29,6 +29,7 @@ import { Provider as JotaiProvider } from "jotai";
 import { PaperProvider } from "react-native-paper";
 import TansStackProvider from "@/components/providers/tanstack";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -57,29 +58,44 @@ export default function RootLayout() {
 	}
 
 	return (
-		<KeyboardProvider>
-			<TansStackProvider>
-				<PaperProvider>
-					<JotaiProvider>
-						<SafeAreaProvider>
-							<ThemeProvider
-								value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-							>
-								<Stack>
-									<Stack.Screen name="index" options={{ headerShown: false }} />
-									<Stack.Screen
-										name="onboarding"
-										options={{ headerShown: false }}
-									/>
-									<Stack.Screen name="auth" options={{ headerShown: false }} />
-									<Stack.Screen name="guest" options={{ headerShown: false }} />
-								</Stack>
-								<StatusBar style="auto" />
-							</ThemeProvider>
-						</SafeAreaProvider>
-					</JotaiProvider>
-				</PaperProvider>
-			</TansStackProvider>
-		</KeyboardProvider>
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<KeyboardProvider>
+				<TansStackProvider>
+					<PaperProvider>
+						<JotaiProvider>
+							<SafeAreaProvider>
+								<ThemeProvider
+									value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+								>
+									<Stack screenOptions={{ animation: "fade" }}>
+										<Stack.Screen
+											name="index"
+											options={{ headerShown: false }}
+										/>
+										<Stack.Screen
+											name="onboarding"
+											options={{ headerShown: false }}
+										/>
+										<Stack.Screen
+											name="auth"
+											options={{ headerShown: false }}
+										/>
+										<Stack.Screen
+											name="guest"
+											options={{ headerShown: false }}
+										/>
+										<Stack.Screen
+											name="hostings"
+											options={{ headerShown: false }}
+										/>
+									</Stack>
+									<StatusBar style="auto" />
+								</ThemeProvider>
+							</SafeAreaProvider>
+						</JotaiProvider>
+					</PaperProvider>
+				</TansStackProvider>
+			</KeyboardProvider>
+		</GestureHandlerRootView>
 	);
 }

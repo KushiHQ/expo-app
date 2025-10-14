@@ -8,10 +8,7 @@ import BottomSheet from "../atoms/a-bottom-sheet";
 import ThemedText from "../atoms/a-themed-text";
 import React from "react";
 import { Fonts } from "@/lib/constants/theme";
-import {
-  FACILITIES_BY_VARIANT,
-  HOSTING_VARIANTS,
-} from "@/lib/types/enums/hostings";
+import { FACILITIES_BY_VARIANT } from "@/lib/types/enums/hostings";
 import TextPill from "../molecules/m-text-pill-pill";
 import RangeSlider from "../atoms/a-range-slider";
 import FloatingLabelInput from "../atoms/a-floating-label-input";
@@ -20,6 +17,12 @@ import LocationSelectInput from "../molecules/m-location-select-input";
 import { LocationFeature } from "@/lib/types/queries/mapbox";
 import RatingPill from "../molecules/m-rating-pill";
 import Button from "../atoms/a-button";
+import { HotingVariantFilter } from "../molecules/m-hosting-variant-filter";
+import {
+  FACILITY_ICONS,
+  FALLBACK_FACILITY_ICON,
+} from "@/lib/types/enums/hosting-icons";
+import { cast } from "@/lib/types/utils";
 
 const HostingFilterManager = () => {
   const [variant, setVariant] = React.useState("All");
@@ -80,19 +83,7 @@ const HostingFilterManager = () => {
           <View className="gap-6">
             <View className="gap-3">
               <ThemedText style={{ fontSize: 14 }}>Category</ThemedText>
-              <ScrollView horizontal>
-                <View className="flex-row my-1 gap-2">
-                  {["All", ...HOSTING_VARIANTS].map((item, index) => (
-                    <TextPill
-                      selected={variant === item}
-                      onSelect={setVariant}
-                      key={index}
-                    >
-                      {item}
-                    </TextPill>
-                  ))}
-                </View>
-              </ScrollView>
+              <HotingVariantFilter onSelect={setVariant} />
             </View>
             <View className="gap-3">
               <ThemedText style={{ fontSize: 14 }}>Price Range</ThemedText>
@@ -133,30 +124,36 @@ const HostingFilterManager = () => {
                       }
                       return true;
                     }).map((v) => v.facility.valueOf()),
-                  ].map((item, index) => (
-                    <TextPill
-                      selected={facilities.includes(item)}
-                      onSelect={(v) => {
-                        setFacilities((c) => {
-                          if (v === "All") {
-                            return ["All"];
-                          }
-                          if (!c.includes(v)) {
-                            return [...c, v].filter((n) => n !== "All");
-                          } else {
-                            const newVal = c.filter((i) => i !== v);
-                            if (newVal.length === 0) {
-                              newVal.push("All");
+                  ].map((item, index) => {
+                    const Icon =
+                      FACILITY_ICONS[cast<keyof typeof FACILITY_ICONS>(item)] ??
+                      FALLBACK_FACILITY_ICON;
+                    return (
+                      <TextPill
+                        icon={Icon}
+                        selected={facilities.includes(item)}
+                        onSelect={(v) => {
+                          setFacilities((c) => {
+                            if (v === "All") {
+                              return ["All"];
                             }
-                            return newVal;
-                          }
-                        });
-                      }}
-                      key={index}
-                    >
-                      {item}
-                    </TextPill>
-                  ))}
+                            if (!c.includes(v)) {
+                              return [...c, v].filter((n) => n !== "All");
+                            } else {
+                              const newVal = c.filter((i) => i !== v);
+                              if (newVal.length === 0) {
+                                newVal.push("All");
+                              }
+                              return newVal;
+                            }
+                          });
+                        }}
+                        key={index}
+                      >
+                        {item}
+                      </TextPill>
+                    );
+                  })}
                 </View>
               </ScrollView>
             </View>
