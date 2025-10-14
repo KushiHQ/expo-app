@@ -27,7 +27,7 @@ export default function GuestHome() {
 
 	return (
 		<ProfileLayout>
-			<View className="mt-8">
+			<View>
 				<View className="gap-4">
 					<HostingFilterManager />
 					<HotingVariantFilter />

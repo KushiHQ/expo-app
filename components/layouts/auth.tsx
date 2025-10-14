@@ -9,6 +9,7 @@ import ThemedText from "../atoms/a-themed-text";
 import { Fonts } from "@/lib/constants/theme";
 import BackButton from "../atoms/a-backbutton";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { useRouter } from "expo-router";
 
 type Props = {
 	title?: string;
@@ -17,6 +18,7 @@ type Props = {
 };
 
 const AuthLayout: React.FC<Props> = ({ title, description, children }) => {
+	const router = useRouter();
 	const colors = useThemeColors();
 
 	return (
@@ -28,7 +30,7 @@ const AuthLayout: React.FC<Props> = ({ title, description, children }) => {
 					contentContainerStyle={{ flexGrow: 1 }}
 				>
 					<View className="p-5 flex-1">
-						<BackButton className="top-5" />
+						<BackButton onPress={() => router.back()} className="top-5" />
 						<View className="gap-9 mt-28">
 							<View
 								className="border items-center justify-center rounded-xl"

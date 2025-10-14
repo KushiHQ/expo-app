@@ -18,6 +18,8 @@ const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 	const colors = useThemeColors();
 	const [user, setUser] = useAtom(userAtom);
 
+	console.log(user.userType);
+
 	return (
 		<View>
 			<View className="gap-4">
@@ -72,7 +74,7 @@ const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 			</View>
 			<Button
 				onPress={onNext}
-				disabled={!user.userType}
+				disabled={user.userType === undefined}
 				type="primary"
 				className="mt-8"
 			>

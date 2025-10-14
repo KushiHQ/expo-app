@@ -27,6 +27,41 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "@react-native-community/datetimepicker",
+        {
+          "android": {
+            "datePicker": {
+              "colorAccent": {
+                "light": "#266DD3",
+                "dark": "#266DD3"
+              },
+              "textColorPrimary": {
+                "light": "#11181C",
+                "dark": "#f0f0f0"
+              },
+              "textColorPrimaryInverse": {
+                "light": "#ffffff",
+                "dark": "#000000"
+              },
+              "windowBackground": {
+                "light": "#fff",
+                "dark": "#000000"
+              }
+            },
+            "timePicker": {
+              "background": {
+                "light": "#266DD3",
+                "dark": "#266DD3"
+              },
+              "numbersBackgroundColor": {
+                "light": "#266DD3",
+                "dark": "#266DD3"
+              }
+            }
+          }
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
