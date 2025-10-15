@@ -16,6 +16,10 @@ export type Hosting = {
 	ratingCount: number;
 	price: number;
 	images: string[];
+	location: {
+		latitude: number;
+		longitude: number;
+	};
 };
 
 export type ReviewMetrics = {
@@ -99,6 +103,10 @@ const generateMockHosting = async (): Promise<Hosting> => {
 		ratingCount: ratingCount,
 		price: faker.number.int({ min: 50, max: 2000 }) * 1000,
 		images: [houseImage, ...roomImages],
+		location: {
+			latitude: faker.location.latitude(),
+			longitude: faker.location.longitude(),
+		},
 	};
 };
 

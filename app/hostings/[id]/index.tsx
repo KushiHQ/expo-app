@@ -7,6 +7,7 @@ import DetailsLayout from "@/components/layouts/details";
 import HostingFacilities from "@/components/molecules/m-hosting-facilities";
 import HostingGalleryComponent from "@/components/molecules/m-hosting-gallery";
 import HostingHost from "@/components/molecules/m-hosting-host";
+import HostingLocation from "@/components/molecules/m-hosting-location";
 import HostingReviews from "@/components/organisms/o-hosting-reviews";
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
@@ -139,6 +140,7 @@ export default function HostingDetails() {
 				<HostingFacilities hosting={hosting} />
 				<HostingGalleryComponent hosting={hosting} />
 				<HostingReviews hosting={hosting} />
+				<HostingLocation hosting={hosting} />
 			</View>
 		</DetailsLayout>
 	);
