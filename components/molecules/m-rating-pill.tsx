@@ -2,7 +2,7 @@ import { Pressable } from "react-native";
 import ThemedText from "../atoms/a-themed-text";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { HugeiconsStar } from "../icons/i-start";
+import { HugeiconsStar } from "../icons/i-star";
 
 type Props = {
   selected?: boolean;

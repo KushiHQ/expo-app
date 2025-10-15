@@ -40,7 +40,7 @@ const ReviewItem: React.FC<Props> = ({ value, title, description }) => {
         <View className=" flex-row items-center gap-2">
           <RatingRange color={colors.accent} max={5} value={value} />
           <ThemedText style={{ fontSize: 12, color: colors.accent }}>
-            {value}
+            {value.toFixed(1)}
           </ThemedText>
         </View>
       </View>

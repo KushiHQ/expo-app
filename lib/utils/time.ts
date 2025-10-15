@@ -26,3 +26,17 @@ export function formatDate(datetimeString: string): string {
     year: "numeric",
   });
 }
+
+/**
+ * Formats a date string to "Month Year" format.
+ * @param {string} dateString The date string to format (e.g., "2025-01-15T12:00:00Z").
+ * @returns {string} The formatted date string (e.g., "January 2025").
+ */
+export function formatDateToMonthYear(dateString: string): string {
+  const date = new Date(dateString);
+
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+  });
+}

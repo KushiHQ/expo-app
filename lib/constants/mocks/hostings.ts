@@ -18,6 +18,27 @@ export type Hosting = {
 	images: string[];
 };
 
+export type ReviewMetrics = {
+	cleanliness: number;
+	accuracy: number;
+	communication: number;
+	location: number;
+	checkIn: number;
+	value: number;
+};
+
+export type Review = {
+	id: string;
+	user: {
+		name: string;
+		avatar: string;
+	};
+	date: string;
+	rating: number;
+	comment: string;
+	metrics: ReviewMetrics;
+};
+
 const getPexelsImage = async (query: string, page: number = 1) => {
 	const response = await fetch(
 		`https://api.pexels.com/v1/search?query=${query}&per_page=1&page=${page}`,
@@ -87,4 +108,63 @@ export const generateMockHostings = async (
 	return await Promise.all(
 		Array.from({ length: count }, () => generateMockHosting()),
 	);
+};
+
+const reviewComments = [
+	"We had a delightful stay! We loved soaking in the tub, hiking in the area, and wine tasting in Truckee.",
+	"The space was perfect for our weekend getaway. The host was very responsive and the location was fantastic.",
+	"Highly recommend this place! It was clean, comfortable, and the decor was lovely.",
+	"A truly wonderful experience. The host went above and beyond to make us feel at home.",
+	"Great location and amazing amenities. We will definitely be coming back.",
+	"The apartment was exactly as described. The check-in process was seamless and easy.",
+];
+
+/**
+ * Calculates the average rating from a metrics object.
+ * @param {ReviewMetrics} metrics The object containing the individual ratings.
+ * @returns {number} The average rating.
+ */
+const calculateAverageRating = (metrics: ReviewMetrics): number => {
+	const values = Object.values(metrics);
+	const sum = values.reduce((acc, curr) => acc + curr, 0);
+	const average = sum / values.length;
+	return parseFloat(average.toFixed(1)); // Return with one decimal place
+};
+
+/**
+ * Generates a single mock review object with individual metric ratings.
+ * @returns {Review} A mock review object.
+ */
+const generateMockReview = (): Review => {
+	const metrics: ReviewMetrics = {
+		cleanliness: faker.number.float({ min: 3.5, max: 5 }),
+		accuracy: faker.number.float({ min: 3.5, max: 5 }),
+		communication: faker.number.float({ min: 3.5, max: 5 }),
+		location: faker.number.float({ min: 3.5, max: 5 }),
+		checkIn: faker.number.float({ min: 3.5, max: 5 }),
+		value: faker.number.float({ min: 3.5, max: 5 }),
+	};
+
+	const overallRating = calculateAverageRating(metrics);
+
+	return {
+		id: faker.string.uuid(),
+		user: {
+			name: faker.person.firstName(),
+			avatar: faker.image.avatar(),
+		},
+		date: faker.date.recent().toISOString(),
+		rating: overallRating,
+		comment: faker.helpers.arrayElement(reviewComments),
+		metrics: metrics,
+	};
+};
+
+/**
+ * Generates a specified number of mock review objects.
+ * @param {number} count The number of reviews to generate.
+ * @returns {Review[]} An array of mock review objects.
+ */
+export const generateMockReviews = (count: number): Review[] => {
+	return Array.from({ length: count }, generateMockReview);
 };

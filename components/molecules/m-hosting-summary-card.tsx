@@ -7,7 +7,7 @@ import ThemedText from "../atoms/a-themed-text";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { Fonts } from "@/lib/constants/theme";
 import { hexToRgba } from "@/lib/utils/colors";
-import { MynauiStarSolid } from "../icons/i-start";
+import { MynauiStarSolid } from "../icons/i-star";
 
 type Props = {
   hosting: Hosting;

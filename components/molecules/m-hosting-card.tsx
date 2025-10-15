@@ -6,7 +6,7 @@ import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import { formatDate } from "@/lib/utils/time";
-import { MynauiStarSolid } from "../icons/i-start";
+import { MynauiStarSolid } from "../icons/i-star";
 import Carousel from "../atoms/a-carousel";
 import { Image } from "expo-image";
 import Skeleton from "../atoms/a-skeleton";
