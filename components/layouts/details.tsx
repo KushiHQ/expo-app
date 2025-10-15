@@ -12,9 +12,15 @@ type Props = {
 	children?: React.ReactNode;
 	title?: string;
 	footer?: React.ReactNode;
+	withShare?: boolean;
 };
 
-const DetailsLayout: React.FC<Props> = ({ children, title, footer }) => {
+const DetailsLayout: React.FC<Props> = ({
+	children,
+	title,
+	footer,
+	withShare,
+}) => {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const scrollViewRef = useRef<ScrollView>(null);
@@ -35,12 +41,14 @@ const DetailsLayout: React.FC<Props> = ({ children, title, footer }) => {
 						<ThemedText>{title}</ThemedText>
 					</View>
 					<View className="flex-row items-center gap-3">
-						<Pressable
-							className="h-8 w-8 rounded-full justify-center items-center"
-							style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
-						>
-							<Share2Icon size={24} color={colors.text} />
-						</Pressable>
+						{withShare && (
+							<Pressable
+								className="h-8 w-8 rounded-full justify-center items-center"
+								style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+							>
+								<Share2Icon size={24} color={colors.text} />
+							</Pressable>
+						)}
 					</View>
 				</View>
 				<ScrollView

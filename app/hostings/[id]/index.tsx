@@ -40,6 +40,7 @@ export default function HostingDetails() {
 	return (
 		<DetailsLayout
 			title="Property Details"
+			withShare
 			footer={
 				<View
 					className="flex-row items-center p-6"
