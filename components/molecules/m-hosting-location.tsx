@@ -7,6 +7,9 @@ import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import ExpoMap from "../atoms/a-map";
 import { MaterialSymbolsExpandContentRounded } from "../icons/i-fullscreen";
+import { useRouter } from "expo-router";
+import { PhCompassRoseDuotone } from "../icons/i-map";
+import { openGoogleMaps } from "@/lib/utils/urls";
 
 type Props = {
 	hosting?: Hosting;
@@ -14,6 +17,7 @@ type Props = {
 
 const HostingLocation: React.FC<Props> = ({ hosting }) => {
 	const colors = useThemeColors();
+	const router = useRouter();
 
 	return (
 		<View className="mt-8 gap-6">
@@ -36,15 +40,27 @@ const HostingLocation: React.FC<Props> = ({ hosting }) => {
 					coordinates={hosting?.location}
 					zoom={6}
 				/>
-				<Pressable
-					className="absolute top-2 right-2 w-8 h-8 rounded-full items-center justify-center"
-					style={{ backgroundColor: colors.text }}
-				>
-					<MaterialSymbolsExpandContentRounded
-						size={24}
-						color={colors.background}
-					/>
-				</Pressable>
+				<View className="absolute top-2 right-2 items-center gap-4 flex-row">
+					{hosting?.location && (
+						<Pressable
+							onPress={() => openGoogleMaps(hosting.location)}
+							className="w-8 h-8 rounded-full items-center justify-center"
+							style={{ backgroundColor: colors.text }}
+						>
+							<PhCompassRoseDuotone size={24} color={colors.background} />
+						</Pressable>
+					)}
+					<Pressable
+						onPress={() => router.push(`/hostings/${hosting?.id}/map/`)}
+						className="w-8 h-8 rounded-full items-center justify-center"
+						style={{ backgroundColor: colors.text }}
+					>
+						<MaterialSymbolsExpandContentRounded
+							size={24}
+							color={colors.background}
+						/>
+					</Pressable>
+				</View>
 			</View>
 		</View>
 	);
