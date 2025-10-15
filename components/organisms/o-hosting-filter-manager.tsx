@@ -111,7 +111,7 @@ const HostingFilterManager = () => {
             </View>
             <View className="gap-3">
               <ThemedText style={{ fontSize: 14 }}>Facilities</ThemedText>
-              <ScrollView horizontal>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View className="flex-row my-1 gap-2">
                   {[
                     "All",
@@ -159,7 +159,7 @@ const HostingFilterManager = () => {
             </View>
             <View className="gap-3">
               <ThemedText style={{ fontSize: 14 }}>Rating</ThemedText>
-              <ScrollView horizontal>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View className="flex-row my-1 gap-2">
                   {Array.from({ length: 5 }).map((_, index) => (
                     <RatingPill
