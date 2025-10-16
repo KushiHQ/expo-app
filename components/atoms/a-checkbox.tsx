@@ -1,11 +1,13 @@
 import React from "react";
-import { Pressable } from "react-native";
+import { Pressable, StyleProp, View, ViewStyle } from "react-native";
 import { CheckboxChecked, CheckboxUnchecked } from "../icons/i-checkbox";
 
 type Props = {
 	color?: string;
 	size?: number;
 	checked?: boolean;
+	style?: StyleProp<ViewStyle>;
+	iconStyles?: StyleProp<ViewStyle>;
 	onValueChange?: (checked: boolean) => void;
 };
 
@@ -13,6 +15,8 @@ const Checkbox: React.FC<Props> = ({
 	color,
 	checked: defChecked,
 	size,
+	style,
+	iconStyles,
 	onValueChange,
 }) => {
 	const [checked, setChecked] = React.useState(defChecked ?? false);
@@ -29,12 +33,14 @@ const Checkbox: React.FC<Props> = ({
 	};
 
 	return (
-		<Pressable onPress={toggleChecked}>
-			{checkedVal ? (
-				<CheckboxChecked color={color} size={size} />
-			) : (
-				<CheckboxUnchecked color={color} size={size} />
-			)}
+		<Pressable style={style} onPress={toggleChecked}>
+			<View style={iconStyles}>
+				{checkedVal ? (
+					<CheckboxChecked color={color} size={size} />
+				) : (
+					<CheckboxUnchecked color={color} size={size} />
+				)}
+			</View>
 		</Pressable>
 	);
 };

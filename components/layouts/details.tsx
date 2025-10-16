@@ -7,12 +7,14 @@ import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import ThemedText from "../atoms/a-themed-text";
 import { ChevronLeft, Share2Icon } from "lucide-react-native";
 import { useRouter } from "expo-router";
+import { Image } from "expo-image";
 
 type Props = {
 	children?: React.ReactNode;
 	title?: string;
 	footer?: React.ReactNode;
 	withShare?: boolean;
+	withProfile?: boolean;
 };
 
 const DetailsLayout: React.FC<Props> = ({
@@ -20,6 +22,7 @@ const DetailsLayout: React.FC<Props> = ({
 	title,
 	footer,
 	withShare,
+	withProfile,
 }) => {
 	const router = useRouter();
 	const colors = useThemeColors();
@@ -48,6 +51,26 @@ const DetailsLayout: React.FC<Props> = ({
 							>
 								<Share2Icon size={24} color={colors.text} />
 							</Pressable>
+						)}
+						{withProfile && (
+							<View
+								className="w-8 h-8 rounded-full border overflow-hidden"
+								style={{
+									borderColor: hexToRgba(colors["text"], 0.6),
+									borderWidth: 2,
+								}}
+							>
+								<Image
+									style={{
+										height: "100%",
+										width: "100%",
+										objectFit: "cover",
+									}}
+									source={{
+										uri: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=mail@ashallendesign.co.uk",
+									}}
+								/>
+							</View>
 						)}
 					</View>
 				</View>

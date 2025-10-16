@@ -13,6 +13,7 @@ const common = {
 	shade: "#212121",
 	"shade-content": "#fff",
 	accent: "#F59E0B",
+	error: "#FF3F3F",
 };
 
 export const Colors = {

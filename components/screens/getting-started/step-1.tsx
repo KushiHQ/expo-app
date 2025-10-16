@@ -18,8 +18,6 @@ const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 	const colors = useThemeColors();
 	const [user, setUser] = useAtom(userAtom);
 
-	console.log(user.userType);
-
 	return (
 		<View>
 			<View className="gap-4">

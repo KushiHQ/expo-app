@@ -12,7 +12,7 @@ import {
 type BaseProps = Omit<PressableProps, "style">;
 type Props = BaseProps & {
 	style?: StyleProp<ViewStyle>;
-	type?: "primary" | "shade" | "tinted";
+	type?: "primary" | "shade" | "tinted" | "background";
 };
 
 const Button: React.FC<Props> = ({ style, children, type, ...rest }) => {
@@ -30,7 +30,9 @@ const Button: React.FC<Props> = ({ style, children, type, ...rest }) => {
 							? colors["primary"]
 							: type === "shade"
 								? colors["shade"]
-								: hexToRgba(colors["primary"], 0.15),
+								: type === "background"
+									? colors["background"]
+									: hexToRgba(colors["primary"], 0.15),
 				},
 			]}
 			{...rest}

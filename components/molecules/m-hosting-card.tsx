@@ -12,15 +12,12 @@ import { Image } from "expo-image";
 import Skeleton from "../atoms/a-skeleton";
 import { useRouter } from "expo-router";
 import { PhHeart } from "../icons/i-heart";
+import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 
 type Props = {
 	hosting: Hosting;
 	index?: number;
 };
-
-const PROPERTY_BLURHASH = "LKO2?U%2Tw=w]~RBVZRi};RPxuwH";
-const FALLBACK_IMAGE =
-	"https://images.unsplash.com/photo-1560185127-6a7e5ad8e19c?w=800&h=600&fit=crop&q=80";
 
 const HostingCard: React.FC<Props> = ({ hosting, index }) => {
 	const colors = useThemeColors();
