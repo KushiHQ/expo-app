@@ -88,6 +88,10 @@ export default function RootLayout() {
 											name="hostings"
 											options={{ headerShown: false }}
 										/>
+										<Stack.Screen
+											name="chats"
+											options={{ headerShown: false }}
+										/>
 									</Stack>
 									<StatusBar style="auto" />
 								</ThemeProvider>

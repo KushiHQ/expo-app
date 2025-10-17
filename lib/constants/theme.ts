@@ -14,6 +14,7 @@ const common = {
 	"shade-content": "#fff",
 	accent: "#F59E0B",
 	error: "#FF3F3F",
+	success: "#008A05",
 };
 
 export const Colors = {

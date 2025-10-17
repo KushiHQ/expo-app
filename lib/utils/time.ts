@@ -40,3 +40,13 @@ export function formatDateToMonthYear(dateString: string): string {
     month: "long",
   });
 }
+
+export function formatToShortTime(datetimeString: string) {
+  const date = new Date(datetimeString);
+
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}

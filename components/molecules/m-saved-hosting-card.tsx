@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import { PhHeart, PhHeartFill } from "../icons/i-heart";
 import { hexToRgba } from "@/lib/utils/colors";
 import Checkbox from "../atoms/a-checkbox";
+import { useFallbackImages } from "@/lib/hooks/images";
 
 type Props = {
 	hosting: Hosting;
@@ -33,13 +34,7 @@ const SavedHostingCard: React.FC<Props> = ({
 	const [liked, setLiked] = React.useState(false);
 	const colors = useThemeColors();
 	const router = useRouter();
-	const [failedImages, setFailedImages] = React.useState<Set<number>>(
-		new Set(),
-	);
-
-	const handleImageError = (index: number) => {
-		setFailedImages((prev) => new Set(prev).add(index));
-	};
+	const { handleImageError, failedImages } = useFallbackImages();
 
 	const img = hosting.images.at(0);
 

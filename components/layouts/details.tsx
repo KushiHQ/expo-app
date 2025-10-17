@@ -6,27 +6,60 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import ThemedText from "../atoms/a-themed-text";
 import { ChevronLeft, Share2Icon } from "lucide-react-native";
-import { useRouter } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import { Image } from "expo-image";
+import { EventEmitter } from "@/lib/utils/event-emitter";
+import { HugeiconsVideo01, SolarPhoneOutline } from "../icons/i-phone";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
+import { useGradualKeyboardAnimation } from "@/lib/hooks/keyboard";
 
 type Props = {
 	children?: React.ReactNode;
 	title?: string;
+	avatar?: string;
 	footer?: React.ReactNode;
 	withShare?: boolean;
 	withProfile?: boolean;
+	withPhone?: boolean;
+	withVideo?: boolean;
 };
 
 const DetailsLayout: React.FC<Props> = ({
 	children,
 	title,
+	avatar,
 	footer,
 	withShare,
 	withProfile,
+	withPhone,
+	withVideo,
 }) => {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const scrollViewRef = useRef<ScrollView>(null);
+	const path = usePathname();
+	const { height: keyboardHeight } = useGradualKeyboardAnimation();
+
+	React.useEffect(() => {
+		const handleScrollToTop = () => {
+			scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+		};
+
+		const routeName = path.split("/").pop();
+
+		EventEmitter.on(`scrollToTop:${routeName}`, handleScrollToTop);
+
+		return () => {
+			EventEmitter.off(`scrollToTop:${routeName}`, handleScrollToTop);
+		};
+	}, [path]);
+
+	const animatedFooterStyle = useAnimatedStyle(() => {
+		return {
+			transform: [{ translateY: -keyboardHeight.value + 15 }],
+		};
+	});
 
 	return (
 		<ThemedView className="flex-1">
@@ -41,7 +74,23 @@ const DetailsLayout: React.FC<Props> = ({
 						>
 							<ChevronLeft color={colors["text"]} />
 						</Pressable>
-						<ThemedText>{title}</ThemedText>
+						<View className="flex-row items-center gap-2">
+							{avatar && (
+								<View className="w-8 h-8 rounded-full border border-[#000] overflow-hidden">
+									<Image
+										style={{
+											height: "100%",
+											width: "100%",
+											objectFit: "cover",
+										}}
+										source={{
+											uri: avatar,
+										}}
+									/>
+								</View>
+							)}
+							<ThemedText>{title}</ThemedText>
+						</View>
 					</View>
 					<View className="flex-row items-center gap-3">
 						{withShare && (
@@ -49,7 +98,23 @@ const DetailsLayout: React.FC<Props> = ({
 								className="h-8 w-8 rounded-full justify-center items-center"
 								style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
 							>
-								<Share2Icon size={24} color={colors.text} />
+								<Share2Icon size={20} color={colors.text} />
+							</Pressable>
+						)}
+						{withPhone && (
+							<Pressable
+								className="h-8 w-8 rounded-full justify-center items-center"
+								style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+							>
+								<SolarPhoneOutline size={20} color={colors.text} />
+							</Pressable>
+						)}
+						{withVideo && (
+							<Pressable
+								className="h-8 w-8 rounded-full justify-center items-center"
+								style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+							>
+								<HugeiconsVideo01 size={20} color={colors.text} />
 							</Pressable>
 						)}
 						{withProfile && (
@@ -74,7 +139,7 @@ const DetailsLayout: React.FC<Props> = ({
 						)}
 					</View>
 				</View>
-				<ScrollView
+				<KeyboardAwareScrollView
 					ref={scrollViewRef}
 					className="flex-1"
 					showsVerticalScrollIndicator={false}
@@ -83,8 +148,10 @@ const DetailsLayout: React.FC<Props> = ({
 					<View className="p-5 pt-0 flex-1">
 						<View className="flex-1">{children}</View>
 					</View>
-				</ScrollView>
-				{footer}
+				</KeyboardAwareScrollView>
+				{footer && (
+					<Animated.View style={animatedFooterStyle}>{footer}</Animated.View>
+				)}
 			</SafeAreaView>
 		</ThemedView>
 	);

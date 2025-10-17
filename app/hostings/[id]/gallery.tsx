@@ -2,6 +2,7 @@ import ThemedText from "@/components/atoms/a-themed-text";
 import DetailsLayout from "@/components/layouts/details";
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
+import { useFallbackImages } from "@/lib/hooks/images";
 import { hostingsAtom } from "@/lib/stores/hostings";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
@@ -16,13 +17,7 @@ export default function HostingGallery() {
   const { id } = useLocalSearchParams();
   const hostings = useAtomValue(hostingsAtom);
   const hosting = hostings.find((hosting) => hosting.id === id);
-  const [failedImages, setFailedImages] = React.useState<Set<number>>(
-    new Set(),
-  );
-
-  const handleImageError = (index: number) => {
-    setFailedImages((prev) => new Set(prev).add(index));
-  };
+  const { failedImages, handleImageError } = useFallbackImages();
 
   return (
     <DetailsLayout title="Property Details">

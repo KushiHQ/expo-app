@@ -34,3 +34,21 @@ export const CarbonCircleFilled: React.FC<CustomSvgProps> = (props) => {
 		</Svg>
 	);
 };
+
+export const IconParkOutlineDot: React.FC<CustomSvgProps> = (props) => {
+	return (
+		<Svg
+			width={props.width ?? props.size ?? 48}
+			height={props.height ?? props.size ?? 48}
+			viewBox="0 0 48 48"
+			{...props}
+		>
+			<Path
+				fill="currentColor"
+				stroke="currentColor"
+				strokeWidth={4}
+				d="M24 33a9 9 0 1 0 0-18a9 9 0 0 0 0 18Z"
+			></Path>
+		</Svg>
+	);
+};

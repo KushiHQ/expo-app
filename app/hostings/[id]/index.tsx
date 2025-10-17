@@ -11,6 +11,7 @@ import HostingLocation from "@/components/molecules/m-hosting-location";
 import HostingReviews from "@/components/organisms/o-hosting-reviews";
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
+import { useFallbackImages } from "@/lib/hooks/images";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hostingsAtom } from "@/lib/stores/hostings";
 import { hexToRgba } from "@/lib/utils/colors";
@@ -26,13 +27,7 @@ export default function HostingDetails() {
 	const colors = useThemeColors();
 	const hostings = useAtomValue(hostingsAtom);
 	const hosting = hostings.find((hosting) => hosting.id === id);
-	const [failedImages, setFailedImages] = React.useState<Set<number>>(
-		new Set(),
-	);
-
-	const handleImageError = (index: number) => {
-		setFailedImages((prev) => new Set(prev).add(index));
-	};
+	const { handleImageError, failedImages } = useFallbackImages();
 
 	return (
 		<DetailsLayout

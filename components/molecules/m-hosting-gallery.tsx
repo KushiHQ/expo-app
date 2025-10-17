@@ -8,6 +8,7 @@ import { Image } from "expo-image";
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { useFallbackImages } from "@/lib/hooks/images";
 
 type Props = {
   hosting?: Hosting;
@@ -15,13 +16,7 @@ type Props = {
 
 const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
   const colors = useThemeColors();
-  const [failedImages, setFailedImages] = React.useState<Set<number>>(
-    new Set(),
-  );
-
-  const handleImageError = (index: number) => {
-    setFailedImages((prev) => new Set(prev).add(index));
-  };
+  const { handleImageError, failedImages } = useFallbackImages();
 
   return (
     <View className="mt-8">

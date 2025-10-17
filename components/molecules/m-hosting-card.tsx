@@ -13,6 +13,7 @@ import Skeleton from "../atoms/a-skeleton";
 import { useRouter } from "expo-router";
 import { PhHeart } from "../icons/i-heart";
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
+import { useFallbackImages } from "@/lib/hooks/images";
 
 type Props = {
 	hosting: Hosting;
@@ -22,15 +23,9 @@ type Props = {
 const HostingCard: React.FC<Props> = ({ hosting, index }) => {
 	const colors = useThemeColors();
 	const router = useRouter();
-	const [failedImages, setFailedImages] = React.useState<Set<number>>(
-		new Set(),
-	);
+	const { failedImages, handleImageError } = useFallbackImages();
 
 	const borderColor = hexToRgba(colors.text, 0.5);
-
-	const handleImageError = (index: number) => {
-		setFailedImages((prev) => new Set(prev).add(index));
-	};
 
 	return (
 		<View className="gap-2">

@@ -8,6 +8,7 @@ import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { Fonts } from "@/lib/constants/theme";
 import { hexToRgba } from "@/lib/utils/colors";
 import { MynauiStarSolid } from "../icons/i-star";
+import { useFallbackImages } from "@/lib/hooks/images";
 
 type Props = {
   hosting: Hosting;
@@ -15,13 +16,7 @@ type Props = {
 
 const HostingSummaryCard: React.FC<Props> = ({ hosting }) => {
   const colors = useThemeColors();
-  const [failedImages, setFailedImages] = React.useState<Set<number>>(
-    new Set(),
-  );
-
-  const handleImageError = (index: number) => {
-    setFailedImages((prev) => new Set(prev).add(index));
-  };
+  const { failedImages, handleImageError } = useFallbackImages();
 
   const img = hosting.images.at(0);
 
