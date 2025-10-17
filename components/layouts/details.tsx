@@ -1,12 +1,11 @@
 import { SafeAreaView } from "react-native-safe-area-context";
-import ThemedView from "../atoms/a-themed-view";
 import React, { useRef } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import ThemedText from "../atoms/a-themed-text";
 import { ChevronLeft, Share2Icon } from "lucide-react-native";
-import { usePathname, useRouter } from "expo-router";
+import { useLocalSearchParams, usePathname, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { EventEmitter } from "@/lib/utils/event-emitter";
 import { HugeiconsVideo01, SolarPhoneOutline } from "../icons/i-phone";
@@ -40,6 +39,7 @@ const DetailsLayout: React.FC<Props> = ({
 	const scrollViewRef = useRef<ScrollView>(null);
 	const path = usePathname();
 	const { height: keyboardHeight } = useGradualKeyboardAnimation();
+	const { id } = useLocalSearchParams();
 
 	React.useEffect(() => {
 		const handleScrollToTop = () => {
@@ -62,7 +62,7 @@ const DetailsLayout: React.FC<Props> = ({
 	});
 
 	return (
-		<ThemedView className="flex-1">
+		<View className="flex-1">
 			<SafeAreaView className="flex-1">
 				<View className="p-5 flex-row items-center justify-between">
 					<View className="flex-row items-center gap-2">
@@ -103,6 +103,7 @@ const DetailsLayout: React.FC<Props> = ({
 						)}
 						{withPhone && (
 							<Pressable
+								onPress={() => router.push(`/chats/${id}/call`)}
 								className="h-8 w-8 rounded-full justify-center items-center"
 								style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
 							>
@@ -111,6 +112,7 @@ const DetailsLayout: React.FC<Props> = ({
 						)}
 						{withVideo && (
 							<Pressable
+								onPress={() => router.push(`/chats/${id}/video-call`)}
 								className="h-8 w-8 rounded-full justify-center items-center"
 								style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
 							>
@@ -153,7 +155,7 @@ const DetailsLayout: React.FC<Props> = ({
 					<Animated.View style={animatedFooterStyle}>{footer}</Animated.View>
 				)}
 			</SafeAreaView>
-		</ThemedView>
+		</View>
 	);
 };
 
