@@ -18,6 +18,7 @@ type Props = {
 	title?: string;
 	avatar?: string;
 	footer?: React.ReactNode;
+	backButton?: "translucent" | "solid";
 	withShare?: boolean;
 	withProfile?: boolean;
 	withPhone?: boolean;
@@ -29,6 +30,7 @@ const DetailsLayout: React.FC<Props> = ({
 	title,
 	avatar,
 	footer,
+	backButton = "translucent",
 	withShare,
 	withProfile,
 	withPhone,
@@ -70,9 +72,20 @@ const DetailsLayout: React.FC<Props> = ({
 							onPress={() => router.back()}
 							aria-label="Go Back"
 							className="w-8 items-center justify-center rounded-full h-8"
-							style={{ backgroundColor: hexToRgba(colors["text"], 0.2) }}
+							style={{
+								backgroundColor:
+									backButton === "translucent"
+										? hexToRgba(colors["text"], 0.2)
+										: colors.text,
+							}}
 						>
-							<ChevronLeft color={colors["text"]} />
+							<ChevronLeft
+								color={
+									backButton === "translucent"
+										? colors["text"]
+										: colors.background
+								}
+							/>
 						</Pressable>
 						<View className="flex-row items-center gap-2">
 							{avatar && (

@@ -58,7 +58,7 @@ export default function ChatCall() {
               color="#003793"
             />
           </View>
-          <DetailsLayout title="Calling...">
+          <DetailsLayout title="Calling..." backButton="solid">
             <View className="flex-1 justify-between">
               <View className="flex-1 items-center gap-4 pb-28 justify-center">
                 <View

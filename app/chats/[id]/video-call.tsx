@@ -6,8 +6,14 @@ import { chatsAtom } from "@/lib/stores/chats";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
-import { View, StyleSheet, Pressable, Dimensions } from "react-native";
-import { Camera, Mic } from "lucide-react-native";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  Dimensions,
+  Platform,
+} from "react-native";
+import { Camera, Mic, MicOff } from "lucide-react-native";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { useState } from "react";
 import Button from "@/components/atoms/a-button";
@@ -30,7 +36,6 @@ export default function ChatVideoCall() {
     return null;
   }
 
-  // Handle camera permissions
   if (!permission) {
     return <View style={styles.container} />;
   }
@@ -54,71 +59,96 @@ export default function ChatVideoCall() {
 
   return (
     <View style={styles.container}>
-      {/* Camera View as Background */}
       <CameraView style={styles.cameraBackground} facing={facing}>
-        {/* Overlay gradient for better text visibility */}
-        <View style={styles.gradientOverlay} />
-
-        <DetailsLayout>
-          {/* Picture in Picture - Remote User Video */}
-          <View style={styles.pipContainer}>
-            <View style={styles.pipPlaceholder}>
-              <ThemedText style={{ color: "white", fontSize: 12 }}>
-                Remote User
-              </ThemedText>
+        <DetailsLayout title="Calling..." backButton="solid">
+          <View className="flex-1">
+            <View
+              style={[
+                styles.pipContainer,
+                {
+                  borderColor: hexToRgba(colors.text, 0.6),
+                  ...Platform.select({
+                    ios: {
+                      shadowColor: colors.primary,
+                      shadowOffset: { width: 0, height: -2 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 8,
+                    },
+                    android: {
+                      elevation: 8,
+                    },
+                  }),
+                },
+              ]}
+            >
+              <CameraView
+                style={{ height: "100%", width: "100%" }}
+                facing="front"
+              />
             </View>
-          </View>
 
-          {/* Bottom Controls */}
-          <View style={styles.controlsContainer}>
-            <View style={styles.controls}>
-              <Pressable
-                onPress={() => setIsSpeakerOn(!isSpeakerOn)}
-                style={[
-                  styles.controlButton,
-                  {
-                    backgroundColor: isSpeakerOn
-                      ? hexToRgba("#000", 0.5)
-                      : hexToRgba(colors.primary, 0.8),
-                  },
-                ]}
-              >
-                <QlementineIconsSpeaker16 size={28} color="white" />
-              </Pressable>
+            {/* Bottom Controls */}
+            <View style={styles.controlsContainer} className="gap-4">
+              <ThemedText className="text-center">10:59</ThemedText>
+              <View>
+                <View
+                  className="p-8 rounded-xl"
+                  style={[
+                    styles.controls,
+                    { backgroundColor: hexToRgba("#000000", 0.9) },
+                  ]}
+                >
+                  <Pressable
+                    onPress={() => setIsSpeakerOn(!isSpeakerOn)}
+                    style={[
+                      styles.controlButton,
+                      {
+                        backgroundColor: isSpeakerOn
+                          ? hexToRgba(colors.shade, 0.9)
+                          : colors.primary,
+                      },
+                    ]}
+                  >
+                    <QlementineIconsSpeaker16 size={28} color="white" />
+                  </Pressable>
 
-              <Pressable
-                onPress={() => setIsMuted(!isMuted)}
-                style={[
-                  styles.controlButton,
-                  {
-                    backgroundColor: isMuted
-                      ? hexToRgba(colors.error, 0.8)
-                      : hexToRgba("#000", 0.5),
-                  },
-                ]}
-              >
-                <Mic size={28} color="white" />
-              </Pressable>
+                  <Pressable
+                    onPress={() => setIsMuted(!isMuted)}
+                    style={[
+                      styles.controlButton,
+                      {
+                        backgroundColor: isMuted ? colors.error : colors.shade,
+                      },
+                    ]}
+                  >
+                    {isMuted ? (
+                      <MicOff size={28} color="white" />
+                    ) : (
+                      <Mic size={28} color="white" />
+                    )}
+                  </Pressable>
 
-              <Pressable
-                onPress={toggleCameraFacing}
-                style={[
-                  styles.controlButton,
-                  { backgroundColor: hexToRgba("#000", 0.5) },
-                ]}
-              >
-                <Camera size={28} color="white" />
-              </Pressable>
+                  <Pressable
+                    onPress={toggleCameraFacing}
+                    style={[
+                      styles.controlButton,
+                      { backgroundColor: colors.shade },
+                    ]}
+                  >
+                    <Camera size={28} color="white" />
+                  </Pressable>
 
-              <Pressable
-                onPress={() => router.back()}
-                style={[
-                  styles.endCallButton,
-                  { backgroundColor: colors.error },
-                ]}
-              >
-                <HeroiconsPhoneXMark size={32} color="white" />
-              </Pressable>
+                  <Pressable
+                    onPress={() => router.back()}
+                    style={[
+                      styles.controlButton,
+                      { backgroundColor: colors.error },
+                    ]}
+                  >
+                    <HeroiconsPhoneXMark size={28} color="white" />
+                  </Pressable>
+                </View>
+              </View>
             </View>
           </View>
         </DetailsLayout>
@@ -142,10 +172,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
-  },
-  gradientOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: hexToRgba("#000", 0.15),
   },
   safeArea: {
     flex: 1,
@@ -178,27 +204,19 @@ const styles = StyleSheet.create({
   },
   pipContainer: {
     position: "absolute",
-    top: 100,
+    bottom: 200,
     right: 20,
     width: 120,
     height: 160,
     borderRadius: 16,
     overflow: "hidden",
-    borderWidth: 2,
-    borderColor: "white",
-  },
-  pipPlaceholder: {
-    flex: 1,
-    backgroundColor: hexToRgba("#000", 0.6),
-    justifyContent: "center",
-    alignItems: "center",
+    borderWidth: 1,
   },
   controlsContainer: {
     position: "absolute",
     bottom: 40,
     left: 0,
     right: 0,
-    paddingHorizontal: 20,
   },
   controls: {
     flexDirection: "row",
@@ -210,13 +228,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  endCallButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
     justifyContent: "center",
     alignItems: "center",
   },
