@@ -92,7 +92,7 @@ const HostingFilterManager = () => {
             <View>
               <FloatingLabelInput
                 focused
-                editable={false}
+                disabled
                 onPress={(e) => {
                   e.stopPropagation();
                   setLocationInputOpen(true);

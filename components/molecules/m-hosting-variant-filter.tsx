@@ -19,12 +19,12 @@ export const HotingVariantFilter: React.FC<Props> = ({ onSelect }) => {
 	};
 
 	return (
-		<ScrollView horizontal>
+		<ScrollView horizontal showsHorizontalScrollIndicator={false}>
 			<View className="flex-row my-1 gap-2">
 				{["All", ...HOSTING_VARIANTS].map((item, index) => {
 					const Icon =
 						HOSTING_VARIANT_ICONS[
-							cast<keyof typeof HOSTING_VARIANT_ICONS>(item)
+						cast<keyof typeof HOSTING_VARIANT_ICONS>(item)
 						] ?? Home;
 					return (
 						<TextPill

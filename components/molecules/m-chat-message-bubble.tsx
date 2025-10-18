@@ -29,7 +29,13 @@ const ChatMessageBubble: React.FC<Props> = ({ message }) => {
             : hexToRgba(colors.text, 0.1),
         }}
       >
-        <ThemedText>{message.text}</ThemedText>
+        <ThemedText
+          style={{
+            color: message.isSender ? colors["primary-content"] : colors.text,
+          }}
+        >
+          {message.text}
+        </ThemedText>
       </View>
       <ThemedText
         style={{ fontSize: 12, color: hexToRgba(colors.text, 0.7) }}

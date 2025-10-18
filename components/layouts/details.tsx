@@ -12,6 +12,7 @@ import { HugeiconsVideo01, SolarPhoneOutline } from "../icons/i-phone";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { useGradualKeyboardAnimation } from "@/lib/hooks/keyboard";
+import ThemedView from "../atoms/a-themed-view";
 
 type Props = {
 	children?: React.ReactNode;
@@ -19,6 +20,7 @@ type Props = {
 	avatar?: string;
 	footer?: React.ReactNode;
 	backButton?: "translucent" | "solid";
+	background?: "transparent" | "solid";
 	withShare?: boolean;
 	withProfile?: boolean;
 	withPhone?: boolean;
@@ -31,6 +33,7 @@ const DetailsLayout: React.FC<Props> = ({
 	avatar,
 	footer,
 	backButton = "translucent",
+	background = "solid",
 	withShare,
 	withProfile,
 	withPhone,
@@ -63,8 +66,10 @@ const DetailsLayout: React.FC<Props> = ({
 		};
 	});
 
+	const Wrapper = background === "solid" ? ThemedView : View;
+
 	return (
-		<View className="flex-1">
+		<Wrapper className="flex-1">
 			<SafeAreaView className="flex-1">
 				<View className="p-5 flex-row items-center justify-between">
 					<View className="flex-row items-center gap-2">
@@ -168,7 +173,7 @@ const DetailsLayout: React.FC<Props> = ({
 					<Animated.View style={animatedFooterStyle}>{footer}</Animated.View>
 				)}
 			</SafeAreaView>
-		</View>
+		</Wrapper>
 	);
 };
 

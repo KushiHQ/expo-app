@@ -33,18 +33,15 @@ const SelectInput = <T extends {}>(props: Props<T>) => {
 
 	return (
 		<>
-			<View className="relative flex-1">
+			<View className="flex-1">
 				<FloatingLabelInput
 					{...rest}
-					editable={false}
+					disabled
+					onPress={handlePress}
 					pointerEvents="none"
 					value={props.value}
 					suffix={<ChevronDown color={hexToRgba(colors.text, 0.4)} />}
 				/>
-				<Pressable
-					className="absolute inset-0"
-					onPress={handlePress}
-				></Pressable>
 			</View>
 			<BottomSheet isVisible={open} onClose={() => setOpen(false)}>
 				<View className="gap-4">

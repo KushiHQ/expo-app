@@ -2,7 +2,7 @@ import Button from "@/components/atoms/a-button";
 import Checkbox from "@/components/atoms/a-checkbox";
 import ThemedText from "@/components/atoms/a-themed-text";
 import { BusinessDealHandshake } from "@/components/icons/i-business-deal-handshake";
-import { CashPaymentBag } from "@/components/icons/i-cash-payment-bag";
+import { CashPaymentBag } from "@/components/icons/i-payments";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { userAtom } from "@/lib/stores/users";
 import { UserType } from "@/lib/types/users";

@@ -92,6 +92,10 @@ export default function RootLayout() {
 											name="chats"
 											options={{ headerShown: false }}
 										/>
+										<Stack.Screen
+											name="users"
+											options={{ headerShown: false }}
+										/>
 									</Stack>
 									<StatusBar style="auto" />
 								</ThemeProvider>

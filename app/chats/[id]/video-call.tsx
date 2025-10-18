@@ -60,7 +60,11 @@ export default function ChatVideoCall() {
   return (
     <View style={styles.container}>
       <CameraView style={styles.cameraBackground} facing={facing}>
-        <DetailsLayout title="Calling..." backButton="solid">
+        <DetailsLayout
+          title="Calling..."
+          backButton="solid"
+          background="transparent"
+        >
           <View className="flex-1">
             <View
               style={[

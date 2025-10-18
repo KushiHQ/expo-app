@@ -23,6 +23,7 @@ export type FloatingLabelInputProps = TextInputProps & {
 	focused?: boolean;
 	label?: string;
 	suffix?: React.ReactNode;
+	disabled?: boolean;
 };
 
 const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
@@ -30,6 +31,7 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 		const {
 			label,
 			style,
+			disabled,
 			placeholder,
 			focused: fixedFocused,
 			onChangeText,
@@ -100,7 +102,7 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 		};
 
 		return (
-			<View>
+			<View className="relative">
 				<Pressable
 					onPress={handleConntainerPress}
 					className="border px-2.5 pt-[18px] rounded-lg"
@@ -163,12 +165,18 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 						onPress={() => setSecureTextEntry((c) => !c)}
 						className="absolute right-4 top-5"
 					>
-						{!secureTextEntry ? (
+						{secureTextEntry ? (
 							<MageEye color={colors["text"]} />
 						) : (
 							<MageEyeOff color={colors["text"]} />
 						)}
 					</Pressable>
+				)}
+				{disabled && (
+					<Pressable
+						className="absolute inset-0"
+						onPress={props.onPress}
+					></Pressable>
 				)}
 			</View>
 		);
