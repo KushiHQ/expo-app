@@ -59,7 +59,8 @@ export default function ChatVideoCall() {
 
   return (
     <View style={styles.container}>
-      <CameraView style={styles.cameraBackground} facing={facing}>
+      <CameraView style={styles.cameraBackground} facing={facing} />
+      <View className="absolute inset-0">
         <DetailsLayout
           title="Calling..."
           backButton="solid"
@@ -85,10 +86,10 @@ export default function ChatVideoCall() {
                 },
               ]}
             >
-              <CameraView
-                style={{ height: "100%", width: "100%" }}
-                facing="front"
-              />
+              {/* <CameraView */}
+              {/*   style={{ height: "100%", width: "100%" }} */}
+              {/*   facing="front" */}
+              {/* /> */}
             </View>
 
             {/* Bottom Controls */}
@@ -156,7 +157,7 @@ export default function ChatVideoCall() {
             </View>
           </View>
         </DetailsLayout>
-      </CameraView>
+      </View>
     </View>
   );
 }
