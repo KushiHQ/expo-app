@@ -7,12 +7,9 @@ import SelectInput, {
   SelectOption,
 } from "@/components/molecules/m-select-input";
 import UserProfileSummary from "@/components/molecules/m-user-profile-summary";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
 export default function UserProfileEdit() {
-  const colors = useThemeColors();
-
   return (
     <DetailsLayout title="Profile">
       <View className="mt-8 flex-1 justify-between gap-4">

@@ -40,7 +40,7 @@ export default function GuestProfile() {
       },
       {
         icon: SolarCardLinear,
-        href: "/hostings/",
+        href: `/users/${id}/bookings`,
         label: "My Bookings",
       },
       {
