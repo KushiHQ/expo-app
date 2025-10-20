@@ -17,7 +17,7 @@ import { cast } from "@/lib/types/utils";
 
 export default function UserNotifications() {
 	const colors = useThemeColors();
-	const [notifications, setNotification] = useAtom(notificationsAtom);
+	const [notifications, setNotifications] = useAtom(notificationsAtom);
 	const [filter, setFilter] = React.useState<"All" | "Guest Alerts" | "System">(
 		"All",
 	);
@@ -31,7 +31,7 @@ export default function UserNotifications() {
 
 	React.useEffect(() => {
 		if (!notifications.length) {
-			setNotification(generateMockNotifications(20));
+			setNotifications(generateMockNotifications(20));
 		}
 	}, []);
 
