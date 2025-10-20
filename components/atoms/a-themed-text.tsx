@@ -5,7 +5,7 @@ import { Fonts } from "@/lib/constants/theme";
 
 export type ThemedTextProps = TextProps & {
 	type?: "default" | "title" | "semibold" | "subtitle" | "link";
-	content?: "primary" | "shade" | "tinted";
+	content?: "primary" | "shade" | "tinted" | "error";
 };
 
 const ThemedText: React.FC<ThemedTextProps> = ({
@@ -31,7 +31,9 @@ const ThemedText: React.FC<ThemedTextProps> = ({
 							? colors["primary-content"]
 							: content === "shade"
 								? colors["shade-content"]
-								: colors["primary"],
+								: content === "error"
+									? "#ffff"
+									: colors["primary"],
 				},
 				style,
 			]}

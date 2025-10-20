@@ -13,7 +13,7 @@ type BaseProps = Omit<PressableProps, "style">;
 type Props = BaseProps & {
 	style?: StyleProp<ViewStyle>;
 	variant?: "outline" | "solid";
-	type?: "primary" | "shade" | "tinted" | "background";
+	type?: "primary" | "shade" | "tinted" | "background" | "error";
 };
 
 const Button: React.FC<Props> = ({
@@ -31,26 +31,30 @@ const Button: React.FC<Props> = ({
 				styles.button,
 				variant === "outline"
 					? {
-						borderWidth: variant === "outline" ? 1 : 0,
-						borderColor:
-							type === "primary"
-								? colors.primary
-								: type === "shade"
-									? colors.shade
-									: type === "background"
-										? colors.background
-										: hexToRgba(colors.primary, 0.15),
-					}
+							borderWidth: variant === "outline" ? 1 : 0,
+							borderColor:
+								type === "primary"
+									? colors.primary
+									: type === "shade"
+										? colors.shade
+										: type === "background"
+											? colors.background
+											: type === "error"
+												? colors.error
+												: hexToRgba(colors.primary, 0.15),
+						}
 					: type && {
-						backgroundColor:
-							type === "primary"
-								? colors["primary"]
-								: type === "shade"
-									? colors["shade"]
-									: type === "background"
-										? colors["background"]
-										: hexToRgba(colors["primary"], 0.15),
-					},
+							backgroundColor:
+								type === "primary"
+									? colors["primary"]
+									: type === "shade"
+										? colors["shade"]
+										: type === "background"
+											? colors["background"]
+											: type === "error"
+												? colors.error
+												: hexToRgba(colors["primary"], 0.15),
+						},
 				style,
 				rest.disabled && { opacity: 0.6 },
 				,

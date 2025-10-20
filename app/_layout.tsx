@@ -96,6 +96,10 @@ export default function RootLayout() {
 											name="users"
 											options={{ headerShown: false }}
 										/>
+										<Stack.Screen
+											name="logout"
+											options={{ headerShown: false }}
+										/>
 									</Stack>
 									<StatusBar style="auto" />
 								</ThemeProvider>
