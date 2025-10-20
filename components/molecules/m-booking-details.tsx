@@ -243,7 +243,7 @@ const UserInfoSection: React.FC<SubProps> = ({ booking, printing }) => {
 							color: hexToRgba(printing ? "#000000" : colors.text, 0.6),
 						}}
 					>
-						Phone Number
+						Status
 					</ThemedText>
 					<View
 						className="p-1 px-2 flex-1 items-center justify-center max-w-[74px] rounded-lg"
