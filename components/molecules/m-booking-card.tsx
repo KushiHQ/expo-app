@@ -10,9 +10,7 @@ import { Fonts } from "@/lib/constants/theme";
 import { hexToRgba } from "@/lib/utils/colors";
 import Button from "../atoms/a-button";
 import { ChevronDown } from "lucide-react-native";
-import BottomSheet from "../atoms/a-bottom-sheet";
-import ThemedBarcode from "../atoms/a-barcode";
-import CopyButton from "../atoms/a-copy-button";
+import BookingDetails from "./m-booking-details";
 
 type Props = {
   booking: Booking;
@@ -106,43 +104,7 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
           </View>
         </Button>
       </View>
-      <BottomSheet isVisible={open} onClose={() => setOpen(false)}>
-        <View>
-          <View
-            className="border-b pb-4"
-            style={{ borderColor: hexToRgba(colors.text, 0.2) }}
-          >
-            <View
-              className="border rounded-[14px] overflow-hidden"
-              style={{ borderColor: colors.text }}
-            >
-              <ThemedBarcode
-                format="CODE128"
-                value={booking.details.transactionId}
-              />
-              <View className="flex-row items-center justify-between p-2">
-                <ThemedText
-                  style={{ color: hexToRgba(colors.text, 0.6), fontSize: 14 }}
-                >
-                  Transaction ID
-                </ThemedText>
-                <View className="flex-row items-center gap-2">
-                  <ThemedText
-                    style={{ fontFamily: Fonts.medium, fontSize: 16 }}
-                  >
-                    {booking.details.transactionId}
-                  </ThemedText>
-                  <CopyButton
-                    text={booking.details.transactionId}
-                    size={18}
-                    color={colors.primary}
-                  />
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-      </BottomSheet>
+      <BookingDetails open={open} onOpenChange={setOpen} booking={booking} />
     </>
   );
 };

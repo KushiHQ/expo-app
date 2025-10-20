@@ -73,7 +73,7 @@ const ThemedModal: React.FC<Props> = ({
 					/>
 				</Pressable>
 
-				<Pressable
+				<View
 					style={[
 						styles.modalContent,
 						{
@@ -92,13 +92,12 @@ const ThemedModal: React.FC<Props> = ({
 							}),
 						},
 					]}
-					onPress={(e) => e.stopPropagation()}
 				>
 					{showCloseButton && (
 						<Pressable
 							onPress={onClose}
 							style={{ backgroundColor: hexToRgba(colors.text, 0.15) }}
-							className="absolute top-4 w-6 h-6 items-center justify-center rounded-full right-4"
+							className="absolute top-4 w-6 h-6 items-center justify-center rounded-full right-4 z-10"
 							hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
 						>
 							<ThemedText style={{ fontSize: 24 }}>
@@ -108,13 +107,13 @@ const ThemedModal: React.FC<Props> = ({
 					)}
 
 					<ScrollView
-						style={styles.body}
 						contentContainerStyle={styles.bodyContent}
 						showsVerticalScrollIndicator={false}
+						bounces={true}
 					>
 						{children}
 					</ScrollView>
-				</Pressable>
+				</View>
 			</KeyboardAvoidingView>
 		</Modal>
 	);
@@ -132,9 +131,6 @@ const styles = StyleSheet.create({
 	modalContent: {
 		borderRadius: 16,
 		overflow: "hidden",
-	},
-	body: {
-		maxHeight: "100%",
 	},
 	bodyContent: {
 		padding: 20,

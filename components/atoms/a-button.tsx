@@ -12,28 +12,48 @@ import {
 type BaseProps = Omit<PressableProps, "style">;
 type Props = BaseProps & {
 	style?: StyleProp<ViewStyle>;
+	variant?: "outline" | "solid";
 	type?: "primary" | "shade" | "tinted" | "background";
 };
 
-const Button: React.FC<Props> = ({ style, children, type, ...rest }) => {
+const Button: React.FC<Props> = ({
+	style,
+	children,
+	variant,
+	type,
+	...rest
+}) => {
 	const colors = useThemeColors();
 
 	return (
 		<Pressable
 			style={[
 				styles.button,
+				variant === "outline"
+					? {
+						borderWidth: variant === "outline" ? 1 : 0,
+						borderColor:
+							type === "primary"
+								? colors.primary
+								: type === "shade"
+									? colors.shade
+									: type === "background"
+										? colors.background
+										: hexToRgba(colors.primary, 0.15),
+					}
+					: type && {
+						backgroundColor:
+							type === "primary"
+								? colors["primary"]
+								: type === "shade"
+									? colors["shade"]
+									: type === "background"
+										? colors["background"]
+										: hexToRgba(colors["primary"], 0.15),
+					},
 				style,
 				rest.disabled && { opacity: 0.6 },
-				type && {
-					backgroundColor:
-						type === "primary"
-							? colors["primary"]
-							: type === "shade"
-								? colors["shade"]
-								: type === "background"
-									? colors["background"]
-									: hexToRgba(colors["primary"], 0.15),
-				},
+				,
 			]}
 			{...rest}
 		>
