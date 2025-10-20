@@ -64,7 +64,8 @@ const ProfileLayout: React.FC<Props> = ({ children }) => {
 						<Pressable onPress={() => router.push("/users/notifications")}>
 							<IonNotificationsOutline color={hexToRgba(colors["text"], 0.7)} />
 						</Pressable>
-						<View
+						<Pressable
+							onPress={() => router.push("/guest/profile")}
 							className="w-8 h-8 rounded-full border overflow-hidden"
 							style={{
 								borderColor: hexToRgba(colors["text"], 0.6),
@@ -81,7 +82,7 @@ const ProfileLayout: React.FC<Props> = ({ children }) => {
 									uri: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=mail@ashallendesign.co.uk",
 								}}
 							/>
-						</View>
+						</Pressable>
 					</View>
 				</View>
 				<ScrollView
