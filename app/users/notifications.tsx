@@ -1,0 +1,26 @@
+import DetailsLayout from "@/components/layouts/details";
+import { View } from "react-native";
+import NotificationBell from "@/assets/vectors/notification-bell.svg";
+import ThemedText from "@/components/atoms/a-themed-text";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { hexToRgba } from "@/lib/utils/colors";
+
+export default function UserNotifications() {
+	const colors = useThemeColors();
+
+	return (
+		<DetailsLayout title="Notifications">
+			<View className="flex-1 items-center justify-center">
+				<View
+					className="items-center justify-center gap-4 border rounded-xl p-10"
+					style={{ borderColor: hexToRgba(colors.text, 0.2) }}
+				>
+					<NotificationBell />
+					<ThemedText style={{ color: colors["primary-04"] }}>
+						No Notifications Yet
+					</ThemedText>
+				</View>
+			</View>
+		</DetailsLayout>
+	);
+}

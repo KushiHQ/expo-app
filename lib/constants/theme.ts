@@ -9,6 +9,7 @@ const tintColorDark = "#fff";
 const common = {
 	primary: "#266DD3",
 	"primary-01": "#E9F0FB",
+	"primary-04": "#A8C5ED",
 	"primary-content": "#fff",
 	shade: "#212121",
 	"shade-content": "#fff",

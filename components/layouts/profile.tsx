@@ -61,7 +61,9 @@ const ProfileLayout: React.FC<Props> = ({ children }) => {
 						</View>
 					</View>
 					<View className="flex-row items-center gap-3">
-						<IonNotificationsOutline color={hexToRgba(colors["text"], 0.7)} />
+						<Pressable onPress={() => router.push("/users/notifications")}>
+							<IonNotificationsOutline color={hexToRgba(colors["text"], 0.7)} />
+						</Pressable>
 						<View
 							className="w-8 h-8 rounded-full border overflow-hidden"
 							style={{

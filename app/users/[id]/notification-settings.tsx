@@ -6,7 +6,7 @@ import { notificationSettingsAtom } from "@/lib/stores/notification-settings";
 import { useAtom } from "jotai";
 import { View } from "react-native";
 
-export default function UserNotifications() {
+export default function UserNotificationSettings() {
 	const [notificationSettings, setNotificationSettings] = useAtom(
 		notificationSettingsAtom,
 	);

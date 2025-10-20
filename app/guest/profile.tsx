@@ -52,7 +52,7 @@ export default function GuestProfile() {
 		},
 		{
 			icon: IonNotificationsOutline,
-			href: `/users/${id}/notifications`,
+			href: `/users/${id}/notification-settings`,
 			label: "Notifications",
 		},
 		{
