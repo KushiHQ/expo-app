@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
 
-export type NotificationCategory = "System" | "Guest Alert";
+export const NOTIFICATION_CATEGORY = ["System", "Guest Alert"] as const;
+
+export type NotificationCategory = (typeof NOTIFICATION_CATEGORY)[number];
 
 export interface Notification {
 	id: string;
