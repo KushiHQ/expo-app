@@ -13,16 +13,19 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { useGradualKeyboardAnimation } from "@/lib/hooks/keyboard";
 import ThemedView from "../atoms/a-themed-view";
+import { IonNotificationsOutline } from "../icons/i-notifications";
 
 type Props = {
 	children?: React.ReactNode;
 	title?: string;
 	avatar?: string;
+	variant?: "guest" | "host";
 	footer?: React.ReactNode;
 	backButton?: "translucent" | "solid";
 	background?: "transparent" | "solid";
 	withShare?: boolean;
 	withProfile?: boolean;
+	withNotifications?: boolean;
 	withPhone?: boolean;
 	withVideo?: boolean;
 };
@@ -32,10 +35,12 @@ const DetailsLayout: React.FC<Props> = ({
 	title,
 	avatar,
 	footer,
+	variant = "guest",
 	backButton = "translucent",
 	background = "solid",
 	withShare,
 	withProfile,
+	withNotifications,
 	withPhone,
 	withVideo,
 }) => {
@@ -137,8 +142,20 @@ const DetailsLayout: React.FC<Props> = ({
 								<HugeiconsVideo01 size={20} color={colors.text} />
 							</Pressable>
 						)}
+						{withNotifications && (
+							<Pressable onPress={() => router.push("/users/notifications")}>
+								<IonNotificationsOutline
+									color={hexToRgba(colors["text"], 0.7)}
+								/>
+							</Pressable>
+						)}
 						{withProfile && (
-							<View
+							<Pressable
+								onPress={() =>
+									router.push(
+										variant === "guest" ? "/guest/profile" : "/host/profile",
+									)
+								}
 								className="w-8 h-8 rounded-full border overflow-hidden"
 								style={{
 									borderColor: hexToRgba(colors["text"], 0.6),
@@ -155,7 +172,7 @@ const DetailsLayout: React.FC<Props> = ({
 										uri: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=mail@ashallendesign.co.uk",
 									}}
 								/>
-							</View>
+							</Pressable>
 						)}
 					</View>
 				</View>

@@ -85,6 +85,10 @@ export default function RootLayout() {
 											options={{ headerShown: false }}
 										/>
 										<Stack.Screen
+											name="host"
+											options={{ headerShown: false }}
+										/>
+										<Stack.Screen
 											name="hostings"
 											options={{ headerShown: false }}
 										/>

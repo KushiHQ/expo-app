@@ -1,6 +1,13 @@
+import {
+	MajesticonsAnalytics,
+	MajesticonsAnalyticsLine,
+} from "@/components/icons/i-analytics";
 import { PhHeart, PhHeartFill } from "@/components/icons/i-heart";
-import { SolarHome2Bold, SolarHome2Linear } from "@/components/icons/i-home";
 import { LinkIcon } from "@/components/icons/i-link";
+import {
+	FluentAppsList24Filled,
+	FluentAppsList24Regular,
+} from "@/components/icons/i-list";
 import {
 	TablerMessage2,
 	TablerMessage2Filled,
@@ -49,48 +56,48 @@ export default function Layout() {
 			}}
 		>
 			<Tabs.Screen
-				name="home"
+				name="analytics"
 				listeners={{
-					tabPress: handleTabPress("home"),
+					tabPress: handleTabPress("analytics"),
 				}}
 				options={{
 					headerShown: false,
-					tabBarLabel: "Home",
+					tabBarLabel: "Analytics",
 					tabBarIcon: ({ color, size, focused }) =>
 						focused ? (
-							<SolarHome2Bold color={color} size={size} />
+							<MajesticonsAnalytics color={color} size={size} />
 						) : (
-							<SolarHome2Linear color={color} size={size} />
+							<MajesticonsAnalyticsLine color={color} size={size} />
 						),
 				}}
 			/>
 			<Tabs.Screen
-				name="saved"
+				name="listings"
 				listeners={{
-					tabPress: handleTabPress("saved"),
+					tabPress: handleTabPress("listings"),
 				}}
 				options={{
 					headerShown: false,
-					tabBarLabel: "Saved",
+					tabBarLabel: "Listings",
 					tabBarIcon: ({ color, size, focused }) =>
 						focused ? (
-							<PhHeartFill color={color} size={size} />
+							<FluentAppsList24Filled color={color} size={size} />
 						) : (
-							<PhHeart color={color} size={size} />
+							<FluentAppsList24Regular color={color} size={size} />
 						),
 				}}
 			/>
 			<Tabs.Screen
-				name="host"
+				name="guest"
 				listeners={{
 					tabPress: (e) => {
 						e.preventDefault();
-						router.push("/host/analytics");
+						router.push("/guest/home");
 					},
 				}}
 				options={{
 					headerShown: false,
-					tabBarLabel: "Host",
+					tabBarLabel: "Guest",
 					tabBarLabelStyle: {
 						fontFamily: Fonts.semibold,
 						fontSize: 16,
