@@ -28,6 +28,7 @@ const AnalyticsCard: React.FC<Props> = ({
 		<View style={{ borderRadius: 12, overflow: "hidden" }} className="flex-1">
 			<ImageBackground
 				blurRadius={0.5}
+				contentFit="cover"
 				source={require("@/assets/images/logo.png")}
 			>
 				<View style={{ backgroundColor: hexToRgba(colors.background, 0.96) }}>

@@ -11,6 +11,7 @@ import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hostingsAtom } from "@/lib/stores/hostings";
 import { hexToRgba } from "@/lib/utils/colors";
+import { useRouter } from "expo-router";
 import { useAtomValue } from "jotai";
 import { LucideHousePlus, Plus } from "lucide-react-native";
 import React from "react";
@@ -18,6 +19,7 @@ import { Pressable, View } from "react-native";
 import { SimpleGrid } from "react-native-super-grid";
 
 export default function HostAnalytics() {
+	const router = useRouter();
 	const colors = useThemeColors();
 	const hostings = useAtomValue(hostingsAtom);
 	const [notifications, setNotifications] = React.useState<Notification[]>([]);
@@ -88,6 +90,7 @@ export default function HostAnalytics() {
 			withProfile
 			footer={
 				<Pressable
+					onPress={() => router.push("/hostings/new")}
 					className="absolute bottom-4 right-4 rounded-full items-center justify-center"
 					style={{ backgroundColor: colors.text, width: 48, height: 48 }}
 				>

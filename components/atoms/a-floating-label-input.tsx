@@ -7,6 +7,8 @@ import {
 	Pressable,
 	View,
 	GestureResponderEvent,
+	StyleProp,
+	ViewStyle,
 } from "react-native";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
@@ -24,6 +26,7 @@ export type FloatingLabelInputProps = TextInputProps & {
 	label?: string;
 	suffix?: React.ReactNode;
 	disabled?: boolean;
+	containerStyle?: StyleProp<ViewStyle>;
 };
 
 const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
@@ -36,6 +39,7 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 			focused: fixedFocused,
 			onChangeText,
 			secureTextEntry: defaultSecureText,
+			containerStyle,
 			suffix,
 			onPress,
 			...rest
@@ -105,12 +109,15 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 			<View className="relative">
 				<Pressable
 					onPress={handleConntainerPress}
-					className="border px-2.5 pt-[18px] rounded-lg"
-					style={{
-						borderColor: hexToRgba(colors["text"], 0.15),
-						borderWidth: 1.5,
-						backgroundColor: hexToRgba(colors["text"], 0.055),
-					}}
+					className="border px-2.5 pt-[18px] rounded-xl"
+					style={[
+						{
+							borderColor: hexToRgba(colors["text"], 0.15),
+							borderWidth: 1.5,
+							backgroundColor: hexToRgba(colors["text"], 0.055),
+						},
+						containerStyle,
+					]}
 				>
 					<Animated.Text
 						style={[

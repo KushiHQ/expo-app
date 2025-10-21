@@ -73,6 +73,6 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		padding: 14,
-		borderRadius: 8,
+		borderRadius: 12,
 	},
 });
