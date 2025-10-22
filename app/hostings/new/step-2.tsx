@@ -97,10 +97,7 @@ export default function NewHostingStep2() {
 
 	return (
 		<>
-			<DetailsLayout
-				title="Hosting Photos"
-				footer={<HostingStepper step={2} />}
-			>
+			<DetailsLayout title="Hosting" footer={<HostingStepper step={2} />}>
 				<View className="mt-8 gap-4">
 					{Array.from({ length: hostingEdit.rooms.length + 1 }).map(
 						(_, index) => (
@@ -233,7 +230,15 @@ export default function NewHostingStep2() {
 								</View>
 							)}
 							<View className="mt-8">
-								<View className="items-center mb-4">
+								<View className="flex-row gap-4 mb-4">
+									<View className="flex-1">
+										<FloatingLabelInput
+											focused
+											label="Count"
+											inputMode="numeric"
+											placeholder="How many of this room are there"
+										/>
+									</View>
 									<Button
 										onPress={() => handleRoomImageEdit(activeModalIndex)}
 										style={{ backgroundColor: colors.text, borderRadius: 10 }}

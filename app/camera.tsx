@@ -1,5 +1,5 @@
 import DetailsLayout from "@/components/layouts/details";
-import { View, StyleSheet, Pressable, Image } from "react-native";
+import { View, StyleSheet, Pressable, Image, Alert } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { useState, useRef } from "react";
@@ -9,6 +9,7 @@ import { GravityUiArrowsRotateRight } from "@/components/icons/i-rotate";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAtom } from "jotai";
 import { galleryAtom } from "@/lib/stores/gallery";
+import { getLocationAsync } from "@/lib/utils/locations";
 
 export default function CameraPage() {
 	const cameraRef = useRef<CameraView>(null);
@@ -51,11 +52,32 @@ export default function CameraPage() {
 
 	const takePicture = async () => {
 		if (cameraRef.current) {
-			const photo = await cameraRef.current.takePictureAsync({
-				quality: 1,
-			});
-			if (photo) {
-				setCapturedPhotos((prevPhotos) => [photo.uri, ...prevPhotos]);
+			try {
+				const locationCoords = await getLocationAsync();
+
+				const photo = await cameraRef.current.takePictureAsync({
+					quality: 1,
+					exif: true,
+					additionalExif: locationCoords
+						? {
+							GPSLatitude: Math.abs(locationCoords.coords.latitude),
+							GPSLongitude: Math.abs(locationCoords.coords.longitude),
+							GPSLatitudeRef: locationCoords.coords.latitude >= 0 ? "N" : "S",
+							GPSLongitudeRef:
+								locationCoords.coords.longitude >= 0 ? "E" : "W",
+							GPSAltitude: locationCoords.coords.altitude || 0,
+							GPSSpeed: locationCoords.coords.speed || 0,
+							GPSTimeStamp: new Date().toISOString(),
+						}
+						: {},
+				});
+
+				if (photo) {
+					setCapturedPhotos((prevPhotos) => [photo.uri, ...prevPhotos]);
+				}
+			} catch (error) {
+				console.error("Error taking picture:", error);
+				Alert.alert("Error", "Failed to take picture");
 			}
 		}
 	};

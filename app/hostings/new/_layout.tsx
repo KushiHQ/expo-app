@@ -7,6 +7,7 @@ export default function Layout() {
 			<Stack.Screen name="index" options={{ headerShown: false }} />
 			<Stack.Screen name="step-1" options={{ headerShown: false }} />
 			<Stack.Screen name="step-2" options={{ headerShown: false }} />
+			<Stack.Screen name="step-3" options={{ headerShown: false }} />
 		</Stack>
 	);
 }

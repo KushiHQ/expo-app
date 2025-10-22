@@ -6,6 +6,7 @@ export default function Layout() {
 		<Stack screenOptions={{ animation: "fade" }}>
 			<Stack.Screen name="[id]" options={{ headerShown: false }} />
 			<Stack.Screen name="new" options={{ headerShown: false }} />
+			<Stack.Screen name="map" options={{ headerShown: false }} />
 		</Stack>
 	);
 }

@@ -2,6 +2,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useRef } from "react";
 import {
 	Pressable,
+	RefreshControlProps,
 	ScrollView,
 	StyleProp,
 	View,
@@ -31,6 +32,10 @@ type Props = {
 	background?: "transparent" | "solid";
 	withShare?: boolean;
 	withProfile?: boolean;
+	refreshControl?: React.ReactElement<
+		RefreshControlProps,
+		string | React.JSXElementConstructor<any>
+	>;
 	withNotifications?: boolean;
 	backgroundStyles?: StyleProp<ViewStyle>;
 	contentStyles?: StyleProp<ViewStyle>;
@@ -49,6 +54,7 @@ const DetailsLayout: React.FC<Props> = ({
 	withShare,
 	withProfile,
 	withNotifications,
+	refreshControl,
 	backgroundStyles,
 	contentStyles,
 	withPhone,
@@ -191,6 +197,7 @@ const DetailsLayout: React.FC<Props> = ({
 					className="flex-1"
 					showsVerticalScrollIndicator={false}
 					contentContainerStyle={{ flexGrow: 1 }}
+					refreshControl={refreshControl}
 				>
 					<View className="p-5 pt-0 flex-1" style={contentStyles}>
 						<View className="flex-1">{children}</View>

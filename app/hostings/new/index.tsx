@@ -16,7 +16,7 @@ export default function NewHosting() {
 	const [kycComplete, setKycComplete] = React.useState(false);
 
 	return (
-		<DetailsLayout title="Start Hosting" footer={<HostingStepper step={0} />}>
+		<DetailsLayout title="Hosting" footer={<HostingStepper step={0} />}>
 			<View className="mt-8">
 				<View className="gap-4">
 					<View className="flex-row items-center justify-between">

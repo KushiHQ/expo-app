@@ -9,10 +9,7 @@ import { View } from "react-native";
 
 export default function NewHostingStep1() {
 	return (
-		<DetailsLayout
-			title="Property Details"
-			footer={<HostingStepper step={1} />}
-		>
+		<DetailsLayout title="Hosting" footer={<HostingStepper step={1} />}>
 			<View className="mt-8 gap-4">
 				<FloatingLabelInput
 					focused
