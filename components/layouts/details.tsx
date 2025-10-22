@@ -1,6 +1,12 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useRef } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import {
+	Pressable,
+	ScrollView,
+	StyleProp,
+	View,
+	ViewStyle,
+} from "react-native";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import ThemedText from "../atoms/a-themed-text";
@@ -26,6 +32,8 @@ type Props = {
 	withShare?: boolean;
 	withProfile?: boolean;
 	withNotifications?: boolean;
+	backgroundStyles?: StyleProp<ViewStyle>;
+	contentStyles?: StyleProp<ViewStyle>;
 	withPhone?: boolean;
 	withVideo?: boolean;
 };
@@ -41,6 +49,8 @@ const DetailsLayout: React.FC<Props> = ({
 	withShare,
 	withProfile,
 	withNotifications,
+	backgroundStyles,
+	contentStyles,
 	withPhone,
 	withVideo,
 }) => {
@@ -74,7 +84,7 @@ const DetailsLayout: React.FC<Props> = ({
 	const Wrapper = background === "solid" ? ThemedView : View;
 
 	return (
-		<Wrapper className="flex-1">
+		<Wrapper className="flex-1" style={backgroundStyles}>
 			<SafeAreaView className="flex-1">
 				<View className="p-5 flex-row items-center justify-between">
 					<View className="flex-row items-center gap-2">
@@ -182,7 +192,7 @@ const DetailsLayout: React.FC<Props> = ({
 					showsVerticalScrollIndicator={false}
 					contentContainerStyle={{ flexGrow: 1 }}
 				>
-					<View className="p-5 pt-0 flex-1">
+					<View className="p-5 pt-0 flex-1" style={contentStyles}>
 						<View className="flex-1">{children}</View>
 					</View>
 				</KeyboardAwareScrollView>
