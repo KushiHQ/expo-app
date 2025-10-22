@@ -93,6 +93,10 @@ export default function RootLayout() {
 											options={{ headerShown: false }}
 										/>
 										<Stack.Screen
+											name="photo-gallery"
+											options={{ headerShown: false }}
+										/>
+										<Stack.Screen
 											name="hostings"
 											options={{ headerShown: false }}
 										/>

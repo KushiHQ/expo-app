@@ -6,12 +6,17 @@ import { useState, useRef } from "react";
 import ThemedText from "@/components/atoms/a-themed-text";
 import Button from "@/components/atoms/a-button";
 import { GravityUiArrowsRotateRight } from "@/components/icons/i-rotate";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useAtom } from "jotai";
+import { galleryAtom } from "@/lib/stores/gallery";
 
 export default function CameraPage() {
 	const cameraRef = useRef<CameraView>(null);
 	const [facing, setFacing] = useState<CameraType>("back");
+	const { redirect } = useLocalSearchParams();
 	const [permission, requestPermission] = useCameraPermissions();
-	const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+	const [capturedPhotos, setCapturedPhotos] = useAtom(galleryAtom);
+	const navigation = useRouter();
 
 	if (!permission) {
 		return <View style={styles.container} />;
@@ -50,41 +55,16 @@ export default function CameraPage() {
 				quality: 1,
 			});
 			if (photo) {
-				setCapturedPhoto(photo.uri);
+				setCapturedPhotos((prevPhotos) => [photo.uri, ...prevPhotos]);
 			}
 		}
 	};
 
-	const retakePhoto = () => {
-		setCapturedPhoto(null);
-	};
+	const openGallery = () => {
+		if (capturedPhotos.length === 0) return;
 
-	if (capturedPhoto) {
-		return (
-			<>
-				<StatusBar style="light" />
-				<DetailsLayout
-					backgroundStyles={{
-						backgroundColor: "#000000",
-					}}
-					background="transparent"
-					backButton="solid"
-				>
-					<View style={styles.previewContainer}>
-						<Image source={{ uri: capturedPhoto }} style={styles.preview} />
-						<View style={styles.previewActions}>
-							<Button onPress={retakePhoto} type="primary" className="flex-1">
-								<ThemedText content="primary">Retake</ThemedText>
-							</Button>
-							<Button onPress={() => {}} type="primary" className="flex-1">
-								<ThemedText content="primary">Use Photo</ThemedText>
-							</Button>
-						</View>
-					</View>
-				</DetailsLayout>
-			</>
-		);
-	}
+		navigation.navigate(`/photo-gallery?redirect=${redirect}`);
+	};
 
 	return (
 		<>
@@ -102,9 +82,13 @@ export default function CameraPage() {
 
 					<View style={styles.controlsOverlay} pointerEvents="box-none">
 						<View style={styles.controls}>
-							<Pressable style={styles.galleryPreview}>
+							<Pressable style={styles.galleryPreview} onPress={openGallery}>
 								<Image
-									source={require("@/assets/images/house-bg.png")}
+									source={
+										capturedPhotos.length > 0
+											? { uri: capturedPhotos[0] }
+											: require("@/assets/images/image-placeholder.jpg")
+									}
 									style={styles.galleryImage}
 								/>
 							</Pressable>

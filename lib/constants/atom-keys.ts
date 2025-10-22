@@ -1,5 +1,6 @@
 const ATOM_KEYS = {
 	USER: "__user",
+	GALLERY: "__gallery",
 	HOSTINGS: "__hostings",
 	BOOKINGS: "__bookings",
 	NOTIFICATIONS: "__notifications",
