@@ -70,7 +70,7 @@ export default function NewHostingStep2() {
 		const images = hostingEdit.rooms.at(index)?.images ?? [];
 		setGallery(images);
 		setHostingEdit((c) => ({ ...c, activeIndex: index }));
-		router.push("/camera?redirect=/hostings/new/step-2");
+		router.push("/camera?redirect=/hostings/form/step-2");
 	};
 
 	const handleDeleteRoomImage = (roomIndex: number, imageIndex: number) => {

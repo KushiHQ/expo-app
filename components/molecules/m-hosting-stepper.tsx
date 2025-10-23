@@ -57,7 +57,7 @@ const HostingStepper: React.FC<Props> = ({ step }) => {
 					<Button
 						onPress={() => {
 							if (step < ONBOARDING_STEPS.length - 1) {
-								router.push(`/hostings/new/step-${step + 1}`);
+								router.push(`/hostings/form/step-${step + 1}`);
 							}
 						}}
 						type="primary"

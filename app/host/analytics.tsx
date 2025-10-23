@@ -90,7 +90,7 @@ export default function HostAnalytics() {
 			withProfile
 			footer={
 				<Pressable
-					onPress={() => router.push("/hostings/new")}
+					onPress={() => router.push("/hostings/form")}
 					className="absolute bottom-4 right-4 rounded-full items-center justify-center"
 					style={{ backgroundColor: colors.text, width: 48, height: 48 }}
 				>

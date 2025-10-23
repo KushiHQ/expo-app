@@ -1,5 +1,7 @@
 import { faker } from "@faker-js/faker";
 
+const HOSTING_STATUS = ["live", "draft", "review", "rejected"] as const;
+
 export type Hosting = {
 	id: string;
 	state: string;
@@ -11,6 +13,7 @@ export type Hosting = {
 	address: string;
 	description: string;
 	pricing: "nightly" | "weekly" | "monthly" | "anually";
+	status: (typeof HOSTING_STATUS)[number];
 	dateAdded: string;
 	averageRating: number;
 	ratingCount: number;
@@ -97,6 +100,7 @@ const generateMockHosting = async (): Promise<Hosting> => {
 		creatorYears: faker.number.int({ min: 1, max: 100 }),
 		address: faker.location.streetAddress(),
 		pricing: faker.helpers.arrayElement(pricingOptions),
+		status: faker.helpers.arrayElement(HOSTING_STATUS),
 		description: faker.lorem.paragraph({ min: 3, max: 5 }),
 		dateAdded: faker.date.recent().toISOString().split("T")[0],
 		averageRating: parseFloat(averageRating.toFixed(1)),

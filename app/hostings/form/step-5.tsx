@@ -101,7 +101,7 @@ export default function NewHostingStep5() {
 								lifestyle!
 							</ThemedText>
 						</View>
-						<EditButton href={"/hostings/new/step-1"} />
+						<EditButton href={"/hostings/form/step-1"} />
 					</SummarySection>
 					<SummarySection>
 						<View className="flex-row gap-4">
@@ -112,7 +112,7 @@ export default function NewHostingStep5() {
 							<ItemSummary label="Kitchen" summary="1" />
 							<ItemSummary label="Images" summary="23" />
 						</View>
-						<EditButton href={"/hostings/new/step-2"} />
+						<EditButton href={"/hostings/form/step-2"} />
 					</SummarySection>
 					<SummarySection>
 						<View
@@ -154,14 +154,14 @@ export default function NewHostingStep5() {
 							label="Landmarks"
 							summary="MTN Mast after commisioners house"
 						/>
-						<EditButton href={"/hostings/new/step-3"} />
+						<EditButton href={"/hostings/form/step-3"} />
 					</SummarySection>
 					<SummarySection>
 						<ItemSummary label="Account Number" summary="2116780900" />
 						<ItemSummary label="Bank" summary="United Bank For Africa" />
 						<ItemSummary label="Payment Interval" summary="Yearly" />
 						<ItemSummary label="Price" summary="₦750,000" />
-						<EditButton href={"/hostings/new/step-4"} />
+						<EditButton href={"/hostings/form/step-4"} />
 					</SummarySection>
 				</View>
 				<View className="gap-2">

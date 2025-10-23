@@ -29,7 +29,7 @@ export default function NewHosting() {
 						Unfortunately, your KYC application has not been completed. Please
 						fill out the KYC form before you can access the hosting services.{" "}
 						<Link
-							href="/hostings/new"
+							href="/hostings/form"
 							style={{ color: colors.accent }}
 							className="underline"
 						>
