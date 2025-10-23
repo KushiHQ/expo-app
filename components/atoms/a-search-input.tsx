@@ -15,9 +15,9 @@ const SearchInput: React.FC<Props> = ({ value, onChangeText, placeholder }) => {
 
 	return (
 		<View
-			className="border flex-row items-center gap-2 px-2 rounded-xl"
+			className="flex-row items-center gap-2 px-3 rounded-full"
 			style={{
-				borderColor: hexToRgba(colors.text, 0.2),
+				backgroundColor: hexToRgba(colors.text, 0.1),
 			}}
 		>
 			<LineiconsSearch1 color={hexToRgba(colors.text, 0.2)} />
