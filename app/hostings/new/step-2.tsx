@@ -68,7 +68,6 @@ export default function NewHostingStep2() {
 
 	const handleRoomImageEdit = (index: number) => {
 		const images = hostingEdit.rooms.at(index)?.images ?? [];
-		console.log({ images });
 		setGallery(images);
 		setHostingEdit((c) => ({ ...c, activeIndex: index }));
 		router.push("/camera?redirect=/hostings/new/step-2");

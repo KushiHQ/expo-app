@@ -1,3 +1,7 @@
-import { atom } from "jotai";
+import atomWithStorageStorage from "./utils";
+import ATOM_KEYS from "../constants/atom-keys";
 
-export const galleryAtom = atom<string[]>([]);
+export const galleryAtom = atomWithStorageStorage(
+	ATOM_KEYS.GALLERY,
+	[] as string[],
+);

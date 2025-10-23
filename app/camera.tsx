@@ -2,7 +2,7 @@ import DetailsLayout from "@/components/layouts/details";
 import { View, StyleSheet, Pressable, Image, Alert } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import ThemedText from "@/components/atoms/a-themed-text";
 import Button from "@/components/atoms/a-button";
 import { GravityUiArrowsRotateRight } from "@/components/icons/i-rotate";
@@ -10,6 +10,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAtom } from "jotai";
 import { galleryAtom } from "@/lib/stores/gallery";
 import { getLocationAsync } from "@/lib/utils/locations";
+import { LocationObject } from "expo-location";
 
 export default function CameraPage() {
 	const cameraRef = useRef<CameraView>(null);
@@ -17,7 +18,19 @@ export default function CameraPage() {
 	const { redirect } = useLocalSearchParams();
 	const [permission, requestPermission] = useCameraPermissions();
 	const [capturedPhotos, setCapturedPhotos] = useAtom(galleryAtom);
+	const [location, setLocation] = React.useState<LocationObject>();
 	const navigation = useRouter();
+
+	console.log(capturedPhotos);
+
+	React.useEffect(() => {
+		(async () => {
+			const locationCoords = await getLocationAsync();
+			if (locationCoords) {
+				setLocation(locationCoords);
+			}
+		})();
+	}, []);
 
 	if (!permission) {
 		return <View style={styles.container} />;
@@ -53,27 +66,27 @@ export default function CameraPage() {
 	const takePicture = async () => {
 		if (cameraRef.current) {
 			try {
-				const locationCoords = await getLocationAsync();
-
-				const photo = await cameraRef.current.takePictureAsync({
+				const photo = await cameraRef.current?.takePictureAsync({
 					quality: 1,
 					exif: true,
-					additionalExif: locationCoords
+					additionalExif: location
 						? {
-							GPSLatitude: Math.abs(locationCoords.coords.latitude),
-							GPSLongitude: Math.abs(locationCoords.coords.longitude),
-							GPSLatitudeRef: locationCoords.coords.latitude >= 0 ? "N" : "S",
-							GPSLongitudeRef:
-								locationCoords.coords.longitude >= 0 ? "E" : "W",
-							GPSAltitude: locationCoords.coords.altitude || 0,
-							GPSSpeed: locationCoords.coords.speed || 0,
-							GPSTimeStamp: new Date().toISOString(),
-						}
+								GPSLatitude: Math.abs(location.coords.latitude),
+								GPSLongitude: Math.abs(location.coords.longitude),
+								GPSLatitudeRef: location.coords.latitude >= 0 ? "N" : "S",
+								GPSLongitudeRef: location.coords.longitude >= 0 ? "E" : "W",
+								GPSAltitude: location.coords.altitude || 0,
+								GPSSpeed: location.coords.speed || 0,
+								GPSTimeStamp: new Date().toISOString(),
+							}
 						: {},
 				});
 
 				if (photo) {
-					setCapturedPhotos((prevPhotos) => [photo.uri, ...prevPhotos]);
+					setCapturedPhotos(async (prevPhotos) => [
+						photo.uri,
+						...(await prevPhotos),
+					]);
 				}
 			} catch (error) {
 				console.error("Error taking picture:", error);
@@ -85,7 +98,7 @@ export default function CameraPage() {
 	const openGallery = () => {
 		if (capturedPhotos.length === 0) return;
 
-		navigation.navigate(`/photo-gallery?redirect=${redirect}`);
+		navigation.replace(`/photo-gallery?redirect=${redirect}`);
 	};
 
 	return (

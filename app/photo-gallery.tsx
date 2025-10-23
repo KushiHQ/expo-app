@@ -97,8 +97,10 @@ export default function PhotoGalleryScreen() {
 			<View style={styles.actions}>
 				<Button onPress={handleEditPhoto} className="flex-1">
 					<View className="flex-row gap-2">
-						<FluentImageEdit24Regular color={colors.text} size={20} />
-						<ThemedText style={{ fontSize: 14 }}>Edit</ThemedText>
+						<FluentImageEdit24Regular color="#fff" size={20} />
+						<ThemedText style={{ fontSize: 14, color: "#fff" }}>
+							Edit
+						</ThemedText>
 					</View>
 				</Button>
 				<Button onPress={onUsePhotos} className="flex-1">
@@ -125,7 +127,6 @@ const styles = StyleSheet.create({
 		left: 20,
 		right: 20,
 		flexDirection: "row",
-		// --- ADDED ---
-		gap: 16, // Adds spacing between your buttons
+		gap: 16,
 	},
 });
