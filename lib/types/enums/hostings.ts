@@ -88,6 +88,7 @@ export const Room = {
 } as const;
 
 export const HOSTING_VARIANTS = Object.values(HostingVariant);
+export const FACILITIES = Object.values(Facility);
 export const ROOM_KEYS = cast<(keyof typeof Room)[]>(Object.keys(Room));
 
 export interface FacilityHostingMapping {

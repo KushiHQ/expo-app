@@ -62,7 +62,7 @@ export default function UserNotifications() {
 									onPress={() => setFilter(cast(v))}
 									className="border-b"
 									style={{
-										borderColor: v === filter ? colors.text : "#000",
+										borderColor: v === filter ? colors.text : colors.background,
 										borderRadius: 0,
 									}}
 								>

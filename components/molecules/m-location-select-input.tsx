@@ -1,11 +1,10 @@
 import React from "react";
 import BottomSheet from "../atoms/a-bottom-sheet";
-import { Dimensions, Keyboard, Pressable, TextInput, View } from "react-native";
+import { Dimensions, Keyboard, Pressable, View } from "react-native";
 import ThemedText from "../atoms/a-themed-text";
 import { Fonts } from "@/lib/constants/theme";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { LineiconsSearch1 } from "../icons/i-search";
 import { useQuery } from "@tanstack/react-query";
 import { cast } from "@/lib/types/utils";
 import {
@@ -14,6 +13,7 @@ import {
 } from "@/lib/types/queries/mapbox";
 import { TablerMapPinFilled } from "../icons/i-map";
 import { useDebounce } from "@/lib/hooks/use-debounce";
+import SearchInput from "../atoms/a-search-input";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -53,24 +53,11 @@ const LocationSelectInput: React.FC<Props> = ({
           Find Location
         </ThemedText>
         <View className="gap-2">
-          <View
-            className="border flex-row items-center gap-2 px-2 rounded-md"
-            style={{
-              borderColor: hexToRgba(colors.text, 0.2),
-            }}
-          >
-            <LineiconsSearch1 color={hexToRgba(colors.text, 0.2)} />
-            <TextInput
-              value={query}
-              onChangeText={setQuery}
-              placeholderTextColor={hexToRgba(colors.text, 0.2)}
-              style={{
-                fontSize: 16,
-                color: colors.text,
-              }}
-              placeholder="Search location...."
-            />
-          </View>
+          <SearchInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search location...."
+          />
           <View style={{ height: SCREEN_HEIGHT * 0.2 }}>
             {!isFetching && !data?.features && (
               <ThemedText
