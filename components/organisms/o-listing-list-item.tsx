@@ -11,13 +11,14 @@ import { EllipsisVertical } from "lucide-react-native";
 import { hexToRgba } from "@/lib/utils/colors";
 import { IconParkOutlineDot } from "../icons/i-circle";
 import ListingOptions from "../molecules/m-listing-options";
-import { setOptions } from "expo-splash-screen";
+import { useRouter } from "expo-router";
 
 type Props = {
 	hosting: Hosting;
 };
 
 const ListingListItem: React.FC<Props> = ({ hosting }) => {
+	const router = useRouter();
 	const colors = useThemeColors();
 	const [optionsOpen, setOptionsOpen] = React.useState(false);
 	const { failedImages, handleImageError } = useFallbackImages();
@@ -35,7 +36,10 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
 
 	return (
 		<>
-			<Pressable className="flex-row items-center gap-4">
+			<Pressable
+				className="flex-row items-center gap-4"
+				onPress={() => router.push(`/hostings/${hosting.id}`)}
+			>
 				<View className="h-[80px] w-[100px]">
 					<Image
 						source={{
@@ -70,6 +74,8 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
 						</Pressable>
 					</View>
 					<ThemedText
+						numberOfLines={1}
+						ellipsizeMode="tail"
 						style={{ fontSize: 14, color: hexToRgba(colors.text, 0.7) }}
 					>
 						{hosting.city}, {hosting.state}
