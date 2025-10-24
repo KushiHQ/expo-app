@@ -41,14 +41,16 @@ export default function ReservationUserDetails() {
 							label="Email"
 							placeholder="example@email.com"
 						/>
-						<FloatingLabelInput
-							inputMode="tel"
-							autoComplete="tel"
-							focused
-							label="Phone Number"
-							placeholder="08034598710"
-						/>
 						<View className="flex-row gap-4">
+							<View className="flex-1">
+								<FloatingLabelInput
+									inputMode="tel"
+									autoComplete="tel"
+									focused
+									label="Phone Number"
+									placeholder="08034598710"
+								/>
+							</View>
 							<SelectInput
 								focused
 								value={gender}
@@ -59,15 +61,6 @@ export default function ReservationUserDetails() {
 									label: v,
 									value: v,
 								}))}
-								renderItem={SelectOption}
-							/>
-							<SelectInput
-								focused
-								value={userType}
-								label="User Type"
-								placeholder="Guest"
-								onSelect={(v) => setUserType(v.label)}
-								options={["Host", "Guest"].map((v) => ({ label: v, value: v }))}
 								renderItem={SelectOption}
 							/>
 						</View>

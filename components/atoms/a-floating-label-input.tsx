@@ -109,7 +109,7 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 			<View className="relative">
 				<Pressable
 					onPress={handleConntainerPress}
-					className="border px-2.5 pt-[18px] rounded-xl"
+					className="relative flex-1 border px-2.5 pt-[18px] rounded-xl"
 					style={[
 						{
 							borderColor: hexToRgba(colors["text"], 0.15),

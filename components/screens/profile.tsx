@@ -62,7 +62,7 @@ const ProfileScreen = () => {
 		},
 		{
 			icon: LinkIcon,
-			href: "/hostings/",
+			href: "/host/listings",
 			label: "Hostings",
 		},
 		{
