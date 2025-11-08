@@ -61,7 +61,12 @@ const HostingFilterManager = () => {
           />
         </View>
         <View className="flex-row items-center gap-2">
-          <Pressable onPress={() => setFilterOpen((c) => !c)}>
+          <Pressable
+            onPress={() => {
+              console.log("Pressed");
+              setFilterOpen((c) => !c);
+            }}
+          >
             <JamSettingsAlt color={hexToRgba(colors["text"], 0.5)} />
           </Pressable>
           <View

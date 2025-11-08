@@ -30,6 +30,7 @@ import { PaperProvider } from "react-native-paper";
 import TansStackProvider from "@/components/providers/tanstack";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import URQLProvider from "@/components/providers/urql";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -58,68 +59,70 @@ export default function RootLayout() {
 	}
 
 	return (
-		<GestureHandlerRootView style={{ flex: 1 }}>
-			<KeyboardProvider>
-				<TansStackProvider>
-					<PaperProvider>
-						<JotaiProvider>
-							<SafeAreaProvider>
-								<ThemeProvider
-									value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-								>
-									<Stack screenOptions={{ animation: "fade" }}>
-										<Stack.Screen
-											name="index"
-											options={{ headerShown: false }}
-										/>
-										<Stack.Screen
-											name="onboarding"
-											options={{ headerShown: false }}
-										/>
-										<Stack.Screen
-											name="auth"
-											options={{ headerShown: false }}
-										/>
-										<Stack.Screen
-											name="guest"
-											options={{ headerShown: false }}
-										/>
-										<Stack.Screen
-											name="host"
-											options={{ headerShown: false }}
-										/>
-										<Stack.Screen
-											name="camera"
-											options={{ headerShown: false }}
-										/>
-										<Stack.Screen
-											name="photo-gallery"
-											options={{ headerShown: false }}
-										/>
-										<Stack.Screen
-											name="hostings"
-											options={{ headerShown: false }}
-										/>
-										<Stack.Screen
-											name="chats"
-											options={{ headerShown: false }}
-										/>
-										<Stack.Screen
-											name="users"
-											options={{ headerShown: false }}
-										/>
-										<Stack.Screen
-											name="logout"
-											options={{ headerShown: false }}
-										/>
-									</Stack>
-									<StatusBar style="auto" />
-								</ThemeProvider>
-							</SafeAreaProvider>
-						</JotaiProvider>
-					</PaperProvider>
-				</TansStackProvider>
-			</KeyboardProvider>
-		</GestureHandlerRootView>
+		<URQLProvider>
+			<GestureHandlerRootView style={{ flex: 1 }}>
+				<KeyboardProvider>
+					<TansStackProvider>
+						<PaperProvider>
+							<JotaiProvider>
+								<SafeAreaProvider>
+									<ThemeProvider
+										value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+									>
+										<Stack screenOptions={{ animation: "fade" }}>
+											<Stack.Screen
+												name="index"
+												options={{ headerShown: false }}
+											/>
+											<Stack.Screen
+												name="onboarding"
+												options={{ headerShown: false }}
+											/>
+											<Stack.Screen
+												name="auth"
+												options={{ headerShown: false }}
+											/>
+											<Stack.Screen
+												name="guest"
+												options={{ headerShown: false }}
+											/>
+											<Stack.Screen
+												name="host"
+												options={{ headerShown: false }}
+											/>
+											<Stack.Screen
+												name="camera"
+												options={{ headerShown: false }}
+											/>
+											<Stack.Screen
+												name="photo-gallery"
+												options={{ headerShown: false }}
+											/>
+											<Stack.Screen
+												name="hostings"
+												options={{ headerShown: false }}
+											/>
+											<Stack.Screen
+												name="chats"
+												options={{ headerShown: false }}
+											/>
+											<Stack.Screen
+												name="users"
+												options={{ headerShown: false }}
+											/>
+											<Stack.Screen
+												name="logout"
+												options={{ headerShown: false }}
+											/>
+										</Stack>
+										<StatusBar style="auto" />
+									</ThemeProvider>
+								</SafeAreaProvider>
+							</JotaiProvider>
+						</PaperProvider>
+					</TansStackProvider>
+				</KeyboardProvider>
+			</GestureHandlerRootView>
+		</URQLProvider>
 	);
 }

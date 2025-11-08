@@ -34,12 +34,10 @@ export default function Layout() {
 			screenOptions={{
 				tabBarActiveTintColor: colors["primary"],
 				tabBarStyle: {
+					height: 80,
 					backgroundColor: colors["background"],
 					borderTopColor: "#0000",
 					borderTopWidth: 1,
-					height: 80,
-					paddingBottom: 8,
-					paddingTop: 8,
 				},
 				tabBarLabelStyle: {
 					fontSize: 14,

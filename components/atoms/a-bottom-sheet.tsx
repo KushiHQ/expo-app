@@ -51,7 +51,7 @@ const BottomSheet: FC<BottomSheetProps> = ({
 				stiffness: 400,
 			});
 		} else {
-			translateY.value = withTiming(0, { duration: 250 });
+			translateY.value = withTiming(0, { duration: 150 });
 		}
 	}, [isVisible, translateY, MAX_TRANSLATE_Y]);
 
@@ -69,7 +69,7 @@ const BottomSheet: FC<BottomSheetProps> = ({
 		})
 		.onEnd(() => {
 			if (translateY.value > MAX_TRANSLATE_Y / 2) {
-				translateY.value = withTiming(0, { duration: 250 });
+				translateY.value = withTiming(0, { duration: 150 });
 				scheduleOnRN(onClose);
 			} else {
 				translateY.value = withSpring(MAX_TRANSLATE_Y, {
@@ -90,7 +90,7 @@ const BottomSheet: FC<BottomSheetProps> = ({
 
 	const rBackdropStyle = useAnimatedStyle(() => {
 		return {
-			opacity: withTiming(isVisible ? 0.4 : 0, { duration: 300 }),
+			opacity: withTiming(isVisible ? 0.4 : 0, { duration: 200 }),
 		};
 	}, [isVisible]);
 
