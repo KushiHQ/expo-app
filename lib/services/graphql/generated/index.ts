@@ -245,6 +245,8 @@ export type Mutations = {
   login: AuthTokenResponse;
   refreshToken: AuthTokenResponse;
   requestPasswordChange: MessageResponse;
+  resendEmailVerificationOtp: MessageResponse;
+  resendPasswordChangeOtp: MessageResponse;
   signUp: UserResponse;
   verifyEmail: MessageResponse;
 };
@@ -312,6 +314,16 @@ export type MutationsRefreshTokenArgs = {
 
 export type MutationsRequestPasswordChangeArgs = {
   input: RequestPasswordChangeInput;
+};
+
+
+export type MutationsResendEmailVerificationOtpArgs = {
+  email: Scalars['String']['input'];
+};
+
+
+export type MutationsResendPasswordChangeOtpArgs = {
+  email: Scalars['String']['input'];
 };
 
 
@@ -480,6 +492,48 @@ export type RefreshTokenMutationVariables = Exact<{
 
 export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string } | null } };
 
+export type VerifyEmailMutationVariables = Exact<{
+  input: Otpinput;
+}>;
+
+
+export type VerifyEmailMutation = { __typename?: 'Mutations', verifyEmail: { __typename?: 'MessageResponse', message: string } };
+
+export type ResendEmailVerificationOtpMutationVariables = Exact<{
+  email: Scalars['String']['input'];
+}>;
+
+
+export type ResendEmailVerificationOtpMutation = { __typename?: 'Mutations', resendEmailVerificationOtp: { __typename?: 'MessageResponse', message: string } };
+
+export type LoginMutationVariables = Exact<{
+  input: LoginInput;
+}>;
+
+
+export type LoginMutation = { __typename?: 'Mutations', login: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string } } } | null } };
+
+export type RequestPasswordChangeMutationVariables = Exact<{
+  input: RequestPasswordChangeInput;
+}>;
+
+
+export type RequestPasswordChangeMutation = { __typename?: 'Mutations', requestPasswordChange: { __typename?: 'MessageResponse', message: string } };
+
+export type ResendPasswordChangeOtpMutationVariables = Exact<{
+  email: Scalars['String']['input'];
+}>;
+
+
+export type ResendPasswordChangeOtpMutation = { __typename?: 'Mutations', resendPasswordChangeOtp: { __typename?: 'MessageResponse', message: string } };
+
+export type CompletePasswordChangeMutationVariables = Exact<{
+  input: CompletePasswordChangeInput;
+}>;
+
+
+export type CompletePasswordChangeMutation = { __typename?: 'Mutations', completePasswordChange: { __typename?: 'MessageResponse', message: string } };
+
 
 export const SignUpDocument = gql`
     mutation SignUp($input: SignUpInput!) {
@@ -507,4 +561,89 @@ export const RefreshTokenDocument = gql`
 
 export function useRefreshTokenMutation() {
   return Urql.useMutation<RefreshTokenMutation, RefreshTokenMutationVariables>(RefreshTokenDocument);
+};
+export const VerifyEmailDocument = gql`
+    mutation VerifyEmail($input: Otpinput!) {
+  verifyEmail(input: $input) {
+    message
+  }
+}
+    `;
+
+export function useVerifyEmailMutation() {
+  return Urql.useMutation<VerifyEmailMutation, VerifyEmailMutationVariables>(VerifyEmailDocument);
+};
+export const ResendEmailVerificationOtpDocument = gql`
+    mutation ResendEmailVerificationOtp($email: String!) {
+  resendEmailVerificationOtp(email: $email) {
+    message
+  }
+}
+    `;
+
+export function useResendEmailVerificationOtpMutation() {
+  return Urql.useMutation<ResendEmailVerificationOtpMutation, ResendEmailVerificationOtpMutationVariables>(ResendEmailVerificationOtpDocument);
+};
+export const LoginDocument = gql`
+    mutation Login($input: LoginInput!) {
+  login(input: $input) {
+    message
+    data {
+      token
+      refreshToken
+      expiresAt
+      user {
+        id
+        email
+        dateAdded
+        lastUpdated
+        profile {
+          id
+          fullName
+          phoneNumber
+          gender
+          dateAdded
+          lastUpdated
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useLoginMutation() {
+  return Urql.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument);
+};
+export const RequestPasswordChangeDocument = gql`
+    mutation RequestPasswordChange($input: RequestPasswordChangeInput!) {
+  requestPasswordChange(input: $input) {
+    message
+  }
+}
+    `;
+
+export function useRequestPasswordChangeMutation() {
+  return Urql.useMutation<RequestPasswordChangeMutation, RequestPasswordChangeMutationVariables>(RequestPasswordChangeDocument);
+};
+export const ResendPasswordChangeOtpDocument = gql`
+    mutation ResendPasswordChangeOtp($email: String!) {
+  resendPasswordChangeOtp(email: $email) {
+    message
+  }
+}
+    `;
+
+export function useResendPasswordChangeOtpMutation() {
+  return Urql.useMutation<ResendPasswordChangeOtpMutation, ResendPasswordChangeOtpMutationVariables>(ResendPasswordChangeOtpDocument);
+};
+export const CompletePasswordChangeDocument = gql`
+    mutation CompletePasswordChange($input: CompletePasswordChangeInput!) {
+  completePasswordChange(input: $input) {
+    message
+  }
+}
+    `;
+
+export function useCompletePasswordChangeMutation() {
+  return Urql.useMutation<CompletePasswordChangeMutation, CompletePasswordChangeMutationVariables>(CompletePasswordChangeDocument);
 };

@@ -6,44 +6,101 @@ import ThemedText from "@/components/atoms/a-themed-text";
 import { LogosApple, LogosGoogle } from "@/components/icons/i-logos";
 import AuthLayout from "@/components/layouts/auth";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { LoginInput, useLoginMutation } from "@/lib/services/graphql/generated";
+import { userAtom } from "@/lib/stores/users";
+import { UserType } from "@/lib/types/users";
+import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
-import { Link } from "expo-router";
+import { handleError } from "@/lib/utils/error";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
+import { useAtom } from "jotai";
+import React from "react";
 import { View } from "react-native";
+import Toast from "react-native-toast-message";
 
 export default function Login() {
+  const router = useRouter();
   const colors = useThemeColors();
+  const { email } = useLocalSearchParams();
+  const [inputs, setInputs] = React.useState<Partial<LoginInput>>({
+    email: cast(email),
+  });
+  const [user, setUser] = useAtom(userAtom);
+  const [savePassword, setSavePassword] = React.useState(false);
+  const [res, mutate] = useLoginMutation();
+
+  const handlePress = () => {
+    mutate({ input: cast(inputs) }).then((res) => {
+      if (res.error) {
+        handleError(res.error);
+      }
+      if (res.data) {
+        Toast.show({
+          type: "success",
+          text1: "Success",
+          text2: res.data.login.message,
+        });
+        setUser((c) => ({
+          ...c,
+          password: inputs.password,
+          user: res.data?.login.data?.user,
+        }));
+        if (user.userType === UserType.Host) {
+          router.replace("/host/analytics");
+        } else {
+          router.replace("/guest/home");
+        }
+      }
+    });
+  };
 
   return (
     <AuthLayout
       title="Sign In"
       description="Sign in easily with your email or social accounts"
     >
-      <View className="mt-10 h-full flex-1 justify-between">
+      <View className="mt-10 flex-1 justify-between">
         <View className="gap-4">
-          <FloatingLabelInput
-            focused
-            inputMode="email"
-            autoComplete="email"
-            placeholder="@gmail.com"
-            label="Email"
-          />
-          <FloatingLabelInput
-            secureTextEntry
-            inputMode="text"
-            autoComplete="password"
-            placeholder="**********"
-            label="Password"
-          />
+          <View className="gap-4 min-h-[150px]">
+            <FloatingLabelInput
+              focused
+              value={inputs.email}
+              inputMode="email"
+              autoComplete="email"
+              placeholder="@gmail.com"
+              label="Email"
+              onChangeText={(v) => setInputs((c) => ({ ...c, email: v }))}
+            />
+            <FloatingLabelInput
+              secureTextEntry
+              inputMode="text"
+              autoComplete="password"
+              placeholder="**********"
+              label="Password"
+              onChangeText={(v) => setInputs((c) => ({ ...c, password: v }))}
+            />
+          </View>
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-1">
-              <Checkbox color={colors["primary"]} />
+              <Checkbox
+                onValueChange={setSavePassword}
+                checked={savePassword}
+                color={colors["primary"]}
+              />
               <ThemedText>Remeber Password</ThemedText>
             </View>
             <Link href="/auth/forgot-password">
               <ThemedText>Forgot password?</ThemedText>
             </Link>
           </View>
-          <Button type="primary">
+          <Button
+            onPress={handlePress}
+            loading={res.fetching}
+            type="primary"
+            disabled={
+              res.fetching || !inputs.email?.length || !inputs.password?.length
+            }
+          >
             <ThemedText content="primary">Sign In</ThemedText>
           </Button>
           <Centered className="mt-1">

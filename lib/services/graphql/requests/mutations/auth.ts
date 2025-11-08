@@ -20,3 +20,70 @@ export const REFRESH_TOKEN_MUTATION = gql`
     }
   }
 `;
+
+export const VERIFY_EMAIL_MUTATION = gql`
+  mutation VerifyEmail($input: Otpinput!) {
+    verifyEmail(input: $input) {
+      message
+    }
+  }
+`;
+
+export const RESEND_EMAIL_VERIFICATION_OTP_MUTATION = gql`
+  mutation ResendEmailVerificationOtp($email: String!) {
+    resendEmailVerificationOtp(email: $email) {
+      message
+    }
+  }
+`;
+
+export const LOGIN_MUTATION = gql`
+  mutation Login($input: LoginInput!) {
+    login(input: $input) {
+      message
+      data {
+        token
+        refreshToken
+        expiresAt
+        user {
+          id
+          email
+          dateAdded
+          lastUpdated
+          profile {
+            id
+            fullName
+            phoneNumber
+            gender
+            dateAdded
+            lastUpdated
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const REQUEST_PASSWORD_CHANGE_MUTATION = gql`
+  mutation RequestPasswordChange($input: RequestPasswordChangeInput!) {
+    requestPasswordChange(input: $input) {
+      message
+    }
+  }
+`;
+
+export const RESEND_PASSWORD_CHANGE_OTP_MUTATION = gql`
+  mutation ResendPasswordChangeOtp($email: String!) {
+    resendPasswordChangeOtp(email: $email) {
+      message
+    }
+  }
+`;
+
+export const COMPLETE_PASSWORD_CHANGE_MUTATION = gql`
+  mutation CompletePasswordChange($input: CompletePasswordChangeInput!) {
+    completePasswordChange(input: $input) {
+      message
+    }
+  }
+`;

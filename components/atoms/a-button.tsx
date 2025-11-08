@@ -2,6 +2,7 @@ import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import React from "react";
 import {
+	ActivityIndicator,
 	Pressable,
 	PressableProps,
 	StyleProp,
@@ -12,6 +13,7 @@ import {
 type BaseProps = Omit<PressableProps, "style">;
 type Props = BaseProps & {
 	style?: StyleProp<ViewStyle>;
+	loading?: boolean;
 	variant?: "outline" | "solid";
 	type?: "primary" | "shade" | "tinted" | "background" | "error";
 };
@@ -19,11 +21,21 @@ type Props = BaseProps & {
 const Button: React.FC<Props> = ({
 	style,
 	children,
+	loading,
 	variant,
 	type,
 	...rest
 }) => {
 	const colors = useThemeColors();
+
+	const color =
+		type === "primary"
+			? colors["primary-content"]
+			: type === "shade"
+				? colors["shade-content"]
+				: type === "error"
+					? "#fff"
+					: colors.text;
 
 	return (
 		<Pressable
@@ -31,37 +43,37 @@ const Button: React.FC<Props> = ({
 				styles.button,
 				variant === "outline"
 					? {
-							borderWidth: variant === "outline" ? 1 : 0,
-							borderColor:
-								type === "primary"
-									? colors.primary
-									: type === "shade"
-										? colors.shade
-										: type === "background"
-											? colors.background
-											: type === "error"
-												? colors.error
-												: hexToRgba(colors.primary, 0.15),
-						}
+						borderWidth: variant === "outline" ? 1 : 0,
+						borderColor:
+							type === "primary"
+								? colors.primary
+								: type === "shade"
+									? colors.shade
+									: type === "background"
+										? colors.background
+										: type === "error"
+											? colors.error
+											: hexToRgba(colors.primary, 0.15),
+					}
 					: type && {
-							backgroundColor:
-								type === "primary"
-									? colors["primary"]
-									: type === "shade"
-										? colors["shade"]
-										: type === "background"
-											? colors["background"]
-											: type === "error"
-												? colors.error
-												: hexToRgba(colors["primary"], 0.15),
-						},
+						backgroundColor:
+							type === "primary"
+								? colors["primary"]
+								: type === "shade"
+									? colors["shade"]
+									: type === "background"
+										? colors["background"]
+										: type === "error"
+											? colors.error
+											: hexToRgba(colors["primary"], 0.15),
+					},
 				style,
 				rest.disabled && { opacity: 0.6 },
 				,
 			]}
 			{...rest}
 		>
-			{children}
+			{loading ? <ActivityIndicator size="small" color={color} /> : children}
 		</Pressable>
 	);
 };

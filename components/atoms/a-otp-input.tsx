@@ -27,21 +27,22 @@ const OTPInput: React.FC<Props> = ({
   }, []);
 
   const handleChange = (index: number, text: string) => {
+    // Handle paste: if text is longer than 1, it's likely a paste
     if (text.length > 1) {
       handlePaste(text);
       return;
     }
 
-    if (text.length === 1) {
-      const newValue = value.split("");
-      newValue[index] = text;
-      const updated = newValue.join("");
-      setValue(updated);
-      onChangeText?.(updated);
+    // Handle single character input
+    const newValue = value.split("");
+    newValue[index] = text;
+    const updated = newValue.join("");
+    setValue(updated);
+    onChangeText?.(updated);
 
-      if (index < length - 1) {
-        inputRefs.current[index + 1]?.focus();
-      }
+    // Move to next input if text was entered
+    if (text && index < length - 1) {
+      inputRefs.current[index + 1]?.focus();
     }
   };
 
@@ -69,12 +70,17 @@ const OTPInput: React.FC<Props> = ({
   const handlePaste = (text: string) => {
     // Clean the pasted text (remove non-numeric characters)
     const cleaned = text.replace(/[^0-9]/g, "").slice(0, length);
-    setValue(cleaned);
-    onChangeText?.(cleaned);
+
+    // Pad with existing values if paste is shorter
+    const newValue = cleaned.padEnd(Math.min(value.length, length), "");
+    setValue(newValue);
+    onChangeText?.(newValue);
 
     // Focus the next empty input or the last one
     const nextIndex = Math.min(cleaned.length, length - 1);
-    inputRefs.current[nextIndex]?.focus();
+    setTimeout(() => {
+      inputRefs.current[nextIndex]?.focus();
+    }, 0);
   };
 
   const handleFocus = (index: number) => {
@@ -104,7 +110,7 @@ const OTPInput: React.FC<Props> = ({
           }
           onFocus={() => handleFocus(index)}
           onBlur={handleBlur}
-          maxLength={1}
+          maxLength={length} // Changed: allow full paste into any input
           cursorColor={colors["primary"]}
           selectTextOnFocus
           style={{
