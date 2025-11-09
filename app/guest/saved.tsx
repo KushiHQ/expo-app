@@ -84,7 +84,7 @@ export default function GuestSaved() {
 		<>
 			<DetailsLayout title="Saved Listings" withProfile>
 				<View className="mt-6 gap-8">
-					{Boolean(folderFetching || savedFetching) && (
+					{(folderFetching || savedFetching) && (
 						<View className="gap-2">
 							<View className="px-2">
 								<Skeleton
@@ -105,33 +105,36 @@ export default function GuestSaved() {
 						</View>
 					)}
 
-					{Boolean(
-						!folderFetching &&
-							!savedFetching &&
-							!folderData?.savedHostingFolders.length &&
-							!savedData?.savedHostings.length,
-					) && <EmptyList message="No saved hostings yet" />}
+					{!folderFetching &&
+						!savedFetching &&
+						folderData?.savedHostingFolders &&
+						folderData?.savedHostingFolders.length < 1 &&
+						savedData?.savedHostings &&
+						savedData?.savedHostings.length < 1 && (
+							<EmptyList message="No saved hostings yet" />
+						)}
 
-					{!!folderData?.savedHostingFolders.length && (
-						<View className="gap-2">
-							<ThemedText
-								className="px-3"
-								style={{ fontFamily: Fonts.bold, fontSize: 18 }}
-							>
-								Folders
-							</ThemedText>
-							<SimpleGrid
-								listKey="id"
-								itemDimension={160}
-								data={folderData?.savedHostingFolders ?? []}
-								renderItem={({ item }) => (
-									<SavedHostingFolderCard folder={item} />
-								)}
-							/>
-						</View>
-					)}
+					{folderData?.savedHostingFolders &&
+						folderData?.savedHostingFolders.length > 0 && (
+							<View className="gap-2">
+								<ThemedText
+									className="px-3"
+									style={{ fontFamily: Fonts.bold, fontSize: 18 }}
+								>
+									Folders
+								</ThemedText>
+								<SimpleGrid
+									listKey="id"
+									itemDimension={160}
+									data={folderData?.savedHostingFolders ?? []}
+									renderItem={({ item }) => (
+										<SavedHostingFolderCard folder={item} />
+									)}
+								/>
+							</View>
+						)}
 
-					{savedData?.savedHostings.length && (
+					{savedData?.savedHostings && savedData?.savedHostings.length > 0 && (
 						<View className="gap-2">
 							<ThemedText
 								className="px-2"
