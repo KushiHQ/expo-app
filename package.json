@@ -71,7 +71,8 @@
     "react-native-worklets": "0.5.1",
     "rn-range-slider": "^2.2.2",
     "tailwind-merge": "^3.3.1",
-    "urql": "^5.0.1"
+    "urql": "^5.0.1",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.0.0",

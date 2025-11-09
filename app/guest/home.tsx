@@ -6,18 +6,27 @@ import HostingCard, {
 import { HotingVariantFilter } from "@/components/molecules/m-hosting-variant-filter";
 import HostingFilterManager from "@/components/organisms/o-hosting-filter-manager";
 import { useHostingsQuery } from "@/lib/services/graphql/generated";
+import { useHostingFilterStore } from "@/lib/stores/hostings";
 import React from "react";
 import { View } from "react-native";
 
 export default function GuestHome() {
-	const [{ fetching, data }] = useHostingsQuery();
+	const { filter, updateFilter } = useHostingFilterStore();
+	const [{ fetching, data }] = useHostingsQuery({
+		variables: { filters: filter },
+	});
 
 	return (
 		<ProfileLayout>
 			<View>
 				<View className="gap-4">
 					<HostingFilterManager />
-					<HotingVariantFilter />
+					<HotingVariantFilter
+						value={filter.category?.valueOf()}
+						onSelect={(v) =>
+							updateFilter({ category: v === "All" ? undefined : v })
+						}
+					/>
 				</View>
 				<View className="gap-4 mt-8">
 					{fetching &&

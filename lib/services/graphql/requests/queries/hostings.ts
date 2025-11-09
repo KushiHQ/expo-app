@@ -70,3 +70,15 @@ export const SAVED_HOSTINGS_QUERY = gql`
     }
   }
 `;
+
+export const SAVED_HOSTING_QUERY = gql`
+  query SavedHostingFolder($savedHostingFolderId: String!) {
+    savedHostingFolder(id: $savedHostingFolderId) {
+      id
+      folderName
+      createdAt
+      lastUpdated
+      itemCount
+    }
+  }
+`;

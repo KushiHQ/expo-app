@@ -7,14 +7,15 @@ import { Home } from "lucide-react-native";
 import { cast } from "@/lib/types/utils";
 
 type Props = {
+	value?: string;
 	onSelect?: (variant: string) => void;
 };
 
-export const HotingVariantFilter: React.FC<Props> = ({ onSelect }) => {
-	const [variant, setVariant] = React.useState("All");
-
+export const HotingVariantFilter: React.FC<Props> = ({
+	onSelect,
+	value = "All",
+}) => {
 	const handleSelect = (variant: string) => {
-		setVariant(variant);
 		onSelect?.(variant);
 	};
 
@@ -24,12 +25,12 @@ export const HotingVariantFilter: React.FC<Props> = ({ onSelect }) => {
 				{["All", ...HOSTING_VARIANTS].map((item, index) => {
 					const Icon =
 						HOSTING_VARIANT_ICONS[
-						cast<keyof typeof HOSTING_VARIANT_ICONS>(item)
+							cast<keyof typeof HOSTING_VARIANT_ICONS>(item)
 						] ?? Home;
 					return (
 						<TextPill
 							icon={Icon}
-							selected={variant === item}
+							selected={value === item}
 							onSelect={handleSelect}
 							key={index}
 						>

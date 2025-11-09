@@ -105,6 +105,7 @@ export type HostingRoomsArgs = {
 
 export type HostingFilterInput = {
   category?: InputMaybe<Scalars['String']['input']>;
+  city?: InputMaybe<Scalars['String']['input']>;
   country?: InputMaybe<Scalars['String']['input']>;
   creatorId?: InputMaybe<Scalars['String']['input']>;
   facilities?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -392,6 +393,8 @@ export type Query = {
   hosting: Hosting;
   hostings: Array<Hosting>;
   me: User;
+  savedHosting: SavedHosting;
+  savedHostingFolder: SavedHostingFolder;
   savedHostingFolders: Array<SavedHostingFolder>;
   savedHostings: Array<SavedHosting>;
 };
@@ -405,6 +408,16 @@ export type QueryHostingArgs = {
 export type QueryHostingsArgs = {
   filters?: InputMaybe<HostingFilterInput>;
   pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QuerySavedHostingArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QuerySavedHostingFolderArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -581,6 +594,13 @@ export type SavedHostingsQueryVariables = Exact<{
 
 
 export type SavedHostingsQuery = { __typename?: 'Query', savedHostings: Array<{ __typename?: 'SavedHosting', id: string, image?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', publicUrl: string, id: string } } | null, hosting: { __typename?: 'Hosting', totalRatings?: number | null, averageRating?: number | null, id: string, title?: string | null } }> };
+
+export type SavedHostingFolderQueryVariables = Exact<{
+  savedHostingFolderId: Scalars['String']['input'];
+}>;
+
+
+export type SavedHostingFolderQuery = { __typename?: 'Query', savedHostingFolder: { __typename?: 'SavedHostingFolder', id: string, folderName: string, createdAt: string, lastUpdated: string, itemCount: number } };
 
 
 export const SignUpDocument = gql`
@@ -781,4 +801,19 @@ export const SavedHostingsDocument = gql`
 
 export function useSavedHostingsQuery(options?: Omit<Urql.UseQueryArgs<SavedHostingsQueryVariables>, 'query'>) {
   return Urql.useQuery<SavedHostingsQuery, SavedHostingsQueryVariables>({ query: SavedHostingsDocument, ...options });
+};
+export const SavedHostingFolderDocument = gql`
+    query SavedHostingFolder($savedHostingFolderId: String!) {
+  savedHostingFolder(id: $savedHostingFolderId) {
+    id
+    folderName
+    createdAt
+    lastUpdated
+    itemCount
+  }
+}
+    `;
+
+export function useSavedHostingFolderQuery(options: Omit<Urql.UseQueryArgs<SavedHostingFolderQueryVariables>, 'query'>) {
+  return Urql.useQuery<SavedHostingFolderQuery, SavedHostingFolderQueryVariables>({ query: SavedHostingFolderDocument, ...options });
 };
