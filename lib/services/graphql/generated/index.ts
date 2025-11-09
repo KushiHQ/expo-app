@@ -75,6 +75,7 @@ export type Hosting = {
   city?: Maybe<Scalars['String']['output']>;
   contact?: Maybe<Scalars['String']['output']>;
   country?: Maybe<Scalars['String']['output']>;
+  dateAdded: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
   facilities?: Maybe<Array<Scalars['String']['output']>>;
   host: Host;
@@ -89,11 +90,17 @@ export type Hosting = {
   price?: Maybe<Scalars['Decimal']['output']>;
   propertyType?: Maybe<Scalars['String']['output']>;
   publishStatus?: Maybe<PublishStatus>;
+  rooms: Array<HostingRoom>;
   saved: Scalars['Boolean']['output'];
   state?: Maybe<Scalars['String']['output']>;
   street?: Maybe<Scalars['String']['output']>;
   title?: Maybe<Scalars['String']['output']>;
   totalRatings?: Maybe<Scalars['Int']['output']>;
+};
+
+
+export type HostingRoomsArgs = {
+  pagination?: InputMaybe<PaginationInput>;
 };
 
 export type HostingFilterInput = {
@@ -104,6 +111,7 @@ export type HostingFilterInput = {
   maxPrice?: InputMaybe<Scalars['Decimal']['input']>;
   minPrice?: InputMaybe<Scalars['Decimal']['input']>;
   minRating?: InputMaybe<Scalars['Int']['input']>;
+  publishStatus?: InputMaybe<PublishStatus>;
   state?: InputMaybe<Scalars['String']['input']>;
   street?: InputMaybe<Scalars['String']['input']>;
 };
@@ -178,8 +186,14 @@ export type HostingRoom = {
   description?: Maybe<Scalars['String']['output']>;
   hosting: Hosting;
   id: Scalars['String']['output'];
+  images: Array<HostingRoomImage>;
   lastUpdated: Scalars['String']['output'];
   name: Scalars['String']['output'];
+};
+
+
+export type HostingRoomImagesArgs = {
+  pagination?: InputMaybe<PaginationInput>;
 };
 
 export type HostingRoomImage = {
@@ -418,11 +432,13 @@ export type SavedHosting = {
   folder?: Maybe<SavedHostingFolder>;
   hosting: Hosting;
   id: Scalars['String']['output'];
+  image?: Maybe<HostingRoomImage>;
   lastUpdated: Scalars['String']['output'];
 };
 
 export type SavedHostingFilterInput = {
   folderId?: InputMaybe<Scalars['String']['input']>;
+  noFolder?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type SavedHostingFolder = {
@@ -430,6 +446,7 @@ export type SavedHostingFolder = {
   createdAt: Scalars['String']['output'];
   folderName: Scalars['String']['output'];
   id: Scalars['String']['output'];
+  itemCount: Scalars['Int']['output'];
   lastUpdated: Scalars['String']['output'];
 };
 
@@ -533,6 +550,37 @@ export type CompletePasswordChangeMutationVariables = Exact<{
 
 
 export type CompletePasswordChangeMutation = { __typename?: 'Mutations', completePasswordChange: { __typename?: 'MessageResponse', message: string } };
+
+export type CreateUpdateSavedHostingFolderMutationVariables = Exact<{
+  input: SavedHostingFolderInput;
+}>;
+
+
+export type CreateUpdateSavedHostingFolderMutation = { __typename?: 'Mutations', createUpdateSavedHostingFolder: { __typename?: 'SavedHostingFolderResponse', message: string, data?: { __typename?: 'SavedHostingFolder', id: string } | null } };
+
+export type HostingsQueryVariables = Exact<{
+  filters?: InputMaybe<HostingFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
+  roomsPagination2?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type HostingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, price?: any | null, totalRatings?: number | null, averageRating?: number | null, country?: string | null, state?: string | null, title?: string | null, city?: string | null, street?: string | null, saved: boolean, publishStatus?: PublishStatus | null, paymentInterval?: PaymentInterval | null, dateAdded: string, rooms: Array<{ __typename?: 'HostingRoom', id: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, originalFilename?: string | null } }> }> }> };
+
+export type SavedHostingFoldersQueryVariables = Exact<{
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type SavedHostingFoldersQuery = { __typename?: 'Query', savedHostingFolders: Array<{ __typename?: 'SavedHostingFolder', id: string, folderName: string, createdAt: string, lastUpdated: string, itemCount: number }> };
+
+export type SavedHostingsQueryVariables = Exact<{
+  filters?: InputMaybe<SavedHostingFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type SavedHostingsQuery = { __typename?: 'Query', savedHostings: Array<{ __typename?: 'SavedHosting', id: string, image?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', publicUrl: string, id: string } } | null, hosting: { __typename?: 'Hosting', totalRatings?: number | null, averageRating?: number | null, id: string, title?: string | null } }> };
 
 
 export const SignUpDocument = gql`
@@ -646,4 +694,91 @@ export const CompletePasswordChangeDocument = gql`
 
 export function useCompletePasswordChangeMutation() {
   return Urql.useMutation<CompletePasswordChangeMutation, CompletePasswordChangeMutationVariables>(CompletePasswordChangeDocument);
+};
+export const CreateUpdateSavedHostingFolderDocument = gql`
+    mutation CreateUpdateSavedHostingFolder($input: SavedHostingFolderInput!) {
+  createUpdateSavedHostingFolder(input: $input) {
+    message
+    data {
+      id
+    }
+  }
+}
+    `;
+
+export function useCreateUpdateSavedHostingFolderMutation() {
+  return Urql.useMutation<CreateUpdateSavedHostingFolderMutation, CreateUpdateSavedHostingFolderMutationVariables>(CreateUpdateSavedHostingFolderDocument);
+};
+export const HostingsDocument = gql`
+    query Hostings($filters: HostingFilterInput, $pagination: PaginationInput, $roomsPagination2: PaginationInput) {
+  hostings(filters: $filters, pagination: $pagination) {
+    id
+    price
+    totalRatings
+    averageRating
+    country
+    state
+    title
+    city
+    street
+    saved
+    publishStatus
+    rooms(pagination: $roomsPagination2) {
+      id
+      images {
+        id
+        asset {
+          id
+          publicUrl
+          originalFilename
+        }
+      }
+    }
+    paymentInterval
+    dateAdded
+  }
+}
+    `;
+
+export function useHostingsQuery(options?: Omit<Urql.UseQueryArgs<HostingsQueryVariables>, 'query'>) {
+  return Urql.useQuery<HostingsQuery, HostingsQueryVariables>({ query: HostingsDocument, ...options });
+};
+export const SavedHostingFoldersDocument = gql`
+    query SavedHostingFolders($pagination: PaginationInput) {
+  savedHostingFolders(pagination: $pagination) {
+    id
+    folderName
+    createdAt
+    lastUpdated
+    itemCount
+  }
+}
+    `;
+
+export function useSavedHostingFoldersQuery(options?: Omit<Urql.UseQueryArgs<SavedHostingFoldersQueryVariables>, 'query'>) {
+  return Urql.useQuery<SavedHostingFoldersQuery, SavedHostingFoldersQueryVariables>({ query: SavedHostingFoldersDocument, ...options });
+};
+export const SavedHostingsDocument = gql`
+    query SavedHostings($filters: SavedHostingFilterInput, $pagination: PaginationInput) {
+  savedHostings(filters: $filters, pagination: $pagination) {
+    image {
+      id
+      asset {
+        publicUrl
+        id
+      }
+    }
+    id
+    hosting {
+      totalRatings
+      averageRating
+      id
+      title
+    }
+  }
+}
+    `;
+
+export function useSavedHostingsQuery(options?: Omit<Urql.UseQueryArgs<SavedHostingsQueryVariables>, 'query'>) {
+  return Urql.useQuery<SavedHostingsQuery, SavedHostingsQueryVariables>({ query: SavedHostingsDocument, ...options });
 };

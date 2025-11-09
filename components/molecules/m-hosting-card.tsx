@@ -1,6 +1,5 @@
-import { Hosting } from "@/lib/constants/mocks/hostings";
 import React from "react";
-import { View, Pressable } from "react-native"; // Pressable is now for an inner element
+import { View, Pressable } from "react-native";
 import ThemedText from "../atoms/a-themed-text";
 import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
@@ -14,9 +13,10 @@ import { useRouter } from "expo-router";
 import { PhHeart } from "../icons/i-heart";
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { useFallbackImages } from "@/lib/hooks/images";
+import { HostingsQuery } from "@/lib/services/graphql/generated";
 
 type Props = {
-	hosting: Hosting;
+	hosting: HostingsQuery["hostings"][number];
 	index?: number;
 };
 
@@ -26,6 +26,7 @@ const HostingCard: React.FC<Props> = ({ hosting, index }) => {
 	const { failedImages, handleImageError } = useFallbackImages();
 
 	const borderColor = hexToRgba(colors.text, 0.5);
+	const images = hosting.rooms.map((r) => r.images).flat();
 
 	return (
 		<View className="gap-2">
@@ -38,9 +39,13 @@ const HostingCard: React.FC<Props> = ({ hosting, index }) => {
 					style={{ height: "100%", width: "100%" }}
 					interval={3000 + 1000 * (index ?? 1)}
 				>
-					{hosting.images.map((img, index) => (
+					{images.map((img, index) => (
 						<Image
-							source={{ uri: failedImages.has(index) ? FALLBACK_IMAGE : img }}
+							source={{
+								uri: failedImages.has(index)
+									? FALLBACK_IMAGE
+									: img.asset.publicUrl,
+							}}
 							style={{ height: "100%", width: "100%" }}
 							contentFit="cover"
 							transition={300}
@@ -49,7 +54,7 @@ const HostingCard: React.FC<Props> = ({ hosting, index }) => {
 							cachePolicy="memory-disk"
 							priority="high"
 							onError={() => handleImageError(index)}
-							key={index}
+							key={img.id}
 						/>
 					))}
 				</Carousel>
@@ -66,16 +71,16 @@ const HostingCard: React.FC<Props> = ({ hosting, index }) => {
 							style={{ fontFamily: Fonts.bold, fontSize: 14 }}
 							className="max-w-[50%]"
 						>
-							{hosting.state}, {hosting.country}
+							{hosting.title}
 						</ThemedText>
 						<ThemedText style={{ fontFamily: Fonts.bold, fontSize: 14 }}>
-							₦{hosting.price.toLocaleString()} {hosting.pricing}
+							₦{hosting.price.toLocaleString()} {hosting.paymentInterval}
 						</ThemedText>
 					</View>
 					<ThemedText
 						style={{ fontSize: 14, color: hexToRgba(colors.text, 0.8) }}
 					>
-						{hosting.address}
+						{hosting.state}, {hosting.country}
 					</ThemedText>
 					<View className="flex-row items-center justify-between">
 						<ThemedText
@@ -93,7 +98,7 @@ const HostingCard: React.FC<Props> = ({ hosting, index }) => {
 										color: hexToRgba(colors.text, 0.9),
 									}}
 								>
-									{hosting.averageRating.toFixed(2)}
+									{hosting.averageRating?.toFixed(2)}
 								</ThemedText>
 								<ThemedText
 									style={{
@@ -102,7 +107,7 @@ const HostingCard: React.FC<Props> = ({ hosting, index }) => {
 										color: hexToRgba(colors.text, 0.8),
 									}}
 								>
-									({hosting.ratingCount})
+									({hosting.totalRatings})
 								</ThemedText>
 							</View>
 						</View>

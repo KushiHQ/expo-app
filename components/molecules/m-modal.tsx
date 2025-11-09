@@ -67,7 +67,7 @@ const ThemedModal: React.FC<Props> = ({
 				<Pressable style={styles.backdrop} onPress={onClose}>
 					<View
 						style={{
-							backgroundColor: hexToRgba(colors.text, 0.3),
+							backgroundColor: hexToRgba(colors.text, 0.2),
 							...StyleSheet.absoluteFillObject,
 						}}
 					/>

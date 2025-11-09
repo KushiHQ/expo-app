@@ -1,5 +1,4 @@
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { Hosting } from "@/lib/constants/mocks/hostings";
 import { Image } from "expo-image";
 import React from "react";
 import { Pressable, View } from "react-native";
@@ -13,9 +12,10 @@ import { PhHeart, PhHeartFill } from "../icons/i-heart";
 import { hexToRgba } from "@/lib/utils/colors";
 import Checkbox from "../atoms/a-checkbox";
 import { useFallbackImages } from "@/lib/hooks/images";
+import { SavedHostingsQuery } from "@/lib/services/graphql/generated";
 
 type Props = {
-	hosting: Hosting;
+	hosting: SavedHostingsQuery["savedHostings"][number];
 	selectMode?: boolean;
 	selected?: boolean;
 	onSelect?: (id: string) => void;
@@ -36,8 +36,6 @@ const SavedHostingCard: React.FC<Props> = ({
 	const router = useRouter();
 	const { handleImageError, failedImages } = useFallbackImages();
 
-	const img = hosting.images.at(0);
-
 	return (
 		<Pressable
 			className="mb-2 gap-1"
@@ -46,7 +44,11 @@ const SavedHostingCard: React.FC<Props> = ({
 		>
 			<View className="h-[130px] relative">
 				<Image
-					source={{ uri: failedImages.has(0) ? FALLBACK_IMAGE : img }}
+					source={{
+						uri: failedImages.has(0)
+							? FALLBACK_IMAGE
+							: hosting.image?.asset.publicUrl,
+					}}
 					style={{ height: "100%", width: "100%", borderRadius: 12 }}
 					contentFit="cover"
 					transition={300}
@@ -103,11 +105,14 @@ const SavedHostingCard: React.FC<Props> = ({
 					ellipsizeMode="tail"
 					style={{ fontFamily: Fonts.medium }}
 				>
-					{hosting.title}
+					{hosting.hosting.title}
 				</ThemedText>
 				<View className="flex-row items-center gap-1">
 					<MynauiStarSolid color={colors.accent} size={16} />
-					<ThemedText>{hosting.ratingCount.toFixed(2)}</ThemedText>
+					<ThemedText>
+						{hosting.hosting.averageRating?.toFixed(2)}(
+						{hosting.hosting.totalRatings})
+					</ThemedText>
 				</View>
 			</View>
 		</Pressable>

@@ -4,10 +4,7 @@ import DetailsLayout from "@/components/layouts/details";
 import SavedHostingCard, {
 	SavedHostingCardSkeleton,
 } from "@/components/molecules/m-saved-hosting-card";
-import { generateMockHostings } from "@/lib/constants/mocks/hostings";
 import { Fonts } from "@/lib/constants/theme";
-import { hostingsAtom } from "@/lib/stores/hostings";
-import { useAtom } from "jotai";
 import React from "react";
 import * as Haptics from "expo-haptics";
 import { Platform, View } from "react-native";
@@ -18,36 +15,35 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ThemedView from "@/components/atoms/a-themed-view";
 import { hexToRgba } from "@/lib/utils/colors";
 import { FolderPlus } from "lucide-react-native";
-import ThemedModal from "@/components/molecules/m-modal";
-import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
-import { PhHeart } from "@/components/icons/i-heart";
 import SelectInput, {
 	SelectOption,
 } from "@/components/molecules/m-select-input";
 import BottomSheet from "@/components/atoms/a-bottom-sheet";
+import SavedHostingFolderCard from "@/components/molecules/m-saved-hosting-folder-card";
+import {
+	useSavedHostingFoldersQuery,
+	useSavedHostingsQuery,
+} from "@/lib/services/graphql/generated";
+import EmptyList from "@/components/molecules/m-empty-list";
+import SavedHostingFolderModal from "@/components/organisms/o-saved-hosting-folder-modal";
 
 export default function GuestSaved() {
 	const colors = useThemeColors();
-	const [hostings, setMockHostings] = useAtom(hostingsAtom);
-	const [loading, setLoading] = React.useState(false);
 	const [createFolderOpen, setCreateFolderOpen] = React.useState(false);
 	const [selectFolderOpen, setSelectFolderOpen] = React.useState(false);
 	const [selectMode, setSelectMode] = React.useState(false);
 	const [selected, setSelected] = React.useState<string[]>([]);
-	const [newFolderName, setNewFolderName] = React.useState("");
 	const [selectedFolder, setSelectedFolder] = React.useState("");
 	const insets = useSafeAreaInsets();
-
-	React.useEffect(() => {
-		(async () => {
-			if (hostings.length === 0) {
-				setLoading(true);
-				const hostings = await generateMockHostings();
-				setMockHostings(hostings);
-				setLoading(false);
-			}
-		})();
-	}, []);
+	const [{ fetching: folderFetching, data: folderData }, refetchFolders] =
+		useSavedHostingFoldersQuery();
+	const [{ fetching: savedFetching, data: savedData }] = useSavedHostingsQuery({
+		variables: {
+			filters: {
+				noFolder: true,
+			},
+		},
+	});
 
 	const toggleSelectMode = () => {
 		setSelectMode((c) => !c);
@@ -73,6 +69,7 @@ export default function GuestSaved() {
 	};
 
 	const handleCreate = () => {
+		refetchFolders({ requestPolicy: "network-only" });
 		setCreateFolderOpen(false);
 		setSelectMode((c) => !c);
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -87,7 +84,7 @@ export default function GuestSaved() {
 		<>
 			<DetailsLayout title="Saved Listings" withProfile>
 				<View className="mt-6 gap-8">
-					{loading && (
+					{Boolean(folderFetching || savedFetching) && (
 						<View className="gap-2">
 							<View className="px-2">
 								<Skeleton
@@ -108,81 +105,63 @@ export default function GuestSaved() {
 						</View>
 					)}
 
-					<View className="gap-2">
-						<ThemedText
-							className="px-2"
-							style={{ fontFamily: Fonts.bold, fontSize: 18 }}
-						>
-							Today
-						</ThemedText>
-						<SimpleGrid
-							listKey="id"
-							itemDimension={160}
-							data={hostings}
-							renderItem={({ item }) => (
-								<SavedHostingCard
-									selected={selected.includes(item.id)}
-									onSelect={handleSelect}
-									onDeSelect={handleDeSelect}
-									onSelectMode={toggleSelectMode}
-									selectMode={selectMode}
-									hosting={item}
-								/>
-							)}
-						/>
-					</View>
-					<View className="gap-2">
-						<ThemedText
-							className="px-2"
-							style={{ fontFamily: Fonts.bold, fontSize: 18 }}
-						>
-							Sunday, 16 March
-						</ThemedText>
-						<SimpleGrid
-							listKey="id"
-							itemDimension={160}
-							data={hostings}
-							renderItem={({ item }) => (
-								<SavedHostingCard
-									selected={selected.includes(item.id)}
-									onSelect={handleSelect}
-									onDeSelect={handleDeSelect}
-									onSelectMode={toggleSelectMode}
-									selectMode={selectMode}
-									hosting={item}
-								/>
-							)}
-						/>
-					</View>
+					{Boolean(
+						!folderFetching &&
+							!savedFetching &&
+							!folderData?.savedHostingFolders.length &&
+							!savedData?.savedHostings.length,
+					) && <EmptyList message="No saved hostings yet" />}
+
+					{!!folderData?.savedHostingFolders.length && (
+						<View className="gap-2">
+							<ThemedText
+								className="px-3"
+								style={{ fontFamily: Fonts.bold, fontSize: 18 }}
+							>
+								Folders
+							</ThemedText>
+							<SimpleGrid
+								listKey="id"
+								itemDimension={160}
+								data={folderData?.savedHostingFolders ?? []}
+								renderItem={({ item }) => (
+									<SavedHostingFolderCard folder={item} />
+								)}
+							/>
+						</View>
+					)}
+
+					{savedData?.savedHostings.length && (
+						<View className="gap-2">
+							<ThemedText
+								className="px-2"
+								style={{ fontFamily: Fonts.bold, fontSize: 18 }}
+							>
+								Saved
+							</ThemedText>
+							<SimpleGrid
+								listKey="id"
+								itemDimension={160}
+								data={savedData?.savedHostings ?? []}
+								renderItem={({ item }) => (
+									<SavedHostingCard
+										selected={selected.includes(item.id)}
+										onSelect={handleSelect}
+										onDeSelect={handleDeSelect}
+										onSelectMode={toggleSelectMode}
+										selectMode={selectMode}
+										hosting={item}
+									/>
+								)}
+							/>
+						</View>
+					)}
 				</View>
-				<ThemedModal
-					visible={createFolderOpen}
+				<SavedHostingFolderModal
+					open={createFolderOpen}
 					onClose={() => setCreateFolderOpen(false)}
-				>
-					<View className="gap-8">
-						<ThemedText style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
-							Organize Your Collections
-						</ThemedText>
-						<FloatingLabelInput
-							focused
-							label="Add Folder"
-							placeholder="Folder Name"
-							onChangeText={setNewFolderName}
-							suffix={<PhHeart size={16} color={colors.text} />}
-						/>
-					</View>
-					<View className="flex-row items-center justify-end mt-4 gap-8 px-4">
-						<Button onPress={() => setCreateFolderOpen(false)}>
-							<ThemedText style={{ color: colors.error }}>Cancel</ThemedText>
-						</Button>
-						<Button
-							onPress={handleCreate}
-							disabled={newFolderName.length === 0}
-						>
-							<ThemedText content="tinted">Create</ThemedText>
-						</Button>
-					</View>
-				</ThemedModal>
+					onCreate={handleCreate}
+				/>
 				<BottomSheet
 					isVisible={selectFolderOpen}
 					onClose={() => setSelectFolderOpen(false)}
