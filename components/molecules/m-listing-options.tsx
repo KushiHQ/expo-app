@@ -1,7 +1,6 @@
 import { View } from "react-native";
 import BottomSheet from "../atoms/a-bottom-sheet";
 import React from "react";
-import { Hosting } from "@/lib/constants/mocks/hostings";
 import { Image } from "expo-image";
 import { useFallbackImages } from "@/lib/hooks/images";
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
@@ -12,11 +11,12 @@ import { Fonts } from "@/lib/constants/theme";
 import Button from "../atoms/a-button";
 import { useRouter } from "expo-router";
 import ThemedModal from "./m-modal";
+import { HostListingsQuery } from "@/lib/services/graphql/generated";
 
 type Props = {
 	open: boolean;
 	onClose: () => void;
-	hosting: Hosting;
+	hosting: HostListingsQuery["hostings"][number];
 };
 
 const ListingOptions: React.FC<Props> = ({ open, onClose, hosting }) => {
@@ -24,7 +24,6 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting }) => {
 	const colors = useThemeColors();
 	const [deleteOpen, setDeleteOpen] = React.useState(false);
 	const { failedImages, handleImageError } = useFallbackImages();
-	const img = hosting.images.at(0);
 
 	return (
 		<>
@@ -33,7 +32,9 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting }) => {
 					<View className="h-[100px] w-[120px]">
 						<Image
 							source={{
-								uri: failedImages.has(0) ? FALLBACK_IMAGE : img,
+								uri: failedImages.has(0)
+									? FALLBACK_IMAGE
+									: hosting.coverImage?.asset.publicUrl,
 							}}
 							style={{
 								height: "100%",

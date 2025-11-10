@@ -1,5 +1,4 @@
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { Hosting } from "@/lib/constants/mocks/hostings";
 import { useFallbackImages } from "@/lib/hooks/images";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { Image } from "expo-image";
@@ -12,9 +11,13 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { IconParkOutlineDot } from "../icons/i-circle";
 import ListingOptions from "../molecules/m-listing-options";
 import { useRouter } from "expo-router";
+import {
+	HostListingsQuery,
+	PublishStatus,
+} from "@/lib/services/graphql/generated";
 
 type Props = {
-	hosting: Hosting;
+	hosting: HostListingsQuery["hostings"][number];
 };
 
 const ListingListItem: React.FC<Props> = ({ hosting }) => {
@@ -23,14 +26,12 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
 	const [optionsOpen, setOptionsOpen] = React.useState(false);
 	const { failedImages, handleImageError } = useFallbackImages();
 
-	const img = hosting.images.at(0);
-
 	const statusColor =
-		hosting.status === "live"
+		hosting.publishStatus === PublishStatus.Live
 			? colors.success
-			: hosting.status === "draft"
+			: hosting.publishStatus === PublishStatus.Draft
 				? colors.accent
-				: hosting.status === "review"
+				: hosting.publishStatus === PublishStatus.Inreview
 					? colors.primary
 					: colors.error;
 
@@ -43,7 +44,9 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
 				<View className="h-[80px] w-[100px]">
 					<Image
 						source={{
-							uri: failedImages.has(0) ? FALLBACK_IMAGE : img,
+							uri: failedImages.has(0)
+								? FALLBACK_IMAGE
+								: hosting.coverImage?.asset.publicUrl,
 						}}
 						style={{
 							height: "100%",
@@ -95,7 +98,7 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
 									textTransform: "capitalize",
 								}}
 							>
-								{hosting.status}
+								{hosting.publishStatus}
 							</Text>
 						</View>
 					</View>

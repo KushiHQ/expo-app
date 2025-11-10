@@ -126,6 +126,7 @@ export type HostingFilterInput = {
   publishStatus?: InputMaybe<PublishStatus>;
   state?: InputMaybe<Scalars['String']['input']>;
   street?: InputMaybe<Scalars['String']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type HostingInput = {
@@ -644,6 +645,14 @@ export type SavedHostingFolderQueryVariables = Exact<{
 
 export type SavedHostingFolderQuery = { __typename?: 'Query', savedHostingFolder: { __typename?: 'SavedHostingFolder', id: string, folderName: string, createdAt: string, lastUpdated: string, itemCount: number } };
 
+export type HostListingsQueryVariables = Exact<{
+  pagination?: InputMaybe<PaginationInput>;
+  filters?: InputMaybe<HostingFilterInput>;
+}>;
+
+
+export type HostListingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, title?: string | null, state?: string | null, city?: string | null, publishStatus?: PublishStatus | null, dateAdded: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, originalFilename?: string | null } } | null }> };
+
 export type NotificationsQueryVariables = Exact<{
   filter?: InputMaybe<NotificationsFilterInput>;
   pagination?: InputMaybe<PaginationInput>;
@@ -871,6 +880,31 @@ export const SavedHostingFolderDocument = gql`
 
 export function useSavedHostingFolderQuery(options: Omit<Urql.UseQueryArgs<SavedHostingFolderQueryVariables>, 'query'>) {
   return Urql.useQuery<SavedHostingFolderQuery, SavedHostingFolderQueryVariables>({ query: SavedHostingFolderDocument, ...options });
+};
+export const HostListingsDocument = gql`
+    query HostListings($pagination: PaginationInput, $filters: HostingFilterInput) {
+  hostings(pagination: $pagination, filters: $filters) {
+    id
+    coverImage {
+      id
+      asset {
+        id
+        publicUrl
+        originalFilename
+      }
+    }
+    title
+    state
+    city
+    publishStatus
+    dateAdded
+    lastUpdated
+  }
+}
+    `;
+
+export function useHostListingsQuery(options?: Omit<Urql.UseQueryArgs<HostListingsQueryVariables>, 'query'>) {
+  return Urql.useQuery<HostListingsQuery, HostListingsQueryVariables>({ query: HostListingsDocument, ...options });
 };
 export const NotificationsDocument = gql`
     query Notifications($filter: NotificationsFilterInput, $pagination: PaginationInput) {

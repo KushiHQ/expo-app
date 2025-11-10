@@ -78,7 +78,6 @@ const LocationSelectInput: React.FC<Props> = ({
 	const [query, setQuery] = React.useState("");
 	const debouncedQuery = useDebounce(query, 500);
 
-	// Fetch autocomplete suggestions
 	const { isFetching, data } = useQuery({
 		queryKey: ["locations", debouncedQuery],
 		queryFn: async () => {
@@ -90,9 +89,8 @@ const LocationSelectInput: React.FC<Props> = ({
 
 			url.searchParams.append("input", debouncedQuery);
 			url.searchParams.append("key", GOOGLE_API_KEY!);
-			url.searchParams.append("components", "country:ng"); // Restrict to Nigeria
-			url.searchParams.append("types", "geocode"); // Cities, addresses, etc.
-			// You can also use: "establishment" for businesses, "(cities)" for cities only
+			url.searchParams.append("components", "country:ng");
+			url.searchParams.append("types", "geocode");
 
 			const res = await fetch(url.toString());
 			return cast<GooglePlacesResponse>(await res.json());
@@ -100,7 +98,6 @@ const LocationSelectInput: React.FC<Props> = ({
 		enabled: !!debouncedQuery && debouncedQuery.length > 2,
 	});
 
-	// Fetch place details when user selects a location
 	const handleSelectLocation = async (prediction: GooglePlacePrediction) => {
 		try {
 			const url = new URL(

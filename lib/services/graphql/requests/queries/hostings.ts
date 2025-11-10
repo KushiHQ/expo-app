@@ -82,3 +82,28 @@ export const SAVED_HOSTING_QUERY = gql`
     }
   }
 `;
+
+export const HOST_LISTINGS_QUERY = gql`
+  query HostListings(
+    $pagination: PaginationInput
+    $filters: HostingFilterInput
+  ) {
+    hostings(pagination: $pagination, filters: $filters) {
+      id
+      coverImage {
+        id
+        asset {
+          id
+          publicUrl
+          originalFilename
+        }
+      }
+      title
+      state
+      city
+      publishStatus
+      dateAdded
+      lastUpdated
+    }
+  }
+`;

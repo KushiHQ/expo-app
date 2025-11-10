@@ -4,9 +4,8 @@ import ThemedText from "@/components/atoms/a-themed-text";
 import { BusinessDealHandshake } from "@/components/icons/i-business-deal-handshake";
 import { CashPaymentBag } from "@/components/icons/i-payments";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { userAtom } from "@/lib/stores/users";
+import { useUserStore } from "@/lib/stores/users";
 import { UserType } from "@/lib/types/users";
-import { useAtom } from "jotai";
 import React from "react";
 import { View } from "react-native";
 
@@ -16,7 +15,7 @@ type Props = {
 
 const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 	const colors = useThemeColors();
-	const [user, setUser] = useAtom(userAtom);
+	const { user, updateUser } = useUserStore();
 
 	return (
 		<View>
@@ -40,9 +39,9 @@ const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 							size={28}
 							onValueChange={() => {
 								if (user.userType !== UserType.Guest) {
-									setUser((c) => ({ ...c, userType: UserType.Guest }));
+									updateUser({ userType: UserType.Guest });
 								} else {
-									setUser((c) => ({ ...c, userType: undefined }));
+									updateUser({ userType: undefined });
 								}
 							}}
 						/>
@@ -61,9 +60,9 @@ const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 							size={28}
 							onValueChange={() => {
 								if (user.userType !== UserType.Host) {
-									setUser((c) => ({ ...c, userType: UserType.Host }));
+									updateUser({ userType: UserType.Host });
 								} else {
-									setUser((c) => ({ ...c, userType: undefined }));
+									updateUser({ userType: undefined });
 								}
 							}}
 						/>

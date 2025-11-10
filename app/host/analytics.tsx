@@ -86,7 +86,7 @@ export default function HostAnalytics() {
 			<View className="mt-8">
 				<View className="gap-1 px-2">
 					{analyticsFetching ? (
-						<Skeleton style={{ width: "100%", height: 24, borderRadius: 8 }} />
+						<Skeleton style={{ width: "100%", height: 22, borderRadius: 8 }} />
 					) : (
 						<ThemedText style={{ fontFamily: Fonts.bold, fontSize: 22 }}>
 							Welcome {analyticsData?.hostAnalytics.host.user.profile.fullName}
@@ -110,7 +110,7 @@ export default function HostAnalytics() {
 									<Skeleton
 										style={{
 											width: "100%",
-											height: 150,
+											height: 110,
 											borderRadius: 8,
 										}}
 									/>

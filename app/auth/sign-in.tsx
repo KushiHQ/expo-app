@@ -7,14 +7,13 @@ import { LogosApple, LogosGoogle } from "@/components/icons/i-logos";
 import AuthLayout from "@/components/layouts/auth";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { LoginInput, useLoginMutation } from "@/lib/services/graphql/generated";
-import { userAtom } from "@/lib/stores/users";
+import { useUserStore } from "@/lib/stores/users";
 import { UserType } from "@/lib/types/users";
 import { cast } from "@/lib/types/utils";
 import { saveAuthTokens } from "@/lib/utils/auth";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
-import { useAtom } from "jotai";
 import React from "react";
 import { View } from "react-native";
 import Toast from "react-native-toast-message";
@@ -26,7 +25,7 @@ export default function Login() {
 	const [inputs, setInputs] = React.useState<Partial<LoginInput>>({
 		email: cast(email),
 	});
-	const [user, setUser] = useAtom(userAtom);
+	const { user, updateUser } = useUserStore();
 	const [savePassword, setSavePassword] = React.useState(false);
 	const [res, mutate] = useLoginMutation();
 
@@ -45,11 +44,11 @@ export default function Login() {
 					access: res.data.login.data.token,
 					refresh: res.data.login.data.refreshToken,
 				});
-				setUser((c) => ({
-					...c,
-					password: inputs.password,
+				updateUser({
+					password: savePassword ? inputs.password : undefined,
 					user: res.data?.login.data?.user,
-				}));
+					email: inputs.email,
+				});
 				if (user.userType === UserType.Host) {
 					router.replace("/host/analytics");
 				} else {

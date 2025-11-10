@@ -1,7 +1,27 @@
-import ATOM_KEYS from "../constants/atom-keys";
-import { UserStore } from "../types/users";
-import atomWithStorageStorage from "./utils";
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { UserData } from "../types/users";
 
-export const DEFAULT_USER: UserStore = {};
+const DEFAULT_USER: UserData = { hostListingsView: "list" };
 
-export const userAtom = atomWithStorageStorage(ATOM_KEYS.USER, DEFAULT_USER);
+type UserStore = {
+  user: UserData;
+  updateUser: (user: Partial<UserData>) => void;
+  reset: () => void;
+};
+
+export const useUserStore = create<UserStore>()(
+  persist(
+    (set) => ({
+      user: DEFAULT_USER,
+      updateUser: (user) =>
+        set((state) => ({ user: { ...state.user, ...user } })),
+      reset: () => set({ user: DEFAULT_USER }),
+    }),
+    {
+      name: "user-storage",
+      storage: createJSONStorage(() => AsyncStorage),
+    },
+  ),
+);

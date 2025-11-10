@@ -10,8 +10,7 @@ import { IonNotificationsOutline } from "../icons/i-notifications";
 import { Image } from "expo-image";
 import { usePathname, useRouter } from "expo-router";
 import { EventEmitter } from "@/lib/utils/event-emitter";
-import { useAtomValue } from "jotai";
-import { userAtom } from "@/lib/stores/users";
+import { useUserStore } from "@/lib/stores/users";
 
 type Props = {
 	children?: React.ReactNode;
@@ -22,7 +21,7 @@ const ProfileLayout: React.FC<Props> = ({ children }) => {
 	const router = useRouter();
 	const scrollViewRef = useRef<ScrollView>(null);
 	const path = usePathname();
-	const user = useAtomValue(userAtom);
+	const user = useUserStore((c) => c.user);
 
 	useEffect(() => {
 		const handleScrollToTop = () => {
