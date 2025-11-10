@@ -68,6 +68,16 @@ export type Host = {
   user: User;
 };
 
+export type HostAnalytics = {
+  __typename?: 'HostAnalytics';
+  averateRating: Scalars['Float']['output'];
+  host: Host;
+  occupancyRate: Scalars['Float']['output'];
+  topListing?: Maybe<Hosting>;
+  totalListings: Scalars['Int']['output'];
+  totalRevenue: Scalars['Decimal']['output'];
+};
+
 export type Hosting = {
   __typename?: 'Hosting';
   averageRating?: Maybe<Scalars['Float']['output']>;
@@ -75,6 +85,7 @@ export type Hosting = {
   city?: Maybe<Scalars['String']['output']>;
   contact?: Maybe<Scalars['String']['output']>;
   country?: Maybe<Scalars['String']['output']>;
+  coverImage?: Maybe<HostingRoomImage>;
   dateAdded: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
   facilities?: Maybe<Array<Scalars['String']['output']>>;
@@ -351,6 +362,29 @@ export type MutationsVerifyEmailArgs = {
   input: Otpinput;
 };
 
+export type Notification = {
+  __typename?: 'Notification';
+  action?: Maybe<Scalars['String']['output']>;
+  actionData?: Maybe<Scalars['String']['output']>;
+  createdAt: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+  message: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  type: NotificationType;
+};
+
+export enum NotificationType {
+  General = 'GENERAL',
+  GuestAlert = 'GUEST_ALERT',
+  HostAlert = 'HOST_ALERT',
+  System = 'SYSTEM'
+}
+
+export type NotificationsFilterInput = {
+  type?: InputMaybe<NotificationType>;
+};
+
 export type Otpinput = {
   email: Scalars['String']['input'];
   otp: Scalars['String']['input'];
@@ -390,9 +424,11 @@ export type Query = {
   __typename?: 'Query';
   authGuest: Guest;
   authHost: Host;
+  hostAnalytics: HostAnalytics;
   hosting: Hosting;
   hostings: Array<Hosting>;
   me: User;
+  notifications: Array<Notification>;
   savedHosting: SavedHosting;
   savedHostingFolder: SavedHostingFolder;
   savedHostingFolders: Array<SavedHostingFolder>;
@@ -407,6 +443,12 @@ export type QueryHostingArgs = {
 
 export type QueryHostingsArgs = {
   filters?: InputMaybe<HostingFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QueryNotificationsArgs = {
+  filter?: InputMaybe<NotificationsFilterInput>;
   pagination?: InputMaybe<PaginationInput>;
 };
 
@@ -601,6 +643,19 @@ export type SavedHostingFolderQueryVariables = Exact<{
 
 
 export type SavedHostingFolderQuery = { __typename?: 'Query', savedHostingFolder: { __typename?: 'SavedHostingFolder', id: string, folderName: string, createdAt: string, lastUpdated: string, itemCount: number } };
+
+export type NotificationsQueryVariables = Exact<{
+  filter?: InputMaybe<NotificationsFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type NotificationsQuery = { __typename?: 'Query', notifications: Array<{ __typename?: 'Notification', id: string, title: string, message: string, type: NotificationType, createdAt: string, lastUpdated: string, action?: string | null, actionData?: string | null }> };
+
+export type HostAnalyticsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type HostAnalyticsQuery = { __typename?: 'Query', hostAnalytics: { __typename?: 'HostAnalytics', totalListings: number, occupancyRate: number, totalRevenue: any, averateRating: number, host: { __typename?: 'Host', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string } } }, topListing?: { __typename?: 'Hosting', id: string, city?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, totalRatings?: number | null, title?: string | null, averageRating?: number | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', publicUrl: string, originalFilename?: string | null, id: string } } | null } | null } };
 
 
 export const SignUpDocument = gql`
@@ -816,4 +871,64 @@ export const SavedHostingFolderDocument = gql`
 
 export function useSavedHostingFolderQuery(options: Omit<Urql.UseQueryArgs<SavedHostingFolderQueryVariables>, 'query'>) {
   return Urql.useQuery<SavedHostingFolderQuery, SavedHostingFolderQueryVariables>({ query: SavedHostingFolderDocument, ...options });
+};
+export const NotificationsDocument = gql`
+    query Notifications($filter: NotificationsFilterInput, $pagination: PaginationInput) {
+  notifications(filter: $filter, pagination: $pagination) {
+    id
+    title
+    message
+    type
+    createdAt
+    lastUpdated
+    action
+    actionData
+  }
+}
+    `;
+
+export function useNotificationsQuery(options?: Omit<Urql.UseQueryArgs<NotificationsQueryVariables>, 'query'>) {
+  return Urql.useQuery<NotificationsQuery, NotificationsQueryVariables>({ query: NotificationsDocument, ...options });
+};
+export const HostAnalyticsDocument = gql`
+    query HostAnalytics {
+  hostAnalytics {
+    host {
+      id
+      user {
+        id
+        profile {
+          fullName
+          id
+        }
+      }
+    }
+    totalListings
+    occupancyRate
+    totalRevenue
+    averateRating
+    topListing {
+      id
+      coverImage {
+        id
+        asset {
+          publicUrl
+          originalFilename
+          id
+        }
+      }
+      city
+      state
+      price
+      paymentInterval
+      totalRatings
+      title
+      averageRating
+    }
+  }
+}
+    `;
+
+export function useHostAnalyticsQuery(options?: Omit<Urql.UseQueryArgs<HostAnalyticsQueryVariables>, 'query'>) {
+  return Urql.useQuery<HostAnalyticsQuery, HostAnalyticsQueryVariables>({ query: HostAnalyticsDocument, ...options });
 };

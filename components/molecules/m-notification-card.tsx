@@ -7,9 +7,10 @@ import Logo from "../icons/i-logo";
 import ThemedText from "../atoms/a-themed-text";
 import { Fonts } from "@/lib/constants/theme";
 import Button from "../atoms/a-button";
+import { NotificationsQuery } from "@/lib/services/graphql/generated";
 
 type Props = {
-	notification: Notification;
+	notification: NotificationsQuery["notifications"][number];
 };
 
 const NotificationCard: React.FC<Props> = ({ notification }) => {

@@ -7,18 +7,16 @@ import { Pressable, View } from "react-native";
 import ThemedText from "../atoms/a-themed-text";
 import { Fonts } from "@/lib/constants/theme";
 import { hexToRgba } from "@/lib/utils/colors";
-import { Hosting } from "@/lib/constants/mocks/hostings";
 import { MynauiStarSolid } from "../icons/i-star";
+import { HostAnalyticsQuery } from "@/lib/services/graphql/generated";
 
 type Props = {
-	hosting: Hosting;
+	hosting: HostAnalyticsQuery["hostAnalytics"]["topListing"];
 };
 
 const TopListingCard: React.FC<Props> = ({ hosting }) => {
 	const colors = useThemeColors();
 	const { failedImages, handleImageError } = useFallbackImages();
-
-	const img = hosting.images.at(0);
 
 	return (
 		<Pressable
@@ -30,7 +28,11 @@ const TopListingCard: React.FC<Props> = ({ hosting }) => {
 				style={{ borderColor: colors.text }}
 			>
 				<Image
-					source={{ uri: failedImages.has(0) ? FALLBACK_IMAGE : img }}
+					source={{
+						uri: failedImages.has(0)
+							? FALLBACK_IMAGE
+							: hosting?.coverImage?.asset.publicUrl,
+					}}
 					style={{ height: "100%", width: "100%" }}
 					contentFit="cover"
 					transition={300}
@@ -47,16 +49,16 @@ const TopListingCard: React.FC<Props> = ({ hosting }) => {
 					ellipsizeMode="tail"
 					numberOfLines={2}
 				>
-					{hosting.title}
+					{hosting?.title}
 				</ThemedText>
 				<ThemedText
 					style={{ fontSize: 14, color: hexToRgba(colors.text, 0.6) }}
 				>
-					{hosting.city}, {hosting.state}
+					{hosting?.city}, {hosting?.state}
 				</ThemedText>
 				<View className="flex-row items-center justify-between">
 					<ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14 }}>
-						₦{hosting.price.toLocaleString()} {hosting.pricing}
+						₦{hosting?.price.toLocaleString()} {hosting?.paymentInterval}
 					</ThemedText>
 					<View className="flex-row items-center gap-1">
 						<MynauiStarSolid color={colors.accent} size={16} />
@@ -68,7 +70,7 @@ const TopListingCard: React.FC<Props> = ({ hosting }) => {
 									color: hexToRgba(colors.text, 0.9),
 								}}
 							>
-								{hosting.averageRating.toFixed(2)}
+								{hosting?.averageRating?.toFixed(2)}
 							</ThemedText>
 							<ThemedText
 								style={{
@@ -77,7 +79,7 @@ const TopListingCard: React.FC<Props> = ({ hosting }) => {
 									color: hexToRgba(colors.text, 0.8),
 								}}
 							>
-								({hosting.ratingCount})
+								({hosting?.totalRatings})
 							</ThemedText>
 						</View>
 					</View>

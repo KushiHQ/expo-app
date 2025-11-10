@@ -36,7 +36,7 @@ export default function GuestSaved() {
 	const [selectedFolder, setSelectedFolder] = React.useState("");
 	const insets = useSafeAreaInsets();
 	const [{ fetching: folderFetching, data: folderData }, refetchFolders] =
-		useSavedHostingFoldersQuery();
+		useSavedHostingFoldersQuery({ requestPolicy: "cache-and-network" });
 	const [{ fetching: savedFetching, data: savedData }] = useSavedHostingsQuery({
 		variables: {
 			filters: {

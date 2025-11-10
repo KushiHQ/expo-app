@@ -1,86 +1,62 @@
 import AnalyticsCard from "@/components/atoms/a-analytics-card";
+import Skeleton from "@/components/atoms/a-skeleton";
 import ThemedText from "@/components/atoms/a-themed-text";
 import DetailsLayout from "@/components/layouts/details";
+import EmptyList from "@/components/molecules/m-empty-list";
 import NotificationCard from "@/components/molecules/m-notification-card";
 import TopListingCard from "@/components/molecules/m-top-listing-card";
-import {
-	generateMockNotifications,
-	Notification,
-} from "@/lib/constants/mocks/notifications";
 import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hostingsAtom } from "@/lib/stores/hostings";
+import {
+	useHostAnalyticsQuery,
+	useNotificationsQuery,
+} from "@/lib/services/graphql/generated";
 import { hexToRgba } from "@/lib/utils/colors";
-import { useRouter } from "expo-router";
-import { useAtomValue } from "jotai";
-import { LucideHousePlus, Plus } from "lucide-react-native";
+import { Link, useRouter } from "expo-router";
+import { Plus } from "lucide-react-native";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, RefreshControl, View } from "react-native";
 import { SimpleGrid } from "react-native-super-grid";
 
 export default function HostAnalytics() {
 	const router = useRouter();
 	const colors = useThemeColors();
-	const hostings = useAtomValue(hostingsAtom);
-	const [notifications, setNotifications] = React.useState<Notification[]>([]);
-	const topPerforming = React.useMemo(() => {
-		let hosting = hostings.at(0);
-		hostings.forEach((h) => {
-			if (h.averageRating > (hosting?.averageRating ?? 0)) {
-				hosting = h;
-			}
-		});
-
-		return hosting;
-	}, [hostings]);
+	const [
+		{ fetching: analyticsFetching, data: analyticsData },
+		refetchAnalytics,
+	] = useHostAnalyticsQuery();
+	const [
+		{ fetching: notificationsFetching, data: notificationsData },
+		refetchNotifications,
+	] = useNotificationsQuery({ variables: { pagination: { limit: 5 } } });
 	const data = React.useMemo(() => {
-		const totalListings = hostings.length;
-		const ocupied = hostings.slice(0, Math.round(totalListings / 2));
-		const occupancyRate = (ocupied.length / totalListings) * 100;
-		const totalRevenue = ocupied
-			.map((v) => v.price)
-			.reduce((acc, curr) => acc + curr);
-		const averageRating =
-			hostings.map((v) => v.averageRating).reduce((acc, prev) => acc + prev) /
-			totalListings;
-
 		return [
 			{
 				label: "Total Listings",
-				value: totalListings,
+				value: analyticsData?.hostAnalytics.totalListings,
 				currency: false,
 				percentage: false,
 			},
 			{
 				label: "Occupancy Rate",
-				value: occupancyRate,
+				value: analyticsData?.hostAnalytics.occupancyRate,
 				currency: false,
 				percentage: true,
 			},
 			{
 				label: "Total Revenue",
-				value: totalRevenue,
+				value: analyticsData?.hostAnalytics.totalRevenue,
 				currency: true,
 				percentage: false,
 			},
 			{
 				label: "Averate Rating",
-				value: averageRating,
+				value: analyticsData?.hostAnalytics.averateRating,
 				currency: false,
 				percentage: false,
 			},
 		];
-	}, [hostings]);
-
-	React.useEffect(() => {
-		if (!notifications.length) {
-			setNotifications(
-				generateMockNotifications(6).filter(
-					(v) => v.category === "Guest Alert",
-				),
-			);
-		}
-	}, []);
+	}, [analyticsData]);
 
 	return (
 		<DetailsLayout
@@ -88,6 +64,15 @@ export default function HostAnalytics() {
 			variant="host"
 			withNotifications
 			withProfile
+			refreshControl={
+				<RefreshControl
+					refreshing={analyticsFetching || notificationsFetching}
+					onRefresh={() => {
+						refetchAnalytics();
+						refetchNotifications();
+					}}
+				/>
+			}
 			footer={
 				<Pressable
 					onPress={() => router.push("/hostings/form")}
@@ -100,66 +85,98 @@ export default function HostAnalytics() {
 		>
 			<View className="mt-8">
 				<View className="gap-1 px-2">
-					<ThemedText style={{ fontFamily: Fonts.bold, fontSize: 22 }}>
-						Welcome Naruto
-					</ThemedText>
+					{analyticsFetching ? (
+						<Skeleton style={{ width: "100%", height: 24, borderRadius: 8 }} />
+					) : (
+						<ThemedText style={{ fontFamily: Fonts.bold, fontSize: 22 }}>
+							Welcome {analyticsData?.hostAnalytics.host.user.profile.fullName}
+						</ThemedText>
+					)}
 					<ThemedText
 						style={{ color: hexToRgba(colors.text, 0.6), fontSize: 14 }}
 					>
 						Here’s your hosting summary
 					</ThemedText>
 				</View>
-				{!hostings.length || !topPerforming ? (
-					<View className="mt-20">
-						<View
-							className="items-center justify-center p-8 h-[210px] gap-4"
-							style={{
-								backgroundColor: hexToRgba(colors.text, 0.08),
-								borderRadius: 12,
-							}}
-						>
-							<LucideHousePlus color={colors.text} />
+				<View className="mt-8">
+					{analyticsFetching ? (
+						<SimpleGrid
+							spacing={6}
+							itemDimension={160}
+							listKey={undefined}
+							data={[1, 2, 3, 4]}
+							renderItem={() => (
+								<View className="mb-1">
+									<Skeleton
+										style={{
+											width: "100%",
+											height: 150,
+											borderRadius: 8,
+										}}
+									/>
+								</View>
+							)}
+						/>
+					) : (
+						<SimpleGrid
+							spacing={6}
+							listKey={undefined}
+							itemDimension={160}
+							data={data}
+							renderItem={({ item }) => (
+								<View className="mb-1">
+									<AnalyticsCard {...item} />
+								</View>
+							)}
+						/>
+					)}
+				</View>
+				<View className="mt-6 gap-3 px-2">
+					<ThemedText style={{ fontFamily: Fonts.bold }}>
+						Top Performing Listing
+					</ThemedText>
+					{analyticsFetching ? (
+						<Skeleton style={{ height: 100, width: "100%", borderRadius: 8 }} />
+					) : !analyticsData?.hostAnalytics.topListing ? (
+						<EmptyList message="You have no listings yet" />
+					) : (
+						<TopListingCard hosting={analyticsData?.hostAnalytics.topListing} />
+					)}
+				</View>
+				<View className="mt-8 gap-3 px-2">
+					<View className="flex-row justify-between items-center">
+						<ThemedText style={{ fontFamily: Fonts.bold }}>
+							Recent Activity
+						</ThemedText>
+						<Link href="/users/notifications">
 							<ThemedText
-								className="text-center"
-								style={{ color: hexToRgba(colors.text, 0.6) }}
+								style={{ fontSize: 14, color: colors.primary }}
+								className="underline"
 							>
-								You currently have no listings. Begin your hosting journey
-								today!
+								View All
 							</ThemedText>
-						</View>
+						</Link>
 					</View>
-				) : (
-					<>
-						<View className="mt-8">
-							<SimpleGrid
-								spacing={6}
-								listKey={undefined}
-								data={data}
-								renderItem={({ item }) => (
-									<View className="mb-1">
-										<AnalyticsCard {...item} />
-									</View>
-								)}
-							/>
-						</View>
-						<View className="mt-6 gap-3 px-2">
-							<ThemedText style={{ fontFamily: Fonts.bold }}>
-								Top Performing Listing
-							</ThemedText>
-							<TopListingCard hosting={topPerforming} />
-						</View>
-						<View className="mt-8 gap-3 px-2">
-							<ThemedText style={{ fontFamily: Fonts.bold }}>
-								Recent Activity
-							</ThemedText>
-							<View className="gap-2">
-								{notifications.map((notification, index) => (
-									<NotificationCard notification={notification} key={index} />
-								))}
-							</View>
-						</View>
-					</>
-				)}
+					<View className="gap-2">
+						{notificationsFetching
+							? Array.from({ length: 5 }).map((_, index) => (
+								<Skeleton
+									style={{ height: 85, width: "100%", borderRadius: 8 }}
+									key={index}
+								/>
+							))
+							: notificationsData?.notifications.map((notification) => (
+								<NotificationCard
+									notification={notification}
+									key={notification.id}
+								/>
+							))}
+						{!notificationsFetching &&
+							!notificationsData?.notifications.length && (
+								<EmptyList message="No activity yet" />
+							)}
+					</View>
+				</View>
 			</View>
 		</DetailsLayout>
 	);
