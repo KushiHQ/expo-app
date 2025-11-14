@@ -106,7 +106,7 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 		};
 
 		return (
-			<View>
+			<View style={{ minHeight: 64 }}>
 				<View className="relative">
 					<Pressable
 						onPress={handleConntainerPress}

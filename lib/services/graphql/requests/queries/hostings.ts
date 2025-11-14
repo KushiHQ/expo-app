@@ -1,5 +1,60 @@
 import { gql } from "urql";
 
+export const HOSTING_QUERY = gql`
+  query Hosting($hostingId: String!) {
+    hosting(hostingId: $hostingId) {
+      id
+      title
+      propertyType
+      listingType
+      description
+      categories
+      postalCode
+      city
+      street
+      state
+      country
+      longitude
+      latitude
+      landmarks
+      contact
+      price
+      paymentInterval
+      facilities
+      averageRating
+      totalRatings
+      publishStatus
+      dateAdded
+      lastUpdated
+      saved
+      rooms {
+        id
+        name
+        count
+        description
+        dateAdded
+        lastUpdated
+        images {
+          id
+          dateAdded
+          lastUpdated
+          asset {
+            id
+            publicUrl
+          }
+        }
+      }
+      host {
+        id
+        user {
+          id
+          email
+        }
+      }
+    }
+  }
+`;
+
 export const HOSTINGS_QUERY = gql`
   query Hostings(
     $filters: HostingFilterInput

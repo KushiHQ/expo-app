@@ -15,7 +15,7 @@ type Props = BaseProps & {
 	style?: StyleProp<ViewStyle>;
 	loading?: boolean;
 	variant?: "outline" | "solid";
-	type?: "primary" | "shade" | "tinted" | "background" | "error";
+	type?: "primary" | "shade" | "tinted" | "background" | "error" | "text";
 };
 
 const Button: React.FC<Props> = ({
@@ -35,7 +35,9 @@ const Button: React.FC<Props> = ({
 				? colors["shade-content"]
 				: type === "error"
 					? "#fff"
-					: colors.text;
+					: type === "text"
+						? colors.background
+						: colors.text;
 
 	return (
 		<Pressable
@@ -51,9 +53,11 @@ const Button: React.FC<Props> = ({
 										? colors.shade
 										: type === "background"
 											? colors.background
-											: type === "error"
-												? colors.error
-												: hexToRgba(colors.primary, 0.15),
+											: type === "text"
+												? colors.text
+												: type === "error"
+													? colors.error
+													: hexToRgba(colors.primary, 0.15),
 						}
 					: type && {
 							backgroundColor:
@@ -63,9 +67,11 @@ const Button: React.FC<Props> = ({
 										? colors["shade"]
 										: type === "background"
 											? colors["background"]
-											: type === "error"
-												? colors.error
-												: hexToRgba(colors["primary"], 0.15),
+											: type === "text"
+												? colors.text
+												: type === "error"
+													? colors.error
+													: hexToRgba(colors["primary"], 0.15),
 						},
 				style,
 				rest.disabled && { opacity: 0.6 },

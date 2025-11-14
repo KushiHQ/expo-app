@@ -74,7 +74,7 @@ const HostingCard: React.FC<Props> = ({ hosting, index }) => {
 							{hosting.title}
 						</ThemedText>
 						<ThemedText style={{ fontFamily: Fonts.bold, fontSize: 14 }}>
-							₦{hosting.price.toLocaleString()} {hosting.paymentInterval}
+							₦{hosting.price?.toLocaleString()} {hosting.paymentInterval}
 						</ThemedText>
 					</View>
 					<ThemedText

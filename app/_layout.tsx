@@ -30,7 +30,7 @@ import { PaperProvider } from "react-native-paper";
 import TansStackProvider from "@/components/providers/tanstack";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import URQLProvider from "@/components/providers/urql";
+import GraphqlClientProvider from "@/components/providers/graphql-client";
 import Toast from "react-native-toast-message";
 import toastConfig from "@/components/atoms/a-toast";
 
@@ -62,7 +62,7 @@ export default function RootLayout() {
 
 	return (
 		<>
-			<URQLProvider>
+			<GraphqlClientProvider>
 				<GestureHandlerRootView style={{ flex: 1 }}>
 					<KeyboardProvider>
 						<TansStackProvider>
@@ -126,7 +126,7 @@ export default function RootLayout() {
 						</TansStackProvider>
 					</KeyboardProvider>
 				</GestureHandlerRootView>
-			</URQLProvider>
+			</GraphqlClientProvider>
 			<Toast config={toastConfig} />
 		</>
 	);

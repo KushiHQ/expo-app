@@ -6,22 +6,32 @@ import React, { useState, useRef } from "react";
 import ThemedText from "@/components/atoms/a-themed-text";
 import Button from "@/components/atoms/a-button";
 import { GravityUiArrowsRotateRight } from "@/components/icons/i-rotate";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useAtom } from "jotai";
-import { galleryAtom } from "@/lib/stores/gallery";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useGalleryStore } from "@/lib/stores/gallery";
 import { getLocationAsync } from "@/lib/utils/locations";
 import { LocationObject } from "expo-location";
 
 export default function CameraPage() {
+	const { images } = useLocalSearchParams();
 	const cameraRef = useRef<CameraView>(null);
 	const [facing, setFacing] = useState<CameraType>("back");
 	const { redirect } = useLocalSearchParams();
 	const [permission, requestPermission] = useCameraPermissions();
-	const [capturedPhotos, setCapturedPhotos] = useAtom(galleryAtom);
+	const { gallery, append, setGallery, setActiveIndex } = useGalleryStore();
 	const [location, setLocation] = React.useState<LocationObject>();
 	const navigation = useRouter();
 
-	console.log(capturedPhotos);
+	useFocusEffect(
+		React.useCallback(() => {
+			if (Array.isArray(images)) {
+				setGallery(images.map((i) => i.replaceAll(",", "")));
+				setActiveIndex(0);
+			} else if (images) {
+				append(images.replaceAll(",", ""));
+			}
+			setActiveIndex(0);
+		}, []),
+	);
 
 	React.useEffect(() => {
 		(async () => {
@@ -83,10 +93,7 @@ export default function CameraPage() {
 				});
 
 				if (photo) {
-					setCapturedPhotos(async (prevPhotos) => [
-						photo.uri,
-						...(await prevPhotos),
-					]);
+					append(photo.uri);
 				}
 			} catch (error) {
 				console.error("Error taking picture:", error);
@@ -96,7 +103,7 @@ export default function CameraPage() {
 	};
 
 	const openGallery = () => {
-		if (capturedPhotos.length === 0) return;
+		if (gallery.length === 0) return;
 
 		navigation.replace(`/photo-gallery?redirect=${redirect}`);
 	};
@@ -120,8 +127,8 @@ export default function CameraPage() {
 							<Pressable style={styles.galleryPreview} onPress={openGallery}>
 								<Image
 									source={
-										capturedPhotos.length > 0
-											? { uri: capturedPhotos[0] }
+										gallery.length > 0
+											? { uri: gallery[gallery.length - 1] }
 											: require("@/assets/images/image-placeholder.jpg")
 									}
 									style={styles.galleryImage}

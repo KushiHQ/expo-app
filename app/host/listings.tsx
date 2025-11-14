@@ -13,15 +13,20 @@ import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useHostListingsQuery } from "@/lib/services/graphql/generated";
 import { useUserStore } from "@/lib/stores/users";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, RefreshControl, View } from "react-native";
 import { SimpleGrid } from "react-native-super-grid";
 
 export default function HostListings() {
 	const { user, updateUser } = useUserStore();
 	const [title, setTitle] = React.useState("");
 	const debouncedTitle = useDebounce(title, 500);
-	const [{ fetching, data }] = useHostListingsQuery({
-		variables: { filters: { creatorId: user.user?.id, title: debouncedTitle } },
+	const [{ fetching, data }, refetch] = useHostListingsQuery({
+		variables: {
+			filters: {
+				creatorId: user.user?.id,
+				title: title.length ? debouncedTitle : undefined,
+			},
+		},
 	});
 	const colors = useThemeColors();
 
@@ -39,6 +44,9 @@ export default function HostListings() {
 		<DetailsLayout
 			title="Listings"
 			variant="host"
+			refreshControl={
+				<RefreshControl refreshing={fetching} onRefresh={() => refetch()} />
+			}
 			withNotifications
 			withProfile
 		>

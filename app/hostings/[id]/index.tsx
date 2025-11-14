@@ -134,7 +134,7 @@ export default function HostingDetails() {
 				<HostingHost hosting={hosting} />
 				<HostingFacilities hosting={hosting} />
 				<HostingGalleryComponent hosting={hosting} />
-				<HostingReviews hosting={hosting} />
+				<HostingReviews />
 				<HostingLocation hosting={hosting} />
 			</View>
 		</DetailsLayout>

@@ -69,9 +69,10 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting }) => {
 					<View className="w-full gap-4">
 						<Button
 							type="primary"
-							onPress={() =>
-								router.push(`/hostings/form/step-2?hosting=${hosting.id}`)
-							}
+							onPress={() => {
+								onClose?.();
+								router.push(`/hostings/form/step-1?id=${hosting.id}`);
+							}}
 						>
 							<ThemedText content="primary">Edit Listing</ThemedText>
 						</Button>

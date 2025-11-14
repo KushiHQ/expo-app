@@ -1,7 +1,5 @@
 import React from "react";
-import FloatingLabelInput, {
-	FloatingLabelInputProps,
-} from "../atoms/a-floating-label-input";
+import { FloatingLabelInputProps } from "../atoms/a-floating-label-input";
 import BottomSheet from "../atoms/a-bottom-sheet";
 import { GestureResponderEvent, Pressable, View } from "react-native";
 import ThemedText from "../atoms/a-themed-text";
@@ -56,14 +54,34 @@ const SelectInput = <T extends {}>(props: Props<T>) => {
 	return (
 		<>
 			<View className="flex-1">
-				<FloatingLabelInput
-					{...rest}
-					disabled
+				<Pressable
 					onPress={handlePress}
-					pointerEvents="none"
-					value={props.value}
-					suffix={<ChevronDown color={hexToRgba(colors.text, 0.4)} />}
-				/>
+					className="border p-3.5 rounded-xl relative"
+					style={{
+						borderColor: hexToRgba(colors.text, 0.3),
+						backgroundColor: hexToRgba(colors.text, 0.05),
+					}}
+				>
+					<ThemedText
+						className="absolute top-1.5"
+						style={{ fontSize: 12, left: 13 }}
+					>
+						{props.label}
+					</ThemedText>
+					<View className="flex-row mt-3 justify-between items-center">
+						<ThemedText
+							numberOfLines={1}
+							ellipsizeMode="tail"
+							style={{
+								fontSize: 14,
+								color: !props.value ? hexToRgba(colors.text, 0.4) : colors.text,
+							}}
+						>
+							{props.value ?? rest.placeholder}
+						</ThemedText>
+						<ChevronDown color={hexToRgba(colors.text, 0.4)} />
+					</View>
+				</Pressable>
 			</View>
 			<BottomSheet isVisible={open} onClose={() => setOpen(false)}>
 				<View className="gap-4">

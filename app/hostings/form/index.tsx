@@ -7,16 +7,27 @@ import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import { ImageBackground } from "expo-image";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 
 export default function NewHosting() {
+	const router = useRouter();
 	const colors = useThemeColors();
 	const [kycComplete, setKycComplete] = React.useState(false);
 
 	return (
-		<DetailsLayout title="Hosting" footer={<HostingStepper step={0} />}>
+		<DetailsLayout
+			title="Hosting"
+			footer={
+				<HostingStepper
+					onPress={() => {
+						router.push("/hostings/form/step-1");
+					}}
+					step={0}
+				/>
+			}
+		>
 			<View className="mt-8">
 				<View className="gap-4">
 					<View className="flex-row items-center justify-between">

@@ -45,6 +45,7 @@ export default function Login() {
 					refresh: res.data.login.data.refreshToken,
 				});
 				updateUser({
+					tokenData: { expiresAt: res.data.login.data.expiresAt },
 					password: savePassword ? inputs.password : undefined,
 					user: res.data?.login.data?.user,
 					email: inputs.email,

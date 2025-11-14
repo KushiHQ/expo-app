@@ -10,195 +10,267 @@ import ThemedModal from "@/components/molecules/m-modal";
 import SelectInput, {
 	SelectOption,
 } from "@/components/molecules/m-select-input";
+import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
+import { useHostingForm } from "@/lib/hooks/hosting-form";
+import { useFallbackImages } from "@/lib/hooks/images";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { galleryAtom } from "@/lib/stores/gallery";
-import { hostingRoomsEditAtom } from "@/lib/stores/hostings";
+import {
+	CreateHostingRoomImageMutation,
+	CreateHostingRoomImageMutationVariables,
+	useCreateOrUpdateHostingRoomMutation,
+	useDeleteHostingRoomImageMutation,
+	useDeleteHostingRoomMutation,
+} from "@/lib/services/graphql/generated";
+import { CREATE_UPDATE_HOSTING_ROOM_IMAGE } from "@/lib/services/graphql/requests/mutations/hostings";
+import { formMutation } from "@/lib/services/graphql/utils/fetch";
+import { useGalleryStore } from "@/lib/stores/gallery";
+import { RoomData, useHostingRoomsStore } from "@/lib/stores/hostings";
 import { Room, ROOM_KEYS } from "@/lib/types/enums/hostings";
+import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
-import { useFocusEffect, useRouter } from "expo-router";
-import { useAtom } from "jotai";
+import { handleError } from "@/lib/utils/error";
+import { generateRNFile } from "@/lib/utils/file";
+import { Image } from "expo-image";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { CircleQuestionMark } from "lucide-react-native";
 import React from "react";
 import { View } from "react-native";
+import Toast from "react-native-toast-message";
 
 export default function NewHostingStep2() {
 	const router = useRouter();
 	const colors = useThemeColors();
-	const [hostingEdit, setHostingEdit] = useAtom(hostingRoomsEditAtom);
-	const [gallery, setGallery] = useAtom(galleryAtom);
+	const { id } = useLocalSearchParams();
+	const { gallery, setGallery, clearGallery } = useGalleryStore();
 	const [activeModalIndex, setActiveModalIndex] = React.useState<number>();
+	const [deleteModalIndex, setDeleteModalIndex] = React.useState<number>();
+	const { failedImages, handleImageError } = useFallbackImages();
+	const {
+		rooms,
+		activeIndex,
+		setRooms,
+		saveRoom,
+		deleteRoom,
+		setActiveIndex,
+		updateActiveRoom,
+		updateRoom,
+		deleteRoomImage,
+		updateActiveRoomImage,
+	} = useHostingRoomsStore();
+	const { hosting, refetch: refetchHosting } = useHostingForm(id);
+
+	const [{ fetching: hostingRoomSaving }, saveHostingRoomMutate] =
+		useCreateOrUpdateHostingRoomMutation();
+	const [_, deleteImageMutate] = useDeleteHostingRoomImageMutation();
+	const [, deleteRoomMutate] = useDeleteHostingRoomMutation();
 
 	useFocusEffect(
 		React.useCallback(() => {
 			if (gallery.length > 0) {
-				setHostingEdit((c) => {
-					const newRooms = c.rooms.map((room, index) => {
-						if (index === c.activeIndex) {
-							return { ...room, images: gallery };
+				updateActiveRoom({ images: gallery });
+				const roomId = rooms[activeIndex]?.id;
+
+				if (roomId) {
+					gallery.forEach(async (image, index) => {
+						if (image.startsWith("file")) {
+							formMutation<
+								CreateHostingRoomImageMutation,
+								CreateHostingRoomImageMutationVariables
+							>(CREATE_UPDATE_HOSTING_ROOM_IMAGE, {
+								input: {
+									roomId,
+									asset: generateRNFile(image),
+								},
+							}).then((res) => {
+								if (res.error) {
+									handleError(res.error);
+								}
+								if (res.data?.createHostingRoomImage.data) {
+									Toast.show({
+										type: "success",
+										text1: "Success",
+										text2: res.data.createHostingRoomImage.message,
+									});
+									updateActiveRoomImage(
+										index,
+										res.data.createHostingRoomImage.data.asset.publicUrl,
+									);
+									refetchHosting({ requestPolicy: "network-only" });
+								}
+							});
 						}
-						return room;
 					});
-
-					return {
-						...c,
-						rooms: newRooms,
-					};
-				});
-
-				setGallery([]);
+				}
+				clearGallery();
 			}
 		}, [gallery]),
 	);
 
-	const handleSelect = (value: keyof typeof Room, index: number) => {
-		setHostingEdit((c) => {
-			const current = [...c.rooms];
-			if (current[index]) {
-				current[index].room = value;
-			} else {
-				current[index] = { room: value, images: [] };
+	useFocusEffect(
+		React.useCallback(() => {
+			if (hosting) {
+				setRooms(
+					hosting.rooms?.map(({ images, ...room }) => ({
+						id: cast(room.id),
+						name: cast(room.name),
+						count: cast(room.count),
+						description: cast(room.description),
+						images: images?.map((img) => img.asset.publicUrl) ?? [],
+					})) ?? [],
+				);
 			}
+		}, [hosting]),
+	);
 
-			return {
-				...c,
-				rooms: current,
-			};
-		});
+	const handleDeleteImage = (roomIndex: number, imageIndex: number) => {
+		const room = rooms[roomIndex];
+		const image = room.images[imageIndex];
+		if (image.startsWith("file")) {
+			deleteRoomImage(roomIndex, imageIndex);
+		} else {
+			const imageId = hosting?.rooms
+				.find((r) => r.id == room.id)
+				?.images.find((i) => i.asset.publicUrl == image)?.id;
+			if (imageId) {
+				deleteImageMutate({ hostingRoomImageId: imageId }).then((res) => {
+					if (res.error) {
+						handleError(res.error);
+					}
+					if (res.data?.deleteHostingRoomImage.message) {
+						Toast.show({
+							type: "success",
+							text2: res.data.deleteHostingRoomImage.message,
+						});
+						deleteRoomImage(roomIndex, imageIndex);
+						refetchHosting({ requestPolicy: "network-only" });
+					}
+				});
+			}
+		}
+	};
+
+	const handleDeleteActiveRoom = () => {
+		const roomId = rooms[activeIndex].id;
+		if (roomId) {
+			deleteRoomMutate({ hostingRoomId: roomId }).then((res) => {
+				if (res.error) {
+					handleError(res.error);
+				}
+				if (res.data?.deleteHostingRoom.message) {
+					Toast.show({
+						type: "success",
+						text2: res.data.deleteHostingRoom.message,
+					});
+					setActiveModalIndex(undefined);
+					setDeleteModalIndex(undefined);
+					refetchHosting({ requestPolicy: "network-only" });
+					deleteRoom(activeIndex);
+					setActiveIndex(0);
+				}
+			});
+		}
+	};
+
+	const handleSaveHostingRoom = (
+		index: number,
+		{ images, ...rest }: RoomData,
+	) => {
+		if (!id) return;
+		saveRoom(rest.name, index);
+		saveHostingRoomMutate({ input: { ...rest, hostingId: cast(id) } }).then(
+			(res) => {
+				if (res.error) {
+					handleError(res.error);
+				}
+				if (res.data) {
+					Toast.show({
+						type: "success",
+						text1: "Success",
+						text2: res.data.createOrUpdateHostingRoom.message,
+					});
+					const created = res.data.createOrUpdateHostingRoom.data;
+					updateRoom(index, {
+						id: created?.id,
+						name: cast(created?.name),
+						count: created?.count ?? 1,
+						description: cast(created?.description),
+					});
+				}
+			},
+		);
 	};
 
 	const handleRoomImageEdit = (index: number) => {
-		const images = hostingEdit.rooms.at(index)?.images ?? [];
+		const images = rooms.at(index)?.images ?? [];
 		setGallery(images);
-		setHostingEdit((c) => ({ ...c, activeIndex: index }));
-		router.push("/camera?redirect=/hostings/form/step-2");
-	};
-
-	const handleDeleteRoomImage = (roomIndex: number, imageIndex: number) => {
-		setHostingEdit((c) => {
-			const newRooms = c.rooms.map((room, rIndex) => {
-				if (rIndex !== roomIndex) {
-					return room;
-				}
-
-				const newImages = room.images.filter(
-					(_, iIndex) => iIndex !== imageIndex,
-				);
-
-				return { ...room, images: newImages };
-			});
-
-			return {
-				...c,
-				rooms: newRooms,
-			};
-		});
+		setActiveIndex(index);
+		router.push(
+			`/camera?redirect=/hostings/form/step-2${images.map((img) => "&images=" + img)}`,
+		);
 	};
 
 	return (
 		<>
-			<DetailsLayout title="Hosting" footer={<HostingStepper step={2} />}>
-				<View className="mt-8 gap-4">
-					{Array.from({ length: hostingEdit.rooms.length + 1 }).map(
-						(_, index) => (
-							<View key={index} className="gap-2">
-								<View className="flex-row items-center gap-2">
-									<SelectInput
-										focused
-										value={
-											hostingEdit.rooms[index]
-												? Room[hostingEdit.rooms[index].room]
-												: undefined
-										}
-										label="Room"
-										placeholder="Select room or exterior to add image"
-										onSelect={(v) => handleSelect(v.value, index)}
-										options={ROOM_KEYS.map((v) => ({
-											label: Room[v],
-											value: v,
-										}))}
-										renderItem={SelectOption}
-									/>
-									<Button
-										onPress={() => handleRoomImageEdit(index)}
-										disabled={!hostingEdit.rooms[index]}
-										variant="outline"
-										className="p-6"
-										style={{
-											borderColor: hexToRgba(colors.text, 0.25),
-											borderRadius: 12,
-										}}
-									>
-										<HeroiconsCamera color={colors.text} size={20} />
-									</Button>
-								</View>
-								<View className="flex-row gap-2">
-									{hostingEdit.rooms[index] &&
-										!(hostingEdit.rooms[index].images.length > 0) && (
-											<View
-												className="p-4 items-center justify-center flex-1 rounded-xl"
-												style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
-											>
-												<ThemedText
-													style={{
-														color: hexToRgba(colors.text, 0.8),
-														fontSize: 12,
-													}}
-												>
-													No Images Yet
-												</ThemedText>
-											</View>
-										)}
-									{hostingEdit.rooms[index]?.images.length > 0 && (
-										<View className="flex-row flex-1 gap-2">
-											{hostingEdit.rooms[index].images
-												.slice(0, 4)
-												.map((img, id) => (
-													<HostingRoomImage
-														src={img}
-														key={id}
-														imageIndex={id}
-														roomIndex={index}
-														onDeleteRoomImage={handleDeleteRoomImage}
-													/>
-												))}
-										</View>
-									)}
-									{hostingEdit.rooms[index] && (
-										<Button
-											variant="outline"
-											type="shade"
-											className="py-3 px-3"
-											onPress={() => setActiveModalIndex(index)}
-										>
-											<View className="items-center justify-center">
-												<FluentContentViewGallery28Regular
-													color={colors.text}
-													size={12}
-												/>
-												<ThemedText style={{ fontSize: 12 }}>
-													Details
-												</ThemedText>
-											</View>
-										</Button>
-									)}
-								</View>
-							</View>
-						),
-					)}
-				</View>
-			</DetailsLayout>
-			<ThemedModal
-				visible={activeModalIndex !== undefined}
-				onClose={() => setActiveModalIndex(undefined)}
+			<DetailsLayout
+				title="Hosting"
+				footer={
+					<HostingStepper
+						disabled={!rooms.length}
+						step={2}
+						onPress={() => {
+							router.push(`/hostings/form/step-3?id=${hosting?.id}`);
+						}}
+					/>
+				}
 			>
-				<View className="gap-4">
-					<ThemedText style={{ fontFamily: Fonts.medium }}>
-						Living Room
+				<View className="mt-2 flex-1 gap-4">
+					<ThemedText
+						style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}
+					>
+						<CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
+						{"  "}
+						Show off your property! 📸 Select a Room (like 'Bedroom' or
+						'Kitchen'), then tap the camera icon to upload all the Photos for
+						that specific space. Add as many room categories as you need, and
+						tap 'Details' to specify the Count of each room.
 					</ThemedText>
-					{activeModalIndex !== undefined && (
-						<View>
-							{hostingEdit.rooms[activeModalIndex] &&
-								!(hostingEdit.rooms[activeModalIndex].images.length > 0) && (
+					{Array.from({ length: rooms.length + 1 }).map((_, index) => (
+						<View key={index} className="gap-2">
+							<View className="flex-row items-center gap-2">
+								<SelectInput
+									focused
+									value={rooms[index] ? Room[rooms[index].name] : undefined}
+									label="Room"
+									placeholder="Select room or exterior to add image"
+									onSelect={(v) =>
+										handleSaveHostingRoom(index, {
+											name: v.value,
+											images: [],
+											count: 1,
+										})
+									}
+									options={ROOM_KEYS.map((v) => ({
+										label: Room[v],
+										value: v,
+									}))}
+									renderItem={SelectOption}
+								/>
+								<Button
+									onPress={() => handleRoomImageEdit(index)}
+									disabled={!rooms[index] || hostingRoomSaving}
+									variant="outline"
+									className="p-6"
+									style={{
+										borderColor: hexToRgba(colors.text, 0.25),
+										borderRadius: 12,
+									}}
+								>
+									<HeroiconsCamera color={colors.text} size={20} />
+								</Button>
+							</View>
+							<View className="flex-row gap-2">
+								{rooms[index] && !(rooms[index].images.length > 0) && (
 									<View
 										className="p-4 items-center justify-center flex-1 rounded-xl"
 										style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
@@ -213,49 +285,213 @@ export default function NewHostingStep2() {
 										</ThemedText>
 									</View>
 								)}
-							{hostingEdit.rooms[activeModalIndex]?.images.length > 0 && (
-								<View className="flex-row flex-1 gap-2">
-									{hostingEdit.rooms[activeModalIndex].images
-										.slice(0, 4)
-										.map((img, id) => (
+								{rooms[index]?.images.length > 0 && (
+									<View className="flex-row flex-1 gap-2">
+										{rooms[index].images.slice(0, 4).map((img, id) => (
 											<HostingRoomImage
 												src={img}
 												key={id}
 												imageIndex={id}
-												roomIndex={activeModalIndex}
-												onDeleteRoomImage={handleDeleteRoomImage}
+												roomIndex={index}
+												onDeleteRoomImage={handleDeleteImage}
 											/>
 										))}
-								</View>
-							)}
-							<View className="mt-8">
-								<View className="flex-row gap-4 mb-4">
-									<View className="flex-1">
-										<FloatingLabelInput
-											focused
-											label="Count"
-											inputMode="numeric"
-											placeholder="How many of this room are there"
-										/>
 									</View>
+								)}
+								{rooms[index] && (
+									<>
+										<Button
+											variant="outline"
+											disabled={hostingRoomSaving}
+											loading={hostingRoomSaving}
+											type="shade"
+											className="py-0.5 pt-2.5 px-3"
+											onPress={() => setActiveModalIndex(index)}
+										>
+											<View className="items-center justify-center">
+												<FluentContentViewGallery28Regular
+													color={colors.text}
+													size={14}
+												/>
+												<ThemedText style={{ fontSize: 10 }}>
+													Details
+												</ThemedText>
+											</View>
+										</Button>
+									</>
+								)}
+							</View>
+						</View>
+					))}
+				</View>
+			</DetailsLayout>
+			<ThemedModal
+				visible={activeModalIndex !== undefined}
+				onClose={() => setActiveModalIndex(undefined)}
+			>
+				<View className="gap-4">
+					{activeModalIndex !== undefined && rooms[activeModalIndex] && (
+						<>
+							<ThemedText style={{ fontFamily: Fonts.medium }}>
+								{rooms[activeModalIndex].name}
+							</ThemedText>
+							<View>
+								{rooms[activeModalIndex] &&
+									!(rooms[activeModalIndex].images.length > 0) && (
+										<View
+											className="p-4 items-center justify-center flex-1 rounded-xl"
+											style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+										>
+											<ThemedText
+												style={{
+													color: hexToRgba(colors.text, 0.8),
+													fontSize: 12,
+												}}
+											>
+												No Images Yet
+											</ThemedText>
+										</View>
+									)}
+								{rooms[activeModalIndex]?.images.length > 0 && (
+									<View className="flex-row flex-1 gap-2">
+										{rooms[activeModalIndex].images
+											.slice(0, 4)
+											.map((img, id) => (
+												<HostingRoomImage
+													src={img}
+													key={id}
+													imageIndex={id}
+													roomIndex={activeModalIndex}
+													onDeleteRoomImage={deleteRoomImage}
+												/>
+											))}
+									</View>
+								)}
+								<View className="mt-8">
+									<View className="flex-row gap-4 mb-4">
+										<View className="flex-1">
+											<FloatingLabelInput
+												focused
+												value={rooms.at(activeIndex)?.count?.toString()}
+												label="Count"
+												inputMode="numeric"
+												onChangeText={(v) =>
+													updateActiveRoom({ count: Number(v) })
+												}
+												placeholder="How many of this room are there"
+											/>
+										</View>
+										<Button
+											onPress={() => handleRoomImageEdit(activeModalIndex)}
+											style={{ backgroundColor: colors.text, borderRadius: 10 }}
+											className="py-3"
+										>
+											<ThemedText style={{ color: colors.background }}>
+												Add More Photos
+											</ThemedText>
+										</Button>
+									</View>
+									<FloatingLabelInput
+										focused
+										multiline
+										value={rooms.at(activeIndex)?.description}
+										label="Description (Optional)"
+										placeholder="Provide brief description of these images"
+										containerStyle={{ minHeight: 80 }}
+										numberOfLines={6}
+										onChangeText={(description) =>
+											updateActiveRoom({ description })
+										}
+									/>
+								</View>
+								<View className="flex-row gap-2 mt-4">
 									<Button
-										onPress={() => handleRoomImageEdit(activeModalIndex)}
-										style={{ backgroundColor: colors.text, borderRadius: 10 }}
-										className="py-3"
+										className="flex-1"
+										type="error"
+										disabled={hostingRoomSaving}
+										onPress={() => setDeleteModalIndex(activeIndex)}
 									>
-										<ThemedText style={{ color: colors.background }}>
-											Add More Photos
-										</ThemedText>
+										<ThemedText content="error">Delete</ThemedText>
+									</Button>
+									<Button
+										disabled={hostingRoomSaving}
+										loading={hostingRoomSaving}
+										className="flex-1"
+										type="text"
+										onPress={() => {
+											handleSaveHostingRoom(activeIndex, rooms[activeIndex]);
+											setActiveModalIndex(undefined);
+										}}
+									>
+										<ThemedText content="text">Save</ThemedText>
 									</Button>
 								</View>
-								<FloatingLabelInput
-									focused
-									multiline
-									label="Description (Optional)"
-									placeholder="Provide brief description of these images"
-									containerStyle={{ minHeight: 80 }}
-									numberOfLines={6}
-								/>
+							</View>
+						</>
+					)}
+				</View>
+			</ThemedModal>
+			<ThemedModal
+				visible={deleteModalIndex !== undefined}
+				onClose={() => setDeleteModalIndex(undefined)}
+			>
+				<View>
+					{deleteModalIndex !== undefined && (
+						<View className="gap-8">
+							<ThemedText>
+								Are you want to delete this room
+								{rooms[deleteModalIndex].images.length
+									? "and all it's images"
+									: ""}
+								?
+							</ThemedText>
+							<View className="items-center gap-4">
+								<View className="w-32 h-28">
+									<Image
+										source={
+											rooms[deleteModalIndex].images.length
+												? {
+														uri: failedImages.has(0)
+															? FALLBACK_IMAGE
+															: rooms[deleteModalIndex].images[0],
+													}
+												: require("@/assets/images/room-image.jpg")
+										}
+										style={{
+											height: "100%",
+											width: "100%",
+											borderRadius: 8,
+										}}
+										contentFit="cover"
+										transition={300}
+										placeholder={{ blurhash: PROPERTY_BLURHASH }}
+										placeholderContentFit="cover"
+										cachePolicy="memory-disk"
+										priority="high"
+										onError={() => handleImageError(0)}
+									/>
+								</View>
+								<ThemedText
+									style={{ fontFamily: Fonts.semibold, fontSize: 20 }}
+								>
+									{rooms[deleteModalIndex].name}
+								</ThemedText>
+							</View>
+							<View className="flex-row items-center gap-2">
+								<Button
+									type="shade"
+									className="flex-1"
+									onPress={() => setDeleteModalIndex(undefined)}
+								>
+									<ThemedText content="shade">Cancel</ThemedText>
+								</Button>
+								<Button
+									type="error"
+									className="flex-1"
+									onPress={handleDeleteActiveRoom}
+								>
+									<ThemedText content="error">Delete</ThemedText>
+								</Button>
 							</View>
 						</View>
 					)}

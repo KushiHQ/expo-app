@@ -1,38 +1,40 @@
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import {
 	View,
 	StyleSheet,
 	FlatList,
-	Image,
 	useWindowDimensions,
 	useColorScheme,
 } from "react-native";
 import Button from "@/components/atoms/a-button";
 import ThemedText from "@/components/atoms/a-themed-text";
 import { StatusBar } from "expo-status-bar";
-import { useAtom } from "jotai";
-import { galleryAtom } from "@/lib/stores/gallery";
+import { useGalleryStore } from "@/lib/stores/gallery";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import ImagePicker from "react-native-image-crop-picker";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { FluentImageEdit24Regular } from "@/components/icons/i-edit";
 import { Check } from "lucide-react-native";
 import { cast } from "@/lib/types/utils";
+import { useFallbackImages } from "@/lib/hooks/images";
+import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
+import { Image } from "expo-image";
 
 export default function PhotoGalleryScreen() {
 	const router = useRouter();
 	const { width, height } = useWindowDimensions();
 	const { redirect } = useLocalSearchParams();
-	const [photos, setPhotos] = useAtom(galleryAtom);
-	const [currentIndex, setCurrentIndex] = useState(0);
+	const { gallery, activeIndex, setActiveIndex, updateActiveImage } =
+		useGalleryStore();
 	const colors = useThemeColors();
 	const colorScheme = useColorScheme() ?? "light";
+	const { failedImages, handleImageError } = useFallbackImages();
 
 	const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
 
 	const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
 		if (viewableItems.length > 0) {
-			setCurrentIndex(viewableItems[0].index);
+			setActiveIndex(viewableItems[0].index);
 		}
 	}).current;
 
@@ -45,8 +47,8 @@ export default function PhotoGalleryScreen() {
 	};
 
 	const handleEditPhoto = async () => {
-		if (photos.length === 0) return;
-		const currentPhotoUri = photos[currentIndex];
+		if (gallery.length === 0) return;
+		const currentPhotoUri = gallery[activeIndex];
 
 		try {
 			const croppedImage = await ImagePicker.openCropper({
@@ -61,10 +63,7 @@ export default function PhotoGalleryScreen() {
 				enableRotationGesture: true,
 			});
 
-			const newPhotos = photos.map((uri, index) =>
-				index === currentIndex ? croppedImage.path : uri,
-			);
-			setPhotos(newPhotos);
+			updateActiveImage(croppedImage.path);
 		} catch (error: any) {
 			if (error.code !== "E_PICKER_CANCELLED") {
 				console.error("Error cropping photo: ", error);
@@ -78,16 +77,24 @@ export default function PhotoGalleryScreen() {
 			<StatusBar style="light" />
 
 			<FlatList
-				data={photos}
+				data={gallery}
 				keyExtractor={(item) => item}
 				horizontal
 				pagingEnabled
 				showsHorizontalScrollIndicator={false}
-				renderItem={({ item }) => (
+				renderItem={({ item, index }) => (
 					<Image
-						source={{ uri: item }}
+						source={{
+							uri: failedImages.has(index) ? FALLBACK_IMAGE : item,
+						}}
+						transition={300}
 						style={{ width: width, height: height }}
-						resizeMode="contain"
+						placeholder={{ blurhash: PROPERTY_BLURHASH }}
+						placeholderContentFit="contain"
+						contentFit="contain"
+						cachePolicy="memory-disk"
+						priority="high"
+						onError={() => handleImageError(index)}
 					/>
 				)}
 				onViewableItemsChanged={onViewableItemsChanged}
@@ -107,7 +114,7 @@ export default function PhotoGalleryScreen() {
 					<View className="flex-row gap-2">
 						<Check color={colors.success} size={20} />
 						<ThemedText style={{ fontSize: 14, color: colors.success }}>
-							Use {photos.length} Photos
+							Use {gallery.length} Photos
 						</ThemedText>
 					</View>
 				</Button>

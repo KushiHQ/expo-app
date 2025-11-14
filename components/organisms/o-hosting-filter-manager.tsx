@@ -72,7 +72,6 @@ const HostingFilterManager = () => {
 				<View className="flex-row items-center gap-2">
 					<Pressable
 						onPress={() => {
-							console.log("Pressed");
 							setFilterOpen((c) => !c);
 						}}
 					>

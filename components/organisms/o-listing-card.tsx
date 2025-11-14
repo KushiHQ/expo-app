@@ -51,7 +51,11 @@ const ListingCard: React.FC<Props> = ({ hosting }) => {
 							>
 								{hosting.title}
 							</ThemedText>
-							<Pressable onPress={() => setOptionsOpen(true)}>
+							<Pressable
+								onPress={() => setOptionsOpen(true)}
+								className="p-1.5 rounded-md"
+								style={{ backgroundColor: hexToRgba(colors.text, 0.2) }}
+							>
 								<EllipsisVertical color={colors.text} size={18} />
 							</Pressable>
 						</View>

@@ -137,7 +137,6 @@ export type HostingInput = {
   country?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   facilities?: InputMaybe<Array<Scalars['String']['input']>>;
-  hostId: Scalars['String']['input'];
   id?: InputMaybe<Scalars['String']['input']>;
   landmarks?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['String']['input']>;
@@ -195,6 +194,7 @@ export type HostingReviewResponse = {
 
 export type HostingRoom = {
   __typename?: 'HostingRoom';
+  count?: Maybe<Scalars['Int']['output']>;
   dateAdded: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
   hosting: Hosting;
@@ -230,6 +230,7 @@ export type HostingRoomImageResponse = {
 };
 
 export type HostingRoomInput = {
+  count?: InputMaybe<Scalars['Int']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   hostingId: Scalars['String']['input'];
   id?: InputMaybe<Scalars['String']['input']>;
@@ -614,6 +615,48 @@ export type CreateUpdateSavedHostingFolderMutationVariables = Exact<{
 
 export type CreateUpdateSavedHostingFolderMutation = { __typename?: 'Mutations', createUpdateSavedHostingFolder: { __typename?: 'SavedHostingFolderResponse', message: string, data?: { __typename?: 'SavedHostingFolder', id: string } | null } };
 
+export type CreateOrUpdateHostingMutationVariables = Exact<{
+  input: HostingInput;
+}>;
+
+
+export type CreateOrUpdateHostingMutation = { __typename?: 'Mutations', createOrUpdateHosting: { __typename?: 'HostingResponse', message: string, data?: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, dateAdded: string, lastUpdated: string, saved: boolean, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, description?: string | null, dateAdded: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, dateAdded: string, lastUpdated: string, asset: { __typename?: 'Asset', publicUrl: string, id: string } }> }> } | null } };
+
+export type CreateOrUpdateHostingRoomMutationVariables = Exact<{
+  input: HostingRoomInput;
+}>;
+
+
+export type CreateOrUpdateHostingRoomMutation = { __typename?: 'Mutations', createOrUpdateHostingRoom: { __typename?: 'HostingRoomResponse', message: string, data?: { __typename?: 'HostingRoom', name: string, id: string, description?: string | null, dateAdded: string, lastUpdated: string, count?: number | null, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', publicUrl: string, id: string } }> } | null } };
+
+export type CreateHostingRoomImageMutationVariables = Exact<{
+  input: HostingRoomImageInput;
+}>;
+
+
+export type CreateHostingRoomImageMutation = { __typename?: 'Mutations', createHostingRoomImage: { __typename?: 'HostingRoomImageResponse', message: string, data?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null } };
+
+export type DeleteHostingRoomImageMutationVariables = Exact<{
+  hostingRoomImageId: Scalars['String']['input'];
+}>;
+
+
+export type DeleteHostingRoomImageMutation = { __typename?: 'Mutations', deleteHostingRoomImage: { __typename?: 'MessageResponse', message: string } };
+
+export type DeleteHostingRoomMutationVariables = Exact<{
+  hostingRoomId: Scalars['String']['input'];
+}>;
+
+
+export type DeleteHostingRoomMutation = { __typename?: 'Mutations', deleteHostingRoom: { __typename?: 'MessageResponse', message: string } };
+
+export type HostingQueryVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+}>;
+
+
+export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, dateAdded: string, lastUpdated: string, saved: boolean, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, dateAdded: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, dateAdded: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, user: { __typename?: 'User', id: string, email: string } } } };
+
 export type HostingsQueryVariables = Exact<{
   filters?: InputMaybe<HostingFilterInput>;
   pagination?: InputMaybe<PaginationInput>;
@@ -792,6 +835,183 @@ export const CreateUpdateSavedHostingFolderDocument = gql`
 
 export function useCreateUpdateSavedHostingFolderMutation() {
   return Urql.useMutation<CreateUpdateSavedHostingFolderMutation, CreateUpdateSavedHostingFolderMutationVariables>(CreateUpdateSavedHostingFolderDocument);
+};
+export const CreateOrUpdateHostingDocument = gql`
+    mutation CreateOrUpdateHosting($input: HostingInput!) {
+  createOrUpdateHosting(input: $input) {
+    message
+    data {
+      id
+      title
+      propertyType
+      listingType
+      description
+      categories
+      postalCode
+      city
+      street
+      state
+      country
+      longitude
+      latitude
+      landmarks
+      contact
+      price
+      paymentInterval
+      facilities
+      averageRating
+      totalRatings
+      publishStatus
+      dateAdded
+      lastUpdated
+      saved
+      rooms {
+        id
+        name
+        description
+        dateAdded
+        lastUpdated
+        images {
+          id
+          dateAdded
+          lastUpdated
+          asset {
+            publicUrl
+            id
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useCreateOrUpdateHostingMutation() {
+  return Urql.useMutation<CreateOrUpdateHostingMutation, CreateOrUpdateHostingMutationVariables>(CreateOrUpdateHostingDocument);
+};
+export const CreateOrUpdateHostingRoomDocument = gql`
+    mutation CreateOrUpdateHostingRoom($input: HostingRoomInput!) {
+  createOrUpdateHostingRoom(input: $input) {
+    message
+    data {
+      name
+      id
+      images {
+        id
+        asset {
+          publicUrl
+          id
+        }
+      }
+      description
+      dateAdded
+      lastUpdated
+      count
+    }
+  }
+}
+    `;
+
+export function useCreateOrUpdateHostingRoomMutation() {
+  return Urql.useMutation<CreateOrUpdateHostingRoomMutation, CreateOrUpdateHostingRoomMutationVariables>(CreateOrUpdateHostingRoomDocument);
+};
+export const CreateHostingRoomImageDocument = gql`
+    mutation CreateHostingRoomImage($input: HostingRoomImageInput!) {
+  createHostingRoomImage(input: $input) {
+    message
+    data {
+      id
+      asset {
+        id
+        publicUrl
+      }
+    }
+  }
+}
+    `;
+
+export function useCreateHostingRoomImageMutation() {
+  return Urql.useMutation<CreateHostingRoomImageMutation, CreateHostingRoomImageMutationVariables>(CreateHostingRoomImageDocument);
+};
+export const DeleteHostingRoomImageDocument = gql`
+    mutation DeleteHostingRoomImage($hostingRoomImageId: String!) {
+  deleteHostingRoomImage(hostingRoomImageId: $hostingRoomImageId) {
+    message
+  }
+}
+    `;
+
+export function useDeleteHostingRoomImageMutation() {
+  return Urql.useMutation<DeleteHostingRoomImageMutation, DeleteHostingRoomImageMutationVariables>(DeleteHostingRoomImageDocument);
+};
+export const DeleteHostingRoomDocument = gql`
+    mutation DeleteHostingRoom($hostingRoomId: String!) {
+  deleteHostingRoom(hostingRoomId: $hostingRoomId) {
+    message
+  }
+}
+    `;
+
+export function useDeleteHostingRoomMutation() {
+  return Urql.useMutation<DeleteHostingRoomMutation, DeleteHostingRoomMutationVariables>(DeleteHostingRoomDocument);
+};
+export const HostingDocument = gql`
+    query Hosting($hostingId: String!) {
+  hosting(hostingId: $hostingId) {
+    id
+    title
+    propertyType
+    listingType
+    description
+    categories
+    postalCode
+    city
+    street
+    state
+    country
+    longitude
+    latitude
+    landmarks
+    contact
+    price
+    paymentInterval
+    facilities
+    averageRating
+    totalRatings
+    publishStatus
+    dateAdded
+    lastUpdated
+    saved
+    rooms {
+      id
+      name
+      count
+      description
+      dateAdded
+      lastUpdated
+      images {
+        id
+        dateAdded
+        lastUpdated
+        asset {
+          id
+          publicUrl
+        }
+      }
+    }
+    host {
+      id
+      user {
+        id
+        email
+      }
+    }
+  }
+}
+    `;
+
+export function useHostingQuery(options: Omit<Urql.UseQueryArgs<HostingQueryVariables>, 'query'>) {
+  return Urql.useQuery<HostingQuery, HostingQueryVariables>({ query: HostingDocument, ...options });
 };
 export const HostingsDocument = gql`
     query Hostings($filters: HostingFilterInput, $pagination: PaginationInput, $roomsPagination2: PaginationInput) {

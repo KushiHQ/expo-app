@@ -1,4 +1,4 @@
-import { generateMockReviews, Hosting } from "@/lib/constants/mocks/hostings";
+import { generateMockReviews } from "@/lib/constants/mocks/hostings";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import React from "react";
@@ -12,11 +12,7 @@ import { average } from "@/lib/utils/math";
 import Carousel from "../atoms/a-carousel";
 import HostingReviewCard from "../molecules/m-hosting-review-card";
 
-type Props = {
-  hosting?: Hosting;
-};
-
-const HostingReviews: React.FC<Props> = ({ hosting }) => {
+const HostingReviews: React.FC = () => {
   const colors = useThemeColors();
   const reviews = generateMockReviews(20);
 

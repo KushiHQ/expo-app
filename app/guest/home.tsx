@@ -12,7 +12,7 @@ import { View } from "react-native";
 
 export default function GuestHome() {
 	const { filter, updateFilter } = useHostingFilterStore();
-	const [{ fetching, data }] = useHostingsQuery({
+	const [{ fetching, data, error }] = useHostingsQuery({
 		variables: { filters: filter },
 	});
 

@@ -58,7 +58,7 @@ const TopListingCard: React.FC<Props> = ({ hosting }) => {
 				</ThemedText>
 				<View className="flex-row items-center justify-between">
 					<ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14 }}>
-						₦{hosting?.price.toLocaleString()} {hosting?.paymentInterval}
+						₦{hosting?.price?.toLocaleString()} {hosting?.paymentInterval}
 					</ThemedText>
 					<View className="flex-row items-center gap-1">
 						<MynauiStarSolid color={colors.accent} size={16} />

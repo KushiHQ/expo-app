@@ -11,10 +11,18 @@ import { Image } from "expo-image";
 import { Fonts } from "@/lib/constants/theme";
 
 type Props = {
+	onPress?: () => void;
+	disabled?: boolean;
+	loading?: boolean;
 	step: number;
 };
 
-const HostingStepper: React.FC<Props> = ({ step }) => {
+const HostingStepper: React.FC<Props> = ({
+	step,
+	disabled,
+	loading,
+	onPress,
+}) => {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const [success, setSuccess] = React.useState(false);
@@ -55,10 +63,10 @@ const HostingStepper: React.FC<Props> = ({ step }) => {
 					</View>
 				) : (
 					<Button
+						loading={loading}
+						disabled={disabled}
 						onPress={() => {
-							if (step < ONBOARDING_STEPS.length - 1) {
-								router.push(`/hostings/form/step-${step + 1}`);
-							}
+							onPress?.();
 						}}
 						type="primary"
 					>

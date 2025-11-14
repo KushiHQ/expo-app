@@ -24,34 +24,35 @@ export default function HostAnalytics() {
 	const [
 		{ fetching: analyticsFetching, data: analyticsData },
 		refetchAnalytics,
-	] = useHostAnalyticsQuery();
+	] = useHostAnalyticsQuery({ requestPolicy: "network-only" });
 	const [
 		{ fetching: notificationsFetching, data: notificationsData },
 		refetchNotifications,
 	] = useNotificationsQuery({ variables: { pagination: { limit: 5 } } });
+
 	const data = React.useMemo(() => {
 		return [
 			{
 				label: "Total Listings",
-				value: analyticsData?.hostAnalytics.totalListings,
+				value: analyticsData?.hostAnalytics.totalListings ?? 0,
 				currency: false,
 				percentage: false,
 			},
 			{
 				label: "Occupancy Rate",
-				value: analyticsData?.hostAnalytics.occupancyRate,
+				value: analyticsData?.hostAnalytics.occupancyRate ?? 0,
 				currency: false,
 				percentage: true,
 			},
 			{
 				label: "Total Revenue",
-				value: analyticsData?.hostAnalytics.totalRevenue,
+				value: analyticsData?.hostAnalytics.totalRevenue ?? 0,
 				currency: true,
 				percentage: false,
 			},
 			{
 				label: "Averate Rating",
-				value: analyticsData?.hostAnalytics.averateRating,
+				value: analyticsData?.hostAnalytics.averateRating ?? 0,
 				currency: false,
 				percentage: false,
 			},
@@ -160,17 +161,17 @@ export default function HostAnalytics() {
 					<View className="gap-2">
 						{notificationsFetching
 							? Array.from({ length: 5 }).map((_, index) => (
-								<Skeleton
-									style={{ height: 85, width: "100%", borderRadius: 8 }}
-									key={index}
-								/>
-							))
+									<Skeleton
+										style={{ height: 85, width: "100%", borderRadius: 8 }}
+										key={index}
+									/>
+								))
 							: notificationsData?.notifications.map((notification) => (
-								<NotificationCard
-									notification={notification}
-									key={notification.id}
-								/>
-							))}
+									<NotificationCard
+										notification={notification}
+										key={notification.id}
+									/>
+								))}
 						{!notificationsFetching &&
 							!notificationsData?.notifications.length && (
 								<EmptyList message="No activity yet" />
