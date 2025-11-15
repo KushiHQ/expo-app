@@ -7,10 +7,10 @@ import { useActiveFormHosingStore } from "../stores/hostings";
 import { cast } from "../types/utils";
 
 export const useHostingForm = (id?: string | string[]) => {
-	const [{ fetching }, mutate] = useCreateOrUpdateHostingMutation();
+	const [{ fetching: mutating }, mutate] = useCreateOrUpdateHostingMutation();
 	const { input, initiate, updateInput, hosting, clear } =
 		useActiveFormHosingStore();
-	const [{ data }, refetch] = useHostingQuery({
+	const [{ data, fetching }, refetch] = useHostingQuery({
 		pause: !id,
 		variables: { hostingId: cast(id) },
 	});
@@ -26,7 +26,8 @@ export const useHostingForm = (id?: string | string[]) => {
 		updateInput,
 		clearInput: clear,
 		mutate,
-		mutating: fetching,
+		mutating,
+		fetching,
 		hosting,
 		refetch,
 	};

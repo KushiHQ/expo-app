@@ -33,8 +33,17 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import GraphqlClientProvider from "@/components/providers/graphql-client";
 import Toast from "react-native-toast-message";
 import toastConfig from "@/components/atoms/a-toast";
+import {
+	configureReanimatedLogger,
+	ReanimatedLogLevel,
+} from "react-native-reanimated";
 
 SplashScreen.preventAutoHideAsync();
+
+configureReanimatedLogger({
+	level: ReanimatedLogLevel.error,
+	strict: false,
+});
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme();

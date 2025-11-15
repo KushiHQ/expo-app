@@ -1,6 +1,7 @@
 import Button from "@/components/atoms/a-button";
 import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
 import HostingRoomImage from "@/components/atoms/a-hosting-room-image";
+import LoadingModal from "@/components/atoms/a-loading-modal";
 import ThemedText from "@/components/atoms/a-themed-text";
 import { HeroiconsCamera } from "@/components/icons/i-camera";
 import { FluentContentViewGallery28Regular } from "@/components/icons/i-gallery";
@@ -58,12 +59,26 @@ export default function NewHostingStep2() {
 		deleteRoomImage,
 		updateActiveRoomImage,
 	} = useHostingRoomsStore();
-	const { hosting, refetch: refetchHosting } = useHostingForm(id);
+	const {
+		hosting,
+		refetch: refetchHosting,
+		fetching: fetchingHosting,
+	} = useHostingForm(id);
 
 	const [{ fetching: hostingRoomSaving }, saveHostingRoomMutate] =
 		useCreateOrUpdateHostingRoomMutation();
-	const [_, deleteImageMutate] = useDeleteHostingRoomImageMutation();
-	const [, deleteRoomMutate] = useDeleteHostingRoomMutation();
+	const [{ fetching: deleteingImage }, deleteImageMutate] =
+		useDeleteHostingRoomImageMutation();
+	const [{ fetching: deletingRoom }, deleteRoomMutate] =
+		useDeleteHostingRoomMutation();
+	const [addingImages, setAddingImages] = React.useState(false);
+
+	const loading =
+		deleteingImage ||
+		deletingRoom ||
+		fetchingHosting ||
+		hostingRoomSaving ||
+		addingImages;
 
 	useFocusEffect(
 		React.useCallback(() => {
@@ -74,6 +89,7 @@ export default function NewHostingStep2() {
 				if (roomId) {
 					gallery.forEach(async (image, index) => {
 						if (image.startsWith("file")) {
+							setAddingImages(true);
 							formMutation<
 								CreateHostingRoomImageMutation,
 								CreateHostingRoomImageMutationVariables
@@ -82,23 +98,28 @@ export default function NewHostingStep2() {
 									roomId,
 									asset: generateRNFile(image),
 								},
-							}).then((res) => {
-								if (res.error) {
-									handleError(res.error);
-								}
-								if (res.data?.createHostingRoomImage.data) {
-									Toast.show({
-										type: "success",
-										text1: "Success",
-										text2: res.data.createHostingRoomImage.message,
-									});
-									updateActiveRoomImage(
-										index,
-										res.data.createHostingRoomImage.data.asset.publicUrl,
-									);
-									refetchHosting({ requestPolicy: "network-only" });
-								}
-							});
+							})
+								.then((res) => {
+									setAddingImages(false);
+									if (res.error) {
+										handleError(res.error);
+									}
+									if (res.data?.createHostingRoomImage.data) {
+										Toast.show({
+											type: "success",
+											text1: "Success",
+											text2: res.data.createHostingRoomImage.message,
+										});
+										updateActiveRoomImage(
+											index,
+											res.data.createHostingRoomImage.data.asset.publicUrl,
+										);
+										refetchHosting({ requestPolicy: "network-only" });
+									}
+								})
+								.catch(() => {
+									setAddingImages(false);
+								});
 						}
 					});
 				}
@@ -176,9 +197,9 @@ export default function NewHostingStep2() {
 		index: number,
 		{ images, ...rest }: RoomData,
 	) => {
-		if (!id) return;
+		if (!hosting?.id) return;
 		saveRoom(rest.name, index);
-		saveHostingRoomMutate({ input: { ...rest, hostingId: cast(id) } }).then(
+		saveHostingRoomMutate({ input: { ...rest, hostingId: hosting?.id } }).then(
 			(res) => {
 				if (res.error) {
 					handleError(res.error);
@@ -451,10 +472,10 @@ export default function NewHostingStep2() {
 										source={
 											rooms[deleteModalIndex].images.length
 												? {
-														uri: failedImages.has(0)
-															? FALLBACK_IMAGE
-															: rooms[deleteModalIndex].images[0],
-													}
+													uri: failedImages.has(0)
+														? FALLBACK_IMAGE
+														: rooms[deleteModalIndex].images[0],
+												}
 												: require("@/assets/images/room-image.jpg")
 										}
 										style={{
@@ -497,6 +518,7 @@ export default function NewHostingStep2() {
 					)}
 				</View>
 			</ThemedModal>
+			<LoadingModal visible={loading} />
 		</>
 	);
 }

@@ -5,15 +5,18 @@ import HostingCard, {
 } from "@/components/molecules/m-hosting-card";
 import { HotingVariantFilter } from "@/components/molecules/m-hosting-variant-filter";
 import HostingFilterManager from "@/components/organisms/o-hosting-filter-manager";
-import { useHostingsQuery } from "@/lib/services/graphql/generated";
+import {
+	PublishStatus,
+	useHostingsQuery,
+} from "@/lib/services/graphql/generated";
 import { useHostingFilterStore } from "@/lib/stores/hostings";
 import React from "react";
 import { View } from "react-native";
 
 export default function GuestHome() {
 	const { filter, updateFilter } = useHostingFilterStore();
-	const [{ fetching, data, error }] = useHostingsQuery({
-		variables: { filters: filter },
+	const [{ fetching, data }] = useHostingsQuery({
+		variables: { filters: { ...filter, publishStatus: PublishStatus.Live } },
 	});
 
 	return (
