@@ -220,6 +220,7 @@ export default function GuestSaved() {
 							},
 							android: {
 								elevation: 8,
+								shadowColor: hexToRgba(colors.primary, 0.3),
 							},
 						}),
 					}}

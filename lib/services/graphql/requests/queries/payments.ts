@@ -31,11 +31,15 @@ export const HOST_PAYMENT_DETAILS = gql`
       bankCode
       dateAdded
       lastUpdated
-      accountDetails {
-        accountNumber
-        accountName
-        bankId
+      bankDetails {
+        name
+        slug
+        code
+        active
+        currency
+        image
       }
+      accountName
     }
   }
 `;

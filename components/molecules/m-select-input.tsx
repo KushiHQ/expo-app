@@ -9,10 +9,13 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import SearchInput from "../atoms/a-search-input";
 import { cast } from "@/lib/types/utils";
+import EmptyList from "./m-empty-list";
+import { capitalize } from "@/lib/utils/text";
 
 export type SelectionDetails = { selected?: boolean };
 
-interface BaseProps<T> extends FloatingLabelInputProps {
+interface BaseProps<T> extends Omit<FloatingLabelInputProps, "defaultValue"> {
+	defaultValue?: T;
 	options: T[];
 	onSelect?: (v: T) => void;
 	renderItem: React.FC<T & SelectionDetails>;
@@ -32,7 +35,7 @@ type Props<T> = WithSearch<T> | WithoutSearch<T>;
 const SelectInput = <T extends {}>(props: Props<T>) => {
 	const { options, renderItem: RenderItem, onSelect, ...rest } = props;
 	const [open, setOpen] = React.useState(false);
-	const [value, setValue] = React.useState<T>();
+	const [value, setValue] = React.useState(props.defaultValue);
 	const [search, setSearch] = React.useState("");
 	const colors = useThemeColors();
 
@@ -77,7 +80,7 @@ const SelectInput = <T extends {}>(props: Props<T>) => {
 								color: !props.value ? hexToRgba(colors.text, 0.4) : colors.text,
 							}}
 						>
-							{props.value ?? rest.placeholder}
+							{capitalize(props.value ?? rest.placeholder ?? "")}
 						</ThemedText>
 						<ChevronDown color={hexToRgba(colors.text, 0.4)} />
 					</View>
@@ -109,6 +112,7 @@ const SelectInput = <T extends {}>(props: Props<T>) => {
 								<RenderItem {...v} selected={value === v} />
 							</Pressable>
 						))}
+						{!filtered.length && <EmptyList message="No items found" />}
 					</View>
 				</View>
 			</BottomSheet>

@@ -88,14 +88,17 @@ export type Host = {
 export type HostAccountDetails = {
   __typename?: 'HostAccountDetails';
   accountDetails: AccountDetails;
+  accountName?: Maybe<Scalars['String']['output']>;
   accountNumber: Scalars['String']['output'];
   bankCode: Scalars['String']['output'];
+  bankDetails?: Maybe<Bank>;
   dateAdded: Scalars['String']['output'];
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
 };
 
 export type HostAccountDetailsInput = {
+  accountName?: InputMaybe<Scalars['String']['input']>;
   accountNumber: Scalars['String']['input'];
   bankCode: Scalars['String']['input'];
   id?: InputMaybe<Scalars['String']['input']>;
@@ -719,6 +722,13 @@ export type DeleteHostingRoomMutationVariables = Exact<{
 
 export type DeleteHostingRoomMutation = { __typename?: 'Mutations', deleteHostingRoom: { __typename?: 'MessageResponse', message: string } };
 
+export type CreateUpdateHostPaymentDetailsMutationVariables = Exact<{
+  input: HostAccountDetailsInput;
+}>;
+
+
+export type CreateUpdateHostPaymentDetailsMutation = { __typename?: 'Mutations', createUpdateHostPaymentDetails: { __typename?: 'HostAccountDetailsResponse', message: string, data?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, bankCode: string, dateAdded: string, lastUpdated: string, accountName?: string | null, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null } };
+
 export type HostingQueryVariables = Exact<{
   hostingId: Scalars['String']['input'];
 }>;
@@ -788,7 +798,7 @@ export type VerifyAccountQuery = { __typename?: 'Query', verifyAccount: { __type
 export type HostPaymentDetailsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type HostPaymentDetailsQuery = { __typename?: 'Query', hostPaymentDetails: Array<{ __typename?: 'HostAccountDetails', id: string, accountNumber: string, bankCode: string, dateAdded: string, lastUpdated: string, accountDetails: { __typename?: 'AccountDetails', accountNumber: string, accountName: string, bankId?: number | null } }> };
+export type HostPaymentDetailsQuery = { __typename?: 'Query', hostPaymentDetails: Array<{ __typename?: 'HostAccountDetails', id: string, accountNumber: string, bankCode: string, dateAdded: string, lastUpdated: string, accountName?: string | null, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null }> };
 
 export type HostAnalyticsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1041,6 +1051,33 @@ export const DeleteHostingRoomDocument = gql`
 export function useDeleteHostingRoomMutation() {
   return Urql.useMutation<DeleteHostingRoomMutation, DeleteHostingRoomMutationVariables>(DeleteHostingRoomDocument);
 };
+export const CreateUpdateHostPaymentDetailsDocument = gql`
+    mutation CreateUpdateHostPaymentDetails($input: HostAccountDetailsInput!) {
+  createUpdateHostPaymentDetails(input: $input) {
+    message
+    data {
+      id
+      accountNumber
+      bankCode
+      dateAdded
+      lastUpdated
+      bankDetails {
+        name
+        slug
+        code
+        active
+        currency
+        image
+      }
+      accountName
+    }
+  }
+}
+    `;
+
+export function useCreateUpdateHostPaymentDetailsMutation() {
+  return Urql.useMutation<CreateUpdateHostPaymentDetailsMutation, CreateUpdateHostPaymentDetailsMutationVariables>(CreateUpdateHostPaymentDetailsDocument);
+};
 export const HostingDocument = gql`
     query Hosting($hostingId: String!) {
   hosting(hostingId: $hostingId) {
@@ -1267,11 +1304,15 @@ export const HostPaymentDetailsDocument = gql`
     bankCode
     dateAdded
     lastUpdated
-    accountDetails {
-      accountNumber
-      accountName
-      bankId
+    bankDetails {
+      name
+      slug
+      code
+      active
+      currency
+      image
     }
+    accountName
   }
 }
     `;
