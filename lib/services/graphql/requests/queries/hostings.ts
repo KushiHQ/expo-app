@@ -51,6 +51,31 @@ export const HOSTING_QUERY = gql`
           email
         }
       }
+      coverImage {
+        id
+        dateAdded
+        lastUpdated
+        asset {
+          id
+          publicUrl
+        }
+      }
+      paymentDetails {
+        id
+        accountNumber
+        accountName
+        bankCode
+        dateAdded
+        lastUpdated
+        bankDetails {
+          name
+          slug
+          code
+          active
+          currency
+          image
+        }
+      }
     }
   }
 `;

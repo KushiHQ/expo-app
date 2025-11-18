@@ -16,7 +16,6 @@ import { useHostingForm } from "@/lib/hooks/hosting-form";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useBanksQuery } from "@/lib/services/external/banks";
 import {
-	HostPaymentDetailsQuery,
 	PaymentInterval,
 	useCreateUpdateHostPaymentDetailsMutation,
 	useHostPaymentDetailsQuery,
@@ -41,11 +40,13 @@ export default function NewHostingStep5() {
 		input,
 		mutate,
 		updateInput,
+		hosting,
 		mutating,
 		fetching: fetchingHosting,
 	} = useHostingForm(id);
-	const [selectedAccount, setSelectedAcount] =
-		React.useState<HostPaymentDetailsQuery["hostPaymentDetails"][number]>();
+	const [selectedAccount, setSelectedAcount] = React.useState(
+		hosting?.paymentDetails,
+	);
 	const [newAccountInput, setNewAccountInput] = React.useState(
 		{} as VerifyAccountInput,
 	);
@@ -135,6 +136,9 @@ export default function NewHostingStep5() {
 								size={12}
 							/>
 							{"  "}
+							Define your property's Pricing and how often you expect rent
+							(e.g., Annually). Then, link a Bank Account for secure payments,
+							either by selecting a saved account or adding a new one.
 						</ThemedText>
 						<ThemedText style={{ fontFamily: Fonts.medium }}>
 							Pricing & Payment Details
@@ -168,14 +172,14 @@ export default function NewHostingStep5() {
 							<ThemedText className="mb-4" style={{ fontFamily: Fonts.medium }}>
 								Select account
 							</ThemedText>
-							<View>
+							<View className="h-[68px]">
 								<SelectInput
 									focused
 									searchable
 									searchField="name"
 									label="Account"
 									placeholder="Select account"
-									defaultValue={selectedAccount}
+									defaultValue={selectedAccount ?? undefined}
 									onSelect={setSelectedAcount}
 									renderItem={PaymentDetailsSelectOption}
 									options={hostPaymentDetails?.hostPaymentDetails ?? []}

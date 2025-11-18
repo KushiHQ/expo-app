@@ -10,17 +10,19 @@ import Carousel from "../atoms/a-carousel";
 import { Image } from "expo-image";
 import Skeleton from "../atoms/a-skeleton";
 import { useRouter } from "expo-router";
-import { PhHeart } from "../icons/i-heart";
+import { PhHeart, PhHeartFill } from "../icons/i-heart";
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { useFallbackImages } from "@/lib/hooks/images";
-import { HostingsQuery } from "@/lib/services/graphql/generated";
+import { HostingQuery, HostingsQuery } from "@/lib/services/graphql/generated";
+import { capitalize } from "@/lib/utils/text";
 
 type Props = {
-	hosting: HostingsQuery["hostings"][number];
+	hosting: HostingsQuery["hostings"][number] | HostingQuery["hosting"];
+	disabled?: boolean;
 	index?: number;
 };
 
-const HostingCard: React.FC<Props> = ({ hosting, index }) => {
+const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 	const colors = useThemeColors();
 	const router = useRouter();
 	const { failedImages, handleImageError } = useFallbackImages();
@@ -59,10 +61,18 @@ const HostingCard: React.FC<Props> = ({ hosting, index }) => {
 					))}
 				</Carousel>
 				<Pressable className="absolute top-4 right-4">
-					<PhHeart />
+					<View className="absolute top-0 right-0">
+						<PhHeartFill color="white" />
+					</View>
+					<View className="absolute top-0 right-0">
+						<PhHeart />
+					</View>
 				</Pressable>
 			</View>
-			<Pressable onPress={() => router.push(`/hostings/${hosting.id}`)}>
+			<Pressable
+				disabled={disabled}
+				onPress={() => router.push(`/hostings/${hosting.id}`)}
+			>
 				<View style={{ borderColor }} className="p-3 rounded-xl border gap-0.5">
 					<View className="flex-row justify-between">
 						<ThemedText
@@ -74,7 +84,8 @@ const HostingCard: React.FC<Props> = ({ hosting, index }) => {
 							{hosting.title}
 						</ThemedText>
 						<ThemedText style={{ fontFamily: Fonts.bold, fontSize: 14 }}>
-							₦{hosting.price?.toLocaleString()} {hosting.paymentInterval}
+							₦{Number(hosting.price)?.toLocaleString()}{" "}
+							{capitalize(hosting.paymentInterval ?? "")}
 						</ThemedText>
 					</View>
 					<ThemedText
@@ -98,7 +109,7 @@ const HostingCard: React.FC<Props> = ({ hosting, index }) => {
 										color: hexToRgba(colors.text, 0.9),
 									}}
 								>
-									{hosting.averageRating?.toFixed(2)}
+									{hosting.averageRating?.toFixed(2) ?? "0.00"}
 								</ThemedText>
 								<ThemedText
 									style={{
@@ -107,7 +118,7 @@ const HostingCard: React.FC<Props> = ({ hosting, index }) => {
 										color: hexToRgba(colors.text, 0.8),
 									}}
 								>
-									({hosting.totalRatings})
+									({hosting.totalRatings ?? "0"})
 								</ThemedText>
 							</View>
 						</View>

@@ -142,13 +142,15 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>(
 				lastUpdated,
 				dateAdded,
 				totalRatings,
+				coverImage,
+				paymentDetails,
 				rooms,
 				saved,
 				__typename,
 				...rest
 			} = hosting;
 			set(() => ({
-				input: rest,
+				input: { ...rest, paymentDetailsId: paymentDetails?.id },
 				hosting,
 			}));
 		},
