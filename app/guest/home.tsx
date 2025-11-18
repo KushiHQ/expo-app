@@ -12,15 +12,20 @@ import {
 import { useHostingFilterStore } from "@/lib/stores/hostings";
 import React from "react";
 import { View } from "react-native";
+import { RefreshControl } from "react-native-gesture-handler";
 
 export default function GuestHome() {
 	const { filter, updateFilter } = useHostingFilterStore();
-	const [{ fetching, data }] = useHostingsQuery({
+	const [{ fetching, data }, refetch] = useHostingsQuery({
 		variables: { filters: { ...filter, publishStatus: PublishStatus.Live } },
 	});
 
 	return (
-		<ProfileLayout>
+		<ProfileLayout
+			refreshControl={
+				<RefreshControl refreshing={fetching} onRefresh={refetch} />
+			}
+		>
 			<View>
 				<View className="gap-4">
 					<HostingFilterManager />

@@ -1,7 +1,7 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import ThemedView from "../atoms/a-themed-view";
 import React, { useRef, useEffect } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Pressable, RefreshControlProps, ScrollView, View } from "react-native";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import ThemedText from "../atoms/a-themed-text";
@@ -14,9 +14,13 @@ import { useUserStore } from "@/lib/stores/users";
 
 type Props = {
 	children?: React.ReactNode;
+	refreshControl?: React.ReactElement<
+		RefreshControlProps,
+		string | React.JSXElementConstructor<any>
+	>;
 };
 
-const ProfileLayout: React.FC<Props> = ({ children }) => {
+const ProfileLayout: React.FC<Props> = ({ children, refreshControl }) => {
 	const colors = useThemeColors();
 	const router = useRouter();
 	const scrollViewRef = useRef<ScrollView>(null);
@@ -92,6 +96,7 @@ const ProfileLayout: React.FC<Props> = ({ children }) => {
 					className="flex-1"
 					showsVerticalScrollIndicator={false}
 					contentContainerStyle={{ flexGrow: 1 }}
+					refreshControl={refreshControl}
 				>
 					<View className="p-5 pt-0 flex-1">
 						<View className="flex-1">{children}</View>
