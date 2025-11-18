@@ -1,7 +1,7 @@
 import { MagePreviewFill } from "@/components/icons/i-preview";
 import { SolarTagPriceOutline } from "@/components/icons/i-price";
 import { SolarVerifiedCheckOutline } from "@/components/icons/i-verified";
-import { HousePlus, Images, MapPinHouse } from "lucide-react-native";
+import { HousePlus, Images, MapPinHouse, Sparkles } from "lucide-react-native";
 
 export const ONBOARDING_STEPS = [
 	{
@@ -22,10 +22,16 @@ export const ONBOARDING_STEPS = [
 			"Pinpoint your property on the map and add your address so guests can find you.",
 	},
 	{
-		icon: SolarTagPriceOutline,
-		title: "Set Price & Amenities",
+		icon: Sparkles,
+		title: "Select Amenities & Features",
 		description:
-			"Define your price, payment terms, and select all the great features and amenities you offer.",
+			"Select all the great features and amenities your place offers, from Wi-Fi to a swimming pool.",
+	},
+	{
+		icon: SolarTagPriceOutline,
+		title: "Set Your Price",
+		description:
+			"Define your price, payment interval (e.g., /year), and the bank account for your payouts.",
 	},
 	{
 		icon: MagePreviewFill,

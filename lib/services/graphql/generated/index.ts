@@ -19,6 +19,13 @@ export type Scalars = {
   Upload: { input: any; output: any; }
 };
 
+export type AccountDetails = {
+  __typename?: 'AccountDetails';
+  accountName: Scalars['String']['output'];
+  accountNumber: Scalars['String']['output'];
+  bankId?: Maybe<Scalars['Int']['output']>;
+};
+
 export type Asset = {
   __typename?: 'Asset';
   contentType?: Maybe<Scalars['String']['output']>;
@@ -45,6 +52,16 @@ export type AuthTokenResponse = {
   message: Scalars['String']['output'];
 };
 
+export type Bank = {
+  __typename?: 'Bank';
+  active: Scalars['Boolean']['output'];
+  code: Scalars['String']['output'];
+  currency: Scalars['String']['output'];
+  image: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  slug: Scalars['String']['output'];
+};
+
 export type CompletePasswordChangeInput = {
   email: Scalars['String']['input'];
   otp: Scalars['String']['input'];
@@ -66,6 +83,28 @@ export type Host = {
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
   user: User;
+};
+
+export type HostAccountDetails = {
+  __typename?: 'HostAccountDetails';
+  accountDetails: AccountDetails;
+  accountNumber: Scalars['String']['output'];
+  bankCode: Scalars['String']['output'];
+  dateAdded: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+};
+
+export type HostAccountDetailsInput = {
+  accountNumber: Scalars['String']['input'];
+  bankCode: Scalars['String']['input'];
+  id?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type HostAccountDetailsResponse = {
+  __typename?: 'HostAccountDetailsResponse';
+  data?: Maybe<HostAccountDetails>;
+  message: Scalars['String']['output'];
 };
 
 export type HostAnalytics = {
@@ -265,8 +304,10 @@ export type Mutations = {
   createHostingRoomImage: HostingRoomImageResponse;
   createOrUpdateHosting: HostingResponse;
   createOrUpdateHostingRoom: HostingRoomResponse;
+  createUpdateHostPaymentDetails: HostAccountDetailsResponse;
   createUpdateSavedHosting: SavedHostingResponse;
   createUpdateSavedHostingFolder: SavedHostingFolderResponse;
+  deleteHostPaymentDetails: MessageResponse;
   deleteHostingRoom: MessageResponse;
   deleteHostingRoomImage: MessageResponse;
   deleteSavedHosting: MessageResponse;
@@ -305,6 +346,11 @@ export type MutationsCreateOrUpdateHostingRoomArgs = {
 };
 
 
+export type MutationsCreateUpdateHostPaymentDetailsArgs = {
+  input: HostAccountDetailsInput;
+};
+
+
 export type MutationsCreateUpdateSavedHostingArgs = {
   input: SavedHostingInput;
 };
@@ -312,6 +358,11 @@ export type MutationsCreateUpdateSavedHostingArgs = {
 
 export type MutationsCreateUpdateSavedHostingFolderArgs = {
   input: SavedHostingFolderInput;
+};
+
+
+export type MutationsDeleteHostPaymentDetailsArgs = {
+  paymentDetailsId: Scalars['String']['input'];
 };
 
 
@@ -426,7 +477,9 @@ export type Query = {
   __typename?: 'Query';
   authGuest: Guest;
   authHost: Host;
+  banks: Array<Bank>;
   hostAnalytics: HostAnalytics;
+  hostPaymentDetails: Array<HostAccountDetails>;
   hosting: Hosting;
   hostings: Array<Hosting>;
   me: User;
@@ -435,6 +488,12 @@ export type Query = {
   savedHostingFolder: SavedHostingFolder;
   savedHostingFolders: Array<SavedHostingFolder>;
   savedHostings: Array<SavedHosting>;
+  verifyAccount: AccountDetails;
+};
+
+
+export type QueryHostPaymentDetailsArgs = {
+  pagination?: InputMaybe<PaginationInput>;
 };
 
 
@@ -473,6 +532,11 @@ export type QuerySavedHostingFoldersArgs = {
 export type QuerySavedHostingsArgs = {
   filters?: InputMaybe<SavedHostingFilterInput>;
   pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QueryVerifyAccountArgs = {
+  input: VerifyAccountInput;
 };
 
 export type RefreshTokenInput = {
@@ -550,6 +614,11 @@ export type UserResponse = {
   __typename?: 'UserResponse';
   data?: Maybe<User>;
   message: Scalars['String']['output'];
+};
+
+export type VerifyAccountInput = {
+  accountNumber: Scalars['String']['input'];
+  bankCode: Scalars['String']['input'];
 };
 
 export type SignUpMutationVariables = Exact<{
@@ -703,6 +772,23 @@ export type NotificationsQueryVariables = Exact<{
 
 
 export type NotificationsQuery = { __typename?: 'Query', notifications: Array<{ __typename?: 'Notification', id: string, title: string, message: string, type: NotificationType, createdAt: string, lastUpdated: string, action?: string | null, actionData?: string | null }> };
+
+export type BanksQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type BanksQuery = { __typename?: 'Query', banks: Array<{ __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string }> };
+
+export type VerifyAccountQueryVariables = Exact<{
+  input: VerifyAccountInput;
+}>;
+
+
+export type VerifyAccountQuery = { __typename?: 'Query', verifyAccount: { __typename?: 'AccountDetails', accountNumber: string, accountName: string, bankId?: number | null } };
+
+export type HostPaymentDetailsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type HostPaymentDetailsQuery = { __typename?: 'Query', hostPaymentDetails: Array<{ __typename?: 'HostAccountDetails', id: string, accountNumber: string, bankCode: string, dateAdded: string, lastUpdated: string, accountDetails: { __typename?: 'AccountDetails', accountNumber: string, accountName: string, bankId?: number | null } }> };
 
 export type HostAnalyticsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1143,6 +1229,55 @@ export const NotificationsDocument = gql`
 
 export function useNotificationsQuery(options?: Omit<Urql.UseQueryArgs<NotificationsQueryVariables>, 'query'>) {
   return Urql.useQuery<NotificationsQuery, NotificationsQueryVariables>({ query: NotificationsDocument, ...options });
+};
+export const BanksDocument = gql`
+    query Banks {
+  banks {
+    name
+    slug
+    code
+    active
+    currency
+    image
+  }
+}
+    `;
+
+export function useBanksQuery(options?: Omit<Urql.UseQueryArgs<BanksQueryVariables>, 'query'>) {
+  return Urql.useQuery<BanksQuery, BanksQueryVariables>({ query: BanksDocument, ...options });
+};
+export const VerifyAccountDocument = gql`
+    query VerifyAccount($input: VerifyAccountInput!) {
+  verifyAccount(input: $input) {
+    accountNumber
+    accountName
+    bankId
+  }
+}
+    `;
+
+export function useVerifyAccountQuery(options: Omit<Urql.UseQueryArgs<VerifyAccountQueryVariables>, 'query'>) {
+  return Urql.useQuery<VerifyAccountQuery, VerifyAccountQueryVariables>({ query: VerifyAccountDocument, ...options });
+};
+export const HostPaymentDetailsDocument = gql`
+    query HostPaymentDetails {
+  hostPaymentDetails {
+    id
+    accountNumber
+    bankCode
+    dateAdded
+    lastUpdated
+    accountDetails {
+      accountNumber
+      accountName
+      bankId
+    }
+  }
+}
+    `;
+
+export function useHostPaymentDetailsQuery(options?: Omit<Urql.UseQueryArgs<HostPaymentDetailsQueryVariables>, 'query'>) {
+  return Urql.useQuery<HostPaymentDetailsQuery, HostPaymentDetailsQueryVariables>({ query: HostPaymentDetailsDocument, ...options });
 };
 export const HostAnalyticsDocument = gql`
     query HostAnalytics {
