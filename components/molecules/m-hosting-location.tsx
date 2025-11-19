@@ -1,14 +1,14 @@
 import { View } from "react-native";
 import ThemedText from "../atoms/a-themed-text";
 import { Fonts } from "@/lib/constants/theme";
-import { Hosting } from "@/lib/constants/mocks/hostings";
 import React from "react";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import LocationCard from "../atoms/a-location-card";
+import { HostingQuery } from "@/lib/services/graphql/generated";
 
 type Props = {
-	hosting?: Hosting;
+	hosting?: HostingQuery["hosting"];
 };
 
 const HostingLocation: React.FC<Props> = ({ hosting }) => {
@@ -26,7 +26,18 @@ const HostingLocation: React.FC<Props> = ({ hosting }) => {
 					{hosting?.city}, {hosting?.state}, {hosting?.country}
 				</ThemedText>
 			</View>
-			<LocationCard location={hosting?.location} title={hosting?.title} />
+			<LocationCard
+				zoom={15}
+				location={
+					hosting?.latitude && hosting.latitude
+						? {
+							longitude: Number(hosting.longitude),
+							latitude: Number(hosting.latitude),
+						}
+						: undefined
+				}
+				title={hosting?.title}
+			/>
 		</View>
 	);
 };

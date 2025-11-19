@@ -104,7 +104,7 @@ export default function NewHostingStep6() {
 	const handleMutate = () => {
 		updateInput({
 			publishStatus:
-				hosting?.publishStatus !== PublishStatus.Live
+				hosting?.publishStatus === PublishStatus.Live
 					? PublishStatus.Draft
 					: PublishStatus.Live,
 		});
@@ -112,7 +112,7 @@ export default function NewHostingStep6() {
 			input: {
 				...input,
 				publishStatus:
-					hosting?.publishStatus !== PublishStatus.Live
+					hosting?.publishStatus === PublishStatus.Live
 						? PublishStatus.Draft
 						: PublishStatus.Live,
 			},

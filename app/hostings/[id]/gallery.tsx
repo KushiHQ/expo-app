@@ -3,22 +3,20 @@ import DetailsLayout from "@/components/layouts/details";
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
 import { useFallbackImages } from "@/lib/hooks/images";
-import { hostingsAtom } from "@/lib/stores/hostings";
+import { useHostingQuery } from "@/lib/services/graphql/generated";
+import { cast } from "@/lib/types/utils";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
-import { useAtomValue } from "jotai";
 import React from "react";
 import { View } from "react-native";
 import { SimpleGrid } from "react-native-super-grid";
 
-const ROOMS = ["Exterior", "Living Room", "Bedroom", "Balcony"];
-
 export default function HostingGallery() {
   const { id } = useLocalSearchParams();
-  const hostings = useAtomValue(hostingsAtom);
-  const hosting = hostings.find((hosting) => hosting.id === id);
+  const [{ data }] = useHostingQuery({ variables: { hostingId: cast(id) } });
   const { failedImages, handleImageError } = useFallbackImages();
 
+  const hosting = data?.hosting;
   return (
     <DetailsLayout title="Property Details">
       <View className="mt-8">
@@ -28,24 +26,24 @@ export default function HostingGallery() {
           </ThemedText>
         </View>
         <View>
-          {ROOMS.map((room, index) => (
-            <View key={index} className="mt-4">
+          {hosting?.rooms.map((room) => (
+            <View key={room.id} className="mt-4">
               <View className="px-2">
-                <ThemedText>{room}</ThemedText>
+                <ThemedText>{room.name}</ThemedText>
               </View>
               <View>
                 <SimpleGrid
                   listKey={undefined}
                   itemDimension={80}
-                  data={(hosting?.images ?? []).slice(0, index + 1)}
-                  renderItem={({ item }) => {
+                  data={room.images ?? []}
+                  renderItem={({ item, index }) => {
                     return (
-                      <View key={index} className="w-full">
+                      <View key={item.id} className="w-full">
                         <Image
                           source={{
                             uri: failedImages.has(index)
                               ? FALLBACK_IMAGE
-                              : item,
+                              : item.asset.publicUrl,
                           }}
                           style={{
                             height: 80,

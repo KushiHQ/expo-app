@@ -8,11 +8,10 @@ import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { Fonts } from "@/lib/constants/theme";
 import Skeleton from "../atoms/a-skeleton";
 import { useRouter } from "expo-router";
-import { PhHeart, PhHeartFill } from "../icons/i-heart";
-import { hexToRgba } from "@/lib/utils/colors";
 import Checkbox from "../atoms/a-checkbox";
 import { useFallbackImages } from "@/lib/hooks/images";
 import { SavedHostingsQuery } from "@/lib/services/graphql/generated";
+import HostingLikeButton from "../atoms/a-hosting-like-button";
 
 type Props = {
 	hosting: SavedHostingsQuery["savedHostings"][number];
@@ -31,7 +30,6 @@ const SavedHostingCard: React.FC<Props> = ({
 	onDeSelect,
 	onSelectMode,
 }) => {
-	const [liked, setLiked] = React.useState(false);
 	const colors = useThemeColors();
 	const router = useRouter();
 	const { handleImageError, failedImages } = useFallbackImages();
@@ -39,7 +37,7 @@ const SavedHostingCard: React.FC<Props> = ({
 	return (
 		<Pressable
 			className="mb-2 gap-1"
-			onPress={() => router.push(`/hostings/${hosting.id}`)}
+			onPress={() => router.push(`/hostings/${hosting.hosting.id}`)}
 			onLongPress={onSelectMode}
 		>
 			<View className="h-[130px] relative">
@@ -85,17 +83,10 @@ const SavedHostingCard: React.FC<Props> = ({
 							}}
 						/>
 					) : (
-						<Pressable
-							onPress={() => setLiked((c) => !c)}
-							className="w-7 h-7 items-center justify-center rounded-full"
-							style={{ backgroundColor: hexToRgba(colors.text, 0.4) }}
-						>
-							{liked ? (
-								<PhHeartFill size={24} color={colors.error} />
-							) : (
-								<PhHeart size={24} color={colors.background} />
-							)}
-						</Pressable>
+						<HostingLikeButton
+							saved={hosting.hosting.saved ?? false}
+							id={hosting.hosting.id}
+						/>
 					)}
 				</View>
 			</View>
@@ -110,8 +101,8 @@ const SavedHostingCard: React.FC<Props> = ({
 				<View className="flex-row items-center gap-1">
 					<MynauiStarSolid color={colors.accent} size={16} />
 					<ThemedText>
-						{hosting.hosting.averageRating?.toFixed(2)}(
-						{hosting.hosting.totalRatings})
+						{hosting.hosting.averageRating?.toFixed(2) ?? "0.0"}(
+						{hosting.hosting.totalRatings ?? 0})
 					</ThemedText>
 				</View>
 			</View>

@@ -1,7 +1,6 @@
 import { View } from "react-native";
 import ThemedText from "../atoms/a-themed-text";
 import { Fonts } from "@/lib/constants/theme";
-import { Hosting } from "@/lib/constants/mocks/hostings";
 import React from "react";
 import { Link } from "expo-router";
 import { Image } from "expo-image";
@@ -9,14 +8,17 @@ import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useFallbackImages } from "@/lib/hooks/images";
+import { HostingQuery } from "@/lib/services/graphql/generated";
 
 type Props = {
-  hosting?: Hosting;
+  hosting?: HostingQuery["hosting"];
 };
 
 const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
   const colors = useThemeColors();
   const { handleImageError, failedImages } = useFallbackImages();
+
+  const images = hosting?.rooms.map((r) => r.images).flat();
 
   return (
     <View className="mt-8">
@@ -35,11 +37,13 @@ const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
         </Link>
       </View>
       <View className="mt-4 flex-row gap-3">
-        {(hosting?.images ?? []).slice(0, 3).map((img, index) => (
+        {(images ?? []).slice(0, 3).map((img, index) => (
           <View key={index} className="flex-1">
             <Image
               source={{
-                uri: failedImages.has(index) ? FALLBACK_IMAGE : img,
+                uri: failedImages.has(index)
+                  ? FALLBACK_IMAGE
+                  : img.asset.publicUrl,
               }}
               style={{
                 height: 80,
@@ -57,11 +61,12 @@ const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
             />
           </View>
         ))}
-        {(hosting?.images ?? []).length > 3 && (
+        {(images ?? []).length > 3 && (
           <View className="flex-1 relative">
             <Image
               source={{
-                uri: hosting?.images.at((hosting.images ?? []).length - 1),
+                uri: (images ?? []).at((images ?? []).length - 1)?.asset
+                  .publicUrl,
               }}
               style={{
                 height: 80,

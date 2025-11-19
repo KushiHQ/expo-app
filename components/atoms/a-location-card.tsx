@@ -12,7 +12,7 @@ type Props = {
     longitude: number;
     latitude: number;
   };
-  title?: string;
+  title?: string | null;
   zoom?: number;
 };
 
@@ -25,7 +25,11 @@ const LocationCard: React.FC<Props> = ({ location, title, zoom }) => {
       className="relative border rounded-xl overflow-hidden"
       style={{ borderColor: colors.text, height: 250 }}
     >
-      <ExpoMap title={title} coordinates={location} zoom={zoom ?? 6} />
+      <ExpoMap
+        title={title ?? undefined}
+        coordinates={location}
+        zoom={zoom ?? 6}
+      />
       <View className="absolute top-2 right-2 items-center gap-4 flex-row">
         {location && (
           <Pressable

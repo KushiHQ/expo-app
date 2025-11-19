@@ -49,7 +49,12 @@ export const HOSTING_QUERY = gql`
         user {
           id
           email
+          profile {
+            fullName
+            id
+          }
         }
+        dateAdded
       }
       coverImage {
         id
@@ -146,6 +151,7 @@ export const SAVED_HOSTINGS_QUERY = gql`
         averageRating
         id
         title
+        saved
       }
     }
   }

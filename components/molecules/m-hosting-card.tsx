@@ -10,11 +10,11 @@ import Carousel from "../atoms/a-carousel";
 import { Image } from "expo-image";
 import Skeleton from "../atoms/a-skeleton";
 import { useRouter } from "expo-router";
-import { PhHeart, PhHeartFill } from "../icons/i-heart";
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { useFallbackImages } from "@/lib/hooks/images";
 import { HostingQuery, HostingsQuery } from "@/lib/services/graphql/generated";
 import { capitalize } from "@/lib/utils/text";
+import HostingLikeButton from "../atoms/a-hosting-like-button";
 
 type Props = {
 	hosting: HostingsQuery["hostings"][number] | HostingQuery["hosting"];
@@ -60,14 +60,11 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 						/>
 					))}
 				</Carousel>
-				<Pressable className="absolute top-4 right-4">
-					<View className="absolute top-0 right-0">
-						<PhHeartFill color="white" />
-					</View>
-					<View className="absolute top-0 right-0">
-						<PhHeart />
-					</View>
-				</Pressable>
+				<HostingLikeButton
+					saved={hosting.saved}
+					id={hosting.id}
+					className="absolute top-4 right-4"
+				/>
 			</View>
 			<Pressable
 				disabled={disabled}

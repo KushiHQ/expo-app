@@ -723,6 +723,20 @@ export type DeleteHostingRoomMutationVariables = Exact<{
 
 export type DeleteHostingRoomMutation = { __typename?: 'Mutations', deleteHostingRoom: { __typename?: 'MessageResponse', message: string } };
 
+export type CreateUpdateSavedHostingMutationVariables = Exact<{
+  input: SavedHostingInput;
+}>;
+
+
+export type CreateUpdateSavedHostingMutation = { __typename?: 'Mutations', createUpdateSavedHosting: { __typename?: 'SavedHostingResponse', message: string } };
+
+export type DeleteSavedHostingMutationVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+}>;
+
+
+export type DeleteSavedHostingMutation = { __typename?: 'Mutations', deleteSavedHosting: { __typename?: 'MessageResponse', message: string } };
+
 export type CreateUpdateHostPaymentDetailsMutationVariables = Exact<{
   input: HostAccountDetailsInput;
 }>;
@@ -735,7 +749,7 @@ export type HostingQueryVariables = Exact<{
 }>;
 
 
-export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, dateAdded: string, lastUpdated: string, saved: boolean, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, dateAdded: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, dateAdded: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, user: { __typename?: 'User', id: string, email: string } }, coverImage?: { __typename?: 'HostingRoomImage', id: string, dateAdded: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, dateAdded: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null } };
+export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, dateAdded: string, lastUpdated: string, saved: boolean, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, dateAdded: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, dateAdded: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, dateAdded: string, user: { __typename?: 'User', id: string, email: string, profile: { __typename?: 'Profile', fullName: string, id: string } } }, coverImage?: { __typename?: 'HostingRoomImage', id: string, dateAdded: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, dateAdded: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null } };
 
 export type HostingsQueryVariables = Exact<{
   filters?: InputMaybe<HostingFilterInput>;
@@ -759,7 +773,7 @@ export type SavedHostingsQueryVariables = Exact<{
 }>;
 
 
-export type SavedHostingsQuery = { __typename?: 'Query', savedHostings: Array<{ __typename?: 'SavedHosting', id: string, image?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', publicUrl: string, id: string } } | null, hosting: { __typename?: 'Hosting', totalRatings?: number | null, averageRating?: number | null, id: string, title?: string | null } }> };
+export type SavedHostingsQuery = { __typename?: 'Query', savedHostings: Array<{ __typename?: 'SavedHosting', id: string, image?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', publicUrl: string, id: string } } | null, hosting: { __typename?: 'Hosting', totalRatings?: number | null, averageRating?: number | null, id: string, title?: string | null, saved: boolean } }> };
 
 export type SavedHostingFolderQueryVariables = Exact<{
   savedHostingFolderId: Scalars['String']['input'];
@@ -1052,6 +1066,28 @@ export const DeleteHostingRoomDocument = gql`
 export function useDeleteHostingRoomMutation() {
   return Urql.useMutation<DeleteHostingRoomMutation, DeleteHostingRoomMutationVariables>(DeleteHostingRoomDocument);
 };
+export const CreateUpdateSavedHostingDocument = gql`
+    mutation CreateUpdateSavedHosting($input: SavedHostingInput!) {
+  createUpdateSavedHosting(input: $input) {
+    message
+  }
+}
+    `;
+
+export function useCreateUpdateSavedHostingMutation() {
+  return Urql.useMutation<CreateUpdateSavedHostingMutation, CreateUpdateSavedHostingMutationVariables>(CreateUpdateSavedHostingDocument);
+};
+export const DeleteSavedHostingDocument = gql`
+    mutation DeleteSavedHosting($hostingId: String!) {
+  deleteSavedHosting(hostingId: $hostingId) {
+    message
+  }
+}
+    `;
+
+export function useDeleteSavedHostingMutation() {
+  return Urql.useMutation<DeleteSavedHostingMutation, DeleteSavedHostingMutationVariables>(DeleteSavedHostingDocument);
+};
 export const CreateUpdateHostPaymentDetailsDocument = gql`
     mutation CreateUpdateHostPaymentDetails($input: HostAccountDetailsInput!) {
   createUpdateHostPaymentDetails(input: $input) {
@@ -1128,7 +1164,12 @@ export const HostingDocument = gql`
       user {
         id
         email
+        profile {
+          fullName
+          id
+        }
       }
+      dateAdded
     }
     coverImage {
       id
@@ -1227,6 +1268,7 @@ export const SavedHostingsDocument = gql`
       averageRating
       id
       title
+      saved
     }
   }
 }

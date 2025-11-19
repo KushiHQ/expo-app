@@ -114,3 +114,19 @@ export const DELETE_HOSTING_ROOM = gql`
     }
   }
 `;
+
+export const CREATE_UPDATE_SAVED_HOSTING = gql`
+  mutation CreateUpdateSavedHosting($input: SavedHostingInput!) {
+    createUpdateSavedHosting(input: $input) {
+      message
+    }
+  }
+`;
+
+export const DELETE_SAVED_HOSTING = gql`
+  mutation DeleteSavedHosting($hostingId: String!) {
+    deleteSavedHosting(hostingId: $hostingId) {
+      message
+    }
+  }
+`;

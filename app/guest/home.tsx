@@ -23,7 +23,10 @@ export default function GuestHome() {
 	return (
 		<ProfileLayout
 			refreshControl={
-				<RefreshControl refreshing={fetching} onRefresh={refetch} />
+				<RefreshControl
+					refreshing={fetching}
+					onRefresh={() => refetch({ requestPolicy: "network-only" })}
+				/>
 			}
 		>
 			<View>

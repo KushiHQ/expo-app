@@ -1,4 +1,3 @@
-import { Hosting } from "@/lib/constants/mocks/hostings";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import { Image } from "expo-image";
@@ -9,9 +8,11 @@ import { CuidaBuildingOutline } from "../icons/i-home";
 import { TablerMessage2 } from "../icons/i-message";
 import { SolarPhoneOutline } from "../icons/i-phone";
 import { Fonts } from "@/lib/constants/theme";
+import { HostingQuery } from "@/lib/services/graphql/generated";
+import moment from "moment";
 
 type Props = {
-  hosting?: Hosting;
+  hosting?: HostingQuery["hosting"];
 };
 
 const HostingHost: React.FC<Props> = ({ hosting }) => {
@@ -56,11 +57,11 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
                 }}
               />
             </View>
-            <ThemedText>{hosting?.createdBy}</ThemedText>
+            <ThemedText>{hosting?.host.user.profile.fullName}</ThemedText>
           </View>
           <View className="flex-row items-center gap-2">
             <CuidaBuildingOutline color={colors.accent} />
-            <ThemedText>{hosting?.creatorYears} years</ThemedText>
+            <ThemedText>{moment(hosting?.host.dateAdded).fromNow()}</ThemedText>
           </View>
         </View>
         <View className="flex-row gap-4 items-center">

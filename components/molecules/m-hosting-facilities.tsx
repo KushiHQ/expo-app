@@ -1,17 +1,16 @@
-import { Hosting } from "@/lib/constants/mocks/hostings";
 import React from "react";
 import { View } from "react-native";
 import ThemedText from "../atoms/a-themed-text";
 import { Fonts } from "@/lib/constants/theme";
 import { SimpleGrid } from "react-native-super-grid";
-import { FACILITIES_BY_VARIANT } from "@/lib/types/enums/hostings";
 import { FACILITY_ICONS } from "@/lib/types/enums/hosting-icons";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { HostingQuery } from "@/lib/services/graphql/generated";
 
 type Props = {
-  hosting?: Hosting;
+  hosting?: HostingQuery["hosting"];
 };
 
 const HostingFacilities: React.FC<Props> = ({ hosting }) => {
@@ -25,7 +24,7 @@ const HostingFacilities: React.FC<Props> = ({ hosting }) => {
       <SimpleGrid
         listKey={undefined}
         itemDimension={80}
-        data={FACILITIES_BY_VARIANT.map((f) => f.facility)}
+        data={hosting?.facilities ?? []}
         renderItem={({ item }) => {
           const Icon = FACILITY_ICONS[cast<keyof typeof FACILITY_ICONS>(item)];
           return (

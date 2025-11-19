@@ -1,7 +1,7 @@
 import Button from "@/components/atoms/a-button";
 import Carousel from "@/components/atoms/a-carousel";
+import HostingLikeButton from "@/components/atoms/a-hosting-like-button";
 import ThemedText from "@/components/atoms/a-themed-text";
-import { PhHeart } from "@/components/icons/i-heart";
 import { MynauiStarSolid } from "@/components/icons/i-star";
 import DetailsLayout from "@/components/layouts/details";
 import HostingFacilities from "@/components/molecules/m-hosting-facilities";
@@ -13,21 +13,23 @@ import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
 import { useFallbackImages } from "@/lib/hooks/images";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hostingsAtom } from "@/lib/stores/hostings";
+import { useHostingQuery } from "@/lib/services/graphql/generated";
+import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
+import { capitalize } from "@/lib/utils/text";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useAtomValue } from "jotai";
 import React from "react";
 import { View } from "react-native";
 
 export default function HostingDetails() {
 	const router = useRouter();
 	const { id } = useLocalSearchParams();
+	const [{ data }] = useHostingQuery({ variables: { hostingId: cast(id) } });
 	const colors = useThemeColors();
-	const hostings = useAtomValue(hostingsAtom);
-	const hosting = hostings.find((hosting) => hosting.id === id);
 	const { handleImageError, failedImages } = useFallbackImages();
+
+	const hosting = data?.hosting;
 
 	return (
 		<DetailsLayout
@@ -45,9 +47,11 @@ export default function HostingDetails() {
 							Total Payment
 						</ThemedText>
 						<View className="flex-row items-center gap-2">
-							<ThemedText>₦{hosting?.price.toLocaleString()}</ThemedText>
+							<ThemedText>
+								₦{Number(hosting?.price).toLocaleString()}
+							</ThemedText>
 							<ThemedText style={{ color: hexToRgba(colors.text, 0.5) }}>
-								{hosting?.pricing}
+								{capitalize(hosting?.paymentInterval ?? "")}
 							</ThemedText>
 						</View>
 					</View>
@@ -69,20 +73,26 @@ export default function HostingDetails() {
 			<View>
 				<View style={{ height: 290 }} className="overflow-hidden rounded-xl">
 					<Carousel autoplay style={{ height: "100%", width: "100%" }}>
-						{(hosting?.images ?? []).map((img, index) => (
-							<Image
-								source={{ uri: failedImages.has(index) ? FALLBACK_IMAGE : img }}
-								style={{ height: "100%", width: "100%" }}
-								contentFit="cover"
-								transition={300}
-								placeholder={{ blurhash: PROPERTY_BLURHASH }}
-								placeholderContentFit="cover"
-								cachePolicy="memory-disk"
-								priority="high"
-								onError={() => handleImageError(index)}
-								key={index}
-							/>
-						))}
+						{(hosting?.rooms.map((r) => r.images).flat() ?? []).map(
+							(img, index) => (
+								<Image
+									source={{
+										uri: failedImages.has(index)
+											? FALLBACK_IMAGE
+											: img.asset.publicUrl,
+									}}
+									style={{ height: "100%", width: "100%" }}
+									contentFit="cover"
+									transition={300}
+									placeholder={{ blurhash: PROPERTY_BLURHASH }}
+									placeholderContentFit="cover"
+									cachePolicy="memory-disk"
+									priority="high"
+									onError={() => handleImageError(index)}
+									key={index}
+								/>
+							),
+						)}
 					</Carousel>
 				</View>
 				<View className="mt-8">
@@ -97,7 +107,10 @@ export default function HostingDetails() {
 							>
 								{hosting?.title}
 							</ThemedText>
-							<PhHeart color={colors.text} />
+							<HostingLikeButton
+								saved={hosting?.saved ?? false}
+								id={hosting?.id ?? ""}
+							/>
 						</View>
 						<ThemedText style={{ fontSize: 14, fontFamily: Fonts.light }}>
 							{hosting?.city}, {hosting?.state}
@@ -105,10 +118,10 @@ export default function HostingDetails() {
 						<View className="flex-row items-center gap-1">
 							<MynauiStarSolid size={14} color={colors.accent} />
 							<ThemedText style={{ fontSize: 14 }}>
-								{hosting?.averageRating.toFixed(2)}
+								{hosting?.averageRating?.toFixed(2) ?? "0.0"}
 							</ThemedText>
 							<ThemedText style={{ fontSize: 12, fontFamily: Fonts.light }}>
-								({hosting?.ratingCount} Reviews)
+								({hosting?.totalRatings ?? 0} Reviews)
 							</ThemedText>
 						</View>
 					</View>
