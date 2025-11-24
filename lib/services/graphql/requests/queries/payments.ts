@@ -43,3 +43,17 @@ export const HOST_PAYMENT_DETAILS = gql`
     }
   }
 `;
+
+export const FLUTTERWAVE_CARD_PAYMENT_METHODS = gql`
+  query FlutterwaveCardPaymentMethods {
+    flutterwaveCardPaymentMethods {
+      id
+      first6
+      last4
+      expiryMonth
+      expiryYear
+      network
+      cardHolderName
+    }
+  }
+`;

@@ -62,12 +62,72 @@ export type Bank = {
   slug: Scalars['String']['output'];
 };
 
+export type Booking = {
+  __typename?: 'Booking';
+  amount: Scalars['Decimal']['output'];
+  checkInDate?: Maybe<Scalars['String']['output']>;
+  checkOutDate?: Maybe<Scalars['String']['output']>;
+  createdAt: Scalars['String']['output'];
+  email: Scalars['String']['output'];
+  expiresAt?: Maybe<Scalars['String']['output']>;
+  fullName: Scalars['String']['output'];
+  gender: Gender;
+  guestServiceCharge: Scalars['Decimal']['output'];
+  hostServiceCharge: Scalars['Decimal']['output'];
+  id: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+  noteToHost?: Maybe<Scalars['String']['output']>;
+  paymentMethod: Scalars['String']['output'];
+  paymentStatus: PaymentStatus;
+  phoneNumber: Scalars['String']['output'];
+  transaction?: Maybe<Transaction>;
+};
+
+export type BookingResponse = {
+  __typename?: 'BookingResponse';
+  data?: Maybe<Booking>;
+  message: Scalars['String']['output'];
+};
+
 export type CompletePasswordChangeInput = {
   email: Scalars['String']['input'];
   otp: Scalars['String']['input'];
   password1: Scalars['String']['input'];
   password2: Scalars['String']['input'];
 };
+
+export type FlutterwaveCardInput = {
+  cardHolderName: Scalars['String']['input'];
+  cardNumber: Scalars['String']['input'];
+  cvv: Scalars['String']['input'];
+  expiryMonth: Scalars['String']['input'];
+  expiryYear: Scalars['String']['input'];
+};
+
+export type FlutterwaveCardPaymentMethodData = {
+  __typename?: 'FlutterwaveCardPaymentMethodData';
+  cardHolderName: Scalars['String']['output'];
+  createdAt: Scalars['String']['output'];
+  expiryMonth: Scalars['Int']['output'];
+  expiryYear: Scalars['Int']['output'];
+  first6: Scalars['String']['output'];
+  flutterwaveId: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  last4: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+  network: Scalars['String']['output'];
+};
+
+export type FlutterwaveCardPaymentMethodDataResponse = {
+  __typename?: 'FlutterwaveCardPaymentMethodDataResponse';
+  data?: Maybe<FlutterwaveCardPaymentMethodData>;
+  message: Scalars['String']['output'];
+};
+
+export enum Gender {
+  Female = 'FEMALE',
+  Male = 'MALE'
+}
 
 export type Guest = {
   __typename?: 'Guest';
@@ -166,6 +226,7 @@ export type HostingFilterInput = {
   maxPrice?: InputMaybe<Scalars['Decimal']['input']>;
   minPrice?: InputMaybe<Scalars['Decimal']['input']>;
   minRating?: InputMaybe<Scalars['Int']['input']>;
+  onSale?: InputMaybe<Scalars['Boolean']['input']>;
   publishStatus?: InputMaybe<PublishStatus>;
   state?: InputMaybe<Scalars['String']['input']>;
   street?: InputMaybe<Scalars['String']['input']>;
@@ -286,6 +347,18 @@ export type HostingRoomResponse = {
   message: Scalars['String']['output'];
 };
 
+export type InitiateBookingInput = {
+  checkInDate?: InputMaybe<Scalars['String']['input']>;
+  checkOutDate?: InputMaybe<Scalars['String']['input']>;
+  email: Scalars['String']['input'];
+  fullName: Scalars['String']['input'];
+  gender: Gender;
+  hostingId: Scalars['String']['input'];
+  noteToHost?: InputMaybe<Scalars['String']['input']>;
+  paymentMethod: PaymentMethodInput;
+  phoneNumber: Scalars['String']['input'];
+};
+
 export enum ListingType {
   Rent = 'RENT',
   Sale = 'SALE'
@@ -303,7 +376,10 @@ export type MessageResponse = {
 
 export type Mutations = {
   __typename?: 'Mutations';
+  authorizeTransactionWithOtp: TransactionResponse;
+  authorizeTransactionWithPin: TransactionResponse;
   completePasswordChange: MessageResponse;
+  createFlutterwaveCardPaymentMethods: FlutterwaveCardPaymentMethodDataResponse;
   createHostingReview: HostingReviewResponse;
   createHostingRoomImage: HostingRoomImageResponse;
   createOrUpdateHosting: HostingResponse;
@@ -315,18 +391,35 @@ export type Mutations = {
   deleteHostingRoom: MessageResponse;
   deleteHostingRoomImage: MessageResponse;
   deleteSavedHosting: MessageResponse;
+  initiateBooking: BookingResponse;
   login: AuthTokenResponse;
   refreshToken: AuthTokenResponse;
   requestPasswordChange: MessageResponse;
   resendEmailVerificationOtp: MessageResponse;
   resendPasswordChangeOtp: MessageResponse;
   signUp: UserResponse;
+  verifyBookingPayment: BookingResponse;
   verifyEmail: MessageResponse;
+};
+
+
+export type MutationsAuthorizeTransactionWithOtpArgs = {
+  input: TransactionOtpAuthInput;
+};
+
+
+export type MutationsAuthorizeTransactionWithPinArgs = {
+  input: TransactionPinAuthInput;
 };
 
 
 export type MutationsCompletePasswordChangeArgs = {
   input: CompletePasswordChangeInput;
+};
+
+
+export type MutationsCreateFlutterwaveCardPaymentMethodsArgs = {
+  input: FlutterwaveCardInput;
 };
 
 
@@ -385,6 +478,11 @@ export type MutationsDeleteSavedHostingArgs = {
 };
 
 
+export type MutationsInitiateBookingArgs = {
+  input: InitiateBookingInput;
+};
+
+
 export type MutationsLoginArgs = {
   input: LoginInput;
 };
@@ -412,6 +510,11 @@ export type MutationsResendPasswordChangeOtpArgs = {
 
 export type MutationsSignUpArgs = {
   input: SignUpInput;
+};
+
+
+export type MutationsVerifyBookingPaymentArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -460,6 +563,21 @@ export enum PaymentInterval {
   Weekly = 'WEEKLY'
 }
 
+export enum PaymentMethod {
+  Card = 'CARD'
+}
+
+export type PaymentMethodInput = {
+  id: Scalars['String']['input'];
+  method: PaymentMethod;
+};
+
+export enum PaymentStatus {
+  Failed = 'FAILED',
+  Paid = 'PAID',
+  Pending = 'PENDING'
+}
+
 export type Profile = {
   __typename?: 'Profile';
   dateAdded: Scalars['String']['output'];
@@ -482,6 +600,7 @@ export type Query = {
   authGuest: Guest;
   authHost: Host;
   banks: Array<Bank>;
+  flutterwaveCardPaymentMethods: Array<FlutterwaveCardPaymentMethodData>;
   hostAnalytics: HostAnalytics;
   hostPaymentDetails: Array<HostAccountDetails>;
   hosting: Hosting;
@@ -493,6 +612,11 @@ export type Query = {
   savedHostingFolders: Array<SavedHostingFolder>;
   savedHostings: Array<SavedHosting>;
   verifyAccount: AccountDetails;
+};
+
+
+export type QueryFlutterwaveCardPaymentMethodsArgs = {
+  pagination?: InputMaybe<PaginationInput>;
 };
 
 
@@ -605,6 +729,36 @@ export type SignUpInput = {
   phoneNumber: Scalars['String']['input'];
 };
 
+export type Transaction = {
+  __typename?: 'Transaction';
+  amount: Scalars['Decimal']['output'];
+  dateAdded: Scalars['String']['output'];
+  flutterwaveChargeId?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+  type: TransactionType;
+};
+
+export type TransactionOtpAuthInput = {
+  otp: Scalars['String']['input'];
+  transactionId: Scalars['String']['input'];
+};
+
+export type TransactionPinAuthInput = {
+  pin: Scalars['String']['input'];
+  transactionId: Scalars['String']['input'];
+};
+
+export type TransactionResponse = {
+  __typename?: 'TransactionResponse';
+  data?: Maybe<Transaction>;
+  message: Scalars['String']['output'];
+};
+
+export enum TransactionType {
+  BookingPayment = 'booking_payment'
+}
+
 export type User = {
   __typename?: 'User';
   dateAdded: Scalars['String']['output'];
@@ -681,6 +835,20 @@ export type CompletePasswordChangeMutationVariables = Exact<{
 
 export type CompletePasswordChangeMutation = { __typename?: 'Mutations', completePasswordChange: { __typename?: 'MessageResponse', message: string } };
 
+export type InitiateBookingMutationVariables = Exact<{
+  input: InitiateBookingInput;
+}>;
+
+
+export type InitiateBookingMutation = { __typename?: 'Mutations', initiateBooking: { __typename?: 'BookingResponse', message: string, data?: { __typename?: 'Booking', id: string, guestServiceCharge: any, transaction?: { __typename?: 'Transaction', amount: any, id: string } | null } | null } };
+
+export type VerifyBookingPaymentMutationVariables = Exact<{
+  verifyBookingPaymentId: Scalars['String']['input'];
+}>;
+
+
+export type VerifyBookingPaymentMutation = { __typename?: 'Mutations', verifyBookingPayment: { __typename?: 'BookingResponse', message: string, data?: { __typename?: 'Booking', id: string, paymentStatus: PaymentStatus } | null } };
+
 export type CreateUpdateSavedHostingFolderMutationVariables = Exact<{
   input: SavedHostingFolderInput;
 }>;
@@ -743,6 +911,27 @@ export type CreateUpdateHostPaymentDetailsMutationVariables = Exact<{
 
 
 export type CreateUpdateHostPaymentDetailsMutation = { __typename?: 'Mutations', createUpdateHostPaymentDetails: { __typename?: 'HostAccountDetailsResponse', message: string, data?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, bankCode: string, dateAdded: string, lastUpdated: string, accountName?: string | null, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null } };
+
+export type CreateFlutterwaveCardPaymentMethodsMutationVariables = Exact<{
+  input: FlutterwaveCardInput;
+}>;
+
+
+export type CreateFlutterwaveCardPaymentMethodsMutation = { __typename?: 'Mutations', createFlutterwaveCardPaymentMethods: { __typename?: 'FlutterwaveCardPaymentMethodDataResponse', message: string } };
+
+export type AuthorizeTransactionWithOtpMutationVariables = Exact<{
+  input: TransactionOtpAuthInput;
+}>;
+
+
+export type AuthorizeTransactionWithOtpMutation = { __typename?: 'Mutations', authorizeTransactionWithOtp: { __typename?: 'TransactionResponse', message: string } };
+
+export type AuthorizeTransactionWithPinMutationVariables = Exact<{
+  input: TransactionPinAuthInput;
+}>;
+
+
+export type AuthorizeTransactionWithPinMutation = { __typename?: 'Mutations', authorizeTransactionWithPin: { __typename?: 'TransactionResponse', message: string } };
 
 export type HostingQueryVariables = Exact<{
   hostingId: Scalars['String']['input'];
@@ -814,6 +1003,11 @@ export type HostPaymentDetailsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type HostPaymentDetailsQuery = { __typename?: 'Query', hostPaymentDetails: Array<{ __typename?: 'HostAccountDetails', id: string, accountNumber: string, bankCode: string, dateAdded: string, lastUpdated: string, accountName?: string | null, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null }> };
+
+export type FlutterwaveCardPaymentMethodsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type FlutterwaveCardPaymentMethodsQuery = { __typename?: 'Query', flutterwaveCardPaymentMethods: Array<{ __typename?: 'FlutterwaveCardPaymentMethodData', id: string, first6: string, last4: string, expiryMonth: number, expiryYear: number, network: string, cardHolderName: string }> };
 
 export type HostAnalyticsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -932,6 +1126,40 @@ export const CompletePasswordChangeDocument = gql`
 
 export function useCompletePasswordChangeMutation() {
   return Urql.useMutation<CompletePasswordChangeMutation, CompletePasswordChangeMutationVariables>(CompletePasswordChangeDocument);
+};
+export const InitiateBookingDocument = gql`
+    mutation InitiateBooking($input: InitiateBookingInput!) {
+  initiateBooking(input: $input) {
+    data {
+      id
+      guestServiceCharge
+      transaction {
+        amount
+        id
+      }
+    }
+    message
+  }
+}
+    `;
+
+export function useInitiateBookingMutation() {
+  return Urql.useMutation<InitiateBookingMutation, InitiateBookingMutationVariables>(InitiateBookingDocument);
+};
+export const VerifyBookingPaymentDocument = gql`
+    mutation VerifyBookingPayment($verifyBookingPaymentId: String!) {
+  verifyBookingPayment(id: $verifyBookingPaymentId) {
+    message
+    data {
+      id
+      paymentStatus
+    }
+  }
+}
+    `;
+
+export function useVerifyBookingPaymentMutation() {
+  return Urql.useMutation<VerifyBookingPaymentMutation, VerifyBookingPaymentMutationVariables>(VerifyBookingPaymentDocument);
 };
 export const CreateUpdateSavedHostingFolderDocument = gql`
     mutation CreateUpdateSavedHostingFolder($input: SavedHostingFolderInput!) {
@@ -1114,6 +1342,39 @@ export const CreateUpdateHostPaymentDetailsDocument = gql`
 
 export function useCreateUpdateHostPaymentDetailsMutation() {
   return Urql.useMutation<CreateUpdateHostPaymentDetailsMutation, CreateUpdateHostPaymentDetailsMutationVariables>(CreateUpdateHostPaymentDetailsDocument);
+};
+export const CreateFlutterwaveCardPaymentMethodsDocument = gql`
+    mutation CreateFlutterwaveCardPaymentMethods($input: FlutterwaveCardInput!) {
+  createFlutterwaveCardPaymentMethods(input: $input) {
+    message
+  }
+}
+    `;
+
+export function useCreateFlutterwaveCardPaymentMethodsMutation() {
+  return Urql.useMutation<CreateFlutterwaveCardPaymentMethodsMutation, CreateFlutterwaveCardPaymentMethodsMutationVariables>(CreateFlutterwaveCardPaymentMethodsDocument);
+};
+export const AuthorizeTransactionWithOtpDocument = gql`
+    mutation AuthorizeTransactionWithOtp($input: TransactionOtpAuthInput!) {
+  authorizeTransactionWithOtp(input: $input) {
+    message
+  }
+}
+    `;
+
+export function useAuthorizeTransactionWithOtpMutation() {
+  return Urql.useMutation<AuthorizeTransactionWithOtpMutation, AuthorizeTransactionWithOtpMutationVariables>(AuthorizeTransactionWithOtpDocument);
+};
+export const AuthorizeTransactionWithPinDocument = gql`
+    mutation AuthorizeTransactionWithPin($input: TransactionPinAuthInput!) {
+  authorizeTransactionWithPin(input: $input) {
+    message
+  }
+}
+    `;
+
+export function useAuthorizeTransactionWithPinMutation() {
+  return Urql.useMutation<AuthorizeTransactionWithPinMutation, AuthorizeTransactionWithPinMutationVariables>(AuthorizeTransactionWithPinDocument);
 };
 export const HostingDocument = gql`
     query Hosting($hostingId: String!) {
@@ -1387,6 +1648,23 @@ export const HostPaymentDetailsDocument = gql`
 
 export function useHostPaymentDetailsQuery(options?: Omit<Urql.UseQueryArgs<HostPaymentDetailsQueryVariables>, 'query'>) {
   return Urql.useQuery<HostPaymentDetailsQuery, HostPaymentDetailsQueryVariables>({ query: HostPaymentDetailsDocument, ...options });
+};
+export const FlutterwaveCardPaymentMethodsDocument = gql`
+    query FlutterwaveCardPaymentMethods {
+  flutterwaveCardPaymentMethods {
+    id
+    first6
+    last4
+    expiryMonth
+    expiryYear
+    network
+    cardHolderName
+  }
+}
+    `;
+
+export function useFlutterwaveCardPaymentMethodsQuery(options?: Omit<Urql.UseQueryArgs<FlutterwaveCardPaymentMethodsQueryVariables>, 'query'>) {
+  return Urql.useQuery<FlutterwaveCardPaymentMethodsQuery, FlutterwaveCardPaymentMethodsQueryVariables>({ query: FlutterwaveCardPaymentMethodsDocument, ...options });
 };
 export const HostAnalyticsDocument = gql`
     query HostAnalytics {

@@ -1,5 +1,4 @@
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { Hosting } from "@/lib/constants/mocks/hostings";
 import { Image } from "expo-image";
 import React from "react";
 import { View, Platform } from "react-native";
@@ -9,16 +8,15 @@ import { Fonts } from "@/lib/constants/theme";
 import { hexToRgba } from "@/lib/utils/colors";
 import { MynauiStarSolid } from "../icons/i-star";
 import { useFallbackImages } from "@/lib/hooks/images";
+import { HostingQuery } from "@/lib/services/graphql/generated";
 
 type Props = {
-	hosting: Hosting;
+	hosting: HostingQuery["hosting"];
 };
 
 const HostingSummaryCard: React.FC<Props> = ({ hosting }) => {
 	const colors = useThemeColors();
 	const { failedImages, handleImageError } = useFallbackImages();
-
-	const img = hosting.images.at(0);
 
 	return (
 		<>
@@ -51,7 +49,9 @@ const HostingSummaryCard: React.FC<Props> = ({ hosting }) => {
 				>
 					<Image
 						source={{
-							uri: failedImages.has(0) ? FALLBACK_IMAGE : img,
+							uri: failedImages.has(0)
+								? FALLBACK_IMAGE
+								: hosting.coverImage?.asset.publicUrl,
 						}}
 						style={{
 							height: "100%",
@@ -93,7 +93,7 @@ const HostingSummaryCard: React.FC<Props> = ({ hosting }) => {
 								color: hexToRgba(colors.text, 0.7),
 							}}
 						>
-							({hosting.ratingCount} Reviews)
+							({hosting.totalRatings ?? 0} Reviews)
 						</ThemedText>
 					</View>
 				</View>

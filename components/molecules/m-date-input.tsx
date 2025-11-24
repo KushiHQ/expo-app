@@ -60,6 +60,7 @@ const DateInput: React.FC<
 					}
 				/>
 				<Pressable
+					disabled={props.disabled}
 					className="absolute inset-0"
 					onPress={handlePress}
 				></Pressable>

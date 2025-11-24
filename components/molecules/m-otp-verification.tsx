@@ -11,7 +11,7 @@ type Props = {
 	onCancel: () => void;
 };
 
-const PinVerification: React.FC<Props> = ({ open, onContinue, onCancel }) => {
+const OtpVerification: React.FC<Props> = ({ open, onContinue, onCancel }) => {
 	const [pin, setPin] = React.useState("");
 
 	return (
@@ -19,12 +19,12 @@ const PinVerification: React.FC<Props> = ({ open, onContinue, onCancel }) => {
 			<View className="items-center gap-8 py-4">
 				<View className="gap-4 mb-8 items-center">
 					<ThemedText type="title" style={{ fontSize: 18 }}>
-						Enter Payment PIN
+						Enter OTP
 					</ThemedText>
-					<OTPInput length={4} secureTextEntry onChangeText={setPin} />
+					<OTPInput length={6} secureTextEntry onChangeText={setPin} />
 				</View>
 				<Button
-					disabled={pin.length !== 4}
+					disabled={pin.length !== 6}
 					onPress={() => onContinue?.(pin)}
 					type="primary"
 					className="min-w-full"
@@ -36,4 +36,4 @@ const PinVerification: React.FC<Props> = ({ open, onContinue, onCancel }) => {
 	);
 };
 
-export default PinVerification;
+export default OtpVerification;

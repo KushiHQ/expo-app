@@ -1,10 +1,10 @@
 import Button from "@/components/atoms/a-button";
 import ThemedText from "@/components/atoms/a-themed-text";
+import { SolarCardBold } from "@/components/icons/i-card";
 import {
   IcSharpApple,
   LogosGoogle,
   MingcutePaypalLine,
-  MingcuteStripeFill,
 } from "@/components/icons/i-logos";
 import DetailsLayout from "@/components/layouts/details";
 import PaymentMethodItem from "@/components/molecules/m-payment-method-item";
@@ -19,7 +19,7 @@ export default function ReservationPaymentMethod() {
   const colors = useThemeColors();
   const { id } = useLocalSearchParams();
   const [method, setMethod] = React.useState<
-    "stripe" | "google-pay" | "apple-pay" | "paypal"
+    "card" | "google-pay" | "apple-pay" | "paypal"
   >();
 
   return (
@@ -33,10 +33,10 @@ export default function ReservationPaymentMethod() {
           </View>
           <View className="mt-5 gap-5">
             <PaymentMethodItem
-              label="Stripe"
-              selected={method === "stripe"}
-              onSelect={() => setMethod("stripe")}
-              icon={<MingcuteStripeFill size={24} color={colors.primary} />}
+              label="Card"
+              selected={method === "card"}
+              onSelect={() => setMethod("card")}
+              icon={<SolarCardBold size={24} color={colors.primary} />}
             />
             <PaymentMethodItem
               label="Google Pay"
@@ -59,7 +59,11 @@ export default function ReservationPaymentMethod() {
           </View>
         </View>
         <Button
-          onPress={() => router.push(`/hostings/${id}/reservation/summary/`)}
+          onPress={() =>
+            router.push(
+              `/payment-methods/card?redirect=/hostings/${id}/reservation/summary/`,
+            )
+          }
           disabled={!method}
           type="primary"
         >

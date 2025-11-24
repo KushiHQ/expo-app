@@ -14,6 +14,7 @@ import { Fonts } from "@/lib/constants/theme";
 import { useFallbackImages } from "@/lib/hooks/images";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useHostingQuery } from "@/lib/services/graphql/generated";
+import { useReservationStore } from "@/lib/stores/reservation";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { capitalize } from "@/lib/utils/text";
@@ -28,6 +29,7 @@ export default function HostingDetails() {
 	const [{ data }] = useHostingQuery({ variables: { hostingId: cast(id) } });
 	const colors = useThemeColors();
 	const { handleImageError, failedImages } = useFallbackImages();
+	const { updateInput } = useReservationStore();
 
 	const hosting = data?.hosting;
 
@@ -57,11 +59,12 @@ export default function HostingDetails() {
 					</View>
 					<View className="flex-1 items-end">
 						<Button
-							onPress={() =>
+							onPress={() => {
+								updateInput({ hostingId: cast(id) });
 								router.push(
 									`/hostings/${hosting?.id}/reservation/user-details/`,
-								)
-							}
+								);
+							}}
 							type="primary"
 						>
 							<ThemedText content="primary">Reserve Now</ThemedText>
@@ -107,10 +110,12 @@ export default function HostingDetails() {
 							>
 								{hosting?.title}
 							</ThemedText>
-							<HostingLikeButton
-								saved={hosting?.saved ?? false}
-								id={hosting?.id ?? ""}
-							/>
+							{hosting && (
+								<HostingLikeButton
+									saved={hosting?.saved ?? false}
+									id={hosting?.id ?? ""}
+								/>
+							)}
 						</View>
 						<ThemedText style={{ fontSize: 14, fontFamily: Fonts.light }}>
 							{hosting?.city}, {hosting?.state}

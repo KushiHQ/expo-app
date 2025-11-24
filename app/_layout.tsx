@@ -103,6 +103,10 @@ export default function RootLayout() {
 													options={{ headerShown: false }}
 												/>
 												<Stack.Screen
+													name="payment-methods"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
 													name="camera"
 													options={{ headerShown: false }}
 												/>
