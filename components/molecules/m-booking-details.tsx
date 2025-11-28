@@ -6,7 +6,6 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import ThemedBarcode from "../atoms/a-barcode";
 import LogoLarge from "@/assets/vectors/logo-large.svg";
-import { Booking } from "@/lib/constants/mocks/bookings";
 import ThemedText from "../atoms/a-themed-text";
 import { Fonts } from "@/lib/constants/theme";
 import CopyButton from "../atoms/a-copy-button";
@@ -14,15 +13,19 @@ import Button from "../atoms/a-button";
 import { HugeiconsInboxDownload } from "../icons/i-download";
 import ThemedModal from "./m-modal";
 import { shareViewAsImage, shareViewAsSinglePagePdf } from "@/lib/utils/files";
+import { BookingsQuery } from "@/lib/services/graphql/generated";
+import { calculateBookingDuration } from "@/lib/utils/time";
+import { getBookingStatus } from "@/lib/utils/bookings";
+import { capitalize } from "@/lib/utils/text";
 
 type Props = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	booking: Booking;
+	booking: BookingsQuery["bookings"][number];
 };
 
 type SubProps = {
-	booking: Booking;
+	booking: BookingsQuery["bookings"][number];
 	printing?: boolean;
 };
 
@@ -77,19 +80,24 @@ const BarcodeSection: React.FC<SubProps> = ({ booking, printing }) => {
 			style={{ borderColor: hexToRgba(colors.text, 0.2) }}
 		>
 			<View
-				className="border rounded-[14px] overflow-hidden"
+				className="border p-2 rounded-[14px] overflow-hidden"
 				style={{ borderColor: printing ? "#000000" : colors.text }}
 			>
-				<ThemedBarcode format="CODE128" value={booking.details.transactionId} />
+				<ThemedBarcode
+					width={400}
+					height={100}
+					format="CODE128"
+					value={booking.transaction?.id ?? ""}
+				/>
 				<View className="flex-row items-center justify-between p-2">
 					<PrintableLabel printing={printing}>Transaction ID</PrintableLabel>
 					<View className="flex-row items-center gap-2">
 						<PrintableText printing={printing} style={{ fontSize: 16 }}>
-							{booking.details.transactionId}
+							{booking.transaction?.id ?? ""}
 						</PrintableText>
 						{!printing && (
 							<CopyButton
-								text={booking.details.transactionId}
+								text={booking.transaction?.id ?? ""}
 								size={18}
 								color={colors.primary}
 							/>
@@ -114,13 +122,14 @@ const DateAndDurationSection: React.FC<SubProps> = ({ booking, printing }) => {
 			<View className="flex-row items-center justify-between">
 				<PrintableLabel printing={printing}>Date</PrintableLabel>
 				<PrintableText printing={printing}>
-					{new Date(booking.details.date).toLocaleDateString()}
+					{new Date(booking.createdAt).toLocaleDateString()}
 				</PrintableText>
 			</View>
 			<View className="flex-row items-center justify-between">
 				<PrintableLabel printing={printing}>Duration</PrintableLabel>
 				<PrintableText printing={printing}>
-					{booking.details.duration}
+					{new Date(booking.checkInDate ?? "").toLocaleDateString()} -{" "}
+					{new Date(booking.checkOutDate ?? "").toLocaleDateString()}
 				</PrintableText>
 				<ThemedText
 					className="border px-2 rounded"
@@ -130,7 +139,10 @@ const DateAndDurationSection: React.FC<SubProps> = ({ booking, printing }) => {
 						color: hexToRgba(printing ? "#000000" : colors.text, 0.6),
 					}}
 				>
-					{booking.details.durationText}
+					{calculateBookingDuration(
+						booking.checkInDate ?? "",
+						booking.checkOutDate ?? "",
+					)}
 				</ThemedText>
 			</View>
 		</View>
@@ -149,13 +161,7 @@ const FeesSection: React.FC<SubProps> = ({ booking, printing }) => {
 			<View className="flex-row items-center justify-between">
 				<PrintableLabel printing={printing}>Amount</PrintableLabel>
 				<PrintableText printing={printing}>
-					₦{booking.hosting.price.toLocaleString()}
-				</PrintableText>
-			</View>
-			<View className="flex-row items-center justify-between">
-				<PrintableLabel printing={printing}>Discount</PrintableLabel>
-				<PrintableText printing={printing}>
-					₦{booking.details.discount}
+					₦{Number(booking.amount ?? "0").toLocaleString()}
 				</PrintableText>
 			</View>
 			<View
@@ -164,7 +170,7 @@ const FeesSection: React.FC<SubProps> = ({ booking, printing }) => {
 			>
 				<PrintableLabel printing={printing}>Service Fee</PrintableLabel>
 				<PrintableText printing={printing}>
-					₦{booking.details.serviceFee}
+					₦{Number(booking.guestServiceCharge ?? "0").toLocaleString()}
 				</PrintableText>
 			</View>
 			<View className="flex-row items-center justify-between">
@@ -178,7 +184,11 @@ const FeesSection: React.FC<SubProps> = ({ booking, printing }) => {
 						color: colors.primary,
 					}}
 				>
-					₦{booking.hosting.price.toLocaleString()}
+					₦
+					{(
+						Number(booking.amount ?? "0") +
+						Number(booking.guestServiceCharge ?? "0")
+					).toLocaleString()}
 				</ThemedText>
 			</View>
 		</View>
@@ -187,6 +197,8 @@ const FeesSection: React.FC<SubProps> = ({ booking, printing }) => {
 
 const UserInfoSection: React.FC<SubProps> = ({ booking, printing }) => {
 	const colors = useThemeColors();
+
+	const bookingStatus = getBookingStatus(booking);
 	return (
 		<View
 			className="mt-4 p-2.5 rounded-xl"
@@ -214,7 +226,7 @@ const UserInfoSection: React.FC<SubProps> = ({ booking, printing }) => {
 							color: printing ? "#000000" : colors.text,
 						}}
 					>
-						{booking.details.name}
+						{booking.hosting.title}
 					</ThemedText>
 				</View>
 				<View className="flex-row items-center justify-between">
@@ -233,7 +245,7 @@ const UserInfoSection: React.FC<SubProps> = ({ booking, printing }) => {
 							color: printing ? "#000000" : colors.text,
 						}}
 					>
-						{booking.details.phoneNumber}
+						+234 {booking.phoneNumber}
 					</ThemedText>
 				</View>
 				<View className="flex-row items-center justify-between">
@@ -249,7 +261,11 @@ const UserInfoSection: React.FC<SubProps> = ({ booking, printing }) => {
 						className="p-1 px-2 flex-1 items-center justify-center max-w-[74px] rounded-lg"
 						style={{
 							backgroundColor: hexToRgba(
-								booking.status === "Pending" ? colors.primary : colors.success,
+								bookingStatus === "pending"
+									? colors.accent
+									: bookingStatus === "active"
+										? colors.success
+										: colors.error,
 								0.3,
 							),
 						}}
@@ -258,12 +274,14 @@ const UserInfoSection: React.FC<SubProps> = ({ booking, printing }) => {
 							style={{
 								fontSize: 12,
 								color:
-									booking.status === "Pending"
-										? colors.primary
-										: colors.success,
+									bookingStatus === "pending"
+										? colors.accent
+										: bookingStatus === "active"
+											? colors.success
+											: colors.error,
 							}}
 						>
-							{booking.status}
+							{capitalize(bookingStatus)}
 						</ThemedText>
 					</View>
 				</View>

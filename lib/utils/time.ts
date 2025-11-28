@@ -1,52 +1,79 @@
-/**
- * Formats seconds to MM:SS format
- * @param seconds - Number of seconds to format
- * @returns Formatted string in MM:SS format (e.g., "01:20")
- */
+import { parseISO, intervalToDuration } from "date-fns";
+
 export const formatSeconds = (seconds: number): string => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
+	const minutes = Math.floor(seconds / 60);
+	const remainingSeconds = seconds % 60;
 
-  const formattedMinutes = minutes.toString().padStart(2, "0");
-  const formattedSeconds = remainingSeconds.toString().padStart(2, "0");
+	const formattedMinutes = minutes.toString().padStart(2, "0");
+	const formattedSeconds = remainingSeconds.toString().padStart(2, "0");
 
-  return `${formattedMinutes}:${formattedSeconds}`;
+	return `${formattedMinutes}:${formattedSeconds}`;
 };
 
-/**
- * Formats an ISO date-time string to "Month Day, Year".
- * @param {string} datetimeString The date-time string to format.
- * @returns {string} The formatted date string.
- */
 export function formatDate(datetimeString: string): string {
-  const date = new Date(datetimeString);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+	const date = new Date(datetimeString);
+	return date.toLocaleDateString("en-US", {
+		month: "short",
+		day: "numeric",
+		year: "numeric",
+	});
 }
 
-/**
- * Formats a date string to "Month Year" format.
- * @param {string} dateString The date string to format (e.g., "2025-01-15T12:00:00Z").
- * @returns {string} The formatted date string (e.g., "January 2025").
- */
 export function formatDateToMonthYear(dateString: string): string {
-  const date = new Date(dateString);
+	const date = new Date(dateString);
 
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-  });
+	return date.toLocaleDateString("en-US", {
+		year: "numeric",
+		month: "long",
+	});
 }
 
 export function formatToShortTime(datetimeString: string) {
-  const date = new Date(datetimeString);
+	const date = new Date(datetimeString);
 
-  return date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+	return date.toLocaleTimeString("en-US", {
+		hour: "2-digit",
+		minute: "2-digit",
+		hour12: false,
+	});
 }
+
+export const calculateBookingDuration = (
+	checkInDateString: string,
+	checkOutDateString: string,
+): string => {
+	if (!checkInDateString || !checkOutDateString) {
+		return "N/A";
+	}
+
+	try {
+		const start = parseISO(checkInDateString);
+		const end = parseISO(checkOutDateString);
+
+		const duration = intervalToDuration({
+			start: start,
+			end: end,
+		});
+
+		if (duration.years && duration.years > 0) {
+			return `${duration.years} Year${duration.years > 1 ? "s" : ""}`;
+		}
+		if (duration.months && duration.months > 0) {
+			return `${duration.months} Month${duration.months > 1 ? "s" : ""}`;
+		}
+		if (duration.weeks && duration.weeks > 0) {
+			return `${duration.weeks} Week${duration.weeks > 1 ? "s" : ""}`;
+		}
+		if (duration.days && duration.days > 0) {
+			return `${duration.days} Day${duration.days > 1 ? "s" : ""}`;
+		}
+		if (duration.hours && duration.hours > 0) {
+			return `${duration.hours} Hour${duration.hours > 1 ? "s" : ""}`;
+		}
+
+		return "Same Day";
+	} catch (error) {
+		console.error("Error calculating duration:", error);
+		return "Invalid Dates";
+	}
+};

@@ -74,6 +74,7 @@ export type Booking = {
   gender: Gender;
   guestServiceCharge: Scalars['Decimal']['output'];
   hostServiceCharge: Scalars['Decimal']['output'];
+  hosting: Hosting;
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
   noteToHost?: Maybe<Scalars['String']['output']>;
@@ -81,6 +82,10 @@ export type Booking = {
   paymentStatus: PaymentStatus;
   phoneNumber: Scalars['String']['output'];
   transaction?: Maybe<Transaction>;
+};
+
+export type BookingFilterInput = {
+  paymentStatus?: InputMaybe<PaymentStatus>;
 };
 
 export type BookingResponse = {
@@ -600,6 +605,7 @@ export type Query = {
   authGuest: Guest;
   authHost: Host;
   banks: Array<Bank>;
+  bookings: Array<Booking>;
   flutterwaveCardPaymentMethods: Array<FlutterwaveCardPaymentMethodData>;
   hostAnalytics: HostAnalytics;
   hostPaymentDetails: Array<HostAccountDetails>;
@@ -612,6 +618,12 @@ export type Query = {
   savedHostingFolders: Array<SavedHostingFolder>;
   savedHostings: Array<SavedHosting>;
   verifyAccount: AccountDetails;
+};
+
+
+export type QueryBookingsArgs = {
+  filter?: InputMaybe<BookingFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
 };
 
 
@@ -932,6 +944,14 @@ export type AuthorizeTransactionWithPinMutationVariables = Exact<{
 
 
 export type AuthorizeTransactionWithPinMutation = { __typename?: 'Mutations', authorizeTransactionWithPin: { __typename?: 'TransactionResponse', message: string } };
+
+export type BookingsQueryVariables = Exact<{
+  filter?: InputMaybe<BookingFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type BookingsQuery = { __typename?: 'Query', bookings: Array<{ __typename?: 'Booking', id: string, expiresAt?: string | null, paymentStatus: PaymentStatus, createdAt: string, checkInDate?: string | null, checkOutDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string } | null }> };
 
 export type HostingQueryVariables = Exact<{
   hostingId: Scalars['String']['input'];
@@ -1375,6 +1395,44 @@ export const AuthorizeTransactionWithPinDocument = gql`
 
 export function useAuthorizeTransactionWithPinMutation() {
   return Urql.useMutation<AuthorizeTransactionWithPinMutation, AuthorizeTransactionWithPinMutationVariables>(AuthorizeTransactionWithPinDocument);
+};
+export const BookingsDocument = gql`
+    query Bookings($filter: BookingFilterInput, $pagination: PaginationInput) {
+  bookings(filter: $filter, pagination: $pagination) {
+    id
+    hosting {
+      id
+      coverImage {
+        id
+        asset {
+          id
+          publicUrl
+        }
+      }
+      title
+      city
+      country
+      state
+      price
+      paymentInterval
+    }
+    expiresAt
+    paymentStatus
+    transaction {
+      id
+    }
+    createdAt
+    checkInDate
+    checkOutDate
+    guestServiceCharge
+    amount
+    phoneNumber
+  }
+}
+    `;
+
+export function useBookingsQuery(options?: Omit<Urql.UseQueryArgs<BookingsQueryVariables>, 'query'>) {
+  return Urql.useQuery<BookingsQuery, BookingsQueryVariables>({ query: BookingsDocument, ...options });
 };
 export const HostingDocument = gql`
     query Hosting($hostingId: String!) {
