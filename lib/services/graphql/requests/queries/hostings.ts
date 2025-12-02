@@ -81,6 +81,11 @@ export const HOSTING_QUERY = gql`
           image
         }
       }
+      policies {
+        maxOccupancy
+        notAllowed
+        additionalClauses
+      }
     }
   }
 `;
@@ -191,5 +196,11 @@ export const HOST_LISTINGS_QUERY = gql`
       dateAdded
       lastUpdated
     }
+  }
+`;
+
+export const TENANCY_AGREEMENT_TEMPLAGE = gql`
+  query HostTenancyAgreementPreview($policies: HostingPoliciesInput) {
+    hostTenancyAgreementPreview(policies: $policies)
   }
 `;

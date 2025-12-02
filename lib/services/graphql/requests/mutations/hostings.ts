@@ -56,6 +56,11 @@ export const CREATE_UPDATE_HOSTING_MUTATION = gql`
             }
           }
         }
+        policies {
+          maxOccupancy
+          notAllowed
+          additionalClauses
+        }
       }
     }
   }

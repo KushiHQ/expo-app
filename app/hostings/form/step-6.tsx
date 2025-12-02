@@ -5,84 +5,38 @@ import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import React from "react";
-import { Platform, Pressable, View } from "react-native";
-import Button from "@/components/atoms/a-button";
-import { FluentSlideTextEdit28Regular } from "@/components/icons/i-edit";
-import { Href, useLocalSearchParams, useRouter } from "expo-router";
-import { CircleQuestionMark, Home } from "lucide-react-native";
-import Checkbox from "@/components/atoms/a-checkbox";
+import { Pressable, View } from "react-native";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import {
+	Camera,
+	CircleQuestionMark,
+	MapPin,
+	Plus,
+	X,
+} from "lucide-react-native";
 import { useHostingForm } from "@/lib/hooks/hosting-form";
-import { capitalize } from "@/lib/utils/text";
-import HostingCard from "@/components/molecules/m-hosting-card";
-import { PublishStatus } from "@/lib/services/graphql/generated";
+import {
+	HostingPoliciesInput,
+	PublishStatus,
+	UpdateHostMutation,
+	UpdateHostMutationVariables,
+	useAuthHostQuery,
+	useHostTenancyAgreementPreviewQuery,
+} from "@/lib/services/graphql/generated";
 import LoadingModal from "@/components/atoms/a-loading-modal";
 import { handleError } from "@/lib/utils/error";
 import Toast from "react-native-toast-message";
-import PublishListingSuccess from "@/components/molecules/m-publish-listing-success";
-import TextSelectButton from "@/components/molecules/m-text-select-button";
-
-type ItemSummaryProps = {
-	label: string;
-	summary: string;
-};
-
-const ItemSummary: React.FC<ItemSummaryProps> = ({ label, summary }) => {
-	const colors = useThemeColors();
-
-	return (
-		<View className="flex-row items-center gap-2">
-			<ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14 }}>
-				{label}:
-			</ThemedText>
-			<ThemedText style={{ fontSize: 14, color: hexToRgba(colors.text, 0.6) }}>
-				{summary}
-			</ThemedText>
-		</View>
-	);
-};
-
-const EditButton: React.FC<{ href: Href }> = ({ href }) => {
-	const router = useRouter();
-	const colors = useThemeColors();
-
-	return (
-		<Button
-			onPress={() => router.push(href)}
-			style={{ alignSelf: "flex-end", borderRadius: 8 }}
-			type="shade"
-			className="py-2"
-		>
-			<View className="flex-row items-center gap-2">
-				<ThemedText content="shade" style={{ fontSize: 14 }}>
-					Edit
-				</ThemedText>
-				<FluentSlideTextEdit28Regular
-					color={colors["shade-content"]}
-					size={16}
-				/>
-			</View>
-		</Button>
-	);
-};
-
-const SummarySection: React.FC<{ children?: React.ReactNode }> = ({
-	children,
-}) => {
-	const colors = useThemeColors();
-	return (
-		<View
-			className="p-3 rounded gap-2"
-			style={{
-				borderWidth: 2,
-				borderStyle: "dashed",
-				borderColor: hexToRgba(colors.primary, 0.4),
-				backgroundColor: hexToRgba(colors.primary, 0.1),
-			}}
-		>
-			{children}
-		</View>
-	);
-};
+import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
+import Button from "@/components/atoms/a-button";
+import Skeleton from "@/components/atoms/a-skeleton";
+import WebView from "@/components/atoms/a-web-veiw";
+import { useGalleryStore } from "@/lib/stores/gallery";
+import { formMutation } from "@/lib/services/graphql/utils/fetch";
+import { UPDATE_HOST } from "@/lib/services/graphql/requests/mutations/users";
+import { generateRNFile } from "@/lib/utils/file";
+import { Image } from "expo-image";
+import { PROPERTY_BLURHASH } from "@/lib/constants/images";
+import { useDebounce } from "@/lib/hooks/use-debounce";
 
 export default function NewHostingStep6() {
 	const router = useRouter();
@@ -92,53 +46,83 @@ export default function NewHostingStep6() {
 		input,
 		hosting,
 		mutate,
+		refetch,
 		mutating,
 		updateInput,
 		fetching: fetchingHosting,
 	} = useHostingForm(id);
-	const [accepted, setAccepted] = React.useState({ truth: false, tos: false });
-	const [success, setSuccess] = React.useState(false);
+	const { setGallery, gallery } = useGalleryStore();
+	const [{ data: hostQueryData, fetching: hostFetching }, refetchHost] =
+		useAuthHostQuery();
+	const [uploading, setUploading] = React.useState(false);
+	const [newRestriction, setNewRestriction] = React.useState<string>();
+	const debouncedPolicies = useDebounce(input.policies, 500);
+	const [{ data: templateData, fetching: templateFetching }] =
+		useHostTenancyAgreementPreviewQuery({
+			variables: { policies: debouncedPolicies },
+		});
 
-	const loading = fetchingHosting || mutating;
+	const loading = fetchingHosting || mutating || uploading;
 
 	const handleMutate = () => {
-		updateInput({
-			publishStatus:
-				hosting?.publishStatus === PublishStatus.Live
-					? PublishStatus.Draft
-					: PublishStatus.Live,
-		});
-		mutate({
-			input: {
-				...input,
-				publishStatus:
-					hosting?.publishStatus === PublishStatus.Live
-						? PublishStatus.Draft
-						: PublishStatus.Live,
-			},
-		}).then((res) => {
+		mutate({ input }).then((res) => {
 			if (res.error) {
 				handleError(res.error);
 			}
-			if (res.data?.createOrUpdateHosting) {
-				router.push(
-					`/hostings/form/step-6?id=${res.data?.createOrUpdateHosting.data?.id}`,
-				);
+			if (res.data) {
 				Toast.show({
 					type: "success",
 					text1: "Success",
 					text2: res.data.createOrUpdateHosting.message,
 				});
-				setSuccess(true);
+				refetch();
+				router.push(
+					`/hostings/form/step-7?id=${res.data?.createOrUpdateHosting.data?.id}`,
+				);
 			}
 		});
 	};
 
-	const handleClose = () => {
-		setSuccess(false);
-		router.dismissAll();
-		router.replace("/host/analytics");
+	const handleTakeSignaturePic = () => {
+		setGallery([]);
+		router.push("/camera?redirect=/hostings/form/step-6&multiple=false");
 	};
+
+	useFocusEffect(
+		React.useCallback(() => {
+			let signature = gallery.at(0);
+
+			if (
+				signature &&
+				!hostQueryData?.authHost.signature?.publicUrl &&
+				!hostFetching
+			) {
+				setUploading(true);
+				formMutation<UpdateHostMutation, UpdateHostMutationVariables>(
+					UPDATE_HOST,
+					{
+						input: {
+							signature: generateRNFile(signature),
+						},
+					},
+				)
+					.then((res) => {
+						if (res.error) {
+							handleError(res.error);
+						}
+						if (res.data) {
+							refetchHost({ requestPolicy: "network-only" });
+							Toast.show({
+								type: "success",
+								text1: "Success",
+								text2: res.data.updateHost.message,
+							});
+						}
+					})
+					.finally(() => setUploading(false));
+			}
+		}, [gallery]),
+	);
 
 	return (
 		<>
@@ -146,12 +130,12 @@ export default function NewHostingStep6() {
 				title="Hosting"
 				footer={
 					<HostingStepper
-						onTogglePublish={handleMutate}
+						onPress={handleMutate}
 						published={hosting?.publishStatus === PublishStatus.Live}
 						loading={mutating}
 						disabled={
-							(!accepted.tos || !accepted.truth) &&
-							hosting?.publishStatus !== PublishStatus.Live
+							!input.policies?.correspondenceAddress ||
+							!hostQueryData?.authHost.signature?.publicUrl
 						}
 						step={6}
 					/>
@@ -159,159 +143,189 @@ export default function NewHostingStep6() {
 			>
 				<View className="mt-2 gap-4">
 					<ThemedText style={{ fontFamily: Fonts.medium }}>
-						Overview of Collected Information
+						Legal & House Rules
 					</ThemedText>
 					<ThemedText
 						style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}
 					>
 						<CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
 						{"  "}
-						You're almost there! Please review all the details below carefully.
-						Ensure everything is correct, agree to our terms, and choose whether
-						to Publish your listing now or save it as a draft.
+						Finalize your Tenancy Agreement by setting the maximum Occupancy,
+						detailing any House Rules (not allowed items), and providing your
+						Digital Signature. Review the live preview of the agreement before
+						continuing.
 					</ThemedText>
-					{hosting && <HostingCard disabled hosting={hosting} />}
-					<View className="border p-2 rounded-xl gap-3">
-						<SummarySection>
-							<ItemSummary label="Title" summary={input.title ?? ""} />
-							<ItemSummary
-								label="Property Type"
-								summary={input.propertyType ?? ""}
+					<View className="gap-2">
+						<View className="gap-4">
+							<FloatingLabelInput
+								focused
+								label="Correspondence Address"
+								suffix={
+									<MapPin color={hexToRgba(colors.text, 0.8)} size={16} />
+								}
+								placeholder="A tenancy agreement will be adressed to this address"
+								value={input.policies?.correspondenceAddress}
+								onChangeText={(v) =>
+									updateInput({
+										policies: {
+											...(input.policies ?? ({} as HostingPoliciesInput)),
+											correspondenceAddress: v,
+										},
+									})
+								}
 							/>
-							<ItemSummary
-								label="Payment Interval"
-								summary={capitalize(input.paymentInterval ?? "")}
+							<FloatingLabelInput
+								focused
+								label="Max Occupancy (Optional)"
+								inputMode="numeric"
+								value={input.policies?.maxOccupancy?.toString()}
+								placeholder="5"
+								onChangeText={(v) =>
+									updateInput({
+										policies: {
+											...(input.policies ?? ({} as HostingPoliciesInput)),
+											maxOccupancy: Number(v),
+										},
+									})
+								}
 							/>
-							<View>
-								<ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14 }}>
-									Description
-								</ThemedText>
-								<ThemedText style={{ fontSize: 13, color: colors.primary }}>
-									{input.description}
-								</ThemedText>
-							</View>
-							<EditButton href={"/hostings/form/step-1"} />
-						</SummarySection>
-						<SummarySection>
-							<View className="flex-row gap-4 flex-wrap">
-								{hosting?.rooms.map((v) => (
-									<ItemSummary
-										label={v.name}
-										summary={`${v.count}`}
-										key={v.id}
-									/>
-								))}
-							</View>
-							<View className="flex-row gap-4">
-								<ItemSummary
-									label="Images"
-									summary={`${hosting?.rooms.map((v) => v.images.length).reduce((p, c) => p + c) ?? 0}`}
+						</View>
+						<View className="flex-row gap-2 mt-2">
+							<View className="flex-1">
+								<FloatingLabelInput
+									focused
+									value={newRestriction}
+									label="Not allowed (Optional)"
+									placeholder="Loud music"
+									onChangeText={setNewRestriction}
 								/>
 							</View>
-							<EditButton href={"/hostings/form/step-2"} />
-						</SummarySection>
-						<SummarySection>
-							<View
-								className="p-4 border rounded-xl gap-3"
-								style={{
-									borderColor: hexToRgba(colors.primary, 0.15),
-									backgroundColor: colors.background,
-									...Platform.select({
-										ios: {
-											shadowColor: colors.primary,
-											shadowOffset: { width: 0, height: -2 },
-											shadowOpacity: 0.1,
-											shadowRadius: 8,
-										},
-										android: {
-											elevation: 8,
-											shadowColor: hexToRgba(colors.primary, 0.3),
-										},
-									}),
+							<Button
+								onPress={() => {
+									if (newRestriction)
+										updateInput({
+											policies: {
+												...(input.policies ?? ({} as HostingPoliciesInput)),
+												notAllowed: [
+													...(input.policies?.notAllowed ?? []),
+													newRestriction,
+												],
+											},
+										});
+									setNewRestriction(undefined);
 								}}
+								type="text"
+								disabled={!newRestriction?.length}
 							>
-								<View className="flex-row items-center gap-2">
-									<Home color={colors.primary} size={18} />
-									<ThemedText style={{ fontFamily: Fonts.semibold }}>
-										Address
-									</ThemedText>
-								</View>
-								<View>
-									<ThemedText style={{ fontSize: 12 }}>
-										{input.street}, {input.city}, {input.postalCode}
-									</ThemedText>
-									<ThemedText
-										style={{ fontSize: 14, fontFamily: Fonts.medium }}
+								<Plus color={colors.background} size={34} />
+							</Button>
+						</View>
+						<View className="flex-row gap-2">
+							{input.policies?.notAllowed?.map((item, index) => (
+								<View
+									className="p-2 rounded-lg flex-row gap-4 items-center max-w-fit"
+									key={index}
+									style={{ backgroundColor: colors.primary }}
+								>
+									<ThemedText content="primary">{item}</ThemedText>
+									<Pressable
+										onPress={() =>
+											updateInput({
+												policies: {
+													...(input.policies ?? ({} as HostingPoliciesInput)),
+													notAllowed: (input.policies?.notAllowed ?? []).filter(
+														(v) => v !== item,
+													),
+												},
+											})
+										}
 									>
-										{input.state}
+										<X color={colors.text} size={18} />
+									</Pressable>
+								</View>
+							))}
+							{!input.policies?.notAllowed?.length && (
+								<View
+									className="items-center flex-1 p-4 rounded-xl"
+									style={{ backgroundColor: hexToRgba(colors.text, 0.05) }}
+								>
+									<ThemedText style={{ color: hexToRgba(colors.text, 0.6) }}>
+										No items specified
 									</ThemedText>
 								</View>
-							</View>
-							<ItemSummary label="Contact" summary={input.contact ?? ""} />
-							<ItemSummary
-								label="Landmarks"
-								summary={input.landmarks ?? "nil"}
+							)}
+						</View>
+						<View className="mt-4">
+							<FloatingLabelInput
+								focused
+								multiline
+								label="Additional Clause (Optional)"
+								onChangeText={(value) =>
+									updateInput({
+										policies: {
+											...(input.policies ?? ({} as HostingPoliciesInput)),
+											additionalClauses: value,
+										},
+									})
+								}
+								containerStyle={{ minHeight: 120 }}
+								placeholder="An additional clause that will go on the tenancy agreement..."
 							/>
-							<EditButton href={"/hostings/form/step-3"} />
-						</SummarySection>
-						<SummarySection>
-							<ThemedText>Features & Amenities</ThemedText>
-							<View className="flex-row gap-2 flex-wrap">
-								{input.facilities?.map((v, i) => (
-									<TextSelectButton key={i} value={v} selected />
-								))}
-							</View>
-							<EditButton href={"/hostings/form/step-4"} />
-						</SummarySection>
-
-						<SummarySection>
-							<ItemSummary
-								label="Account Number"
-								summary={hosting?.paymentDetails?.accountNumber ?? ""}
-							/>
-							<ItemSummary
-								label="Bank"
-								summary={hosting?.paymentDetails?.bankDetails?.name ?? ""}
-							/>
-							<ItemSummary
-								label="Payment Interval"
-								summary={capitalize(hosting?.paymentInterval ?? "")}
-							/>
-							<ItemSummary
-								label="Price"
-								summary={`₦${Number(hosting?.price).toLocaleString()}`}
-							/>
-							<EditButton href={"/hostings/form/step-5"} />
-						</SummarySection>
+						</View>
+						<View className="gap-2 mt-4">
+							<ThemedText>Signature</ThemedText>
+							{hostQueryData?.authHost.signature?.publicUrl ? (
+								<View className="h-[120px] bg-white rounded-xl">
+									<Image
+										source={{
+											uri: hostQueryData?.authHost.signature?.publicUrl,
+										}}
+										style={{
+											height: "100%",
+											width: "100%",
+											borderRadius: 20,
+										}}
+										contentFit="contain"
+										transition={300}
+										placeholder={{ blurhash: PROPERTY_BLURHASH }}
+										placeholderContentFit="cover"
+										cachePolicy="memory-disk"
+										priority="high"
+									/>
+								</View>
+							) : (
+								<Pressable
+									onPress={handleTakeSignaturePic}
+									className="p-4 py-6 items-center justify-center rounded-xl"
+									style={{
+										borderWidth: 1.5,
+										borderColor: hexToRgba(colors.primary, 0.5),
+										borderStyle: "dashed",
+									}}
+								>
+									<Camera color={hexToRgba(colors.primary, 0.7)} />
+									<ThemedText
+										style={{
+											fontSize: 14,
+											maxWidth: 200,
+											textAlign: "center",
+											color: hexToRgba(colors.text, 0.6),
+										}}
+									>
+										Take a picture of your signature on a piece of paper
+									</ThemedText>
+								</Pressable>
+							)}
+						</View>
 					</View>
-					<View className="gap-2">
-						<Pressable className="flex-row items-start gap-1">
-							<Checkbox
-								color={colors.primary}
-								size={20}
-								checked={accepted.truth}
-								onValueChange={(v) => setAccepted((c) => ({ ...c, truth: v }))}
-							/>
-							<ThemedText className="flex-1" style={{ fontSize: 14 }}>
-								I confirm that the above information is true and accurate.
-							</ThemedText>
-						</Pressable>
-						<Pressable className="flex-row items-start gap-1">
-							<Checkbox
-								color={colors.primary}
-								size={20}
-								checked={accepted.tos}
-								onValueChange={(v) => setAccepted((c) => ({ ...c, tos: v }))}
-							/>
-							<ThemedText className="flex-1" style={{ fontSize: 14 }}>
-								I agree to Kushi's hosting terms of service
-							</ThemedText>
-						</Pressable>
-					</View>
+					{templateFetching ? (
+						<Skeleton style={{ height: 700, borderRadius: 20 }} />
+					) : (
+						<WebView html={templateData?.hostTenancyAgreementPreview ?? ""} />
+					)}
 				</View>
 			</DetailsLayout>
 			<LoadingModal visible={loading} />
-			<PublishListingSuccess show={success} onClose={handleClose} />
 		</>
 	);
 }

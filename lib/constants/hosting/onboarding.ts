@@ -1,7 +1,13 @@
 import { MagePreviewFill } from "@/components/icons/i-preview";
 import { SolarTagPriceOutline } from "@/components/icons/i-price";
 import { SolarVerifiedCheckOutline } from "@/components/icons/i-verified";
-import { HousePlus, Images, MapPinHouse, Sparkles } from "lucide-react-native";
+import {
+	FileSignature,
+	HousePlus,
+	Images,
+	MapPinHouse,
+	Sparkles,
+} from "lucide-react-native";
 
 export const ONBOARDING_STEPS = [
 	{
@@ -32,6 +38,12 @@ export const ONBOARDING_STEPS = [
 		title: "Set Your Price",
 		description:
 			"Define your price, payment interval (e.g., /year), and the bank account for your payouts.",
+	},
+	{
+		icon: FileSignature,
+		title: "Legal & House Rules",
+		description:
+			"Specify occupancy limits, disallowed items, and provide your digital signature for the tenancy agreement.",
 	},
 	{
 		icon: MagePreviewFill,

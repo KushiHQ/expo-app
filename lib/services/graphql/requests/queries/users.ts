@@ -38,3 +38,31 @@ export const HOST_ANALYTICS = gql`
     }
   }
 `;
+
+export const AUTH_HOST = gql`
+  query AuthHost {
+    authHost {
+      id
+      dateAdded
+      lastUpdated
+      signature {
+        id
+        publicUrl
+      }
+    }
+  }
+`;
+
+export const AUTH_GUEST = gql`
+  query AuthGuest {
+    authGuest {
+      id
+      dateAdded
+      lastUpdated
+      signature {
+        id
+        publicUrl
+      }
+    }
+  }
+`;

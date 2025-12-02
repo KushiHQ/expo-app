@@ -161,6 +161,7 @@ export default function NewHostingStep5() {
 									focused
 									inputMode="numeric"
 									label="Price"
+									value={input.price}
 									onChangeText={(v) =>
 										updateInput({ price: v.replace("₦", "") })
 									}

@@ -12,7 +12,7 @@ import { getLocationAsync } from "@/lib/utils/locations";
 import { LocationObject } from "expo-location";
 
 export default function CameraPage() {
-	const { images } = useLocalSearchParams();
+	const { images, multiple } = useLocalSearchParams();
 	const cameraRef = useRef<CameraView>(null);
 	const [facing, setFacing] = useState<CameraType>("back");
 	const { redirect } = useLocalSearchParams();
@@ -81,19 +81,22 @@ export default function CameraPage() {
 					exif: true,
 					additionalExif: location
 						? {
-								GPSLatitude: Math.abs(location.coords.latitude),
-								GPSLongitude: Math.abs(location.coords.longitude),
-								GPSLatitudeRef: location.coords.latitude >= 0 ? "N" : "S",
-								GPSLongitudeRef: location.coords.longitude >= 0 ? "E" : "W",
-								GPSAltitude: location.coords.altitude || 0,
-								GPSSpeed: location.coords.speed || 0,
-								GPSTimeStamp: new Date().toISOString(),
-							}
+							GPSLatitude: Math.abs(location.coords.latitude),
+							GPSLongitude: Math.abs(location.coords.longitude),
+							GPSLatitudeRef: location.coords.latitude >= 0 ? "N" : "S",
+							GPSLongitudeRef: location.coords.longitude >= 0 ? "E" : "W",
+							GPSAltitude: location.coords.altitude || 0,
+							GPSSpeed: location.coords.speed || 0,
+							GPSTimeStamp: new Date().toISOString(),
+						}
 						: {},
 				});
 
 				if (photo) {
 					append(photo.uri);
+					if (multiple === "false") {
+						navigation.replace(`/photo-gallery?redirect=${redirect}`);
+					}
 				}
 			} catch (error) {
 				console.error("Error taking picture:", error);
