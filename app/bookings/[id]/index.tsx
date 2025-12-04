@@ -37,9 +37,30 @@ export default function UserBooking() {
 		useFinalizeBookingMutation();
 	const [{ fetching: verifyingBookingPayment }, verifyBookingPayment] =
 		useVerifyBookingPaymentMutation();
+	const [localPdfUri, setLocalPdfUri] = React.useState<string | null>(null);
 
 	const booking = data?.booking;
 	const loading = finalizing || fetchingBooking || verifyingBookingPayment;
+
+	React.useEffect(() => {
+		if (!booking?.tenancyAgreementAsset?.publicUrl) return;
+
+		(async () => {
+			try {
+				const encodedUrl = encodeURI(booking.tenancyAgreementAsset!.publicUrl);
+
+				const localPath =
+					FileSystem.cacheDirectory + `tenancy-${booking.id}.pdf`;
+
+				const result = await FileSystem.downloadAsync(encodedUrl, localPath);
+
+				console.log("PDF saved to:", result.uri);
+				setLocalPdfUri(result.uri); // ✅ THIS IS IMPORTANT
+			} catch (err) {
+				console.error("PDF preload failed:", err);
+			}
+		})();
+	}, [booking?.tenancyAgreementAsset?.publicUrl]);
 
 	React.useEffect(() => {
 		if (booking?.paymentStatus === PaymentStatus.Pending) {
@@ -89,6 +110,8 @@ export default function UserBooking() {
 			console.error(error);
 		}
 	};
+
+	console.log(booking?.tenancyAgreementAsset?.publicUrl);
 
 	return (
 		<>
@@ -156,11 +179,13 @@ export default function UserBooking() {
 						<Pdf
 							scrollEnabled={false}
 							source={{
-								uri: booking.tenancyAgreementAsset.publicUrl,
-								cache: true,
+								uri:
+									localPdfUri ??
+									encodeURI(booking.tenancyAgreementAsset.publicUrl),
+								cache: false,
 							}}
 							onLoadComplete={(numberOfPages) => {
-								const calculatedHeight = Math.min(numberOfPages * 600, 3000);
+								const calculatedHeight = Math.min(numberOfPages * 700, 3500);
 								setPdfHeight(calculatedHeight);
 							}}
 							style={{
