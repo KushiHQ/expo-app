@@ -54,6 +54,9 @@ export const BOOKING_QUERY = gql`
         state
         price
         paymentInterval
+        propertyType
+        street
+        landmarks
       }
       expiresAt
       paymentStatus

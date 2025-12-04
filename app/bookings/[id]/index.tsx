@@ -116,12 +116,8 @@ export default function UserBooking() {
 	return (
 		<>
 			<DetailsLayout title={booking?.hosting.title ?? "My Booking"}>
-				<View className="mt-4">
+				<View className="mt-4 gap-4">
 					<SummarySection>
-						<ItemSummary
-							label="Hosting"
-							summary={booking?.hosting.title ?? ""}
-						/>
 						<ItemSummary label="Full Name" summary={booking?.fullName ?? ""} />
 						<ItemSummary label="Email" summary={booking?.email ?? ""} />
 						<ItemSummary
@@ -135,6 +131,17 @@ export default function UserBooking() {
 						<ItemSummary
 							label="Payment Status"
 							summary={capitalize(booking?.paymentStatus ?? "")}
+						/>
+					</SummarySection>
+					<SummarySection>
+						<ItemSummary label="Title" summary={booking?.hosting.title ?? ""} />
+						<ItemSummary
+							label="Property Type"
+							summary={booking?.hosting.propertyType ?? ""}
+						/>
+						<ItemSummary
+							label="Address"
+							summary={`${booking?.hosting.landmarks ?? ""} ${booking?.hosting.street}, ${booking?.hosting.city}, ${booking?.hosting.state}`}
 						/>
 					</SummarySection>
 				</View>
