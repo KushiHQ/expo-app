@@ -174,14 +174,14 @@ export default function UserBooking() {
 							</View>
 						)}
 				</View>
-				{booking?.tenancyAgreementAsset?.publicUrl && (
+				{!localPdfUri ? (
+					<Skeleton style={{ height: 700, borderRadius: 20, marginTop: 16 }} />
+				) : (
 					<View className="mt-4 relative">
 						<Pdf
 							scrollEnabled={false}
 							source={{
-								uri:
-									localPdfUri ??
-									encodeURI(booking.tenancyAgreementAsset.publicUrl),
+								uri: localPdfUri,
 								cache: false,
 							}}
 							onLoadComplete={(numberOfPages) => {
