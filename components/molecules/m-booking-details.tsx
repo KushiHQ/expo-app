@@ -13,7 +13,7 @@ import Button from "../atoms/a-button";
 import { HugeiconsInboxDownload } from "../icons/i-download";
 import ThemedModal from "./m-modal";
 import { shareViewAsImage, shareViewAsSinglePagePdf } from "@/lib/utils/files";
-import { BookingsQuery } from "@/lib/services/graphql/generated";
+import { BookingQuery, BookingsQuery } from "@/lib/services/graphql/generated";
 import { calculateBookingDuration } from "@/lib/utils/time";
 import { getBookingStatus } from "@/lib/utils/bookings";
 import { capitalize } from "@/lib/utils/text";
@@ -290,7 +290,10 @@ const UserInfoSection: React.FC<SubProps> = ({ booking, printing }) => {
 	);
 };
 
-const BookingDetails: React.FC<Props> = ({ open, onOpenChange, booking }) => {
+export const BookingDetails: React.FC<{
+	booking: BookingsQuery["bookings"][number] | BookingQuery["booking"];
+	showUserInfo?: boolean;
+}> = ({ booking, showUserInfo = true }) => {
 	const colors = useThemeColors();
 	const [downloadType, setDownloadType] = React.useState<"pdf" | "image">();
 	const ref = React.useRef<ViewShot>(null);
@@ -311,42 +314,40 @@ const BookingDetails: React.FC<Props> = ({ open, onOpenChange, booking }) => {
 
 	return (
 		<>
-			<BottomSheet isVisible={open} onClose={() => onOpenChange(false)}>
-				<View className="pb-8">
-					<BarcodeSection booking={booking} />
-					<DateAndDurationSection booking={booking} />
-					<FeesSection booking={booking} />
-					<View className="mt-4 flex-row items-center gap-4">
-						<Button
-							variant="outline"
-							type="primary"
-							className="py-2 flex-1"
-							onPress={() => setDownloadType("pdf")}
-						>
-							<View className="flex-row items-center gap-2">
-								<HugeiconsInboxDownload color={colors.primary} size={16} />
-								<ThemedText content="tinted" style={{ fontSize: 14 }}>
-									PDF
-								</ThemedText>
-							</View>
-						</Button>
-						<Button
-							variant="outline"
-							type="primary"
-							className="py-2 flex-1"
-							onPress={() => setDownloadType("image")}
-						>
-							<View className="flex-row items-center gap-2">
-								<HugeiconsInboxDownload color={colors.primary} size={16} />
-								<ThemedText content="tinted" style={{ fontSize: 14 }}>
-									Image
-								</ThemedText>
-							</View>
-						</Button>
-					</View>
-					<UserInfoSection booking={booking} />
+			<View className="pb-8">
+				<BarcodeSection booking={booking} />
+				<DateAndDurationSection booking={booking} />
+				<FeesSection booking={booking} />
+				<View className="mt-4 flex-row items-center gap-4">
+					<Button
+						variant="outline"
+						type="primary"
+						className="py-2 flex-1"
+						onPress={() => setDownloadType("pdf")}
+					>
+						<View className="flex-row items-center gap-2">
+							<HugeiconsInboxDownload color={colors.primary} size={16} />
+							<ThemedText content="tinted" style={{ fontSize: 14 }}>
+								PDF
+							</ThemedText>
+						</View>
+					</Button>
+					<Button
+						variant="outline"
+						type="primary"
+						className="py-2 flex-1"
+						onPress={() => setDownloadType("image")}
+					>
+						<View className="flex-row items-center gap-2">
+							<HugeiconsInboxDownload color={colors.primary} size={16} />
+							<ThemedText content="tinted" style={{ fontSize: 14 }}>
+								Image
+							</ThemedText>
+						</View>
+					</Button>
 				</View>
-			</BottomSheet>
+				{showUserInfo && <UserInfoSection booking={booking} />}
+			</View>
 			<ThemedModal
 				visible={!!downloadType}
 				onClose={() => setDownloadType(undefined)}
@@ -379,4 +380,16 @@ const BookingDetails: React.FC<Props> = ({ open, onOpenChange, booking }) => {
 	);
 };
 
-export default BookingDetails;
+const BookingDetailsSheet: React.FC<Props> = ({
+	open,
+	onOpenChange,
+	booking,
+}) => {
+	return (
+		<BottomSheet isVisible={open} onClose={() => onOpenChange(false)}>
+			<BookingDetails booking={booking} />
+		</BottomSheet>
+	);
+};
+
+export default BookingDetailsSheet;

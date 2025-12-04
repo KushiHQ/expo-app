@@ -27,3 +27,11 @@ export const VERIFY_BOOKING_PAYMENT = gql`
     }
   }
 `;
+
+export const FINALIZE_BOOKING = gql`
+  mutation FinalizeBooking($bookingId: String!) {
+    finalizeBooking(bookingId: $bookingId) {
+      id
+    }
+  }
+`;

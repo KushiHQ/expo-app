@@ -20,26 +20,8 @@ import { handleError } from "@/lib/utils/error";
 import Toast from "react-native-toast-message";
 import PublishListingSuccess from "@/components/molecules/m-publish-listing-success";
 import TextSelectButton from "@/components/molecules/m-text-select-button";
-
-type ItemSummaryProps = {
-	label: string;
-	summary: string;
-};
-
-const ItemSummary: React.FC<ItemSummaryProps> = ({ label, summary }) => {
-	const colors = useThemeColors();
-
-	return (
-		<View className="flex-row items-center gap-2">
-			<ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14 }}>
-				{label}:
-			</ThemedText>
-			<ThemedText style={{ fontSize: 14, color: hexToRgba(colors.text, 0.6) }}>
-				{summary}
-			</ThemedText>
-		</View>
-	);
-};
+import ItemSummary from "@/components/molecules/m-item-summary";
+import SummarySection from "@/components/atoms/a-summary-section";
 
 const EditButton: React.FC<{ href: Href }> = ({ href }) => {
 	const router = useRouter();
@@ -62,25 +44,6 @@ const EditButton: React.FC<{ href: Href }> = ({ href }) => {
 				/>
 			</View>
 		</Button>
-	);
-};
-
-const SummarySection: React.FC<{ children?: React.ReactNode }> = ({
-	children,
-}) => {
-	const colors = useThemeColors();
-	return (
-		<View
-			className="p-3 rounded gap-2"
-			style={{
-				borderWidth: 2,
-				borderStyle: "dashed",
-				borderColor: hexToRgba(colors.primary, 0.4),
-				backgroundColor: hexToRgba(colors.primary, 0.1),
-			}}
-		>
-			{children}
-		</View>
 	);
 };
 

@@ -7,13 +7,7 @@ import { hexToRgba } from "@/lib/utils/colors";
 import React from "react";
 import { Pressable, View } from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import {
-	Camera,
-	CircleQuestionMark,
-	MapPin,
-	Plus,
-	X,
-} from "lucide-react-native";
+import { CircleQuestionMark, MapPin, Plus, X } from "lucide-react-native";
 import { useHostingForm } from "@/lib/hooks/hosting-form";
 import {
 	HostingPoliciesInput,
@@ -34,9 +28,8 @@ import { useGalleryStore } from "@/lib/stores/gallery";
 import { formMutation } from "@/lib/services/graphql/utils/fetch";
 import { UPDATE_HOST } from "@/lib/services/graphql/requests/mutations/users";
 import { generateRNFile } from "@/lib/utils/file";
-import { Image } from "expo-image";
-import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { useDebounce } from "@/lib/hooks/use-debounce";
+import SignatureImage from "@/components/molecules/m-signature-image";
 
 export default function NewHostingStep6() {
 	const router = useRouter();
@@ -51,7 +44,7 @@ export default function NewHostingStep6() {
 		updateInput,
 		fetching: fetchingHosting,
 	} = useHostingForm(id);
-	const { setGallery, gallery } = useGalleryStore();
+	const { gallery } = useGalleryStore();
 	const [{ data: hostQueryData, fetching: hostFetching }, refetchHost] =
 		useAuthHostQuery();
 	const [uploading, setUploading] = React.useState(false);
@@ -81,11 +74,6 @@ export default function NewHostingStep6() {
 				);
 			}
 		});
-	};
-
-	const handleTakeSignaturePic = () => {
-		setGallery([]);
-		router.push("/camera?redirect=/hostings/form/step-6&multiple=false");
 	};
 
 	useFocusEffect(
@@ -272,56 +260,17 @@ export default function NewHostingStep6() {
 								placeholder="An additional clause that will go on the tenancy agreement..."
 							/>
 						</View>
-						<View className="gap-2 mt-4">
-							<ThemedText>Signature</ThemedText>
-							{hostQueryData?.authHost.signature?.publicUrl ? (
-								<View className="h-[120px] bg-white rounded-xl">
-									<Image
-										source={{
-											uri: hostQueryData?.authHost.signature?.publicUrl,
-										}}
-										style={{
-											height: "100%",
-											width: "100%",
-											borderRadius: 20,
-										}}
-										contentFit="contain"
-										transition={300}
-										placeholder={{ blurhash: PROPERTY_BLURHASH }}
-										placeholderContentFit="cover"
-										cachePolicy="memory-disk"
-										priority="high"
-									/>
-								</View>
-							) : (
-								<Pressable
-									onPress={handleTakeSignaturePic}
-									className="p-4 py-6 items-center justify-center rounded-xl"
-									style={{
-										borderWidth: 1.5,
-										borderColor: hexToRgba(colors.primary, 0.5),
-										borderStyle: "dashed",
-									}}
-								>
-									<Camera color={hexToRgba(colors.primary, 0.7)} />
-									<ThemedText
-										style={{
-											fontSize: 14,
-											maxWidth: 200,
-											textAlign: "center",
-											color: hexToRgba(colors.text, 0.6),
-										}}
-									>
-										Take a picture of your signature on a piece of paper
-									</ThemedText>
-								</Pressable>
-							)}
-						</View>
+						<SignatureImage
+							signature={hostQueryData?.authHost.signature?.publicUrl}
+							redirect="/hostings/form/step-6"
+						/>
 					</View>
 					{templateFetching ? (
 						<Skeleton style={{ height: 700, borderRadius: 20 }} />
 					) : (
-						<WebView html={templateData?.hostTenancyAgreementPreview ?? ""} />
+						<WebView
+							source={{ html: templateData?.hostTenancyAgreementPreview ?? "" }}
+						/>
 					)}
 				</View>
 			</DetailsLayout>

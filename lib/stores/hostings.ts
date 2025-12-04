@@ -147,10 +147,16 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>(
 				rooms,
 				saved,
 				__typename,
+				policies,
 				...rest
 			} = hosting;
+			const { __typename: __nTypename, ...restPolicies } = policies ?? {};
 			set(() => ({
-				input: { ...rest, paymentDetailsId: paymentDetails?.id },
+				input: {
+					...rest,
+					paymentDetailsId: paymentDetails?.id,
+					policies: cast(restPolicies),
+				},
 				hosting,
 			}));
 		},

@@ -9,16 +9,18 @@ import { Fonts } from "@/lib/constants/theme";
 import { hexToRgba } from "@/lib/utils/colors";
 import Button from "../atoms/a-button";
 import { ChevronDown } from "lucide-react-native";
-import BookingDetails from "./m-booking-details";
+import BookingDetailsSheet from "./m-booking-details";
 import { BookingsQuery } from "@/lib/services/graphql/generated";
 import { capitalize } from "@/lib/utils/text";
 import { getBookingStatus } from "@/lib/utils/bookings";
+import { useRouter } from "expo-router";
 
 type Props = {
 	booking: BookingsQuery["bookings"][number];
 };
 
 const BookingCard: React.FC<Props> = ({ booking }) => {
+	const router = useRouter();
 	const colors = useThemeColors();
 	const [open, setOpen] = React.useState(false);
 	const { failedImages, handleImageError } = useFallbackImages();
@@ -29,11 +31,12 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
 		<>
 			<View
 				className="gap-4 border-b pb-4"
-				style={{ borderColor: hexToRgba(colors.text, 0.1) }}
+				style={{ borderColor: hexToRgba(colors.text, 0.15) }}
 			>
 				<Pressable
+					onPress={() => router.push(`/bookings/${booking.id}`)}
 					className="flex-row gap-4 items-center border p-2 rounded-xl"
-					style={{ borderColor: hexToRgba(colors.text, 0.1) }}
+					style={{ borderColor: hexToRgba(colors.text, 0.15) }}
 				>
 					<View
 						className="w-[107px] h-[90px] rounded-xl border overflow-hidden"
@@ -114,7 +117,11 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
 					</View>
 				</Button>
 			</View>
-			<BookingDetails open={open} onOpenChange={setOpen} booking={booking} />
+			<BookingDetailsSheet
+				open={open}
+				onOpenChange={setOpen}
+				booking={booking}
+			/>
 		</>
 	);
 };

@@ -85,6 +85,7 @@ export const HOSTING_QUERY = gql`
         maxOccupancy
         notAllowed
         additionalClauses
+        correspondenceAddress
       }
     }
   }

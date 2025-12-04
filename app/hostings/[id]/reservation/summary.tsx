@@ -195,7 +195,7 @@ export default function ReservationSummary() {
 									₦
 									{Number(
 										bookingData?.initiateBooking.data?.guestServiceCharge ??
-											"0",
+										"0",
 									)?.toLocaleString()}
 								</ThemedText>
 							</View>
@@ -215,7 +215,7 @@ export default function ReservationSummary() {
 										Number(hosting?.price) +
 										Number(
 											bookingData?.initiateBooking.data?.guestServiceCharge ??
-												"0",
+											"0",
 										)
 									).toLocaleString()}
 								</ThemedText>
@@ -248,7 +248,7 @@ export default function ReservationSummary() {
 					description={`Your "${hosting?.title}" is booked! Access the booking ticket on your profile >> My Bookings  or view it right away.`}
 					action={
 						<Button
-							onPress={() => router.replace(`/users/${user.user?.id}/bookings`)}
+							onPress={() => router.replace("/bookings")}
 							type="primary"
 							className="w-60"
 						>

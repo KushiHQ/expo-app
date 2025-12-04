@@ -34,3 +34,53 @@ export const BOOKINGS_QUERY = gql`
     }
   }
 `;
+
+export const BOOKING_QUERY = gql`
+  query Booking($bookingId: String!) {
+    booking(bookingId: $bookingId) {
+      id
+      hosting {
+        id
+        coverImage {
+          id
+          asset {
+            id
+            publicUrl
+          }
+        }
+        title
+        city
+        country
+        state
+        price
+        paymentInterval
+      }
+      expiresAt
+      paymentStatus
+      transaction {
+        id
+      }
+      createdAt
+      checkInDate
+      checkOutDate
+      guestServiceCharge
+      amount
+      phoneNumber
+      fullName
+      email
+      gender
+      paymentMethod
+      tenancyAgreementAsset {
+        id
+        publicUrl
+      }
+      status
+    }
+  }
+`;
+
+export const GUEST_BOOKING_TENANCY_AGREEMENT_PREVIEW = gql`
+  query GuestBookingTenancyAgreementPreview($bookingId: String!) {
+    guestBookingTenancyAgreementPreview(bookingId: $bookingId)
+  }
+`;

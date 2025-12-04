@@ -1,14 +1,17 @@
 import React from "react";
 import { WebView as RNWebView } from "react-native-webview";
+import { WebViewSource } from "react-native-webview/lib/WebViewTypes";
 
 interface Props {
-	html: string;
+	source: WebViewSource & {
+		html?: string;
+	};
 }
 
-const WebView: React.FC<Props> = ({ html }) => {
+const WebView: React.FC<Props> = ({ source }) => {
 	return (
 		<RNWebView
-			source={{ html }}
+			source={source}
 			style={{
 				flex: 0,
 				minHeight: 1000,

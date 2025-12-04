@@ -119,6 +119,10 @@ export default function RootLayout() {
 													options={{ headerShown: false }}
 												/>
 												<Stack.Screen
+													name="bookings"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
 													name="chats"
 													options={{ headerShown: false }}
 												/>

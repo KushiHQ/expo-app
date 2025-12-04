@@ -35,42 +35,42 @@ const ProfileScreen = () => {
 		href: Href;
 		label: string;
 	}[] = [
-		{
-			icon: UilUser,
-			href: `/users/${id}/profile/edit`,
-			label: "Profile",
-		},
-		{
-			icon: SolarCardLinear,
-			href: `/users/${id}/bookings`,
-			label: "My Bookings",
-		},
-		{
-			icon: SolarWalletMoneyOutline,
-			href: "/hostings/",
-			label: "Payments",
-		},
-		{
-			icon: IonNotificationsOutline,
-			href: `/users/${id}/notification-settings`,
-			label: "Notifications",
-		},
-		{
-			icon: HugeiconsShieldUser,
-			href: "/hostings/",
-			label: "KYC",
-		},
-		{
-			icon: LinkIcon,
-			href: "/host/listings",
-			label: "Hostings",
-		},
-		{
-			icon: SolarShieldCheckLinear,
-			href: `/users/${id}/security`,
-			label: "Security",
-		},
-	];
+			{
+				icon: UilUser,
+				href: `/users/${id}/profile/edit`,
+				label: "Profile",
+			},
+			{
+				icon: SolarCardLinear,
+				href: `/bookings`,
+				label: "My Bookings",
+			},
+			{
+				icon: SolarWalletMoneyOutline,
+				href: "/hostings/",
+				label: "Payments",
+			},
+			{
+				icon: IonNotificationsOutline,
+				href: `/users/${id}/notification-settings`,
+				label: "Notifications",
+			},
+			{
+				icon: HugeiconsShieldUser,
+				href: "/hostings/",
+				label: "KYC",
+			},
+			{
+				icon: LinkIcon,
+				href: "/host/listings",
+				label: "Hostings",
+			},
+			{
+				icon: SolarShieldCheckLinear,
+				href: `/users/${id}/security`,
+				label: "Security",
+			},
+		];
 
 	return (
 		<>
