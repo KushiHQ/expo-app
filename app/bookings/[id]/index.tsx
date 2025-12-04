@@ -190,7 +190,7 @@ export default function UserBooking() {
 							}}
 							style={{
 								height: pdfHeight,
-								borderColor: colors.text,
+								borderColor: hexToRgba(colors.text, 0.4),
 								borderWidth: 1,
 								borderRadius: 20,
 							}}
