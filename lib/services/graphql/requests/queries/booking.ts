@@ -78,6 +78,26 @@ export const BOOKING_QUERY = gql`
         publicUrl
       }
       status
+      userReview {
+        averageRating
+        description
+        lastUpdated
+        id
+        user {
+          id
+          profile {
+            fullName
+            id
+            gender
+          }
+        }
+        checkIn
+        accuracy
+        cleanliness
+        communication
+        value
+        location
+      }
     }
   }
 `;

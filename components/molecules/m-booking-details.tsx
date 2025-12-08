@@ -314,7 +314,7 @@ export const BookingDetails: React.FC<{
 
 	return (
 		<>
-			<View className="pb-8">
+			<View className="pb-6">
 				<BarcodeSection booking={booking} />
 				<DateAndDurationSection booking={booking} />
 				<FeesSection booking={booking} />

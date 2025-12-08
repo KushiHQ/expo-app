@@ -25,11 +25,14 @@ import React from "react";
 import { View } from "react-native";
 import Toast from "react-native-toast-message";
 import Pdf from "react-native-pdf";
+import LeaveAReviewButton from "@/components/organisms/o-leave-a-review-button";
+import HostingReviewCard from "@/components/molecules/m-hosting-review-card";
+import ReviewItem from "@/components/molecules/m-review-item";
+import { REVIEW_METRICS } from "@/lib/constants/reviews";
 
 export default function UserBooking() {
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
-	const [pdfHeight, setPdfHeight] = React.useState(700);
 	const [{ data, fetching: fetchingBooking }] = useBookingQuery({
 		variables: { bookingId: cast(id) },
 	});
@@ -53,9 +56,7 @@ export default function UserBooking() {
 					FileSystem.cacheDirectory + `tenancy-${booking.id}.pdf`;
 
 				const result = await FileSystem.downloadAsync(encodedUrl, localPath);
-
-				console.log("PDF saved to:", result.uri);
-				setLocalPdfUri(result.uri); // ✅ THIS IS IMPORTANT
+				setLocalPdfUri(result.uri);
 			} catch (err) {
 				console.error("PDF preload failed:", err);
 			}
@@ -111,8 +112,6 @@ export default function UserBooking() {
 		}
 	};
 
-	console.log(booking?.tenancyAgreementAsset?.publicUrl);
-
 	return (
 		<>
 			<DetailsLayout title={booking?.hosting.title ?? "My Booking"}>
@@ -152,32 +151,87 @@ export default function UserBooking() {
 						<BookingDetails showUserInfo={false} booking={booking} />
 					)}
 				</View>
-				<View className="gap-4">
-					<ThemedText
-						style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}
-					>
-						<CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
-						{"  "}
-						Note if left uncanceled bookings will be automatically finalized
-						within 2 weeks of initial payment.
-					</ThemedText>
+				{booking?.userReview ? (
+					<View>
+						<View className="flex-row items-center justify-between">
+							<ThemedText>Your Review</ThemedText>
+							<LeaveAReviewButton
+								edit
+								review={booking.userReview}
+								hostingId={booking?.hosting.id}
+							/>
+						</View>
+						<View
+							className="mt-4 gap-3 p-4 rounded-xl"
+							style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+						>
+							<ReviewItem
+								value={booking.userReview.cleanliness ?? 0.0}
+								title={REVIEW_METRICS.cleanliness.label}
+								description={REVIEW_METRICS.cleanliness.desc}
+							/>
+							<ReviewItem
+								value={booking.userReview.accuracy ?? 0.0}
+								title={REVIEW_METRICS.accuracy.label}
+								description={REVIEW_METRICS.accuracy.desc}
+							/>
+							<ReviewItem
+								value={booking.userReview.communication ?? 0.0}
+								title={REVIEW_METRICS.communication.label}
+								description={REVIEW_METRICS.communication.desc}
+							/>
+							<ReviewItem
+								value={booking.userReview.location ?? 0.0}
+								title={REVIEW_METRICS.location.label}
+								description={REVIEW_METRICS.location.desc}
+							/>
+							<ReviewItem
+								value={booking.userReview.checkIn ?? 0.0}
+								title={REVIEW_METRICS.checkIn.label}
+								description={REVIEW_METRICS.checkIn.desc}
+							/>
+							<ReviewItem
+								value={booking.userReview.value ?? 0.0}
+								title={REVIEW_METRICS.value.label}
+								description={REVIEW_METRICS.value.desc}
+							/>
+						</View>
+						<HostingReviewCard review={booking.userReview} />
+					</View>
+				) : (
+					<LeaveAReviewButton hostingId={booking?.hosting.id} />
+				)}
+				<View>
 					{booking?.status !== BookingStatus.Completed &&
 						booking?.status !== BookingStatus.Canceled &&
 						booking?.paymentStatus === PaymentStatus.Paid && (
-							<View className="flex-row gap-4">
-								<Button
-									className="flex-1"
-									style={{ backgroundColor: hexToRgba(colors.error, 0.6) }}
+							<View className="gap-4">
+								<ThemedText
+									style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}
 								>
-									<ThemedText content="error">Cancel</ThemedText>
-								</Button>
-								<Button
-									onPress={handleFinailze}
-									className="flex-1"
-									style={{ backgroundColor: hexToRgba(colors.primary, 0.6) }}
-								>
-									<ThemedText content="primary">Finalize</ThemedText>
-								</Button>
+									<CircleQuestionMark
+										color={hexToRgba(colors.text, 0.7)}
+										size={12}
+									/>
+									{"  "}
+									Note if left uncanceled bookings will be automatically
+									finalized within 2 weeks of initial payment.
+								</ThemedText>
+								<View className="flex-row gap-4">
+									<Button
+										className="flex-1"
+										style={{ backgroundColor: hexToRgba(colors.error, 0.6) }}
+									>
+										<ThemedText content="error">Cancel</ThemedText>
+									</Button>
+									<Button
+										onPress={handleFinailze}
+										className="flex-1"
+										style={{ backgroundColor: hexToRgba(colors.primary, 0.6) }}
+									>
+										<ThemedText content="primary">Finalize</ThemedText>
+									</Button>
+								</View>
 							</View>
 						)}
 				</View>
@@ -187,16 +241,14 @@ export default function UserBooking() {
 					<View className="mt-4 relative">
 						<Pdf
 							scrollEnabled={false}
+							enablePaging
+							singlePage
 							source={{
 								uri: localPdfUri,
 								cache: false,
 							}}
-							onLoadComplete={(numberOfPages) => {
-								const calculatedHeight = Math.min(numberOfPages * 700, 3500);
-								setPdfHeight(calculatedHeight);
-							}}
 							style={{
-								height: pdfHeight,
+								height: 640,
 								borderColor: hexToRgba(colors.text, 0.4),
 								borderWidth: 1,
 								borderRadius: 20,

@@ -17,6 +17,7 @@ import { useHostingQuery } from "@/lib/services/graphql/generated";
 import { useReservationStore } from "@/lib/stores/reservation";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
+import { handleError } from "@/lib/utils/error";
 import { capitalize } from "@/lib/utils/text";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -26,12 +27,18 @@ import { View } from "react-native";
 export default function HostingDetails() {
 	const router = useRouter();
 	const { id } = useLocalSearchParams();
-	const [{ data }] = useHostingQuery({ variables: { hostingId: cast(id) } });
+	const [{ data, error }] = useHostingQuery({
+		variables: { hostingId: cast(id) },
+	});
 	const colors = useThemeColors();
 	const { handleImageError, failedImages } = useFallbackImages();
 	const { updateInput } = useReservationStore();
 
 	const hosting = data?.hosting;
+
+	React.useEffect(() => {
+		if (error) handleError(error);
+	}, [error]);
 
 	return (
 		<DetailsLayout
@@ -152,7 +159,7 @@ export default function HostingDetails() {
 				<HostingHost hosting={hosting} />
 				<HostingFacilities hosting={hosting} />
 				<HostingGalleryComponent hosting={hosting} />
-				<HostingReviews />
+				<HostingReviews hosting={hosting} />
 				<HostingLocation hosting={hosting} />
 			</View>
 		</DetailsLayout>

@@ -1,7 +1,7 @@
 import { gql } from "urql";
 
 export const HOSTING_QUERY = gql`
-  query Hosting($hostingId: String!) {
+  query Hosting($hostingId: String!, $pagination: PaginationInput) {
     hosting(hostingId: $hostingId) {
       id
       title
@@ -86,6 +86,28 @@ export const HOSTING_QUERY = gql`
         notAllowed
         additionalClauses
         correspondenceAddress
+      }
+      reviews(pagination: $pagination) {
+        averageRating
+        description
+        lastUpdated
+        id
+        user {
+          id
+          profile {
+            fullName
+            id
+            gender
+          }
+        }
+      }
+      reviewAverage {
+        cleanliness
+        accuracy
+        communication
+        location
+        checkIn
+        value
       }
     }
   }

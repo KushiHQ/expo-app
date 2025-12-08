@@ -135,3 +135,14 @@ export const DELETE_SAVED_HOSTING = gql`
     }
   }
 `;
+
+export const CREATE_UPDATE_HOSTING_REVIEW = gql`
+  mutation CreateUpdateHostingReview($input: HostingReviewInput!) {
+    createOrUpdateHostingReview(input: $input) {
+      message
+      data {
+        id
+      }
+    }
+  }
+`;
