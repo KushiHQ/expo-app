@@ -200,7 +200,6 @@ export default function ReservationUserDetails() {
 							</View>
 							<SignatureImage
 								signature={guestQueryData?.authGuest.signature?.publicUrl}
-								redirect={`/hostings/${id}/reservation/user-details`}
 							/>
 							<View className="mt-4 gap-4">
 								<ThemedText style={{ fontFamily: Fonts.bold, fontSize: 18 }}>

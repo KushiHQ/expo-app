@@ -51,6 +51,7 @@ export const HOSTING_QUERY = gql`
           email
           profile {
             fullName
+            gender
             id
           }
         }

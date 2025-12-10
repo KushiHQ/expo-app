@@ -5,23 +5,19 @@ import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import ThemedText from "../atoms/a-themed-text";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { useGalleryStore } from "@/lib/stores/gallery";
-import { useRouter } from "expo-router";
 import { Camera } from "lucide-react-native";
+import { useCameraScreen } from "@/lib/hooks/camera";
 
 interface Props {
   signature?: string;
-  redirect?: string;
 }
 
-const SignatureImage: React.FC<Props> = ({ signature, redirect }) => {
-  const router = useRouter();
+const SignatureImage: React.FC<Props> = ({ signature }) => {
   const colors = useThemeColors();
-  const { setGallery } = useGalleryStore();
+  const { redirect: cameraRedirect } = useCameraScreen();
 
   const handleTakeSignaturePic = () => {
-    setGallery([]);
-    router.push(`/camera?redirect=${redirect}&multiple=false`);
+    cameraRedirect({ clear: true, multiple: false });
   };
 
   return (

@@ -1,6 +1,4 @@
-import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { Hosting } from "@/lib/constants/mocks/hostings";
-import { useFallbackImages } from "@/lib/hooks/images";
+import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { Image } from "expo-image";
 import React from "react";
@@ -9,20 +7,20 @@ import ThemedText from "../atoms/a-themed-text";
 import { hexToRgba } from "@/lib/utils/colors";
 import { Fonts } from "@/lib/constants/theme";
 import { useRouter } from "expo-router";
+import { HostingChatQuery } from "@/lib/services/graphql/generated";
+import { capitalize } from "@/lib/utils/text";
 
 type Props = {
-  hosting: Hosting;
+  hosting?: HostingChatQuery["hostingChat"]["hosting"];
 };
 
 const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
   const router = useRouter();
   const colors = useThemeColors();
-  const { handleImageError, failedImages } = useFallbackImages();
-  const img = hosting.images.at(0);
 
   return (
     <Pressable
-      onPress={() => router.push(`/hostings/${hosting.id}`)}
+      onPress={() => router.push(`/hostings/${hosting?.id}`)}
       className="flex-row justify-center gap-4 items-center p-6 rounded-xl"
       style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
     >
@@ -31,7 +29,9 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
         style={{ borderColor: hexToRgba(colors.text, 0.6) }}
       >
         <Image
-          source={{ uri: failedImages.has(0) ? FALLBACK_IMAGE : img }}
+          source={{
+            uri: hosting?.coverImage?.asset.publicUrl,
+          }}
           style={{ height: "100%", width: "100%", borderRadius: 12 }}
           contentFit="cover"
           transition={300}
@@ -39,7 +39,6 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
           placeholderContentFit="cover"
           cachePolicy="memory-disk"
           priority="high"
-          onError={() => handleImageError(0)}
         />
       </View>
       <View
@@ -51,17 +50,19 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
           numberOfLines={1}
           style={{ fontSize: 14, fontFamily: Fonts.medium }}
         >
-          {hosting.title}
+          {hosting?.title}
         </ThemedText>
         <ThemedText
           ellipsizeMode="tail"
           numberOfLines={2}
           style={{ color: hexToRgba(colors.text, 0.6), fontSize: 12 }}
         >
-          {hosting.city}, {hosting.address}
+          {hosting?.landmarks ? `${hosting.landmarks}, ` : ""}
+          {hosting?.street}, {hosting?.city}, {hosting?.state}
         </ThemedText>
         <ThemedText style={{ fontSize: 14, fontFamily: Fonts.medium }}>
-          ₦{hosting.price.toLocaleString()} {hosting.pricing}
+          ₦{Number(hosting?.price ?? "0").toLocaleString()}{" "}
+          {capitalize(hosting?.paymentInterval ?? "")}
         </ThemedText>
       </View>
     </Pressable>

@@ -96,7 +96,7 @@ export default function UserBooking() {
 				},
 			);
 
-			const result = await FileSystem.downloadAsync(
+			await FileSystem.downloadAsync(
 				booking.tenancyAgreementAsset.publicUrl,
 				fileUri,
 			);
@@ -105,8 +105,6 @@ export default function UserBooking() {
 				type: "success",
 				text1: "Tenancy agreement downloaded",
 			});
-
-			console.log("Downloaded to:", result.uri);
 		} catch (error) {
 			console.error(error);
 		}

@@ -71,8 +71,6 @@ const LeaveAReviewButton: React.FC<Props> = ({ hostingId, review, edit }) => {
 		value: Math.min(Number(inputs[key as keyof HostingReviewInput] ?? 0), 5),
 	}));
 
-	console.log(ratingData);
-
 	return (
 		<>
 			<Button

@@ -262,7 +262,6 @@ export default function NewHostingStep6() {
 						</View>
 						<SignatureImage
 							signature={hostQueryData?.authHost.signature?.publicUrl}
-							redirect="/hostings/form/step-6"
 						/>
 					</View>
 					{templateFetching ? (

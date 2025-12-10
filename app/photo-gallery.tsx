@@ -23,13 +23,15 @@ import { Image } from "expo-image";
 export default function PhotoGalleryScreen() {
 	const router = useRouter();
 	const { width, height } = useWindowDimensions();
-	const { redirect } = useLocalSearchParams();
+	const { redirect, fromCamera } = useLocalSearchParams();
 	const { gallery, activeIndex, setActiveIndex, updateActiveImage } =
 		useGalleryStore();
 	const colors = useThemeColors();
 	const colorScheme = useColorScheme() ?? "light";
 	const { failedImages, handleImageError } = useFallbackImages();
 
+	const flatListRef = useRef<FlatList>(null);
+	const hasScrolledToIndex = useRef(false);
 	const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
 
 	const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
@@ -38,9 +40,34 @@ export default function PhotoGalleryScreen() {
 		}
 	}).current;
 
+	React.useEffect(() => {
+		if (
+			gallery.length > 0 &&
+			activeIndex >= 0 &&
+			activeIndex < gallery.length &&
+			!hasScrolledToIndex.current
+		) {
+			const timer = setTimeout(() => {
+				flatListRef.current?.scrollToIndex({
+					index: activeIndex,
+					animated: false,
+				});
+				hasScrolledToIndex.current = true;
+			}, 100);
+
+			return () => clearTimeout(timer);
+		}
+	}, [gallery.length, activeIndex]);
+
+	React.useEffect(() => {
+		return () => {
+			hasScrolledToIndex.current = false;
+		};
+	}, []);
+
 	const onUsePhotos = () => {
 		if (redirect) {
-			router.replace(cast(`${redirect}`), {});
+			router.replace(cast(`${redirect}?fromCamera=${fromCamera}`), {});
 		} else {
 			router.back();
 		}
@@ -72,11 +99,26 @@ export default function PhotoGalleryScreen() {
 		}
 	};
 
+	const handleScrollToIndexFailed = (info: {
+		index: number;
+		highestMeasuredFrameIndex: number;
+		averageItemLength: number;
+	}) => {
+		const wait = new Promise((resolve) => setTimeout(resolve, 500));
+		wait.then(() => {
+			flatListRef.current?.scrollToIndex({
+				index: info.index,
+				animated: false,
+			});
+		});
+	};
+
 	return (
 		<View style={styles.container}>
 			<StatusBar style="light" />
 
 			<FlatList
+				ref={flatListRef}
 				data={gallery}
 				keyExtractor={(item) => item}
 				horizontal
@@ -99,6 +141,15 @@ export default function PhotoGalleryScreen() {
 				)}
 				onViewableItemsChanged={onViewableItemsChanged}
 				viewabilityConfig={viewabilityConfig}
+				getItemLayout={(data, index) => ({
+					length: width,
+					offset: width * index,
+					index,
+				})}
+				onScrollToIndexFailed={handleScrollToIndexFailed}
+				initialScrollIndex={
+					activeIndex >= 0 && activeIndex < gallery.length ? activeIndex : 0
+				}
 			/>
 
 			<View style={styles.actions}>

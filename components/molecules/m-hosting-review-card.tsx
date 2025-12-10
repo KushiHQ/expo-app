@@ -8,6 +8,7 @@ import { Fonts } from "@/lib/constants/theme";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { HostingQuery } from "@/lib/services/graphql/generated";
+import { getImagePlaceholderUrl } from "@/lib/utils/urls";
 
 type Props = {
 	review: HostingQuery["hosting"]["reviews"][number];
@@ -28,7 +29,9 @@ const HostingReviewCard: React.FC<Props> = ({ review }) => {
 							borderRadius: 999,
 						}}
 						source={{
-							uri: `https://avatar.iran.liara.run/public/${review.user.profile.gender?.toLowerCase() === "female" ? "girl" : "boy"}`,
+							uri: getImagePlaceholderUrl(
+								review.user.profile.gender?.toLowerCase(),
+							),
 						}}
 					/>
 					<View>

@@ -18,3 +18,7 @@ export const openGoogleMaps = async (coordinates: Coordinates) => {
 		Alert.alert("Error", "Could not open Google Maps.");
 	}
 };
+
+export const getImagePlaceholderUrl = (gender?: string | null) => {
+	return `https://avatar.iran.liara.run/public/${gender === "female" ? "girl" : "boy"}`;
+};

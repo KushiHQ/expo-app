@@ -6,20 +6,22 @@ import React, { useState, useRef } from "react";
 import ThemedText from "@/components/atoms/a-themed-text";
 import Button from "@/components/atoms/a-button";
 import { GravityUiArrowsRotateRight } from "@/components/icons/i-rotate";
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useGalleryStore } from "@/lib/stores/gallery";
 import { getLocationAsync } from "@/lib/utils/locations";
 import { LocationObject } from "expo-location";
+import { usePhotoGalleryScreen } from "@/lib/hooks/camera";
+import { cast } from "@/lib/types/utils";
 
 export default function CameraPage() {
 	const { images, multiple } = useLocalSearchParams();
 	const cameraRef = useRef<CameraView>(null);
 	const [facing, setFacing] = useState<CameraType>("back");
 	const { redirect } = useLocalSearchParams();
+	const { redirect: galleryRedirect } = usePhotoGalleryScreen();
 	const [permission, requestPermission] = useCameraPermissions();
 	const { gallery, append, setGallery, setActiveIndex } = useGalleryStore();
 	const [location, setLocation] = React.useState<LocationObject>();
-	const navigation = useRouter();
 
 	useFocusEffect(
 		React.useCallback(() => {
@@ -95,7 +97,7 @@ export default function CameraPage() {
 				if (photo) {
 					append(photo.uri);
 					if (multiple === "false") {
-						navigation.replace(`/photo-gallery?redirect=${redirect}`);
+						galleryRedirect({ redirect: cast(redirect), fromCamera: true });
 					}
 				}
 			} catch (error) {
@@ -108,7 +110,7 @@ export default function CameraPage() {
 	const openGallery = () => {
 		if (gallery.length === 0) return;
 
-		navigation.replace(`/photo-gallery?redirect=${redirect}`);
+		galleryRedirect({ redirect: cast(redirect), fromCamera: true });
 	};
 
 	return (

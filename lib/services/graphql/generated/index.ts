@@ -261,6 +261,45 @@ export type HostingRoomsArgs = {
   pagination?: InputMaybe<PaginationInput>;
 };
 
+export type HostingChat = {
+  __typename?: 'HostingChat';
+  createdAt: Scalars['String']['output'];
+  guest: Guest;
+  host: Host;
+  hosting: Hosting;
+  id: Scalars['String']['output'];
+  lastMessage?: Maybe<HostingChatMessage>;
+  lastUpdated: Scalars['String']['output'];
+  unreadMessageCount: Scalars['Int']['output'];
+};
+
+export type HostingChatAsset = {
+  __typename?: 'HostingChatAsset';
+  asset: Asset;
+  createdAt: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+};
+
+export type HostingChatMessage = {
+  __typename?: 'HostingChatMessage';
+  assets: Array<HostingChatAsset>;
+  createdAt: Scalars['String']['output'];
+  edited?: Maybe<Scalars['Boolean']['output']>;
+  id: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+  sender: User;
+  text: Scalars['String']['output'];
+  unread: Scalars['Boolean']['output'];
+};
+
+export type HostingChatMessageInput = {
+  assets?: InputMaybe<Array<Scalars['Upload']['input']>>;
+  chatId: Scalars['String']['input'];
+  id?: InputMaybe<Scalars['String']['input']>;
+  text: Scalars['String']['input'];
+};
+
 export type HostingFilterInput = {
   category?: InputMaybe<Scalars['String']['input']>;
   city?: InputMaybe<Scalars['String']['input']>;
@@ -457,6 +496,7 @@ export type Mutations = {
   createOrUpdateHostingReview: HostingReviewResponse;
   createOrUpdateHostingRoom: HostingRoomResponse;
   createUpdateHostPaymentDetails: HostAccountDetailsResponse;
+  createUpdateMessage: HostingChatMessage;
   createUpdateSavedHosting: SavedHostingResponse;
   createUpdateSavedHostingFolder: SavedHostingFolderResponse;
   deleteHostPaymentDetails: MessageResponse;
@@ -465,6 +505,7 @@ export type Mutations = {
   deleteSavedHosting: MessageResponse;
   finalizeBooking: Booking;
   initiateBooking: BookingResponse;
+  initiateHostingChat: HostingChat;
   login: AuthTokenResponse;
   refreshToken: AuthTokenResponse;
   requestPasswordChange: MessageResponse;
@@ -523,6 +564,11 @@ export type MutationsCreateUpdateHostPaymentDetailsArgs = {
 };
 
 
+export type MutationsCreateUpdateMessageArgs = {
+  input: HostingChatMessageInput;
+};
+
+
 export type MutationsCreateUpdateSavedHostingArgs = {
   input: SavedHostingInput;
 };
@@ -560,6 +606,11 @@ export type MutationsFinalizeBookingArgs = {
 
 export type MutationsInitiateBookingArgs = {
   input: InitiateBookingInput;
+};
+
+
+export type MutationsInitiateHostingChatArgs = {
+  hostingId: Scalars['String']['input'];
 };
 
 
@@ -692,12 +743,14 @@ export type Query = {
   banks: Array<Bank>;
   booking: Booking;
   bookings: Array<Booking>;
+  chatMessages: Array<HostingChatMessage>;
   flutterwaveCardPaymentMethods: Array<FlutterwaveCardPaymentMethodData>;
   guestBookingTenancyAgreementPreview: Scalars['String']['output'];
   hostAnalytics: HostAnalytics;
   hostPaymentDetails: Array<HostAccountDetails>;
   hostTenancyAgreementPreview: Scalars['String']['output'];
   hosting: Hosting;
+  hostingChat: HostingChat;
   hostings: Array<Hosting>;
   me: User;
   notifications: Array<Notification>;
@@ -705,6 +758,7 @@ export type Query = {
   savedHostingFolder: SavedHostingFolder;
   savedHostingFolders: Array<SavedHostingFolder>;
   savedHostings: Array<SavedHosting>;
+  userChats: Array<HostingChat>;
   verifyAccount: AccountDetails;
 };
 
@@ -716,6 +770,12 @@ export type QueryBookingArgs = {
 
 export type QueryBookingsArgs = {
   filter?: InputMaybe<BookingFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QueryChatMessagesArgs = {
+  chatId: Scalars['String']['input'];
   pagination?: InputMaybe<PaginationInput>;
 };
 
@@ -742,6 +802,11 @@ export type QueryHostTenancyAgreementPreviewArgs = {
 
 export type QueryHostingArgs = {
   hostingId: Scalars['String']['input'];
+};
+
+
+export type QueryHostingChatArgs = {
+  chatId: Scalars['String']['input'];
 };
 
 
@@ -774,6 +839,11 @@ export type QuerySavedHostingFoldersArgs = {
 
 export type QuerySavedHostingsArgs = {
   filters?: InputMaybe<SavedHostingFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QueryUserChatsArgs = {
   pagination?: InputMaybe<PaginationInput>;
 };
 
@@ -842,6 +912,16 @@ export type SignUpInput = {
   fullName: Scalars['String']['input'];
   password: Scalars['String']['input'];
   phoneNumber: Scalars['String']['input'];
+};
+
+export type Subscriptions = {
+  __typename?: 'Subscriptions';
+  latestHostingChatMessage: HostingChatMessage;
+};
+
+
+export type SubscriptionsLatestHostingChatMessageArgs = {
+  chatId: Scalars['String']['input'];
 };
 
 export type Transaction = {
@@ -972,6 +1052,20 @@ export type FinalizeBookingMutationVariables = Exact<{
 
 export type FinalizeBookingMutation = { __typename?: 'Mutations', finalizeBooking: { __typename?: 'Booking', id: string } };
 
+export type InitiateHostingChatMutationVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+}>;
+
+
+export type InitiateHostingChatMutation = { __typename?: 'Mutations', initiateHostingChat: { __typename?: 'HostingChat', id: string } };
+
+export type CreateUpdateMessageMutationVariables = Exact<{
+  input: HostingChatMessageInput;
+}>;
+
+
+export type CreateUpdateMessageMutation = { __typename?: 'Mutations', createUpdateMessage: { __typename?: 'HostingChatMessage', id: string, text: string, edited?: boolean | null, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null } }> } };
+
 export type CreateUpdateSavedHostingFolderMutationVariables = Exact<{
   input: SavedHostingFolderInput;
 }>;
@@ -1099,13 +1193,32 @@ export type GuestBookingTenancyAgreementPreviewQueryVariables = Exact<{
 
 export type GuestBookingTenancyAgreementPreviewQuery = { __typename?: 'Query', guestBookingTenancyAgreementPreview: string };
 
+export type UserChatsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type UserChatsQuery = { __typename?: 'Query', userChats: Array<{ __typename?: 'HostingChat', id: string, lastUpdated: string, unreadMessageCount: number, host: { __typename?: 'Host', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', gender?: string | null, id: string, fullName: string } } }, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } }, lastMessage?: { __typename?: 'HostingChatMessage', id: string, text: string } | null }> };
+
+export type ChatMessagesQueryVariables = Exact<{
+  chatId: Scalars['String']['input'];
+}>;
+
+
+export type ChatMessagesQuery = { __typename?: 'Query', chatMessages: Array<{ __typename?: 'HostingChatMessage', id: string, text: string, edited?: boolean | null, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null } }> }> };
+
+export type HostingChatQueryVariables = Exact<{
+  chatId: Scalars['String']['input'];
+}>;
+
+
+export type HostingChatQuery = { __typename?: 'Query', hostingChat: { __typename?: 'HostingChat', id: string, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, state?: string | null, street?: string | null, landmarks?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, host: { __typename?: 'Host', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', gender?: string | null, id: string, fullName: string } } }, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', gender?: string | null, id: string, fullName: string } } } } };
+
 export type HostingQueryVariables = Exact<{
   hostingId: Scalars['String']['input'];
   pagination?: InputMaybe<PaginationInput>;
 }>;
 
 
-export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, dateAdded: string, lastUpdated: string, saved: boolean, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, dateAdded: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, dateAdded: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, dateAdded: string, user: { __typename?: 'User', id: string, email: string, profile: { __typename?: 'Profile', fullName: string, id: string } } }, coverImage?: { __typename?: 'HostingRoomImage', id: string, dateAdded: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, dateAdded: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, policies?: { __typename?: 'HostingPolicies', maxOccupancy?: number | null, notAllowed?: Array<string> | null, additionalClauses?: string | null, correspondenceAddress: string } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null } } };
+export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, dateAdded: string, lastUpdated: string, saved: boolean, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, dateAdded: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, dateAdded: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, dateAdded: string, user: { __typename?: 'User', id: string, email: string, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string } } }, coverImage?: { __typename?: 'HostingRoomImage', id: string, dateAdded: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, dateAdded: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, policies?: { __typename?: 'HostingPolicies', maxOccupancy?: number | null, notAllowed?: Array<string> | null, additionalClauses?: string | null, correspondenceAddress: string } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null } } };
 
 export type HostingsQueryVariables = Exact<{
   filters?: InputMaybe<HostingFilterInput>;
@@ -1197,6 +1310,13 @@ export type AuthGuestQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type AuthGuestQuery = { __typename?: 'Query', authGuest: { __typename?: 'Guest', id: string, dateAdded: string, lastUpdated: string, signature?: { __typename?: 'Asset', id: string, publicUrl: string } | null } };
+
+export type LatestHostingChatMessageSubscriptionVariables = Exact<{
+  chatId: Scalars['String']['input'];
+}>;
+
+
+export type LatestHostingChatMessageSubscription = { __typename?: 'Subscriptions', latestHostingChatMessage: { __typename?: 'HostingChatMessage', id: string, text: string, edited?: boolean | null, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null } }> } };
 
 
 export const SignUpDocument = gql`
@@ -1355,6 +1475,47 @@ export const FinalizeBookingDocument = gql`
 
 export function useFinalizeBookingMutation() {
   return Urql.useMutation<FinalizeBookingMutation, FinalizeBookingMutationVariables>(FinalizeBookingDocument);
+};
+export const InitiateHostingChatDocument = gql`
+    mutation InitiateHostingChat($hostingId: String!) {
+  initiateHostingChat(hostingId: $hostingId) {
+    id
+  }
+}
+    `;
+
+export function useInitiateHostingChatMutation() {
+  return Urql.useMutation<InitiateHostingChatMutation, InitiateHostingChatMutationVariables>(InitiateHostingChatDocument);
+};
+export const CreateUpdateMessageDocument = gql`
+    mutation CreateUpdateMessage($input: HostingChatMessageInput!) {
+  createUpdateMessage(input: $input) {
+    id
+    text
+    sender {
+      id
+      profile {
+        id
+        gender
+        fullName
+      }
+    }
+    edited
+    lastUpdated
+    assets {
+      id
+      asset {
+        id
+        publicUrl
+        contentType
+      }
+    }
+  }
+}
+    `;
+
+export function useCreateUpdateMessageMutation() {
+  return Urql.useMutation<CreateUpdateMessageMutation, CreateUpdateMessageMutationVariables>(CreateUpdateMessageDocument);
 };
 export const CreateUpdateSavedHostingFolderDocument = gql`
     mutation CreateUpdateSavedHostingFolder($input: SavedHostingFolderInput!) {
@@ -1741,6 +1902,125 @@ export const GuestBookingTenancyAgreementPreviewDocument = gql`
 export function useGuestBookingTenancyAgreementPreviewQuery(options: Omit<Urql.UseQueryArgs<GuestBookingTenancyAgreementPreviewQueryVariables>, 'query'>) {
   return Urql.useQuery<GuestBookingTenancyAgreementPreviewQuery, GuestBookingTenancyAgreementPreviewQueryVariables>({ query: GuestBookingTenancyAgreementPreviewDocument, ...options });
 };
+export const UserChatsDocument = gql`
+    query UserChats {
+  userChats {
+    id
+    lastUpdated
+    host {
+      id
+      user {
+        id
+        profile {
+          gender
+          id
+          fullName
+        }
+      }
+    }
+    guest {
+      id
+      user {
+        id
+        profile {
+          fullName
+          id
+          gender
+        }
+      }
+    }
+    unreadMessageCount
+    lastMessage {
+      id
+      text
+    }
+  }
+}
+    `;
+
+export function useUserChatsQuery(options?: Omit<Urql.UseQueryArgs<UserChatsQueryVariables>, 'query'>) {
+  return Urql.useQuery<UserChatsQuery, UserChatsQueryVariables>({ query: UserChatsDocument, ...options });
+};
+export const ChatMessagesDocument = gql`
+    query ChatMessages($chatId: String!) {
+  chatMessages(chatId: $chatId) {
+    id
+    text
+    sender {
+      id
+      profile {
+        id
+        gender
+        fullName
+      }
+    }
+    edited
+    lastUpdated
+    assets {
+      id
+      asset {
+        id
+        publicUrl
+        contentType
+      }
+    }
+  }
+}
+    `;
+
+export function useChatMessagesQuery(options: Omit<Urql.UseQueryArgs<ChatMessagesQueryVariables>, 'query'>) {
+  return Urql.useQuery<ChatMessagesQuery, ChatMessagesQueryVariables>({ query: ChatMessagesDocument, ...options });
+};
+export const HostingChatDocument = gql`
+    query HostingChat($chatId: String!) {
+  hostingChat(chatId: $chatId) {
+    id
+    hosting {
+      id
+      coverImage {
+        id
+        asset {
+          id
+          publicUrl
+        }
+      }
+      title
+      city
+      state
+      street
+      landmarks
+      price
+      paymentInterval
+    }
+    host {
+      id
+      user {
+        id
+        profile {
+          gender
+          id
+          fullName
+        }
+      }
+    }
+    guest {
+      id
+      user {
+        id
+        profile {
+          gender
+          id
+          fullName
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useHostingChatQuery(options: Omit<Urql.UseQueryArgs<HostingChatQueryVariables>, 'query'>) {
+  return Urql.useQuery<HostingChatQuery, HostingChatQueryVariables>({ query: HostingChatDocument, ...options });
+};
 export const HostingDocument = gql`
     query Hosting($hostingId: String!, $pagination: PaginationInput) {
   hosting(hostingId: $hostingId) {
@@ -1792,6 +2072,7 @@ export const HostingDocument = gql`
         email
         profile {
           fullName
+          gender
           id
         }
       }
@@ -2143,4 +2424,34 @@ export const AuthGuestDocument = gql`
 
 export function useAuthGuestQuery(options?: Omit<Urql.UseQueryArgs<AuthGuestQueryVariables>, 'query'>) {
   return Urql.useQuery<AuthGuestQuery, AuthGuestQueryVariables>({ query: AuthGuestDocument, ...options });
+};
+export const LatestHostingChatMessageDocument = gql`
+    subscription LatestHostingChatMessage($chatId: String!) {
+  latestHostingChatMessage(chatId: $chatId) {
+    id
+    text
+    sender {
+      id
+      profile {
+        id
+        gender
+        fullName
+      }
+    }
+    edited
+    lastUpdated
+    assets {
+      id
+      asset {
+        id
+        publicUrl
+        contentType
+      }
+    }
+  }
+}
+    `;
+
+export function useLatestHostingChatMessageSubscription<TData = LatestHostingChatMessageSubscription>(options: Omit<Urql.UseSubscriptionArgs<LatestHostingChatMessageSubscriptionVariables>, 'query'>, handler?: Urql.SubscriptionHandler<LatestHostingChatMessageSubscription, TData>) {
+  return Urql.useSubscription<LatestHostingChatMessageSubscription, TData, LatestHostingChatMessageSubscriptionVariables>({ query: LatestHostingChatMessageDocument, ...options }, handler);
 };

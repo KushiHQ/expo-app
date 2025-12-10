@@ -13,6 +13,7 @@ import SelectInput, {
 } from "@/components/molecules/m-select-input";
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
+import { useCameraScreen } from "@/lib/hooks/camera";
 import { useHostingForm } from "@/lib/hooks/hosting-form";
 import { useFallbackImages } from "@/lib/hooks/images";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
@@ -43,9 +44,10 @@ export default function NewHostingStep2() {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
-	const { gallery, setGallery, clearGallery } = useGalleryStore();
+	const { gallery, clearGallery } = useGalleryStore();
 	const [activeModalIndex, setActiveModalIndex] = React.useState<number>();
 	const [deleteModalIndex, setDeleteModalIndex] = React.useState<number>();
+	const { redirect } = useCameraScreen();
 	const { failedImages, handleImageError } = useFallbackImages();
 	const {
 		rooms,
@@ -224,11 +226,11 @@ export default function NewHostingStep2() {
 
 	const handleRoomImageEdit = (index: number) => {
 		const images = rooms.at(index)?.images ?? [];
-		setGallery(images);
 		setActiveIndex(index);
-		router.push(
-			`/camera?redirect=/hostings/form/step-2${images.map((img) => "&images=" + img)}`,
-		);
+		redirect({
+			clear: true,
+			images,
+		});
 	};
 
 	return (

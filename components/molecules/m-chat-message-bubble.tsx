@@ -1,4 +1,3 @@
-import { Message } from "@/lib/constants/mocks/chat";
 import React from "react";
 import { View } from "react-native";
 import ThemedText from "../atoms/a-themed-text";
@@ -6,32 +5,36 @@ import { formatToShortTime } from "@/lib/utils/time";
 import { twMerge } from "tailwind-merge";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
+import { ChatMessagesQuery } from "@/lib/services/graphql/generated";
+import { useUserStore } from "@/lib/stores/users";
 
 type Props = {
-  message: Message;
+  message: ChatMessagesQuery["chatMessages"][number];
 };
 
 const ChatMessageBubble: React.FC<Props> = ({ message }) => {
+  const user = useUserStore((c) => c.user);
   const colors = useThemeColors();
+  const isSender = message.sender.id == user.user?.id;
 
   return (
     <View
-      className={twMerge("max-w-[250px]", message.isSender && "items-end")}
+      className={twMerge("max-w-[250px]", isSender && "items-end")}
       style={{
-        alignSelf: message.isSender ? "flex-end" : "flex-start",
+        alignSelf: isSender ? "flex-end" : "flex-start",
       }}
     >
       <View
         className="p-3 rounded-xl"
         style={{
-          backgroundColor: message.isSender
+          backgroundColor: isSender
             ? colors.primary
             : hexToRgba(colors.text, 0.1),
         }}
       >
         <ThemedText
           style={{
-            color: message.isSender ? colors["primary-content"] : colors.text,
+            color: isSender ? colors["primary-content"] : colors.text,
           }}
         >
           {message.text}
@@ -41,7 +44,7 @@ const ChatMessageBubble: React.FC<Props> = ({ message }) => {
         style={{ fontSize: 12, color: hexToRgba(colors.text, 0.7) }}
         className="px-1"
       >
-        {formatToShortTime(message.date)}
+        {formatToShortTime(message.lastUpdated)}
       </ThemedText>
     </View>
   );
