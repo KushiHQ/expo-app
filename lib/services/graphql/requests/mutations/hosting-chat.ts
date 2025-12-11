@@ -29,6 +29,7 @@ export const CREATE_UPDATE_MESSAGE = gql`
           id
           publicUrl
           contentType
+          originalFilename
         }
       }
     }

@@ -3,7 +3,6 @@ import LoadingModal from "@/components/atoms/a-loading-modal";
 import Skeleton from "@/components/atoms/a-skeleton";
 import SummarySection from "@/components/atoms/a-summary-section";
 import ThemedText from "@/components/atoms/a-themed-text";
-import * as FileSystem from "expo-file-system/legacy";
 import DetailsLayout from "@/components/layouts/details";
 import { BookingDetails } from "@/components/molecules/m-booking-details";
 import ItemSummary from "@/components/molecules/m-item-summary";
@@ -29,10 +28,13 @@ import LeaveAReviewButton from "@/components/organisms/o-leave-a-review-button";
 import HostingReviewCard from "@/components/molecules/m-hosting-review-card";
 import ReviewItem from "@/components/molecules/m-review-item";
 import { REVIEW_METRICS } from "@/lib/constants/reviews";
+import { useDownlods } from "@/lib/hooks/downloads";
+import { openLocalFile } from "@/lib/utils/file";
 
 export default function UserBooking() {
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
+	const { download, getLocalUri } = useDownlods();
 	const [{ data, fetching: fetchingBooking }] = useBookingQuery({
 		variables: { bookingId: cast(id) },
 	});
@@ -50,13 +52,14 @@ export default function UserBooking() {
 
 		(async () => {
 			try {
-				const encodedUrl = encodeURI(booking.tenancyAgreementAsset!.publicUrl);
-
-				const localPath =
-					FileSystem.cacheDirectory + `tenancy-${booking.id}.pdf`;
-
-				const result = await FileSystem.downloadAsync(encodedUrl, localPath);
-				setLocalPdfUri(result.uri);
+				let localUri = getLocalUri(booking.tenancyAgreementAsset!.publicUrl);
+				if (!localUri) {
+					localUri = await download(
+						booking.tenancyAgreementAsset!.publicUrl,
+						`tenancy-${booking.id}.pdf`,
+					);
+				}
+				setLocalPdfUri(localUri);
 			} catch (err) {
 				console.error("PDF preload failed:", err);
 			}
@@ -84,30 +87,13 @@ export default function UserBooking() {
 		});
 	};
 
-	const handleDownloadTenancyAgreement = async () => {
+	const openTenancyAgreement = async () => {
 		if (!booking?.tenancyAgreementAsset?.publicUrl) return;
-		const fileUri = `${FileSystem.documentDirectory}pdfs/tenancy-agreement-${booking.id}.pdf`;
-
-		try {
-			await FileSystem.makeDirectoryAsync(
-				`${FileSystem.documentDirectory}pdfs`,
-				{
-					intermediates: true,
-				},
-			);
-
-			await FileSystem.downloadAsync(
-				booking.tenancyAgreementAsset.publicUrl,
-				fileUri,
-			);
-
-			Toast.show({
-				type: "success",
-				text1: "Tenancy agreement downloaded",
-			});
-		} catch (error) {
-			console.error(error);
+		const localUri = getLocalUri(booking?.tenancyAgreementAsset?.publicUrl);
+		if (!localUri) {
+			return;
 		}
+		openLocalFile(localUri);
 	};
 
 	return (
@@ -253,14 +239,14 @@ export default function UserBooking() {
 							}}
 						/>
 						<Button
-							onPress={handleDownloadTenancyAgreement}
+							onPress={openTenancyAgreement}
 							variant="outline"
 							type="tinted"
 							className="absolute top-2 right-2"
 						>
 							<View className="flex-row items-center gap-2">
 								<Download color={hexToRgba(colors.primary, 0.6)} size={18} />
-								<ThemedText content="tinted">Download</ThemedText>
+								<ThemedText content="tinted">Open</ThemedText>
 							</View>
 						</Button>
 					</View>

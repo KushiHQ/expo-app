@@ -1,6 +1,7 @@
 import Skeleton from "@/components/atoms/a-skeleton";
 import DetailsLayout from "@/components/layouts/details";
 import BookingCard from "@/components/molecules/m-booking-card";
+import EmptyList from "@/components/molecules/m-empty-list";
 import TextPill from "@/components/molecules/m-text-pill-pill";
 import { useBookingsQuery } from "@/lib/services/graphql/generated";
 import { cast } from "@/lib/types/utils";
@@ -39,6 +40,9 @@ export default function UserBookings() {
         {bookings.map((booking, index) => (
           <BookingCard booking={booking} key={index} />
         ))}
+        {!fetching && !bookings.length && (
+          <EmptyList message="No bookings yet" />
+        )}
       </View>
     </DetailsLayout>
   );

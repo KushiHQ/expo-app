@@ -18,7 +18,7 @@ import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCameraScreen } from "@/lib/hooks/camera";
 import { useGalleryStore } from "@/lib/stores/gallery";
 import ListImage from "../atoms/a-list-image";
-import ListDocument from "./m-list-document";
+import ListDocument from "../molecules/m-list-document";
 
 export type ChatInputData = {
   text: string;
@@ -105,8 +105,9 @@ const ChatInput: React.FC<Props> = ({
         {media.map((image, index) => (
           <ListImage
             src={image}
-            imageIndex={index}
-            onDeleteImage={(index) =>
+            deletable
+            index={index}
+            onDelete={(index) =>
               setMedia((c) => c.filter((_, i) => i !== index))
             }
             key={index}
@@ -114,8 +115,9 @@ const ChatInput: React.FC<Props> = ({
         ))}
         {documents.map((document, index) => (
           <ListDocument
-            document={document}
+            document={{ type: "local", asset: document }}
             index={index}
+            deletable
             key={index}
             onDelete={(index) =>
               setDocuments((c) => c.filter((_, i) => i !== index))

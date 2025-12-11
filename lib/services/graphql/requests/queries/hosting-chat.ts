@@ -57,6 +57,7 @@ export const CHAT_MESSAGES_QUERY = gql`
           id
           publicUrl
           contentType
+          originalFilename
         }
       }
     }

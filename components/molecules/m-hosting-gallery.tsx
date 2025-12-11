@@ -4,11 +4,11 @@ import { Fonts } from "@/lib/constants/theme";
 import React from "react";
 import { Link } from "expo-router";
 import { Image } from "expo-image";
-import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
+import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { useFallbackImages } from "@/lib/hooks/images";
 import { HostingQuery } from "@/lib/services/graphql/generated";
+import ListImage from "../atoms/a-list-image";
 
 type Props = {
   hosting?: HostingQuery["hosting"];
@@ -16,7 +16,6 @@ type Props = {
 
 const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
   const colors = useThemeColors();
-  const { handleImageError, failedImages } = useFallbackImages();
 
   const images = hosting?.rooms.map((r) => r.images).flat();
 
@@ -39,25 +38,19 @@ const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
       <View className="mt-4 flex-row gap-3">
         {(images ?? []).slice(0, 3).map((img, index) => (
           <View key={index} className="flex-1">
-            <Image
-              source={{
-                uri: failedImages.has(index)
-                  ? FALLBACK_IMAGE
-                  : img.asset.publicUrl,
-              }}
+            <ListImage
+              width="100%"
+              height={80}
               style={{
                 height: 80,
                 width: "100%",
                 borderRadius: 12,
                 maxWidth: 150,
               }}
-              contentFit="cover"
-              transition={300}
-              placeholder={{ blurhash: PROPERTY_BLURHASH }}
-              placeholderContentFit="cover"
-              cachePolicy="memory-disk"
-              priority="high"
-              onError={() => handleImageError(index)}
+              images={images?.map((v) => v.asset.publicUrl)}
+              openable
+              src={img.asset.publicUrl}
+              index={index}
             />
           </View>
         ))}

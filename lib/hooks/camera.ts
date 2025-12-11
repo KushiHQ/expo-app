@@ -9,9 +9,11 @@ type CameraRedirectOptions = {
 };
 
 type GalleryRedirectOptions = {
+  push?: boolean;
   activeIndex?: number;
   redirect: Href;
   images?: string[];
+  viewOnly?: boolean;
   fromCamera?: boolean;
 };
 
@@ -53,8 +55,15 @@ export const usePhotoGalleryScreen = () => {
     if (opts.fromCamera !== undefined) {
       path = `${path}&fromCamera=${opts.fromCamera}`;
     }
+    if (opts.viewOnly !== undefined) {
+      path = `${path}&viewOnly=${opts.viewOnly}`;
+    }
 
-    router.replace(cast(path));
+    if (opts.push) {
+      router.push(cast(path));
+    } else {
+      router.replace(cast(path));
+    }
   };
 
   return { redirect };

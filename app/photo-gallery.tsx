@@ -23,7 +23,7 @@ import { Image } from "expo-image";
 export default function PhotoGalleryScreen() {
 	const router = useRouter();
 	const { width, height } = useWindowDimensions();
-	const { redirect, fromCamera } = useLocalSearchParams();
+	const { redirect, fromCamera, viewOnly } = useLocalSearchParams();
 	const { gallery, activeIndex, setActiveIndex, updateActiveImage } =
 		useGalleryStore();
 	const colors = useThemeColors();
@@ -152,24 +152,26 @@ export default function PhotoGalleryScreen() {
 				}
 			/>
 
-			<View style={styles.actions}>
-				<Button onPress={handleEditPhoto} className="flex-1">
-					<View className="flex-row gap-2">
-						<FluentImageEdit24Regular color="#fff" size={20} />
-						<ThemedText style={{ fontSize: 14, color: "#fff" }}>
-							Edit
-						</ThemedText>
-					</View>
-				</Button>
-				<Button onPress={onUsePhotos} className="flex-1">
-					<View className="flex-row gap-2">
-						<Check color={colors.success} size={20} />
-						<ThemedText style={{ fontSize: 14, color: colors.success }}>
-							Use {gallery.length} Photos
-						</ThemedText>
-					</View>
-				</Button>
-			</View>
+			{viewOnly !== "true" && (
+				<View style={styles.actions}>
+					<Button onPress={handleEditPhoto} className="flex-1">
+						<View className="flex-row gap-2">
+							<FluentImageEdit24Regular color="#fff" size={20} />
+							<ThemedText style={{ fontSize: 14, color: "#fff" }}>
+								Edit
+							</ThemedText>
+						</View>
+					</Button>
+					<Button onPress={onUsePhotos} className="flex-1">
+						<View className="flex-row gap-2">
+							<Check color={colors.success} size={20} />
+							<ThemedText style={{ fontSize: 14, color: colors.success }}>
+								Use {gallery.length} Photos
+							</ThemedText>
+						</View>
+					</Button>
+				</View>
+			)}
 		</View>
 	);
 }

@@ -1,3 +1,8 @@
+import * as FileSystem from "expo-file-system/legacy";
+import * as IntentLauncher from "expo-intent-launcher";
+import { Platform } from "react-native";
+import * as Sharing from "expo-sharing";
+
 export const getMimeType = (ext: string | undefined): string => {
   switch (ext) {
     case "jpg":
@@ -59,5 +64,18 @@ export function generateRNFile(uri: string) {
     uri,
     name: uri.split("/").pop() ?? "",
     type: getMimeTypeFromExtension(uri),
+  });
+}
+
+export function openLocalFile(uri: string) {
+  FileSystem.getContentUriAsync(uri).then((cUri) => {
+    if (Platform.OS === "ios") {
+      Sharing.shareAsync(cUri);
+    } else {
+      IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
+        data: cUri,
+        flags: 1,
+      });
+    }
   });
 }

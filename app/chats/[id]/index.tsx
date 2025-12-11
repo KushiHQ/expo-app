@@ -3,19 +3,22 @@ import ThemedText from "@/components/atoms/a-themed-text";
 import { IconParkOutlineDot } from "@/components/icons/i-circle";
 import Logo from "@/components/icons/i-logo";
 import DetailsLayout from "@/components/layouts/details";
-import ChatInput, { ChatInputData } from "@/components/molecules/m-chat-input";
+import ChatInput, { ChatInputData } from "@/components/organisms/o-chat-input";
 import ChatMessageBubble from "@/components/molecules/m-chat-message-bubble";
 import HostingChatSummaryCard from "@/components/molecules/m-hosting-chat-summary-card";
 import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import {
 	ChatMessagesQuery,
+	CreateUpdateMessageMutation,
+	CreateUpdateMessageMutationVariables,
 	LatestHostingChatMessageSubscription,
 	useChatMessagesQuery,
-	useCreateUpdateMessageMutation,
 	useHostingChatQuery,
 	useLatestHostingChatMessageSubscription,
 } from "@/lib/services/graphql/generated";
+import { CREATE_UPDATE_MESSAGE } from "@/lib/services/graphql/requests/mutations/hosting-chat";
+import { formMutation } from "@/lib/services/graphql/utils/fetch";
 import { useUserStore } from "@/lib/stores/users";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
@@ -30,7 +33,6 @@ export default function ChatDetails() {
 	const { id } = useLocalSearchParams();
 	const user = useUserStore((c) => c.user);
 	const colors = useThemeColors();
-	const [{}, sendMessage] = useCreateUpdateMessageMutation();
 	const [{ fetching, data, error }] = useChatMessagesQuery({
 		variables: { chatId: cast(id) },
 		requestPolicy: "network-only",
@@ -89,7 +91,10 @@ export default function ChatDetails() {
 			: chatData?.hostingChat.host.user;
 
 	const handleSend = (input: ChatInputData) => {
-		sendMessage({
+		formMutation<
+			CreateUpdateMessageMutation,
+			CreateUpdateMessageMutationVariables
+		>(CREATE_UPDATE_MESSAGE, {
 			input: {
 				text: input.text,
 				assets: [

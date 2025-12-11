@@ -7,6 +7,8 @@ import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import { ChatMessagesQuery } from "@/lib/services/graphql/generated";
 import { useUserStore } from "@/lib/stores/users";
+import ListDocument from "./m-list-document";
+import ListImage from "../atoms/a-list-image";
 
 type Props = {
   message: ChatMessagesQuery["chatMessages"][number];
@@ -24,6 +26,39 @@ const ChatMessageBubble: React.FC<Props> = ({ message }) => {
         alignSelf: isSender ? "flex-end" : "flex-start",
       }}
     >
+      {message.assets.length > 0 && (
+        <View
+          className={twMerge(
+            "mb-2 flex-row gap-4 flex-wrap",
+            isSender ? "justify-end" : "justify-start",
+          )}
+        >
+          {message.assets
+            .filter((a) => a.asset.contentType?.includes("image"))
+            .map((asset, index) => (
+              <ListImage
+                openable
+                images={message.assets
+                  .filter((a) => a.asset.contentType?.includes("image"))
+                  .map((a) => a.asset.publicUrl)}
+                src={asset.asset.publicUrl}
+                index={index}
+                key={index}
+              />
+            ))}
+          {message.assets
+            .filter((a) => !a.asset.contentType?.includes("image"))
+            .map((asset, index) => (
+              <ListDocument
+                downloadable
+                openable
+                document={{ type: "remote", asset }}
+                index={index}
+                key={index}
+              />
+            ))}
+        </View>
+      )}
       <View
         className="p-3 rounded-xl"
         style={{

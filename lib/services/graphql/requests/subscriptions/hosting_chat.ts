@@ -21,6 +21,7 @@ export const LATEST_HOSTING_CHAT_MESSAGES = gql`
           id
           publicUrl
           contentType
+          originalFilename
         }
       }
     }
