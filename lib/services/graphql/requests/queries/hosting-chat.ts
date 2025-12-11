@@ -14,6 +14,10 @@ export const USER_CHATS_QUERY = gql`
             id
             fullName
           }
+          onlineUser {
+            id
+            online
+          }
         }
       }
       guest {
@@ -24,6 +28,10 @@ export const USER_CHATS_QUERY = gql`
             fullName
             id
             gender
+          }
+          onlineUser {
+            id
+            online
           }
         }
       }

@@ -13,13 +13,15 @@ import {
 	CreateUpdateMessageMutation,
 	CreateUpdateMessageMutationVariables,
 	LatestHostingChatMessageSubscription,
+	OnlineUserSubscription,
 	useChatMessagesQuery,
+	useClearChatUrnreadMessagesMutation,
 	useHostingChatQuery,
 	useLatestHostingChatMessageSubscription,
+	useOnlineUserSubscription,
 } from "@/lib/services/graphql/generated";
 import { CREATE_UPDATE_MESSAGE } from "@/lib/services/graphql/requests/mutations/hosting-chat";
 import { formMutation } from "@/lib/services/graphql/utils/fetch";
-import { useUserStore } from "@/lib/stores/users";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
@@ -28,11 +30,14 @@ import { getImagePlaceholderUrl } from "@/lib/utils/urls";
 import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import { View } from "react-native";
+import { useUser } from "@/lib/hooks/user";
 
 export default function ChatDetails() {
 	const { id } = useLocalSearchParams();
-	const user = useUserStore((c) => c.user);
+	const { user } = useUser();
 	const colors = useThemeColors();
+	const [onlineRecipient, setOnlineRecipeint] =
+		React.useState<OnlineUserSubscription["onlineUser"]>();
 	const [{ fetching, data, error }] = useChatMessagesQuery({
 		variables: { chatId: cast(id) },
 		requestPolicy: "network-only",
@@ -43,6 +48,8 @@ export default function ChatDetails() {
 	const [messages, setMessages] = React.useState<
 		ChatMessagesQuery["chatMessages"]
 	>([]);
+
+	const [, clearUnread] = useClearChatUrnreadMessagesMutation();
 
 	const handleNewMessage = (
 		msg: LatestHostingChatMessageSubscription["latestHostingChatMessage"],
@@ -74,10 +81,14 @@ export default function ChatDetails() {
 	);
 
 	React.useEffect(() => {
+		clearUnread({ chatId: cast(id) });
+	}, []);
+
+	React.useEffect(() => {
 		if (error) {
 			handleError(error);
 		}
-	}, []);
+	}, [error]);
 
 	React.useEffect(() => {
 		if (data?.chatMessages) {
@@ -89,6 +100,19 @@ export default function ChatDetails() {
 		chatData?.hostingChat.host.user.id === user.user?.id
 			? chatData?.hostingChat.guest.user
 			: chatData?.hostingChat.host.user;
+
+	useOnlineUserSubscription(
+		{
+			variables: {
+				userId: recipient?.id ?? "",
+			},
+			pause: !recipient?.id,
+		},
+		(prev: OnlineUserSubscription["onlineUser"][] = [], curr) => {
+			setOnlineRecipeint(curr.onlineUser);
+			return [curr.onlineUser, ...prev];
+		},
+	);
 
 	const handleSend = (input: ChatInputData) => {
 		formMutation<
@@ -116,7 +140,11 @@ export default function ChatDetails() {
 	return (
 		<>
 			<DetailsLayout
-				avatar={getImagePlaceholderUrl(recipient?.profile.gender)}
+				avatar={{
+					image: getImagePlaceholderUrl(recipient?.profile.gender),
+					online: onlineRecipient?.online,
+					lastSeen: onlineRecipient?.lastSeen,
+				}}
 				title={recipient?.profile.fullName}
 				withPhone
 				withVideo
@@ -127,14 +155,16 @@ export default function ChatDetails() {
 						<ThemedText style={{ fontFamily: Fonts.medium }}>
 							{recipient?.profile.fullName}
 						</ThemedText>
-						<View className="flex-row items-center">
-							<ThemedText
-								style={{ color: hexToRgba(colors.text, 0.5), fontSize: 10 }}
-							>
-								Active Now
-							</ThemedText>
-							<IconParkOutlineDot color={colors.success} size={12} />
-						</View>
+						{onlineRecipient?.online && (
+							<View className="flex-row items-center">
+								<ThemedText
+									style={{ color: hexToRgba(colors.text, 0.5), fontSize: 10 }}
+								>
+									Active Now
+								</ThemedText>
+								<IconParkOutlineDot color={colors.success} size={12} />
+							</View>
+						)}
 					</View>
 					<View className="mt-8">
 						<HostingChatSummaryCard hosting={chatData?.hostingChat.hosting} />

@@ -13,11 +13,17 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom } from "jotai";
 import React from "react";
-import { Pressable, TextInput, View } from "react-native";
+import {
+	Pressable,
+	RefreshControl,
+	ScrollView,
+	TextInput,
+	View,
+} from "react-native";
 import Skeleton from "../atoms/a-skeleton";
 import { getImagePlaceholderUrl } from "@/lib/utils/urls";
-import { useUserStore } from "@/lib/stores/users";
 import EmptyList from "../molecules/m-empty-list";
+import { useUser } from "@/lib/hooks/user";
 
 type Props = {
 	variant?: "guest" | "host";
@@ -43,18 +49,37 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const [chats, setChats] = useAtom(chatsAtom);
-	const user = useUserStore((c) => c.user);
+	const { user } = useUser();
 	const { failedImages, handleImageError } = useFallbackImages();
-	const [{ data: chatData, fetching: chatsFetching }] = useUserChatsQuery();
+	const [{ data: chatData, fetching: chatsFetching }, refetchChat] =
+		useUserChatsQuery({
+			requestPolicy: "cache-and-network",
+		});
+	const scrollViewRef = React.useRef<ScrollView>(null);
 
 	React.useEffect(() => {
 		if (!chats.length) {
 			setChats(generateMockChatsWithHistory(20));
 		}
 	}, []);
+	React.useEffect(() => {
+		if (chatData?.userChats && chatData.userChats.length > 0) {
+			setTimeout(() => {
+				scrollViewRef.current?.scrollTo({ y: 999999, animated: true });
+			}, 100);
+		}
+	}, [chatData?.userChats]);
 
 	return (
-		<DetailsLayout title="Message" withProfile variant={variant}>
+		<DetailsLayout
+			refreshControl={
+				<RefreshControl onRefresh={refetchChat} refreshing={chatsFetching} />
+			}
+			ref={scrollViewRef}
+			title="Message"
+			withProfile
+			variant={variant}
+		>
 			<View>
 				<View
 					className="flex-row items-center gap-2 p-4 py-2 rounded-full"
@@ -77,7 +102,7 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 							onPress={() => router.push(`/chats/${chat.id}/`)}
 							className="flex-row gap-4 py-2 items-center p-2"
 						>
-							<View className="h-[50px] w-[50px]">
+							<View className="h-[50px] relative w-[50px]">
 								<Image
 									source={{
 										uri: failedImages.has(index)
@@ -102,6 +127,17 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 									onError={() => handleImageError(index)}
 									key={index}
 								/>
+								{(chat.host.user.id === user.user?.id
+									? chat.guest.user.onlineUser.online
+									: chat.host.user.onlineUser.online) && (
+									<View
+										className="absolute right-0 bottom-0 w-4 h-4 border rounded-full"
+										style={{
+											backgroundColor: colors.success,
+											borderColor: colors.text,
+										}}
+									></View>
+								)}
 							</View>
 							<View className="flex-row gap-4 items-center justify-between flex-1">
 								<View className="gap-1.5 flex-1">

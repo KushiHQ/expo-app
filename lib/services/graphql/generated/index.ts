@@ -489,6 +489,7 @@ export type Mutations = {
   __typename?: 'Mutations';
   authorizeTransactionWithOtp: TransactionResponse;
   authorizeTransactionWithPin: TransactionResponse;
+  clearChatUrnreadMessages: MessageResponse;
   completePasswordChange: MessageResponse;
   createFlutterwaveCardPaymentMethods: FlutterwaveCardPaymentMethodDataResponse;
   createHostingRoomImage: HostingRoomImageResponse;
@@ -526,6 +527,11 @@ export type MutationsAuthorizeTransactionWithOtpArgs = {
 
 export type MutationsAuthorizeTransactionWithPinArgs = {
   input: TransactionPinAuthInput;
+};
+
+
+export type MutationsClearChatUrnreadMessagesArgs = {
+  chatId: Scalars['String']['input'];
 };
 
 
@@ -684,6 +690,16 @@ export enum NotificationType {
 
 export type NotificationsFilterInput = {
   type?: InputMaybe<NotificationType>;
+};
+
+export type OnlineUser = {
+  __typename?: 'OnlineUser';
+  createAt: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  lastSeen: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+  online: Scalars['Boolean']['output'];
+  user: User;
 };
 
 export type Otpinput = {
@@ -917,11 +933,17 @@ export type SignUpInput = {
 export type Subscriptions = {
   __typename?: 'Subscriptions';
   latestHostingChatMessage: HostingChatMessage;
+  onlineUser: OnlineUser;
 };
 
 
 export type SubscriptionsLatestHostingChatMessageArgs = {
   chatId: Scalars['String']['input'];
+};
+
+
+export type SubscriptionsOnlineUserArgs = {
+  userId: Scalars['String']['input'];
 };
 
 export type Transaction = {
@@ -961,6 +983,7 @@ export type User = {
   email: Scalars['String']['output'];
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
+  onlineUser: OnlineUser;
   profile: Profile;
 };
 
@@ -1065,6 +1088,13 @@ export type CreateUpdateMessageMutationVariables = Exact<{
 
 
 export type CreateUpdateMessageMutation = { __typename?: 'Mutations', createUpdateMessage: { __typename?: 'HostingChatMessage', id: string, text: string, edited?: boolean | null, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
+
+export type ClearChatUrnreadMessagesMutationVariables = Exact<{
+  chatId: Scalars['String']['input'];
+}>;
+
+
+export type ClearChatUrnreadMessagesMutation = { __typename?: 'Mutations', clearChatUrnreadMessages: { __typename?: 'MessageResponse', message: string } };
 
 export type CreateUpdateSavedHostingFolderMutationVariables = Exact<{
   input: SavedHostingFolderInput;
@@ -1196,7 +1226,7 @@ export type GuestBookingTenancyAgreementPreviewQuery = { __typename?: 'Query', g
 export type UserChatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UserChatsQuery = { __typename?: 'Query', userChats: Array<{ __typename?: 'HostingChat', id: string, lastUpdated: string, unreadMessageCount: number, host: { __typename?: 'Host', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', gender?: string | null, id: string, fullName: string } } }, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } }, lastMessage?: { __typename?: 'HostingChatMessage', id: string, text: string } | null }> };
+export type UserChatsQuery = { __typename?: 'Query', userChats: Array<{ __typename?: 'HostingChat', id: string, lastUpdated: string, unreadMessageCount: number, host: { __typename?: 'Host', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', gender?: string | null, id: string, fullName: string }, onlineUser: { __typename?: 'OnlineUser', id: string, online: boolean } } }, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null }, onlineUser: { __typename?: 'OnlineUser', id: string, online: boolean } } }, lastMessage?: { __typename?: 'HostingChatMessage', id: string, text: string } | null }> };
 
 export type ChatMessagesQueryVariables = Exact<{
   chatId: Scalars['String']['input'];
@@ -1317,6 +1347,13 @@ export type LatestHostingChatMessageSubscriptionVariables = Exact<{
 
 
 export type LatestHostingChatMessageSubscription = { __typename?: 'Subscriptions', latestHostingChatMessage: { __typename?: 'HostingChatMessage', id: string, text: string, edited?: boolean | null, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
+
+export type OnlineUserSubscriptionVariables = Exact<{
+  userId: Scalars['String']['input'];
+}>;
+
+
+export type OnlineUserSubscription = { __typename?: 'Subscriptions', onlineUser: { __typename?: 'OnlineUser', online: boolean, lastUpdated: string, id: string, lastSeen: string } };
 
 
 export const SignUpDocument = gql`
@@ -1517,6 +1554,17 @@ export const CreateUpdateMessageDocument = gql`
 
 export function useCreateUpdateMessageMutation() {
   return Urql.useMutation<CreateUpdateMessageMutation, CreateUpdateMessageMutationVariables>(CreateUpdateMessageDocument);
+};
+export const ClearChatUrnreadMessagesDocument = gql`
+    mutation ClearChatUrnreadMessages($chatId: String!) {
+  clearChatUrnreadMessages(chatId: $chatId) {
+    message
+  }
+}
+    `;
+
+export function useClearChatUrnreadMessagesMutation() {
+  return Urql.useMutation<ClearChatUrnreadMessagesMutation, ClearChatUrnreadMessagesMutationVariables>(ClearChatUrnreadMessagesDocument);
 };
 export const CreateUpdateSavedHostingFolderDocument = gql`
     mutation CreateUpdateSavedHostingFolder($input: SavedHostingFolderInput!) {
@@ -1917,6 +1965,10 @@ export const UserChatsDocument = gql`
           id
           fullName
         }
+        onlineUser {
+          id
+          online
+        }
       }
     }
     guest {
@@ -1927,6 +1979,10 @@ export const UserChatsDocument = gql`
           fullName
           id
           gender
+        }
+        onlineUser {
+          id
+          online
         }
       }
     }
@@ -2457,4 +2513,18 @@ export const LatestHostingChatMessageDocument = gql`
 
 export function useLatestHostingChatMessageSubscription<TData = LatestHostingChatMessageSubscription>(options: Omit<Urql.UseSubscriptionArgs<LatestHostingChatMessageSubscriptionVariables>, 'query'>, handler?: Urql.SubscriptionHandler<LatestHostingChatMessageSubscription, TData>) {
   return Urql.useSubscription<LatestHostingChatMessageSubscription, TData, LatestHostingChatMessageSubscriptionVariables>({ query: LatestHostingChatMessageDocument, ...options }, handler);
+};
+export const OnlineUserDocument = gql`
+    subscription OnlineUser($userId: String!) {
+  onlineUser(userId: $userId) {
+    online
+    lastUpdated
+    id
+    lastSeen
+  }
+}
+    `;
+
+export function useOnlineUserSubscription<TData = OnlineUserSubscription>(options: Omit<Urql.UseSubscriptionArgs<OnlineUserSubscriptionVariables>, 'query'>, handler?: Urql.SubscriptionHandler<OnlineUserSubscription, TData>) {
+  return Urql.useSubscription<OnlineUserSubscription, TData, OnlineUserSubscriptionVariables>({ query: OnlineUserDocument, ...options }, handler);
 };

@@ -18,7 +18,6 @@ import {
 	useVerifyBookingPaymentMutation,
 } from "@/lib/services/graphql/generated";
 import { useReservationStore } from "@/lib/stores/reservation";
-import { useUserStore } from "@/lib/stores/users";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
@@ -36,7 +35,6 @@ export default function ReservationSummary() {
 	const [success, setSuccess] = React.useState(false);
 	const { id } = useLocalSearchParams();
 	const { input } = useReservationStore();
-	const user = useUserStore((c) => c.user);
 	const [{ data }] = useHostingQuery({ variables: { hostingId: cast(id) } });
 	const [{ fetching, data: bookingData }, mutate] =
 		useInitiateBookingMutation();
@@ -195,7 +193,7 @@ export default function ReservationSummary() {
 									₦
 									{Number(
 										bookingData?.initiateBooking.data?.guestServiceCharge ??
-										"0",
+											"0",
 									)?.toLocaleString()}
 								</ThemedText>
 							</View>
@@ -215,7 +213,7 @@ export default function ReservationSummary() {
 										Number(hosting?.price) +
 										Number(
 											bookingData?.initiateBooking.data?.guestServiceCharge ??
-											"0",
+												"0",
 										)
 									).toLocaleString()}
 								</ThemedText>

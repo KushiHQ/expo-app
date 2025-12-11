@@ -10,14 +10,14 @@ import ListingListItem from "@/components/organisms/o-listing-list-item";
 import { Fonts } from "@/lib/constants/theme";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { useUser } from "@/lib/hooks/user";
 import { useHostListingsQuery } from "@/lib/services/graphql/generated";
-import { useUserStore } from "@/lib/stores/users";
 import React from "react";
 import { Pressable, RefreshControl, View } from "react-native";
 import { SimpleGrid } from "react-native-super-grid";
 
 export default function HostListings() {
-	const { user, updateUser } = useUserStore();
+	const { user, updateUser } = useUser();
 	const [title, setTitle] = React.useState("");
 	const debouncedTitle = useDebounce(title, 500);
 	const [{ fetching, data }, refetch] = useHostListingsQuery({

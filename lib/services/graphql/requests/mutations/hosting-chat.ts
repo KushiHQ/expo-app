@@ -35,3 +35,11 @@ export const CREATE_UPDATE_MESSAGE = gql`
     }
   }
 `;
+
+export const CLEAR_CHAT_UNREAD_MESSAGES = gql`
+  mutation ClearChatUrnreadMessages($chatId: String!) {
+    clearChatUrnreadMessages(chatId: $chatId) {
+      message
+    }
+  }
+`;

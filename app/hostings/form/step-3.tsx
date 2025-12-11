@@ -9,7 +9,7 @@ import HostingStepper from "@/components/molecules/m-hosting-stepper";
 import { Fonts } from "@/lib/constants/theme";
 import { useHostingForm } from "@/lib/hooks/hosting-form";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { useUserStore } from "@/lib/stores/users";
+import { useUser } from "@/lib/hooks/user";
 import { HOSTING_VARIANT_ICONS } from "@/lib/types/enums/hosting-icons";
 import { HostingVariant } from "@/lib/types/enums/hostings";
 import { cast } from "@/lib/types/utils";
@@ -30,7 +30,7 @@ export default function NewHostingStep3() {
 	const { id } = useLocalSearchParams();
 	const [locationFetching, setLocationFetching] = React.useState(false);
 	const [permission, requestPermission] = Location.useForegroundPermissions();
-	const user = useUserStore((c) => c.user);
+	const { user } = useUser();
 	const {
 		input,
 		mutate,

@@ -6,8 +6,8 @@ import ThemedText from "@/components/atoms/a-themed-text";
 import { LogosApple, LogosGoogle } from "@/components/icons/i-logos";
 import AuthLayout from "@/components/layouts/auth";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { useUser } from "@/lib/hooks/user";
 import { LoginInput, useLoginMutation } from "@/lib/services/graphql/generated";
-import { useUserStore } from "@/lib/stores/users";
 import { UserType } from "@/lib/types/users";
 import { cast } from "@/lib/types/utils";
 import { saveAuthTokens } from "@/lib/utils/auth";
@@ -25,7 +25,7 @@ export default function Login() {
 	const [inputs, setInputs] = React.useState<Partial<LoginInput>>({
 		email: cast(email),
 	});
-	const { user, updateUser } = useUserStore();
+	const { user, updateUser } = useUser();
 	const [savePassword, setSavePassword] = React.useState(false);
 	const [res, mutate] = useLoginMutation();
 

@@ -1,3 +1,4 @@
+import moment from "moment";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useRef } from "react";
 import {
@@ -25,7 +26,11 @@ import { IonNotificationsOutline } from "../icons/i-notifications";
 type Props = {
 	children?: React.ReactNode;
 	title?: string;
-	avatar?: string;
+	avatar?: {
+		image?: string;
+		online?: boolean;
+		lastSeen?: string;
+	};
 	variant?: "guest" | "host";
 	footer?: React.ReactNode;
 	backButton?: "translucent" | "solid";
@@ -43,79 +48,154 @@ type Props = {
 	withVideo?: boolean;
 };
 
-const DetailsLayout: React.FC<Props> = ({
-	children,
-	title,
-	avatar,
-	footer,
-	variant = "guest",
-	backButton = "translucent",
-	background = "solid",
-	withShare,
-	withProfile,
-	withNotifications,
-	refreshControl,
-	backgroundStyles,
-	contentStyles,
-	withPhone,
-	withVideo,
-}) => {
-	const router = useRouter();
-	const colors = useThemeColors();
-	const scrollViewRef = useRef<ScrollView>(null);
-	const path = usePathname();
-	const { height: keyboardHeight } = useGradualKeyboardAnimation();
-	const { id } = useLocalSearchParams();
+const DetailsLayout = React.forwardRef<ScrollView, Props>(
+	(
+		{
+			children,
+			title,
+			avatar,
+			footer,
+			variant = "guest",
+			backButton = "translucent",
+			background = "solid",
+			withShare,
+			withProfile,
+			withNotifications,
+			refreshControl,
+			backgroundStyles,
+			contentStyles,
+			withPhone,
+			withVideo,
+		},
+		ref,
+	) => {
+		const router = useRouter();
+		const colors = useThemeColors();
+		const scrollViewRef = useRef<ScrollView>(null);
+		const path = usePathname();
+		const { height: keyboardHeight } = useGradualKeyboardAnimation();
+		const { id } = useLocalSearchParams();
 
-	React.useEffect(() => {
-		const handleScrollToTop = () => {
-			scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-		};
+		React.useImperativeHandle(ref, () => scrollViewRef.current as ScrollView);
 
-		const routeName = path.split("/").pop();
+		React.useEffect(() => {
+			const handleScrollToTop = () => {
+				scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+			};
 
-		EventEmitter.on(`scrollToTop:${routeName}`, handleScrollToTop);
+			const routeName = path.split("/").pop();
 
-		return () => {
-			EventEmitter.off(`scrollToTop:${routeName}`, handleScrollToTop);
-		};
-	}, [path]);
+			EventEmitter.on(`scrollToTop:${routeName}`, handleScrollToTop);
 
-	const animatedFooterStyle = useAnimatedStyle(() => {
-		return {
-			transform: [{ translateY: -keyboardHeight.value + 15 }],
-		};
-	});
+			return () => {
+				EventEmitter.off(`scrollToTop:${routeName}`, handleScrollToTop);
+			};
+		}, [path]);
 
-	const Wrapper = background === "solid" ? ThemedView : View;
+		const animatedFooterStyle = useAnimatedStyle(() => {
+			return {
+				transform: [{ translateY: -keyboardHeight.value + 15 }],
+			};
+		});
 
-	return (
-		<Wrapper className="flex-1" style={backgroundStyles}>
-			<SafeAreaView className="flex-1">
-				<View className="p-5 flex-row items-center justify-between">
-					<View className="flex-row items-center gap-2">
-						<Pressable
-							onPress={() => router.back()}
-							aria-label="Go Back"
-							className="w-8 items-center justify-center rounded-full h-8"
-							style={{
-								backgroundColor:
-									backButton === "translucent"
-										? hexToRgba(colors["text"], 0.2)
-										: colors.text,
-							}}
-						>
-							<ChevronLeft
-								color={
-									backButton === "translucent"
-										? colors["text"]
-										: colors.background
-								}
-							/>
-						</Pressable>
+		const Wrapper = background === "solid" ? ThemedView : View;
+
+		return (
+			<Wrapper className="flex-1" style={backgroundStyles}>
+				<SafeAreaView className="flex-1">
+					<View className="p-5 flex-row items-center justify-between">
 						<View className="flex-row items-center gap-2">
-							{avatar && (
-								<View className="w-8 h-8 rounded-full border border-[#000] overflow-hidden">
+							<Pressable
+								onPress={() => router.back()}
+								aria-label="Go Back"
+								className="w-8 items-center justify-center rounded-full h-8"
+								style={{
+									backgroundColor:
+										backButton === "translucent"
+											? hexToRgba(colors["text"], 0.2)
+											: colors.text,
+								}}
+							>
+								<ChevronLeft
+									color={
+										backButton === "translucent"
+											? colors["text"]
+											: colors.background
+									}
+								/>
+							</Pressable>
+							<View className="flex-row items-center gap-2">
+								{avatar && (
+									<View className="w-8 h-8 rounded-full border border-[#000] overflow-hidden">
+										<Image
+											style={{
+												height: "100%",
+												width: "100%",
+												objectFit: "cover",
+											}}
+											source={{
+												uri: avatar.image,
+											}}
+										/>
+									</View>
+								)}
+								<View>
+									<ThemedText>{title}</ThemedText>
+									<ThemedText style={{ fontSize: 12 }}>
+										{avatar?.online
+											? "Online"
+											: `Last seen ${moment(avatar?.lastSeen).fromNow()}`}
+									</ThemedText>
+								</View>
+							</View>
+						</View>
+						<View className="flex-row items-center gap-3">
+							{withShare && (
+								<Pressable
+									className="h-8 w-8 rounded-full justify-center items-center"
+									style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+								>
+									<Share2Icon size={20} color={colors.text} />
+								</Pressable>
+							)}
+							{withPhone && (
+								<Pressable
+									onPress={() => router.push(`/chats/${id}/call`)}
+									className="h-8 w-8 rounded-full justify-center items-center"
+									style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+								>
+									<SolarPhoneOutline size={20} color={colors.text} />
+								</Pressable>
+							)}
+							{withVideo && (
+								<Pressable
+									onPress={() => router.push(`/chats/${id}/video-call`)}
+									className="h-8 w-8 rounded-full justify-center items-center"
+									style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+								>
+									<HugeiconsVideo01 size={20} color={colors.text} />
+								</Pressable>
+							)}
+							{withNotifications && (
+								<Pressable onPress={() => router.push("/users/notifications")}>
+									<IonNotificationsOutline
+										color={hexToRgba(colors["text"], 0.7)}
+									/>
+								</Pressable>
+							)}
+							{withProfile && (
+								<Pressable
+									onPress={() =>
+										router.push(
+											variant === "guest" ? "/guest/profile" : "/host/profile",
+										)
+									}
+									className="w-8 h-8 rounded-full border overflow-hidden"
+									style={{
+										borderColor: hexToRgba(colors["text"], 0.6),
+										borderWidth: 2,
+									}}
+								>
 									<Image
 										style={{
 											height: "100%",
@@ -123,92 +203,31 @@ const DetailsLayout: React.FC<Props> = ({
 											objectFit: "cover",
 										}}
 										source={{
-											uri: avatar,
+											uri: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=mail@ashallendesign.co.uk",
 										}}
 									/>
-								</View>
+								</Pressable>
 							)}
-							<ThemedText>{title}</ThemedText>
 						</View>
 					</View>
-					<View className="flex-row items-center gap-3">
-						{withShare && (
-							<Pressable
-								className="h-8 w-8 rounded-full justify-center items-center"
-								style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
-							>
-								<Share2Icon size={20} color={colors.text} />
-							</Pressable>
-						)}
-						{withPhone && (
-							<Pressable
-								onPress={() => router.push(`/chats/${id}/call`)}
-								className="h-8 w-8 rounded-full justify-center items-center"
-								style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
-							>
-								<SolarPhoneOutline size={20} color={colors.text} />
-							</Pressable>
-						)}
-						{withVideo && (
-							<Pressable
-								onPress={() => router.push(`/chats/${id}/video-call`)}
-								className="h-8 w-8 rounded-full justify-center items-center"
-								style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
-							>
-								<HugeiconsVideo01 size={20} color={colors.text} />
-							</Pressable>
-						)}
-						{withNotifications && (
-							<Pressable onPress={() => router.push("/users/notifications")}>
-								<IonNotificationsOutline
-									color={hexToRgba(colors["text"], 0.7)}
-								/>
-							</Pressable>
-						)}
-						{withProfile && (
-							<Pressable
-								onPress={() =>
-									router.push(
-										variant === "guest" ? "/guest/profile" : "/host/profile",
-									)
-								}
-								className="w-8 h-8 rounded-full border overflow-hidden"
-								style={{
-									borderColor: hexToRgba(colors["text"], 0.6),
-									borderWidth: 2,
-								}}
-							>
-								<Image
-									style={{
-										height: "100%",
-										width: "100%",
-										objectFit: "cover",
-									}}
-									source={{
-										uri: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=mail@ashallendesign.co.uk",
-									}}
-								/>
-							</Pressable>
-						)}
-					</View>
-				</View>
-				<KeyboardAwareScrollView
-					ref={scrollViewRef}
-					className="flex-1"
-					showsVerticalScrollIndicator={false}
-					contentContainerStyle={{ flexGrow: 1 }}
-					refreshControl={refreshControl}
-				>
-					<View className="p-5 pt-0 flex-1" style={contentStyles}>
-						<View className="flex-1">{children}</View>
-					</View>
-				</KeyboardAwareScrollView>
-				{footer && (
-					<Animated.View style={animatedFooterStyle}>{footer}</Animated.View>
-				)}
-			</SafeAreaView>
-		</Wrapper>
-	);
-};
+					<KeyboardAwareScrollView
+						ref={scrollViewRef}
+						className="flex-1"
+						showsVerticalScrollIndicator={false}
+						contentContainerStyle={{ flexGrow: 1 }}
+						refreshControl={refreshControl}
+					>
+						<View className="p-5 pt-0 flex-1" style={contentStyles}>
+							<View className="flex-1">{children}</View>
+						</View>
+					</KeyboardAwareScrollView>
+					{footer && (
+						<Animated.View style={animatedFooterStyle}>{footer}</Animated.View>
+					)}
+				</SafeAreaView>
+			</Wrapper>
+		);
+	},
+);
 
 export default DetailsLayout;

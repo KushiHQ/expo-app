@@ -4,7 +4,7 @@ import ThemedText from "@/components/atoms/a-themed-text";
 import { BusinessDealHandshake } from "@/components/icons/i-business-deal-handshake";
 import { CashPaymentBag } from "@/components/icons/i-payments";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { useUserStore } from "@/lib/stores/users";
+import { useUser } from "@/lib/hooks/user";
 import { UserType } from "@/lib/types/users";
 import React from "react";
 import { View } from "react-native";
@@ -15,7 +15,7 @@ type Props = {
 
 const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 	const colors = useThemeColors();
-	const { user, updateUser } = useUserStore();
+	const { user, updateUser } = useUser();
 
 	return (
 		<View>
