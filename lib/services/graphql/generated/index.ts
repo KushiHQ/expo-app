@@ -1010,7 +1010,7 @@ export type RefreshTokenMutationVariables = Exact<{
 }>;
 
 
-export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string } | null } };
+export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string } } } | null } };
 
 export type VerifyEmailMutationVariables = Exact<{
   input: Otpinput;
@@ -1375,6 +1375,20 @@ export const RefreshTokenDocument = gql`
       token
       refreshToken
       expiresAt
+      user {
+        id
+        email
+        dateAdded
+        lastUpdated
+        profile {
+          id
+          fullName
+          phoneNumber
+          gender
+          dateAdded
+          lastUpdated
+        }
+      }
     }
   }
 }

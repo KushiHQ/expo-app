@@ -16,6 +16,20 @@ export const REFRESH_TOKEN_MUTATION = gql`
         token
         refreshToken
         expiresAt
+        user {
+          id
+          email
+          dateAdded
+          lastUpdated
+          profile {
+            id
+            fullName
+            phoneNumber
+            gender
+            dateAdded
+            lastUpdated
+          }
+        }
       }
     }
   }
