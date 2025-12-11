@@ -8,6 +8,7 @@ import { useRouter } from "expo-router";
 import { useRefreshTokenMutation } from "@/lib/services/graphql/generated";
 import { getAuthTokens, saveAuthTokens } from "@/lib/utils/auth";
 import { useUser } from "@/lib/hooks/user";
+import { UserType } from "@/lib/types/users";
 
 export default function HomeScreen() {
 	const { user, updateUser } = useUser();
@@ -35,7 +36,11 @@ export default function HomeScreen() {
 									access: tokens.token,
 									refresh: tokens.refreshToken,
 								});
-								router.replace("/guest/home");
+								if (user.userType === UserType.Host) {
+									router.replace("/host/analytics");
+								} else {
+									router.replace("/guest/home");
+								}
 							}
 						},
 					);

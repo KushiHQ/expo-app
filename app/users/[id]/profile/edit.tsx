@@ -6,9 +6,16 @@ import SelectInput, {
 	SelectOption,
 } from "@/components/molecules/m-select-input";
 import UserProfileSummary from "@/components/molecules/m-user-profile-summary";
+import { useUser } from "@/lib/hooks/user";
+import React from "react";
 import { View } from "react-native";
 
 export default function UserProfileEdit() {
+	const { user } = useUser();
+	const [inputs, setInputs] = React.useState({
+		fullName: user.user?.profile.fullName,
+	});
+
 	return (
 		<DetailsLayout title="Profile">
 			<View className="mt-8 flex-1 justify-between gap-4">
@@ -19,7 +26,7 @@ export default function UserProfileEdit() {
 							focused
 							label="Full Name"
 							autoComplete="name"
-							value="Uzumaki Naruto"
+							value={inputs.fullName}
 							placeholder="John Doe"
 						/>
 						<FloatingLabelInput

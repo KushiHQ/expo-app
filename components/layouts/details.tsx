@@ -22,6 +22,8 @@ import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { useGradualKeyboardAnimation } from "@/lib/hooks/keyboard";
 import ThemedView from "../atoms/a-themed-view";
 import { IonNotificationsOutline } from "../icons/i-notifications";
+import { getImagePlaceholderUrl } from "@/lib/utils/urls";
+import { useUser } from "@/lib/hooks/user";
 
 type Props = {
 	children?: React.ReactNode;
@@ -75,6 +77,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 		const path = usePathname();
 		const { height: keyboardHeight } = useGradualKeyboardAnimation();
 		const { id } = useLocalSearchParams();
+		const { user } = useUser();
 
 		React.useImperativeHandle(ref, () => scrollViewRef.current as ScrollView);
 
@@ -203,7 +206,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 											objectFit: "cover",
 										}}
 										source={{
-											uri: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=mail@ashallendesign.co.uk",
+											uri: getImagePlaceholderUrl(user.user?.profile.gender),
 										}}
 									/>
 								</Pressable>

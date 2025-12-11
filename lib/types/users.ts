@@ -12,6 +12,6 @@ export type UserData = {
 };
 
 export enum UserType {
-	Host,
-	Guest,
+	Host = "Host",
+	Guest = "Guest",
 }
