@@ -10,7 +10,6 @@ import { Fonts } from "@/lib/constants/theme";
 import React from "react";
 import { getImagePlaceholderUrl } from "@/lib/utils/urls";
 import { useUser } from "@/lib/hooks/user";
-import { capitalize } from "@/lib/utils/text";
 import { UserType } from "@/lib/types/users";
 
 type Props = {
@@ -22,7 +21,7 @@ const UserProfileSummary: React.FC<Props> = ({ edit }) => {
 	const { user } = useUser();
 
 	return (
-		<View className="items-center gap-3 flex-1">
+		<View className="items-center gap-3 flex-1 min-w-[40px]">
 			<View
 				className="h-[78px] relative w-[78px] border-[2px]"
 				style={{
@@ -65,7 +64,7 @@ const UserProfileSummary: React.FC<Props> = ({ edit }) => {
 			<View className="items-center gap-1">
 				<View className="flex-row items-center gap-2">
 					<ThemedText style={{ fontFamily: Fonts.medium, fontSize: 12 }}>
-						{capitalize(String(user.userType ?? UserType.Guest))}
+						{user.userType === UserType.Guest ? "Guest" : "Host"}
 					</ThemedText>
 					<SolarMedalStarBold color={colors.accent} size={16} />
 				</View>

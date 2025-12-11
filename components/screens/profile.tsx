@@ -35,49 +35,49 @@ const ProfileScreen = () => {
 		href: Href;
 		label: string;
 	}[] = [
-			{
-				icon: UilUser,
-				href: `/users/${id}/profile/edit`,
-				label: "Profile",
-			},
-			{
-				icon: SolarCardLinear,
-				href: `/bookings`,
-				label: "My Bookings",
-			},
-			{
-				icon: SolarWalletMoneyOutline,
-				href: "/hostings/",
-				label: "Payments",
-			},
-			{
-				icon: IonNotificationsOutline,
-				href: `/users/${id}/notification-settings`,
-				label: "Notifications",
-			},
-			{
-				icon: HugeiconsShieldUser,
-				href: "/hostings/",
-				label: "KYC",
-			},
-			{
-				icon: LinkIcon,
-				href: "/host/listings",
-				label: "Hostings",
-			},
-			{
-				icon: SolarShieldCheckLinear,
-				href: `/users/${id}/security`,
-				label: "Security",
-			},
-		];
+		{
+			icon: UilUser,
+			href: `/users/${id}/profile/edit`,
+			label: "Profile",
+		},
+		{
+			icon: SolarCardLinear,
+			href: `/bookings`,
+			label: "My Bookings",
+		},
+		{
+			icon: SolarWalletMoneyOutline,
+			href: "/hostings/",
+			label: "Payments",
+		},
+		{
+			icon: IonNotificationsOutline,
+			href: `/users/${id}/notification-settings`,
+			label: "Notifications",
+		},
+		{
+			icon: HugeiconsShieldUser,
+			href: "/hostings/",
+			label: "KYC",
+		},
+		{
+			icon: LinkIcon,
+			href: "/host/listings",
+			label: "Hostings",
+		},
+		{
+			icon: SolarShieldCheckLinear,
+			href: `/users/${id}/security`,
+			label: "Security",
+		},
+	];
 
 	return (
 		<>
 			<DetailsLayout title="Profile">
 				<View className="mt-4">
 					<View
-						className="flex-row items-center gap-4 p-6 border rounded-xl"
+						className="flex-row items-center flex-wrap gap-4 p-6 border rounded-xl"
 						style={{
 							borderColor: hexToRgba(colors.primary, 0.2),
 							backgroundColor: colors.background,
@@ -98,7 +98,7 @@ const ProfileScreen = () => {
 						<UserProfileSummary />
 						<View
 							style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
-							className="p-4 gap-5 rounded-xl flex-[1.5]"
+							className="p-4 min-w-[40px] gap-5 rounded-xl flex-[1.5]"
 						>
 							<View className="flex-row items-center gap-2">
 								<CuidaBuildingOutline color={colors.accent} size={16} />

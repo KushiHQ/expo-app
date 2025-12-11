@@ -144,11 +144,13 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 								)}
 								<View>
 									<ThemedText>{title}</ThemedText>
-									<ThemedText style={{ fontSize: 12 }}>
-										{avatar?.online
-											? "Online"
-											: `Last seen ${moment(avatar?.lastSeen).fromNow()}`}
-									</ThemedText>
+									{avatar?.online !== undefined && (
+										<ThemedText style={{ fontSize: 12 }}>
+											{avatar?.online
+												? "Online"
+												: `Last seen ${moment(avatar?.lastSeen).fromNow()}`}
+										</ThemedText>
+									)}
 								</View>
 							</View>
 						</View>
