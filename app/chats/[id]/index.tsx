@@ -29,13 +29,14 @@ import { generateRNFile } from "@/lib/utils/file";
 import { getImagePlaceholderUrl } from "@/lib/utils/urls";
 import { useLocalSearchParams } from "expo-router";
 import React from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useUser } from "@/lib/hooks/user";
 
 export default function ChatDetails() {
 	const { id } = useLocalSearchParams();
 	const { user } = useUser();
 	const colors = useThemeColors();
+	const scrollViewRef = React.useRef<ScrollView>(null);
 	const [onlineRecipient, setOnlineRecipeint] =
 		React.useState<OnlineUserSubscription["onlineUser"]>();
 	const [{ fetching, data, error }] = useChatMessagesQuery({
@@ -79,6 +80,14 @@ export default function ChatDetails() {
 			return [curr.latestHostingChatMessage, ...(prev ?? [])];
 		},
 	);
+
+	React.useEffect(() => {
+		if (messages.length > 0) {
+			setTimeout(() => {
+				scrollViewRef.current?.scrollTo({ y: 999999, animated: true });
+			}, 100);
+		}
+	}, [messages]);
 
 	React.useEffect(() => {
 		clearUnread({ chatId: cast(id) });
@@ -140,6 +149,7 @@ export default function ChatDetails() {
 	return (
 		<>
 			<DetailsLayout
+				ref={scrollViewRef}
 				avatar={{
 					image: getImagePlaceholderUrl(recipient?.profile.gender),
 					online: onlineRecipient?.online,

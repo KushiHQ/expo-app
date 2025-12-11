@@ -64,6 +64,7 @@ const HostingFilterManager = () => {
 					<TextInput
 						cursorColor={colors.primary}
 						className="flex-1"
+						placeholderClassName="text-ellipsis"
 						style={{ color: colors["text"], fontSize: 18 }}
 						placeholderTextColor={hexToRgba(colors["text"], 0.5)}
 						placeholder="Enter location, price, property type, pr..."

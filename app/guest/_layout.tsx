@@ -14,6 +14,7 @@ import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { EventEmitter } from "@/lib/utils/event-emitter";
 import { Tabs, useRouter, useSegments } from "expo-router";
 import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Layout() {
 	const colors = useThemeColors();
@@ -21,6 +22,8 @@ export default function Layout() {
 	const segments = useSegments();
 
 	const currentTab = segments[1];
+
+	const insets = useSafeAreaInsets();
 
 	const handleTabPress = (tabName: string) => (e: any) => {
 		if (currentTab === tabName) {
@@ -34,7 +37,7 @@ export default function Layout() {
 			screenOptions={{
 				tabBarActiveTintColor: colors["primary"],
 				tabBarStyle: {
-					height: 80,
+					height: 80 + insets.bottom,
 					backgroundColor: colors["background"],
 					borderTopColor: "#0000",
 					borderTopWidth: 1,

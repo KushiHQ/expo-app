@@ -19,24 +19,24 @@ const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
 
 	return (
 		<View>
-			<View className="gap-4">
+			<View className="gap-2">
 				<ThemedText type="semibold">What brings you to Kushi?</ThemedText>
 				<ThemedText>
 					Select your purpose to get a tailored experience
 				</ThemedText>
 			</View>
-			<View className="mt-20 gap-4">
+			<View className="mt-16 gap-4">
 				<View
 					style={{ borderColor: colors["primary"] }}
 					className="border p-5 rounded-xl gap-4"
 				>
-					<CashPaymentBag color={colors["primary"]} size={48} />
+					<CashPaymentBag color={colors["primary"]} size={36} />
 					<View className="flex-row items-center justify-between">
 						<ThemedText>I&apos;m looking for a house</ThemedText>
 						<Checkbox
 							checked={user.userType === UserType.Guest}
 							color={colors["primary"]}
-							size={28}
+							size={24}
 							onValueChange={() => {
 								if (user.userType !== UserType.Guest) {
 									updateUser({ userType: UserType.Guest });

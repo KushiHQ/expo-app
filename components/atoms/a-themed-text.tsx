@@ -48,26 +48,26 @@ export default ThemedText;
 
 const styles = StyleSheet.create({
 	default: {
-		fontSize: 16,
+		fontSize: 14,
 		lineHeight: 24,
 		fontFamily: Fonts.regular,
 	},
 	semibold: {
-		fontSize: 18,
+		fontSize: 16,
 		lineHeight: 24,
 		fontFamily: Fonts.semibold,
 	},
 	title: {
-		fontSize: 32,
+		fontSize: 28,
 		lineHeight: 32,
 		fontFamily: Fonts.semibold,
 	},
 	subtitle: {
-		fontSize: 20,
+		fontSize: 18,
 		fontFamily: Fonts.regular,
 	},
 	link: {
-		lineHeight: 30,
+		lineHeight: 26,
 		fontSize: 16,
 		color: "#0a7ea4",
 		fontFamily: Fonts.regular,

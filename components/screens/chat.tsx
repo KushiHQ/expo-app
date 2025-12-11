@@ -1,10 +1,9 @@
 import ThemedText from "@/components/atoms/a-themed-text";
 import { LineiconsSearch1 } from "@/components/icons/i-search";
 import DetailsLayout from "@/components/layouts/details";
-import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
+import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { generateMockChatsWithHistory } from "@/lib/constants/mocks/chat";
 import { Fonts } from "@/lib/constants/theme";
-import { useFallbackImages } from "@/lib/hooks/images";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useUserChatsQuery } from "@/lib/services/graphql/generated";
 import { chatsAtom } from "@/lib/stores/chats";
@@ -13,13 +12,7 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useAtom } from "jotai";
 import React from "react";
-import {
-	Pressable,
-	RefreshControl,
-	ScrollView,
-	TextInput,
-	View,
-} from "react-native";
+import { Pressable, RefreshControl, TextInput, View } from "react-native";
 import Skeleton from "../atoms/a-skeleton";
 import { getImagePlaceholderUrl } from "@/lib/utils/urls";
 import EmptyList from "../molecules/m-empty-list";
@@ -50,32 +43,22 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 	const colors = useThemeColors();
 	const [chats, setChats] = useAtom(chatsAtom);
 	const { user } = useUser();
-	const { failedImages, handleImageError } = useFallbackImages();
 	const [{ data: chatData, fetching: chatsFetching }, refetchChat] =
 		useUserChatsQuery({
 			requestPolicy: "cache-and-network",
 		});
-	const scrollViewRef = React.useRef<ScrollView>(null);
 
 	React.useEffect(() => {
 		if (!chats.length) {
 			setChats(generateMockChatsWithHistory(20));
 		}
 	}, []);
-	React.useEffect(() => {
-		if (chatData?.userChats && chatData.userChats.length > 0) {
-			setTimeout(() => {
-				scrollViewRef.current?.scrollTo({ y: 999999, animated: true });
-			}, 100);
-		}
-	}, [chatData?.userChats]);
 
 	return (
 		<DetailsLayout
 			refreshControl={
 				<RefreshControl onRefresh={refetchChat} refreshing={chatsFetching} />
 			}
-			ref={scrollViewRef}
 			title="Message"
 			withProfile
 			variant={variant}
@@ -105,13 +88,11 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 							<View className="h-[50px] relative w-[50px]">
 								<Image
 									source={{
-										uri: failedImages.has(index)
-											? FALLBACK_IMAGE
-											: getImagePlaceholderUrl(
-													chat.host.user.id === user.user?.id
-														? chat.guest.user.profile.gender
-														: chat.host.user.profile.gender,
-												),
+										uri: getImagePlaceholderUrl(
+											chat.host.user.id === user.user?.id
+												? chat.guest.user.profile.gender
+												: chat.host.user.profile.gender,
+										),
 									}}
 									style={{
 										height: "100%",
@@ -124,7 +105,6 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 									placeholderContentFit="cover"
 									cachePolicy="memory-disk"
 									priority="high"
-									onError={() => handleImageError(index)}
 									key={index}
 								/>
 								{(chat.host.user.id === user.user?.id

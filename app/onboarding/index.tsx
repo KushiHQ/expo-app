@@ -14,7 +14,7 @@ export default function Welcome() {
 
 	return (
 		<ThemedView style={{ flex: 1 }}>
-			<SafeAreaView className="flex-1 items-center justify-center">
+			<SafeAreaView className="flex-1 px-4 items-center justify-center">
 				<View className="gap-40">
 					<View className="items-center gap-2">
 						<View style={{ flexDirection: "row", gap: 4 }}>
@@ -24,6 +24,7 @@ export default function Welcome() {
 							<LogoLarge />
 						</View>
 						<ThemedText
+							className="text-center"
 							type="subtitle"
 							style={{ color: hexToRgba(colors["text"], 0.7) }}
 						>

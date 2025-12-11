@@ -60,7 +60,10 @@ const ChatMessageBubble: React.FC<Props> = ({ message }) => {
 				</View>
 			)}
 			<View
-				className="p-3 rounded-xl"
+				className={twMerge(
+					"p-3 rounded-2xl",
+					isSender ? "rounded-tr-none" : "rounded-tl-none",
+				)}
 				style={{
 					backgroundColor: isSender
 						? colors.primary

@@ -8,7 +8,6 @@ import { useRouter } from "expo-router";
 import { useRefreshTokenMutation } from "@/lib/services/graphql/generated";
 import { getAuthTokens, saveAuthTokens } from "@/lib/utils/auth";
 import { useUser } from "@/lib/hooks/user";
-import { handleError } from "@/lib/utils/error";
 
 export default function HomeScreen() {
 	const { user, updateUser } = useUser();
@@ -27,7 +26,6 @@ export default function HomeScreen() {
 					refreshToken({ input: { refreshToken: tokens?.refresh } }).then(
 						(res) => {
 							if (res.error) {
-								handleError(res.error);
 								router.replace("/auth/sign-in");
 							}
 							if (res.data?.refreshToken.data) {
