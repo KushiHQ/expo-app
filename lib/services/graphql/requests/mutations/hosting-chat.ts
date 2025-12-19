@@ -13,6 +13,7 @@ export const CREATE_UPDATE_MESSAGE = gql`
     createUpdateMessage(input: $input) {
       id
       text
+      isSender
       sender {
         id
         profile {

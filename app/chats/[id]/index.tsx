@@ -30,18 +30,15 @@ import { getImagePlaceholderUrl } from "@/lib/utils/urls";
 import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import { useUser } from "@/lib/hooks/user";
 
 export default function ChatDetails() {
 	const { id } = useLocalSearchParams();
-	const { user } = useUser();
 	const colors = useThemeColors();
 	const scrollViewRef = React.useRef<ScrollView>(null);
 	const [onlineRecipient, setOnlineRecipeint] =
 		React.useState<OnlineUserSubscription["onlineUser"]>();
 	const [{ fetching, data, error }] = useChatMessagesQuery({
 		variables: { chatId: cast(id) },
-		requestPolicy: "network-only",
 	});
 	const [{ fetching: chatFetching, data: chatData }] = useHostingChatQuery({
 		variables: { chatId: cast(id) },
@@ -105,17 +102,12 @@ export default function ChatDetails() {
 		}
 	}, [data?.chatMessages]);
 
-	const recipient =
-		chatData?.hostingChat.host.user.id === user.user?.id
-			? chatData?.hostingChat.guest.user
-			: chatData?.hostingChat.host.user;
-
 	useOnlineUserSubscription(
 		{
 			variables: {
-				userId: recipient?.id ?? "",
+				userId: chatData?.hostingChat.recipientUser?.id ?? "",
 			},
-			pause: !recipient?.id,
+			pause: !chatData?.hostingChat.recipientUser?.id,
 		},
 		(prev: OnlineUserSubscription["onlineUser"][] = [], curr) => {
 			setOnlineRecipeint(curr.onlineUser);
@@ -151,11 +143,13 @@ export default function ChatDetails() {
 			<DetailsLayout
 				ref={scrollViewRef}
 				avatar={{
-					image: getImagePlaceholderUrl(recipient?.profile.gender),
+					image: getImagePlaceholderUrl(
+						chatData?.hostingChat.recipientUser?.profile.gender,
+					),
 					online: onlineRecipient?.online,
 					lastSeen: onlineRecipient?.lastSeen,
 				}}
-				title={recipient?.profile.fullName}
+				title={chatData?.hostingChat.recipientUser?.profile.fullName}
 				withPhone
 				withVideo
 				footer={<ChatInput onSend={handleSend} />}
@@ -163,7 +157,7 @@ export default function ChatDetails() {
 				<View className="mt-4">
 					<View className="items-center justify-center">
 						<ThemedText style={{ fontFamily: Fonts.medium }}>
-							{recipient?.profile.fullName}
+							{chatData?.hostingChat.recipientUser?.profile.fullName}
 						</ThemedText>
 						{onlineRecipient?.online && (
 							<View className="flex-row items-center">

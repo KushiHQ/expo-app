@@ -270,6 +270,7 @@ export type HostingChat = {
   id: Scalars['String']['output'];
   lastMessage?: Maybe<HostingChatMessage>;
   lastUpdated: Scalars['String']['output'];
+  recipientUser: User;
   unreadMessageCount: Scalars['Int']['output'];
 };
 
@@ -287,6 +288,7 @@ export type HostingChatMessage = {
   createdAt: Scalars['String']['output'];
   edited?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['String']['output'];
+  isSender: Scalars['Boolean']['output'];
   lastUpdated: Scalars['String']['output'];
   sender: User;
   text: Scalars['String']['output'];
@@ -756,11 +758,13 @@ export type Query = {
   __typename?: 'Query';
   authGuest: Guest;
   authHost: Host;
+  authStreamUserToken: Scalars['String']['output'];
   banks: Array<Bank>;
   booking: Booking;
   bookings: Array<Booking>;
   chatMessages: Array<HostingChatMessage>;
   flutterwaveCardPaymentMethods: Array<FlutterwaveCardPaymentMethodData>;
+  getStreamUserId: Scalars['String']['output'];
   guestBookingTenancyAgreementPreview: Scalars['String']['output'];
   hostAnalytics: HostAnalytics;
   hostPaymentDetails: Array<HostAccountDetails>;
@@ -775,6 +779,7 @@ export type Query = {
   savedHostingFolders: Array<SavedHostingFolder>;
   savedHostings: Array<SavedHosting>;
   userChats: Array<HostingChat>;
+  userStreamUserToken: Scalars['String']['output'];
   verifyAccount: AccountDetails;
 };
 
@@ -798,6 +803,11 @@ export type QueryChatMessagesArgs = {
 
 export type QueryFlutterwaveCardPaymentMethodsArgs = {
   pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QueryGetStreamUserIdArgs = {
+  userId: Scalars['String']['input'];
 };
 
 
@@ -861,6 +871,11 @@ export type QuerySavedHostingsArgs = {
 
 export type QueryUserChatsArgs = {
   pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QueryUserStreamUserTokenArgs = {
+  userId: Scalars['String']['input'];
 };
 
 
@@ -1087,7 +1102,7 @@ export type CreateUpdateMessageMutationVariables = Exact<{
 }>;
 
 
-export type CreateUpdateMessageMutation = { __typename?: 'Mutations', createUpdateMessage: { __typename?: 'HostingChatMessage', id: string, text: string, edited?: boolean | null, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
+export type CreateUpdateMessageMutation = { __typename?: 'Mutations', createUpdateMessage: { __typename?: 'HostingChatMessage', id: string, text: string, isSender: boolean, edited?: boolean | null, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
 
 export type ClearChatUrnreadMessagesMutationVariables = Exact<{
   chatId: Scalars['String']['input'];
@@ -1226,21 +1241,21 @@ export type GuestBookingTenancyAgreementPreviewQuery = { __typename?: 'Query', g
 export type UserChatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UserChatsQuery = { __typename?: 'Query', userChats: Array<{ __typename?: 'HostingChat', id: string, lastUpdated: string, unreadMessageCount: number, host: { __typename?: 'Host', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', gender?: string | null, id: string, fullName: string }, onlineUser: { __typename?: 'OnlineUser', id: string, online: boolean } } }, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null }, onlineUser: { __typename?: 'OnlineUser', id: string, online: boolean } } }, lastMessage?: { __typename?: 'HostingChatMessage', id: string, text: string } | null }> };
+export type UserChatsQuery = { __typename?: 'Query', userChats: Array<{ __typename?: 'HostingChat', id: string, lastUpdated: string, unreadMessageCount: number, lastMessage?: { __typename?: 'HostingChatMessage', id: string, text: string } | null, recipientUser: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null }, onlineUser: { __typename?: 'OnlineUser', id: string, online: boolean } } }> };
 
 export type ChatMessagesQueryVariables = Exact<{
   chatId: Scalars['String']['input'];
 }>;
 
 
-export type ChatMessagesQuery = { __typename?: 'Query', chatMessages: Array<{ __typename?: 'HostingChatMessage', id: string, text: string, edited?: boolean | null, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> }> };
+export type ChatMessagesQuery = { __typename?: 'Query', chatMessages: Array<{ __typename?: 'HostingChatMessage', id: string, text: string, isSender: boolean, edited?: boolean | null, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> }> };
 
 export type HostingChatQueryVariables = Exact<{
   chatId: Scalars['String']['input'];
 }>;
 
 
-export type HostingChatQuery = { __typename?: 'Query', hostingChat: { __typename?: 'HostingChat', id: string, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, state?: string | null, street?: string | null, landmarks?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, host: { __typename?: 'Host', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', gender?: string | null, id: string, fullName: string } } }, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', gender?: string | null, id: string, fullName: string } } } } };
+export type HostingChatQuery = { __typename?: 'Query', hostingChat: { __typename?: 'HostingChat', id: string, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, state?: string | null, street?: string | null, landmarks?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, recipientUser: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', gender?: string | null, id: string, fullName: string } } } };
 
 export type HostingQueryVariables = Exact<{
   hostingId: Scalars['String']['input'];
@@ -1326,6 +1341,18 @@ export type FlutterwaveCardPaymentMethodsQueryVariables = Exact<{ [key: string]:
 
 export type FlutterwaveCardPaymentMethodsQuery = { __typename?: 'Query', flutterwaveCardPaymentMethods: Array<{ __typename?: 'FlutterwaveCardPaymentMethodData', id: string, first6: string, last4: string, expiryMonth: number, expiryYear: number, network: string, cardHolderName: string }> };
 
+export type AuthStreamUserTokenQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AuthStreamUserTokenQuery = { __typename?: 'Query', authStreamUserToken: string };
+
+export type GetStreamUserIdQueryVariables = Exact<{
+  userId: Scalars['String']['input'];
+}>;
+
+
+export type GetStreamUserIdQuery = { __typename?: 'Query', getStreamUserId: string };
+
 export type HostAnalyticsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1346,7 +1373,7 @@ export type LatestHostingChatMessageSubscriptionVariables = Exact<{
 }>;
 
 
-export type LatestHostingChatMessageSubscription = { __typename?: 'Subscriptions', latestHostingChatMessage: { __typename?: 'HostingChatMessage', id: string, text: string, edited?: boolean | null, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
+export type LatestHostingChatMessageSubscription = { __typename?: 'Subscriptions', latestHostingChatMessage: { __typename?: 'HostingChatMessage', id: string, text: string, isSender: boolean, edited?: boolean | null, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
 
 export type OnlineUserSubscriptionVariables = Exact<{
   userId: Scalars['String']['input'];
@@ -1543,6 +1570,7 @@ export const CreateUpdateMessageDocument = gql`
   createUpdateMessage(input: $input) {
     id
     text
+    isSender
     sender {
       id
       profile {
@@ -1970,40 +1998,22 @@ export const UserChatsDocument = gql`
   userChats {
     id
     lastUpdated
-    host {
-      id
-      user {
-        id
-        profile {
-          gender
-          id
-          fullName
-        }
-        onlineUser {
-          id
-          online
-        }
-      }
-    }
-    guest {
-      id
-      user {
-        id
-        profile {
-          fullName
-          id
-          gender
-        }
-        onlineUser {
-          id
-          online
-        }
-      }
-    }
     unreadMessageCount
     lastMessage {
       id
       text
+    }
+    recipientUser {
+      id
+      profile {
+        fullName
+        id
+        gender
+      }
+      onlineUser {
+        id
+        online
+      }
     }
   }
 }
@@ -2017,6 +2027,7 @@ export const ChatMessagesDocument = gql`
   chatMessages(chatId: $chatId) {
     id
     text
+    isSender
     sender {
       id
       profile {
@@ -2036,6 +2047,7 @@ export const ChatMessagesDocument = gql`
         originalFilename
       }
     }
+    isSender
   }
 }
     `;
@@ -2064,26 +2076,12 @@ export const HostingChatDocument = gql`
       price
       paymentInterval
     }
-    host {
+    recipientUser {
       id
-      user {
+      profile {
+        gender
         id
-        profile {
-          gender
-          id
-          fullName
-        }
-      }
-    }
-    guest {
-      id
-      user {
-        id
-        profile {
-          gender
-          id
-          fullName
-        }
+        fullName
       }
     }
   }
@@ -2421,6 +2419,24 @@ export const FlutterwaveCardPaymentMethodsDocument = gql`
 export function useFlutterwaveCardPaymentMethodsQuery(options?: Omit<Urql.UseQueryArgs<FlutterwaveCardPaymentMethodsQueryVariables>, 'query'>) {
   return Urql.useQuery<FlutterwaveCardPaymentMethodsQuery, FlutterwaveCardPaymentMethodsQueryVariables>({ query: FlutterwaveCardPaymentMethodsDocument, ...options });
 };
+export const AuthStreamUserTokenDocument = gql`
+    query AuthStreamUserToken {
+  authStreamUserToken
+}
+    `;
+
+export function useAuthStreamUserTokenQuery(options?: Omit<Urql.UseQueryArgs<AuthStreamUserTokenQueryVariables>, 'query'>) {
+  return Urql.useQuery<AuthStreamUserTokenQuery, AuthStreamUserTokenQueryVariables>({ query: AuthStreamUserTokenDocument, ...options });
+};
+export const GetStreamUserIdDocument = gql`
+    query GetStreamUserId($userId: String!) {
+  getStreamUserId(userId: $userId)
+}
+    `;
+
+export function useGetStreamUserIdQuery(options: Omit<Urql.UseQueryArgs<GetStreamUserIdQueryVariables>, 'query'>) {
+  return Urql.useQuery<GetStreamUserIdQuery, GetStreamUserIdQueryVariables>({ query: GetStreamUserIdDocument, ...options });
+};
 export const HostAnalyticsDocument = gql`
     query HostAnalytics {
   hostAnalytics {
@@ -2502,6 +2518,7 @@ export const LatestHostingChatMessageDocument = gql`
   latestHostingChatMessage(chatId: $chatId) {
     id
     text
+    isSender
     sender {
       id
       profile {

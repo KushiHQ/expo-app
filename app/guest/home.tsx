@@ -1,3 +1,5 @@
+import ThemedText from "@/components/atoms/a-themed-text";
+import { useNotifications } from "@/components/contexts/notifications";
 import ProfileLayout from "@/components/layouts/profile";
 import EmptyList from "@/components/molecules/m-empty-list";
 import HostingCard, {
@@ -16,9 +18,12 @@ import { RefreshControl } from "react-native-gesture-handler";
 
 export default function GuestHome() {
 	const { filter, updateFilter } = useHostingFilterStore();
+	const { token } = useNotifications();
 	const [{ fetching, data }, refetch] = useHostingsQuery({
 		variables: { filters: { ...filter, publishStatus: PublishStatus.Live } },
 	});
+
+	console.log(token);
 
 	return (
 		<ProfileLayout
@@ -29,6 +34,7 @@ export default function GuestHome() {
 				/>
 			}
 		>
+			<ThemedText>{token}</ThemedText>
 			<View>
 				<View className="gap-4">
 					<HostingFilterManager />

@@ -16,7 +16,6 @@ import { Pressable, RefreshControl, TextInput, View } from "react-native";
 import Skeleton from "../atoms/a-skeleton";
 import { getImagePlaceholderUrl } from "@/lib/utils/urls";
 import EmptyList from "../molecules/m-empty-list";
-import { useUser } from "@/lib/hooks/user";
 
 type Props = {
 	variant?: "guest" | "host";
@@ -42,11 +41,8 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const [chats, setChats] = useAtom(chatsAtom);
-	const { user } = useUser();
 	const [{ data: chatData, fetching: chatsFetching }, refetchChat] =
-		useUserChatsQuery({
-			requestPolicy: "cache-and-network",
-		});
+		useUserChatsQuery();
 
 	React.useEffect(() => {
 		if (!chats.length) {
@@ -89,9 +85,7 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 								<Image
 									source={{
 										uri: getImagePlaceholderUrl(
-											chat.host.user.id === user.user?.id
-												? chat.guest.user.profile.gender
-												: chat.host.user.profile.gender,
+											chat.recipientUser.profile.gender,
 										),
 									}}
 									style={{
@@ -107,9 +101,7 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 									priority="high"
 									key={index}
 								/>
-								{(chat.host.user.id === user.user?.id
-									? chat.guest.user.onlineUser.online
-									: chat.host.user.onlineUser.online) && (
+								{chat.recipientUser.onlineUser.online && (
 									<View
 										className="absolute right-0 bottom-0 w-4 h-4 border rounded-full"
 										style={{
@@ -126,9 +118,7 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 										numberOfLines={1}
 										style={{ fontFamily: Fonts.medium }}
 									>
-										{chat.host.user.id === user.user?.id
-											? chat.guest.user.profile.fullName
-											: chat.host.user.profile.fullName}
+										{chat.recipientUser.profile.fullName}
 									</ThemedText>
 									<ThemedText
 										ellipsizeMode="tail"

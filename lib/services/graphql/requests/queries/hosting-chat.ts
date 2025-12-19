@@ -5,40 +5,22 @@ export const USER_CHATS_QUERY = gql`
     userChats {
       id
       lastUpdated
-      host {
-        id
-        user {
-          id
-          profile {
-            gender
-            id
-            fullName
-          }
-          onlineUser {
-            id
-            online
-          }
-        }
-      }
-      guest {
-        id
-        user {
-          id
-          profile {
-            fullName
-            id
-            gender
-          }
-          onlineUser {
-            id
-            online
-          }
-        }
-      }
       unreadMessageCount
       lastMessage {
         id
         text
+      }
+      recipientUser {
+        id
+        profile {
+          fullName
+          id
+          gender
+        }
+        onlineUser {
+          id
+          online
+        }
       }
     }
   }
@@ -49,6 +31,7 @@ export const CHAT_MESSAGES_QUERY = gql`
     chatMessages(chatId: $chatId) {
       id
       text
+      isSender
       sender {
         id
         profile {
@@ -68,6 +51,7 @@ export const CHAT_MESSAGES_QUERY = gql`
           originalFilename
         }
       }
+      isSender
     }
   }
 `;
@@ -93,26 +77,12 @@ export const HOSTING_CHAT_QUERY = gql`
         price
         paymentInterval
       }
-      host {
+      recipientUser {
         id
-        user {
+        profile {
+          gender
           id
-          profile {
-            gender
-            id
-            fullName
-          }
-        }
-      }
-      guest {
-        id
-        user {
-          id
-          profile {
-            gender
-            id
-            fullName
-          }
+          fullName
         }
       }
     }

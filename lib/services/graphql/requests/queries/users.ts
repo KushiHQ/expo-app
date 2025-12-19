@@ -1,5 +1,17 @@
 import { gql } from "urql";
 
+export const AUTH_STREAM_USER_QUERY = gql`
+  query AuthStreamUserToken {
+    authStreamUserToken
+  }
+`;
+
+export const GET_STREAM_USER_ID_QUERY = gql`
+  query GetStreamUserId($userId: String!) {
+    getStreamUserId(userId: $userId)
+  }
+`;
+
 export const HOST_ANALYTICS = gql`
   query HostAnalytics {
     hostAnalytics {

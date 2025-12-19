@@ -2,10 +2,8 @@ import ThemedText from "@/components/atoms/a-themed-text";
 import { HeroiconsPhoneXMark } from "@/components/icons/i-phone";
 import { QlementineIconsSpeaker16 } from "@/components/icons/i-speaker";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { chatsAtom } from "@/lib/stores/chats";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useAtomValue } from "jotai";
 import {
 	View,
 	StyleSheet,
@@ -23,18 +21,12 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function ChatVideoCall() {
 	const colors = useThemeColors();
-	const chats = useAtomValue(chatsAtom);
 	const router = useRouter();
 	const { id } = useLocalSearchParams();
-	const chat = chats.find((c) => c.id === id);
 	const [facing, setFacing] = useState<CameraType>("front");
 	const [permission, requestPermission] = useCameraPermissions();
 	const [isMuted, setIsMuted] = useState(false);
 	const [isSpeakerOn, setIsSpeakerOn] = useState(true);
-
-	if (!chat) {
-		return null;
-	}
 
 	if (!permission) {
 		return <View style={styles.container} />;

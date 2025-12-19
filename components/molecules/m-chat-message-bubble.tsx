@@ -8,29 +8,26 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { ChatMessagesQuery } from "@/lib/services/graphql/generated";
 import ListDocument from "./m-list-document";
 import ListImage from "../atoms/a-list-image";
-import { useUser } from "@/lib/hooks/user";
 
 type Props = {
 	message: ChatMessagesQuery["chatMessages"][number];
 };
 
 const ChatMessageBubble: React.FC<Props> = ({ message }) => {
-	const { user } = useUser();
 	const colors = useThemeColors();
-	const isSender = message.sender.id == user.user?.id;
 
 	return (
 		<View
-			className={twMerge("max-w-[250px]", isSender && "items-end")}
+			className={twMerge("max-w-[250px]", message.isSender && "items-end")}
 			style={{
-				alignSelf: isSender ? "flex-end" : "flex-start",
+				alignSelf: message.isSender ? "flex-end" : "flex-start",
 			}}
 		>
 			{message.assets.length > 0 && (
 				<View
 					className={twMerge(
 						"mb-2 flex-row gap-4 flex-wrap",
-						isSender ? "justify-end" : "justify-start",
+						message.isSender ? "justify-end" : "justify-start",
 					)}
 				>
 					{message.assets
@@ -62,17 +59,17 @@ const ChatMessageBubble: React.FC<Props> = ({ message }) => {
 			<View
 				className={twMerge(
 					"p-3 rounded-2xl",
-					isSender ? "rounded-tr-none" : "rounded-tl-none",
+					message.isSender ? "rounded-tr-none" : "rounded-tl-none",
 				)}
 				style={{
-					backgroundColor: isSender
+					backgroundColor: message.isSender
 						? colors.primary
 						: hexToRgba(colors.text, 0.1),
 				}}
 			>
 				<ThemedText
 					style={{
-						color: isSender ? colors["primary-content"] : colors.text,
+						color: message.isSender ? colors["primary-content"] : colors.text,
 					}}
 				>
 					{message.text}

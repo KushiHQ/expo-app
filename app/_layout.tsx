@@ -37,12 +37,23 @@ import {
 	configureReanimatedLogger,
 	ReanimatedLogLevel,
 } from "react-native-reanimated";
+import { NotificationProvider } from "@/components/contexts/notifications";
+import * as Notifications from "expo-notifications";
 
 SplashScreen.preventAutoHideAsync();
 
 configureReanimatedLogger({
 	level: ReanimatedLogLevel.error,
 	strict: false,
+});
+
+Notifications.setNotificationHandler({
+	handleNotification: async () => ({
+		shouldShowBanner: true,
+		shouldPlaySound: true,
+		shouldSetBadge: true,
+		shouldShowList: true,
+	}),
 });
 
 export default function RootLayout() {
@@ -78,65 +89,69 @@ export default function RootLayout() {
 							<PaperProvider>
 								<JotaiProvider>
 									<SafeAreaProvider>
-										<ThemeProvider
-											value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-										>
-											<Stack screenOptions={{ animation: "fade" }}>
-												<Stack.Screen
-													name="index"
-													options={{ headerShown: false }}
-												/>
-												<Stack.Screen
-													name="onboarding"
-													options={{ headerShown: false }}
-												/>
-												<Stack.Screen
-													name="auth"
-													options={{ headerShown: false }}
-												/>
-												<Stack.Screen
-													name="guest"
-													options={{ headerShown: false }}
-												/>
-												<Stack.Screen
-													name="host"
-													options={{ headerShown: false }}
-												/>
-												<Stack.Screen
-													name="payment-methods"
-													options={{ headerShown: false }}
-												/>
-												<Stack.Screen
-													name="camera"
-													options={{ headerShown: false }}
-												/>
-												<Stack.Screen
-													name="photo-gallery"
-													options={{ headerShown: false }}
-												/>
-												<Stack.Screen
-													name="hostings"
-													options={{ headerShown: false }}
-												/>
-												<Stack.Screen
-													name="bookings"
-													options={{ headerShown: false }}
-												/>
-												<Stack.Screen
-													name="chats"
-													options={{ headerShown: false }}
-												/>
-												<Stack.Screen
-													name="users"
-													options={{ headerShown: false }}
-												/>
-												<Stack.Screen
-													name="logout"
-													options={{ headerShown: false }}
-												/>
-											</Stack>
-											<StatusBar style="auto" />
-										</ThemeProvider>
+										<NotificationProvider>
+											<ThemeProvider
+												value={
+													colorScheme === "dark" ? DarkTheme : DefaultTheme
+												}
+											>
+												<Stack screenOptions={{ animation: "fade" }}>
+													<Stack.Screen
+														name="index"
+														options={{ headerShown: false }}
+													/>
+													<Stack.Screen
+														name="onboarding"
+														options={{ headerShown: false }}
+													/>
+													<Stack.Screen
+														name="auth"
+														options={{ headerShown: false }}
+													/>
+													<Stack.Screen
+														name="guest"
+														options={{ headerShown: false }}
+													/>
+													<Stack.Screen
+														name="host"
+														options={{ headerShown: false }}
+													/>
+													<Stack.Screen
+														name="payment-methods"
+														options={{ headerShown: false }}
+													/>
+													<Stack.Screen
+														name="camera"
+														options={{ headerShown: false }}
+													/>
+													<Stack.Screen
+														name="photo-gallery"
+														options={{ headerShown: false }}
+													/>
+													<Stack.Screen
+														name="hostings"
+														options={{ headerShown: false }}
+													/>
+													<Stack.Screen
+														name="bookings"
+														options={{ headerShown: false }}
+													/>
+													<Stack.Screen
+														name="chats"
+														options={{ headerShown: false }}
+													/>
+													<Stack.Screen
+														name="users"
+														options={{ headerShown: false }}
+													/>
+													<Stack.Screen
+														name="logout"
+														options={{ headerShown: false }}
+													/>
+												</Stack>
+												<StatusBar style="auto" />
+											</ThemeProvider>
+										</NotificationProvider>
 									</SafeAreaProvider>
 								</JotaiProvider>
 							</PaperProvider>

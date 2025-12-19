@@ -165,7 +165,9 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 							)}
 							{withPhone && (
 								<Pressable
-									onPress={() => router.push(`/chats/${id}/call`)}
+									onPress={() =>
+										router.push(`/chats/${id}/call/voice?initiate=true`)
+									}
 									className="h-8 w-8 rounded-full justify-center items-center"
 									style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
 								>
@@ -174,7 +176,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 							)}
 							{withVideo && (
 								<Pressable
-									onPress={() => router.push(`/chats/${id}/video-call`)}
+									onPress={() => router.push(`/chats/${id}/call/video`)}
 									className="h-8 w-8 rounded-full justify-center items-center"
 									style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
 								>
