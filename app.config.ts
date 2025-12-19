@@ -7,7 +7,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 	slug: "kushi",
 	version: "1.0.0",
 	orientation: "portrait",
-	icon: "./assets/images/icon.png",
+	icon: "./assets/icons/adaptive-icon.png",
 	scheme: "kushi",
 	userInterfaceStyle: "automatic",
 	newArchEnabled: true,
@@ -49,7 +49,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 	web: {
 		bundler: "metro",
 		output: "static",
-		favicon: "./assets/images/favicon.png",
+		favicon: "./assets/icons/adaptive-icon.png",
 	},
 	extra: {
 		eas: {
@@ -59,7 +59,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 	owner: "mceazy2700",
 	plugins: [
 		"expo-web-browser",
-		"expo-notifications",
+		[
+			"expo-notifications",
+			{
+				icon: "./assets/icons/adaptive-icon.png",
+			},
+		],
 		[
 			"@react-native-community/datetimepicker",
 			{

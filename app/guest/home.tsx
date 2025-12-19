@@ -1,4 +1,3 @@
-import ThemedText from "@/components/atoms/a-themed-text";
 import { useNotifications } from "@/components/contexts/notifications";
 import ProfileLayout from "@/components/layouts/profile";
 import EmptyList from "@/components/molecules/m-empty-list";
@@ -34,7 +33,6 @@ export default function GuestHome() {
 				/>
 			}
 		>
-			<ThemedText>{token}</ThemedText>
 			<View>
 				<View className="gap-4">
 					<HostingFilterManager />
