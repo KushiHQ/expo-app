@@ -48,12 +48,9 @@ export default function ChatCall() {
 			initiate === "true" &&
 			!participants.find((p) => p.userId === user.user?.id)
 		) {
-			console.log(" CLLLED ");
 			call?.join();
 		}
 	}, [initiate, call, participants, user]);
-
-	console.log(participants);
 
 	return (
 		<CallBackground>
@@ -110,7 +107,7 @@ export default function ChatCall() {
 					</View>
 					<View className="flex-row items-center justify-center gap-10 p-6">
 						{initiate !== "true" &&
-						!participants.find((c) => c.userId === user.user?.id) ? (
+							!participants.find((c) => c.userId === user.user?.id) ? (
 							<>
 								<View className="items-center gap-2 mr-8">
 									<Pressable

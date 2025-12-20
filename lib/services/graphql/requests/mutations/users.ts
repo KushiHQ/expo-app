@@ -27,3 +27,42 @@ export const UPDATE_GUEST = gql`
     }
   }
 `;
+
+export const UPDATE_PUSH_NOTIFICATION_TOKEN = gql`
+  mutation UpdatePushNotificationToken($expoToken: String!) {
+    updatePushNotificationToken(expoToken: $expoToken) {
+      message
+    }
+  }
+`;
+
+export const UPDATE_USER_NOTIFICATION_SETTINGS = gql`
+  mutation UpdateUserNotificationSettings($input: NotificationSettingsInput!) {
+    updateUserNotificationSettings(input: $input) {
+      message
+      data {
+        id
+        pushNotifications
+        specialOffers
+        email
+        appUpdates
+      }
+    }
+  }
+`;
+
+export const UPDATE_USER_PROFILE = gql`
+  mutation UpdateProfile($input: ProfileUpdateInput!) {
+    updateProfile(input: $input) {
+      message
+      data {
+        id
+        fullName
+        phoneNumber
+        gender
+        dateAdded
+        lastUpdated
+      }
+    }
+  }
+`;

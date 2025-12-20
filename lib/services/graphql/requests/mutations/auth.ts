@@ -29,6 +29,14 @@ export const REFRESH_TOKEN_MUTATION = gql`
             dateAdded
             lastUpdated
           }
+          notificationSettings {
+            id
+            token
+            email
+            appUpdates
+            pushNotifications
+            specialOffers
+          }
         }
       }
     }
@@ -71,6 +79,14 @@ export const LOGIN_MUTATION = gql`
             gender
             dateAdded
             lastUpdated
+          }
+          notificationSettings {
+            id
+            token
+            email
+            appUpdates
+            pushNotifications
+            specialOffers
           }
         }
       }

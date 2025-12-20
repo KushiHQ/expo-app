@@ -8,6 +8,35 @@ function handleRegistrationError(errorMessage: string) {
 	throw new Error(errorMessage);
 }
 
+export async function setupCallNotificationChannel() {
+	await Notifications.setNotificationCategoryAsync("incoming-calls", [
+		{
+			identifier: "answer",
+			buttonTitle: "Answer",
+			options: {
+				opensAppToForeground: true,
+			},
+		},
+		{
+			identifier: "decline",
+			buttonTitle: "Decline",
+			options: {
+				opensAppToForeground: true,
+				isDestructive: true,
+			},
+		},
+	]);
+	if (Platform.OS === "android") {
+		await Notifications.setNotificationChannelAsync("incoming-calls", {
+			name: "Incoming Calls",
+			importance: Notifications.AndroidImportance.MAX,
+			vibrationPattern: [0, 250, 250, 250],
+			lightColor: "#FF231F7C",
+			sound: "ringtone.mp3",
+		});
+	}
+}
+
 export async function registerForPushNotificationsAsync() {
 	if (Platform.OS === "android") {
 		await Notifications.setNotificationChannelAsync("default", {
@@ -44,7 +73,6 @@ export async function registerForPushNotificationsAsync() {
 					projectId,
 				})
 			).data;
-			console.log(pushTokenString);
 			return pushTokenString;
 		} catch (e: unknown) {
 			handleRegistrationError(`${e}`);

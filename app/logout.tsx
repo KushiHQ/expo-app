@@ -1,8 +1,4 @@
 import {
-	DEFAULT_NOTIFICATION_SETTINGS,
-	notificationSettingsAtom,
-} from "@/lib/stores/notification-settings";
-import {
 	DEFAULT_SECURITY_SETTINGS,
 	securitySettingsAtom,
 } from "@/lib/stores/security-settings";
@@ -13,12 +9,10 @@ import React from "react";
 
 export default function Logout() {
 	const reset = useUserStore((v) => v.reset);
-	const setNotificationSettings = useSetAtom(notificationSettingsAtom);
 	const setSecuritySettings = useSetAtom(securitySettingsAtom);
 
 	React.useEffect(() => {
 		reset();
-		setNotificationSettings(DEFAULT_NOTIFICATION_SETTINGS);
 		setSecuritySettings(DEFAULT_SECURITY_SETTINGS);
 
 		router.replace("/onboarding");

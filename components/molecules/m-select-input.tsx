@@ -11,6 +11,7 @@ import SearchInput from "../atoms/a-search-input";
 import { cast } from "@/lib/types/utils";
 import EmptyList from "./m-empty-list";
 import { capitalize } from "@/lib/utils/text";
+import Checkbox from "../atoms/a-checkbox";
 
 export type SelectionDetails = { selected?: boolean };
 
@@ -32,19 +33,28 @@ type WithSearch<T> = BaseProps<T> & {
 
 type Props<T> = WithSearch<T> | WithoutSearch<T>;
 
+const getValueString = (value: any) => {
+	if (typeof value === "object") {
+		return cast<Record<string, any>>(value).value;
+	} else {
+		return value;
+	}
+};
+
 const SelectInput = <T extends {}>(props: Props<T>) => {
 	const { options, renderItem: RenderItem, onSelect, ...rest } = props;
 	const [open, setOpen] = React.useState(false);
 	const [value, setValue] = React.useState(props.defaultValue);
 	const [search, setSearch] = React.useState("");
 	const colors = useThemeColors();
+	const selectedValue = React.useMemo(() => getValueString(value), [value]);
 
 	const filtered = rest.searchable
 		? options.filter((v) =>
-				String(cast<Record<string, string>>(v)[rest.searchField])
-					.toLowerCase()
-					.includes(search.toLowerCase()),
-			)
+			String(cast<Record<string, string>>(v)[rest.searchField])
+				.toLowerCase()
+				.includes(search.toLowerCase()),
+		)
 		: options;
 
 	const handlePress = (e: GestureResponderEvent) => {
@@ -53,6 +63,8 @@ const SelectInput = <T extends {}>(props: Props<T>) => {
 
 		setOpen(true);
 	};
+
+	console.log(value);
 
 	return (
 		<>
@@ -77,10 +89,10 @@ const SelectInput = <T extends {}>(props: Props<T>) => {
 							ellipsizeMode="tail"
 							style={{
 								fontSize: 14,
-								color: !props.value ? hexToRgba(colors.text, 0.4) : colors.text,
+								color: !value ? hexToRgba(colors.text, 0.4) : colors.text,
 							}}
 						>
-							{capitalize(props.value ?? rest.placeholder ?? "")}
+							{capitalize(selectedValue ?? rest.placeholder ?? "")}
 						</ThemedText>
 						<ChevronDown color={hexToRgba(colors.text, 0.4)} />
 					</View>
@@ -101,7 +113,7 @@ const SelectInput = <T extends {}>(props: Props<T>) => {
 						)}
 						{filtered.map((v, index) => (
 							<Pressable
-								className="p-2"
+								className="p-2 px-0"
 								onPress={() => {
 									setValue(v);
 									onSelect?.(v);
@@ -109,7 +121,13 @@ const SelectInput = <T extends {}>(props: Props<T>) => {
 								}}
 								key={index}
 							>
-								<RenderItem {...v} selected={value === v} />
+								<RenderItem
+									{...v}
+									selected={
+										String(selectedValue).toLowerCase() ===
+										String(getValueString(v)).toLowerCase()
+									}
+								/>
 							</Pressable>
 						))}
 						{!filtered.length && <EmptyList message="No items found" />}
@@ -134,13 +152,24 @@ export const SelectOption: React.FC<SelectOption & SelectionDetails> = ({
 	const colors = useThemeColors();
 
 	return (
-		<View className="flex-row items-center justify-between">
-			<ThemedText>{label}</ThemedText>
-			{selected ? (
-				<CarbonCircleFilled size={16} color={colors.primary} />
-			) : (
-				<CarbonCircleOutline size={16} color={colors.primary} />
-			)}
+		<View
+			className="flex-row items-center justify-between border p-2 rounded-md pl-4"
+			style={{
+				borderColor: hexToRgba(
+					selected ? colors.primary : colors.text,
+					selected ? 0.5 : 0.2,
+				),
+				backgroundColor: hexToRgba(
+					selected ? colors.primary : colors.text,
+					selected ? 0.2 : 0.1,
+				),
+			}}
+		>
+			<ThemedText>{capitalize(label)}</ThemedText>
+			<Checkbox
+				color={selected ? colors.primary : hexToRgba(colors.text, 0.6)}
+				checked={selected}
+			/>
 		</View>
 	);
 };

@@ -1,5 +1,6 @@
 import Button from "@/components/atoms/a-button";
 import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
+import LoadingModal from "@/components/atoms/a-loading-modal";
 import ThemedText from "@/components/atoms/a-themed-text";
 import DetailsLayout from "@/components/layouts/details";
 import SelectInput, {
@@ -7,74 +8,139 @@ import SelectInput, {
 } from "@/components/molecules/m-select-input";
 import UserProfileSummary from "@/components/molecules/m-user-profile-summary";
 import { useUser } from "@/lib/hooks/user";
+import {
+	Gender,
+	ProfileUpdateInput,
+	User,
+	useUpdateProfileMutation,
+} from "@/lib/services/graphql/generated";
+import { handleError } from "@/lib/utils/error";
+import { useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
+import Toast from "react-native-toast-message";
 
 export default function UserProfileEdit() {
-	const { user } = useUser();
+	const { user, updateUser } = useUser();
+	const router = useRouter();
 	const [inputs, setInputs] = React.useState({
 		fullName: user.user?.profile.fullName,
-	});
+		gender: user.user?.profile.gender,
+		phoneNumber: user.user?.profile.phoneNumber,
+	} as ProfileUpdateInput);
+	const [{ fetching }, updateProfile] = useUpdateProfileMutation();
+
+	const handleUpdate = () => {
+		updateProfile({ input: inputs }).then((res) => {
+			if (res.error) {
+				handleError(res.error);
+			}
+			if (res.data?.updateProfile.data) {
+				Toast.show({
+					type: "success",
+					text1: "Success",
+					text2: res.data.updateProfile.message,
+				});
+				updateUser({
+					user: {
+						...(user.user ?? ({} as User)),
+						profile: res.data.updateProfile.data,
+					},
+				});
+			}
+		});
+	};
 
 	return (
-		<DetailsLayout title="Profile">
-			<View className="mt-8 flex-1 justify-between gap-4">
-				<View>
-					<UserProfileSummary edit />
-					<View className="mt-8 gap-4">
-						<FloatingLabelInput
-							focused
-							label="Full Name"
-							autoComplete="name"
-							value={inputs.fullName}
-							placeholder="John Doe"
-						/>
-						<FloatingLabelInput
-							focused
-							label="Email"
-							inputMode="email"
-							autoComplete="email"
-							value="uzumakinaruto@gmail.com"
-							placeholder="example@email.com"
-						/>
-						<View className="flex-row gap-4 items-center">
-							<View className="flex-[1.5]">
-								<FloatingLabelInput
-									focused
-									disabled
-									label="Password"
-									placeholder="********"
-									secureTextEntry
-								/>
-							</View>
-							<Button className="flex-1" type="primary">
-								<ThemedText content="primary">Change</ThemedText>
-							</Button>
-						</View>
-						<View className="flex-row gap-4">
-							<SelectInput
+		<>
+			<DetailsLayout title="Profile">
+				<View className="mt-8 flex-1 justify-between gap-4">
+					<View className="min-h-[465px]">
+						<UserProfileSummary edit />
+						<View className="mt-8 gap-4">
+							<FloatingLabelInput
 								focused
-								label="Gender"
-								placeholder="Male"
-								options={["Male", "Femal"].map((v) => ({ label: v, value: v }))}
-								renderItem={SelectOption}
+								label="Full Name"
+								autoComplete="name"
+								value={inputs.fullName}
+								onChangeText={(v) => setInputs((c) => ({ ...c, fullName: v }))}
+								placeholder="John Doe"
 							/>
-							<View className="flex-1">
-								<FloatingLabelInput
+							<FloatingLabelInput
+								focused
+								label="Email"
+								inputMode="email"
+								autoComplete="email"
+								disabled
+								value={user.user?.email}
+								placeholder="example@email.com"
+							/>
+							<View className="flex-row gap-4 items-center">
+								<View className="flex-[1.5]">
+									<FloatingLabelInput
+										focused
+										disabled
+										label="Password"
+										placeholder="********"
+										secureTextEntry
+									/>
+								</View>
+								<Button
+									className="flex-1"
+									type="primary"
+									onPress={() => router.push("/auth/reset-password")}
+								>
+									<ThemedText content="primary">Change</ThemedText>
+								</Button>
+							</View>
+							<View className="flex-row gap-4">
+								<SelectInput
 									focused
-									label="Phone Number"
-									inputMode="tel"
-									autoComplete="tel"
-									placeholder="08032145687"
+									label="Gender"
+									placeholder="Male"
+									defaultValue={{
+										label: inputs.gender ?? Gender.Male,
+										value: inputs.gender ?? Gender.Male,
+									}}
+									onSelect={(v) =>
+										setInputs((c) => ({ ...c, gender: v.value }))
+									}
+									options={[Gender.Male, Gender.Female].map((v) => ({
+										label: v,
+										value: v,
+									}))}
+									renderItem={SelectOption}
 								/>
+								<View className="flex-1">
+									<FloatingLabelInput
+										focused
+										label="Phone Number"
+										inputMode="tel"
+										autoComplete="tel"
+										value={inputs.phoneNumber}
+										placeholder="08032145687"
+										onChangeText={(v) =>
+											setInputs((c) => ({ ...c, phoneNumber: v }))
+										}
+									/>
+								</View>
 							</View>
 						</View>
 					</View>
+					<Button
+						type="primary"
+						onPress={handleUpdate}
+						disabled={
+							user.user?.profile.fullName === inputs.fullName &&
+							user.user.profile.phoneNumber === inputs.phoneNumber &&
+							user.user.profile.gender === inputs.gender
+						}
+					>
+						<ThemedText content="primary">Update</ThemedText>
+					</Button>
 				</View>
-				<Button type="primary" disabled>
-					<ThemedText content="primary">Update</ThemedText>
-				</Button>
-			</View>
-		</DetailsLayout>
+			</DetailsLayout>
+			<LoadingModal visible={fetching} />
+		</>
 	);
 }

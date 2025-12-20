@@ -58,6 +58,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 	},
 	owner: "mceazy2700",
 	plugins: [
+		"./lib/plugins/with-custom-sound.js",
 		"expo-web-browser",
 		[
 			"expo-notifications",
@@ -144,6 +145,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 					"$(PRODUCT_NAME) requires camera access in order to capture and transmit video",
 				microphonePermission:
 					"$(PRODUCT_NAME) requires microphone access in order to capture and transmit audio",
+				runServiceOnBoot: true,
 			},
 		],
 	],

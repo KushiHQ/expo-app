@@ -514,9 +514,13 @@ export type Mutations = {
   requestPasswordChange: MessageResponse;
   resendEmailVerificationOtp: MessageResponse;
   resendPasswordChangeOtp: MessageResponse;
+  sendChatVoiceCallNotification: MessageResponse;
   signUp: UserResponse;
   updateGuest: GuestResponse;
   updateHost: HostResponse;
+  updateProfile: ProfileResponse;
+  updatePushNotificationToken: NotificationSettingsResponse;
+  updateUserNotificationSettings: NotificationSettingsResponse;
   verifyBookingPayment: BookingResponse;
   verifyEmail: MessageResponse;
 };
@@ -647,6 +651,11 @@ export type MutationsResendPasswordChangeOtpArgs = {
 };
 
 
+export type MutationsSendChatVoiceCallNotificationArgs = {
+  chatId: Scalars['String']['input'];
+};
+
+
 export type MutationsSignUpArgs = {
   input: SignUpInput;
 };
@@ -659,6 +668,21 @@ export type MutationsUpdateGuestArgs = {
 
 export type MutationsUpdateHostArgs = {
   input: HostInput;
+};
+
+
+export type MutationsUpdateProfileArgs = {
+  input: ProfileUpdateInput;
+};
+
+
+export type MutationsUpdatePushNotificationTokenArgs = {
+  expoToken: Scalars['String']['input'];
+};
+
+
+export type MutationsUpdateUserNotificationSettingsArgs = {
+  input: NotificationSettingsInput;
 };
 
 
@@ -681,6 +705,31 @@ export type Notification = {
   message: Scalars['String']['output'];
   title: Scalars['String']['output'];
   type: NotificationType;
+};
+
+export type NotificationSettings = {
+  __typename?: 'NotificationSettings';
+  appUpdates: Scalars['Boolean']['output'];
+  createdAt: Scalars['String']['output'];
+  email: Scalars['Boolean']['output'];
+  id: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+  pushNotifications: Scalars['Boolean']['output'];
+  specialOffers: Scalars['Boolean']['output'];
+  token?: Maybe<Scalars['String']['output']>;
+};
+
+export type NotificationSettingsInput = {
+  appUpdates: Scalars['Boolean']['input'];
+  email: Scalars['Boolean']['input'];
+  pushNotifications: Scalars['Boolean']['input'];
+  specialOffers: Scalars['Boolean']['input'];
+};
+
+export type NotificationSettingsResponse = {
+  __typename?: 'NotificationSettingsResponse';
+  data?: Maybe<NotificationSettings>;
+  message: Scalars['String']['output'];
 };
 
 export enum NotificationType {
@@ -745,6 +794,18 @@ export type Profile = {
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
   phoneNumber: Scalars['String']['output'];
+};
+
+export type ProfileResponse = {
+  __typename?: 'ProfileResponse';
+  data?: Maybe<Profile>;
+  message: Scalars['String']['output'];
+};
+
+export type ProfileUpdateInput = {
+  fullName: Scalars['String']['input'];
+  gender?: InputMaybe<Scalars['String']['input']>;
+  phoneNumber: Scalars['String']['input'];
 };
 
 export enum PublishStatus {
@@ -998,6 +1059,7 @@ export type User = {
   email: Scalars['String']['output'];
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
+  notificationSettings: NotificationSettings;
   onlineUser: OnlineUser;
   profile: Profile;
 };
@@ -1025,7 +1087,7 @@ export type RefreshTokenMutationVariables = Exact<{
 }>;
 
 
-export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string } } } | null } };
+export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, token?: string | null, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean } } } | null } };
 
 export type VerifyEmailMutationVariables = Exact<{
   input: Otpinput;
@@ -1046,7 +1108,7 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutations', login: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string } } } | null } };
+export type LoginMutation = { __typename?: 'Mutations', login: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, token?: string | null, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean } } } | null } };
 
 export type RequestPasswordChangeMutationVariables = Exact<{
   input: RequestPasswordChangeInput;
@@ -1215,6 +1277,27 @@ export type UpdateGuestMutationVariables = Exact<{
 
 
 export type UpdateGuestMutation = { __typename?: 'Mutations', updateGuest: { __typename?: 'GuestResponse', message: string, data?: { __typename?: 'Guest', signature?: { __typename?: 'Asset', publicUrl: string, id: string } | null } | null } };
+
+export type UpdatePushNotificationTokenMutationVariables = Exact<{
+  expoToken: Scalars['String']['input'];
+}>;
+
+
+export type UpdatePushNotificationTokenMutation = { __typename?: 'Mutations', updatePushNotificationToken: { __typename?: 'NotificationSettingsResponse', message: string } };
+
+export type UpdateUserNotificationSettingsMutationVariables = Exact<{
+  input: NotificationSettingsInput;
+}>;
+
+
+export type UpdateUserNotificationSettingsMutation = { __typename?: 'Mutations', updateUserNotificationSettings: { __typename?: 'NotificationSettingsResponse', message: string, data?: { __typename?: 'NotificationSettings', id: string, pushNotifications: boolean, specialOffers: boolean, email: boolean, appUpdates: boolean } | null } };
+
+export type UpdateProfileMutationVariables = Exact<{
+  input: ProfileUpdateInput;
+}>;
+
+
+export type UpdateProfileMutation = { __typename?: 'Mutations', updateProfile: { __typename?: 'ProfileResponse', message: string, data?: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string } | null } };
 
 export type BookingsQueryVariables = Exact<{
   filter?: InputMaybe<BookingFilterInput>;
@@ -1415,6 +1498,14 @@ export const RefreshTokenDocument = gql`
           dateAdded
           lastUpdated
         }
+        notificationSettings {
+          id
+          token
+          email
+          appUpdates
+          pushNotifications
+          specialOffers
+        }
       }
     }
   }
@@ -1466,6 +1557,14 @@ export const LoginDocument = gql`
           gender
           dateAdded
           lastUpdated
+        }
+        notificationSettings {
+          id
+          token
+          email
+          appUpdates
+          pushNotifications
+          specialOffers
         }
       }
     }
@@ -1875,6 +1974,54 @@ export const UpdateGuestDocument = gql`
 
 export function useUpdateGuestMutation() {
   return Urql.useMutation<UpdateGuestMutation, UpdateGuestMutationVariables>(UpdateGuestDocument);
+};
+export const UpdatePushNotificationTokenDocument = gql`
+    mutation UpdatePushNotificationToken($expoToken: String!) {
+  updatePushNotificationToken(expoToken: $expoToken) {
+    message
+  }
+}
+    `;
+
+export function useUpdatePushNotificationTokenMutation() {
+  return Urql.useMutation<UpdatePushNotificationTokenMutation, UpdatePushNotificationTokenMutationVariables>(UpdatePushNotificationTokenDocument);
+};
+export const UpdateUserNotificationSettingsDocument = gql`
+    mutation UpdateUserNotificationSettings($input: NotificationSettingsInput!) {
+  updateUserNotificationSettings(input: $input) {
+    message
+    data {
+      id
+      pushNotifications
+      specialOffers
+      email
+      appUpdates
+    }
+  }
+}
+    `;
+
+export function useUpdateUserNotificationSettingsMutation() {
+  return Urql.useMutation<UpdateUserNotificationSettingsMutation, UpdateUserNotificationSettingsMutationVariables>(UpdateUserNotificationSettingsDocument);
+};
+export const UpdateProfileDocument = gql`
+    mutation UpdateProfile($input: ProfileUpdateInput!) {
+  updateProfile(input: $input) {
+    message
+    data {
+      id
+      fullName
+      phoneNumber
+      gender
+      dateAdded
+      lastUpdated
+    }
+  }
+}
+    `;
+
+export function useUpdateProfileMutation() {
+  return Urql.useMutation<UpdateProfileMutation, UpdateProfileMutationVariables>(UpdateProfileDocument);
 };
 export const BookingsDocument = gql`
     query Bookings($filter: BookingFilterInput, $pagination: PaginationInput) {

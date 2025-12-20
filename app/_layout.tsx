@@ -39,6 +39,7 @@ import {
 } from "react-native-reanimated";
 import { NotificationProvider } from "@/components/contexts/notifications";
 import * as Notifications from "expo-notifications";
+import { setupCallNotificationChannel } from "@/lib/utils/notifications";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -69,6 +70,10 @@ export default function RootLayout() {
 		[Fonts.extrabold]: Inter_800ExtraBold,
 		[Fonts.black]: Inter_900Black,
 	});
+
+	React.useEffect(() => {
+		setupCallNotificationChannel();
+	}, []);
 
 	React.useEffect(() => {
 		if (loaded || error) {
