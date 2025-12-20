@@ -44,3 +44,11 @@ export const CLEAR_CHAT_UNREAD_MESSAGES = gql`
     }
   }
 `;
+
+export const SEND_VOICE_CHAT_NOTIFICATION = gql`
+  mutation SendChatVoiceCallNotification($chatId: String!) {
+    sendChatVoiceCallNotification(chatId: $chatId) {
+      message
+    }
+  }
+`;

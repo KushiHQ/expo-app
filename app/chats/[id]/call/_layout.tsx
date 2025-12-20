@@ -51,7 +51,6 @@ export default function Layout() {
 			});
 			const call = client.call("default", cast(id));
 			call.getOrCreate({
-				ring: true,
 				data: {
 					members: [
 						{ user_id: user.user.id ?? "" },

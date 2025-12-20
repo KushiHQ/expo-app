@@ -1173,6 +1173,13 @@ export type ClearChatUrnreadMessagesMutationVariables = Exact<{
 
 export type ClearChatUrnreadMessagesMutation = { __typename?: 'Mutations', clearChatUrnreadMessages: { __typename?: 'MessageResponse', message: string } };
 
+export type SendChatVoiceCallNotificationMutationVariables = Exact<{
+  chatId: Scalars['String']['input'];
+}>;
+
+
+export type SendChatVoiceCallNotificationMutation = { __typename?: 'Mutations', sendChatVoiceCallNotification: { __typename?: 'MessageResponse', message: string } };
+
 export type CreateUpdateSavedHostingFolderMutationVariables = Exact<{
   input: SavedHostingFolderInput;
 }>;
@@ -1706,6 +1713,17 @@ export const ClearChatUrnreadMessagesDocument = gql`
 
 export function useClearChatUrnreadMessagesMutation() {
   return Urql.useMutation<ClearChatUrnreadMessagesMutation, ClearChatUrnreadMessagesMutationVariables>(ClearChatUrnreadMessagesDocument);
+};
+export const SendChatVoiceCallNotificationDocument = gql`
+    mutation SendChatVoiceCallNotification($chatId: String!) {
+  sendChatVoiceCallNotification(chatId: $chatId) {
+    message
+  }
+}
+    `;
+
+export function useSendChatVoiceCallNotificationMutation() {
+  return Urql.useMutation<SendChatVoiceCallNotificationMutation, SendChatVoiceCallNotificationMutationVariables>(SendChatVoiceCallNotificationDocument);
 };
 export const CreateUpdateSavedHostingFolderDocument = gql`
     mutation CreateUpdateSavedHostingFolder($input: SavedHostingFolderInput!) {

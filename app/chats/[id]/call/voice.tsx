@@ -2,7 +2,6 @@ import ThemedText from "@/components/atoms/a-themed-text";
 import {
 	F7PhoneDownFill,
 	Fa7SolidPhone,
-	HeroiconsPhoneXMark,
 	HugeiconsVideo01,
 } from "@/components/icons/i-phone";
 import { QlementineIconsSpeaker16 } from "@/components/icons/i-speaker";
@@ -11,8 +10,8 @@ import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import {
-	useAuthStreamUserTokenQuery,
 	useHostingChatQuery,
+	useSendChatVoiceCallNotificationMutation,
 } from "@/lib/services/graphql/generated";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
@@ -24,6 +23,7 @@ import { View, Pressable } from "react-native";
 import { useUser } from "@/lib/hooks/user";
 import CallBackground from "@/components/atoms/a-call-background";
 import { useCall, useCallStateHooks } from "@stream-io/video-react-native-sdk";
+import { handleError } from "@/lib/utils/error";
 
 export default function ChatCall() {
 	const router = useRouter();
@@ -36,6 +36,7 @@ export default function ChatCall() {
 		variables: { chatId: cast(id) },
 	});
 	const call = useCall();
+	const [_, sendNotification] = useSendChatVoiceCallNotificationMutation();
 
 	React.useEffect(() => {
 		if (!call) {
@@ -48,6 +49,11 @@ export default function ChatCall() {
 			initiate === "true" &&
 			!participants.find((p) => p.userId === user.user?.id)
 		) {
+			sendNotification({ chatId: cast(id) }).then((res) => {
+				if (res.error) {
+					handleError(res.error);
+				}
+			});
 			call?.join();
 		}
 	}, [initiate, call, participants, user]);
