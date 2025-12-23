@@ -30,7 +30,6 @@ export default function HomeScreen() {
 		};
 
 		(async () => {
-			console.log("REROUTING");
 			if (!user.email) {
 				router.replace("/onboarding");
 			} else {
