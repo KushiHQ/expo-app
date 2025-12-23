@@ -1,4 +1,3 @@
-import LoadingModal from "@/components/atoms/a-loading-modal";
 import { useUser } from "@/lib/hooks/user";
 import {
 	useAuthStreamUserTokenQuery,
@@ -6,19 +5,20 @@ import {
 } from "@/lib/services/graphql/generated";
 import { cast } from "@/lib/types/utils";
 import {
+	Call,
 	StreamCall,
-	StreamVideo,
-	StreamVideoClient,
 	callManager,
+	useStreamVideoClient,
 } from "@stream-io/video-react-native-sdk";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useHostingChatQuery } from "@/lib/services/graphql/generated";
 import React, { useEffect } from "react";
 import { handleError } from "@/lib/utils/error";
+import CallScreen from "@/components/screens/call";
 
 export default function Layout() {
 	const { user } = useUser();
-	const { id } = useLocalSearchParams();
+	const { id, initiate } = useLocalSearchParams();
 	const [{ data: tokenData }] = useAuthStreamUserTokenQuery();
 	const [{ data: chatData }] = useHostingChatQuery({
 		variables: { chatId: cast(id) },
@@ -31,73 +31,80 @@ export default function Layout() {
 			pause: !chatData?.hostingChat.recipientUser.id,
 		});
 
+	const client = useStreamVideoClient();
+	const [call, setCall] = React.useState<Call | null>(null);
+
 	React.useEffect(() => {
 		if (recipientError) {
 			handleError(recipientError);
 		}
 	}, [recipientError]);
 
-	const stream = React.useMemo(() => {
+	React.useEffect(() => {
 		if (
+			!call &&
+			client &&
 			tokenData?.authStreamUserToken &&
 			chatData?.hostingChat.recipientUser.id &&
 			user.user?.id &&
 			recipientStreamUser?.getStreamUserId
 		) {
-			const client = StreamVideoClient.getOrCreateInstance({
-				apiKey: process.env.EXPO_PUBLIC_STREAM_API_KEY ?? "",
-				user: { id: user.user?.id ?? "" },
-				token: tokenData?.authStreamUserToken,
-			});
 			const call = client.call("default", cast(id));
-			call.getOrCreate({
-				data: {
-					members: [
-						{ user_id: user.user.id ?? "" },
-						{ user_id: recipientStreamUser?.getStreamUserId },
-					],
-				},
-			});
-			return { client, call };
+			const init = async () => {
+				try {
+					if (initiate === "true") {
+						const recipient = recipientStreamUser?.getStreamUserId;
+						await call.join({
+							create: true,
+							ring: true,
+							data: {
+								custom: { recipient },
+								members: [
+									{ user_id: user.user?.id ?? "" },
+									{ user_id: recipient },
+								],
+							},
+						});
+					}
+					setCall(call);
+				} catch (error) {
+					console.log("INIT Error", error);
+				}
+			};
+			init();
 		}
-		return null;
-	}, [tokenData, user, chatData, recipientStreamUser]);
+	}, [call, tokenData, user, chatData, recipientStreamUser, client]);
 
 	useEffect(() => {
 		return () => {
-			if (stream?.call) {
-				stream.call.leave();
+			if (call) {
+				try {
+					callManager.stop();
+					call.leave();
+				} catch { }
 			}
 		};
-	}, [stream]);
+	}, []);
 
 	useEffect(() => {
-		if (stream) {
+		if (call) {
 			callManager.start({
 				audioRole: "communicator",
 				deviceEndpointType: "earpiece",
 			});
 		}
+	}, [call]);
 
-		return () => {
-			if (stream) {
-				callManager.stop();
-			}
-		};
-	}, [stream]);
-
-	if (!stream) {
-		return <LoadingModal visible />;
+	if (!call) {
+		return <CallScreen />;
 	}
 
 	return (
-		<StreamVideo client={stream.client}>
-			<StreamCall call={stream.call}>
-				<Stack screenOptions={{ animation: "fade" }}>
-					<Stack.Screen name="voice" options={{ headerShown: false }} />
-					<Stack.Screen name="video" options={{ headerShown: false }} />
-				</Stack>
-			</StreamCall>
-		</StreamVideo>
+		<StreamCall call={call}>
+			<Stack screenOptions={{ animation: "fade" }}>
+				<Stack.Screen name="voice" options={{ headerShown: false }} />
+				<Stack.Screen name="video" options={{ headerShown: false }} />
+			</Stack>
+		</StreamCall>
 	);
 }

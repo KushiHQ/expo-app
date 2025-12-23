@@ -43,3 +43,4 @@ app-example
 /android
 kushi*-firebase*.json
 google-services.json
+GoogleService-Info.plist

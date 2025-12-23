@@ -1,7 +1,10 @@
 import "dotenv/config";
-import { ConfigContext, ExpoConfig } from "expo/config";
 
-export default ({ config }: ConfigContext): ExpoConfig => ({
+/**
+ * @param {import('expo/config').ConfigContext} context
+ * @returns {import('expo/config').ExpoConfig}
+ */
+export default ({ config }) => ({
 	...config,
 	name: "Kushi",
 	slug: "kushi",
@@ -14,6 +17,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 	ios: {
 		supportsTablet: true,
 		bundleIdentifier: "com.mceazy2700.kushi",
+		googleServicesFile: "./GoogleService-Info.plist",
+		entitlements: {
+			"com.apple.developer.usernotifications.communication": true,
+			"aps-environment": "production",
+		},
 		infoPlist: {
 			NSLocationWhenInUseUsageDescription:
 				"This app needs access to your location to determine the address of properties.",
@@ -37,6 +45,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 		permissions: [
 			"android.permission.ACCESS_COARSE_LOCATION",
 			"android.permission.ACCESS_FINE_LOCATION",
+			"android.permission.POST_NOTIFICATIONS",
+			"android.permission.FOREGROUND_SERVICE",
+			"android.permission.USE_FULL_SCREEN_INTENT",
 		],
 		config: {
 			googleMaps: {
@@ -58,7 +69,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 	},
 	owner: "mceazy2700",
 	plugins: [
-		"./lib/plugins/with-custom-sound.js",
+		"expo-audio",
 		"expo-web-browser",
 		[
 			"expo-notifications",
@@ -107,6 +118,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 			{
 				android: {
 					minSdkVersion: 24,
+					extraMavenRepos: [
+						"../../node_modules/@stream-io/video-react-native-sdk/android",
+						"../../node_modules/@notifee/react-native/android/libs",
+					],
+				},
+				ios: {
+					useFrameworks: "static",
+					forceStaticLinking: [
+						"RNFBApp",
+						"RNFBMessaging",
+						"stream-react-native-webrtc",
+					],
 				},
 			},
 		],
@@ -137,7 +160,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 				locationPermission: "Allow $(PRODUCT_NAME) to use your location",
 			},
 		],
-		"@stream-io/video-react-native-sdk",
+		"@react-native-firebase/app",
+		"@react-native-firebase/messaging",
+		[
+			"@stream-io/video-react-native-sdk",
+			{
+				ringingPushNotifications: {
+					disableVideoIos: false,
+					includesCallsInRecentsIos: false,
+					showWhenLockedAndroid: true,
+				},
+				androidKeepCallAlive: true,
+			},
+		],
+		"@config-plugins/react-native-callkeep",
 		[
 			"@config-plugins/react-native-webrtc",
 			{

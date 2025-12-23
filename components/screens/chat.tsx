@@ -53,7 +53,10 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 	return (
 		<DetailsLayout
 			refreshControl={
-				<RefreshControl onRefresh={refetchChat} refreshing={chatsFetching} />
+				<RefreshControl
+					onRefresh={() => refetchChat({ requestPolicy: "network-only" })}
+					refreshing={chatsFetching}
+				/>
 			}
 			title="Message"
 			withProfile

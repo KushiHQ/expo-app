@@ -1,6 +1,33 @@
 import { gql } from "urql";
 
-export const AUTH_STREAM_USER_QUERY = gql`
+export const ME_QUERY = gql`
+  query Me {
+    me {
+      id
+      email
+      dateAdded
+      lastUpdated
+      profile {
+        id
+        fullName
+        phoneNumber
+        gender
+        dateAdded
+        lastUpdated
+      }
+      notificationSettings {
+        id
+        token
+        email
+        appUpdates
+        pushNotifications
+        specialOffers
+      }
+    }
+  }
+`;
+
+export const AUTH_STREAM_USER_TOKEN = gql`
   query AuthStreamUserToken {
     authStreamUserToken
   }

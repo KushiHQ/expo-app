@@ -1431,6 +1431,11 @@ export type FlutterwaveCardPaymentMethodsQueryVariables = Exact<{ [key: string]:
 
 export type FlutterwaveCardPaymentMethodsQuery = { __typename?: 'Query', flutterwaveCardPaymentMethods: Array<{ __typename?: 'FlutterwaveCardPaymentMethodData', id: string, first6: string, last4: string, expiryMonth: number, expiryYear: number, network: string, cardHolderName: string }> };
 
+export type MeQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, token?: string | null, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean } } };
+
 export type AuthStreamUserTokenQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2583,6 +2588,36 @@ export const FlutterwaveCardPaymentMethodsDocument = gql`
 
 export function useFlutterwaveCardPaymentMethodsQuery(options?: Omit<Urql.UseQueryArgs<FlutterwaveCardPaymentMethodsQueryVariables>, 'query'>) {
   return Urql.useQuery<FlutterwaveCardPaymentMethodsQuery, FlutterwaveCardPaymentMethodsQueryVariables>({ query: FlutterwaveCardPaymentMethodsDocument, ...options });
+};
+export const MeDocument = gql`
+    query Me {
+  me {
+    id
+    email
+    dateAdded
+    lastUpdated
+    profile {
+      id
+      fullName
+      phoneNumber
+      gender
+      dateAdded
+      lastUpdated
+    }
+    notificationSettings {
+      id
+      token
+      email
+      appUpdates
+      pushNotifications
+      specialOffers
+    }
+  }
+}
+    `;
+
+export function useMeQuery(options?: Omit<Urql.UseQueryArgs<MeQueryVariables>, 'query'>) {
+  return Urql.useQuery<MeQuery, MeQueryVariables>({ query: MeDocument, ...options });
 };
 export const AuthStreamUserTokenDocument = gql`
     query AuthStreamUserToken {

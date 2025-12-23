@@ -1,4 +1,4 @@
-import { Platform } from "react-native";
+import { PermissionsAndroid, Platform } from "react-native";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
@@ -8,33 +8,20 @@ function handleRegistrationError(errorMessage: string) {
 	throw new Error(errorMessage);
 }
 
-export async function setupCallNotificationChannel() {
-	await Notifications.setNotificationCategoryAsync("incoming-calls", [
-		{
-			identifier: "answer",
-			buttonTitle: "Answer",
-			options: {
-				opensAppToForeground: true,
-			},
-		},
-		{
-			identifier: "decline",
-			buttonTitle: "Decline",
-			options: {
-				opensAppToForeground: true,
-				isDestructive: true,
-			},
-		},
-	]);
-	if (Platform.OS === "android") {
-		await Notifications.setNotificationChannelAsync("incoming-calls", {
-			name: "Incoming Calls",
-			importance: Notifications.AndroidImportance.MAX,
-			vibrationPattern: [0, 250, 250, 250],
-			lightColor: "#FF231F7C",
-			sound: "ringtone.mp3",
-		});
+async function ensurePushNotificationsPerm() {
+	const { status: existingStatus } = await Notifications.getPermissionsAsync();
+	let finalStatus = existingStatus;
+	if (existingStatus !== "granted") {
+		const { status } = await Notifications.requestPermissionsAsync();
+		finalStatus = status;
 	}
+	if (finalStatus !== "granted") {
+		handleRegistrationError(
+			"Permission not granted to get push token for push notification!",
+		);
+		return;
+	}
+	return finalStatus;
 }
 
 export async function registerForPushNotificationsAsync() {
@@ -48,19 +35,10 @@ export async function registerForPushNotificationsAsync() {
 	}
 
 	if (Device.isDevice) {
-		const { status: existingStatus } =
-			await Notifications.getPermissionsAsync();
-		let finalStatus = existingStatus;
-		if (existingStatus !== "granted") {
-			const { status } = await Notifications.requestPermissionsAsync();
-			finalStatus = status;
-		}
-		if (finalStatus !== "granted") {
-			handleRegistrationError(
-				"Permission not granted to get push token for push notification!",
-			);
-			return;
-		}
+		PermissionsAndroid.request(
+			PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+		);
+		await ensurePushNotificationsPerm();
 		const projectId =
 			Constants?.expoConfig?.extra?.eas?.projectId ??
 			Constants?.easConfig?.projectId;
