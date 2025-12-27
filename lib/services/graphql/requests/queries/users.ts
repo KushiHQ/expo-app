@@ -17,7 +17,6 @@ export const ME_QUERY = gql`
       }
       notificationSettings {
         id
-        token
         email
         appUpdates
         pushNotifications

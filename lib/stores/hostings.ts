@@ -146,6 +146,8 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>(
 				paymentDetails,
 				rooms,
 				saved,
+				reviews,
+				reviewAverage,
 				__typename,
 				policies,
 				...rest

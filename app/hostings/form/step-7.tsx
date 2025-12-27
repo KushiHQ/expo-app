@@ -22,6 +22,7 @@ import PublishListingSuccess from "@/components/molecules/m-publish-listing-succ
 import TextSelectButton from "@/components/molecules/m-text-select-button";
 import ItemSummary from "@/components/molecules/m-item-summary";
 import SummarySection from "@/components/atoms/a-summary-section";
+import { SimpleGrid } from "react-native-super-grid";
 
 const EditButton: React.FC<{ href: Href }> = ({ href }) => {
 	const router = useRouter();
@@ -222,11 +223,14 @@ export default function NewHostingStep6() {
 						</SummarySection>
 						<SummarySection>
 							<ThemedText>Features & Amenities</ThemedText>
-							<View className="flex-row gap-2 flex-wrap">
-								{input.facilities?.map((v, i) => (
-									<TextSelectButton key={i} value={v} selected />
-								))}
-							</View>
+							<SimpleGrid
+								itemDimension={160}
+								listKey="index"
+								data={input.facilities ?? []}
+								renderItem={({ item }) => (
+									<TextSelectButton value={item} selected />
+								)}
+							/>
 							<EditButton href={"/hostings/form/step-4"} />
 						</SummarySection>
 

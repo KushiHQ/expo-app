@@ -1,15 +1,25 @@
 import React from "react";
-import * as Notifications from "expo-notifications";
-import { EventSubscription } from "expo-modules-core";
-import { registerForPushNotificationsAsync } from "@/lib/utils/notifications";
-import { useRouter } from "expo-router";
-import { useUpdatePushNotificationTokenMutation } from "@/lib/services/graphql/generated";
+import {
+	CallType,
+	useUpdatePushNotificationTokenMutation,
+} from "@/lib/services/graphql/generated";
 import { useUser } from "@/lib/hooks/user";
+import {
+	getMessaging,
+	getToken,
+	onMessage,
+	requestPermission,
+	AuthorizationStatus,
+	setBackgroundMessageHandler,
+} from "@react-native-firebase/messaging";
+import notifee from "@notifee/react-native";
+import { handleIncomingCall, handleNotifeeEvent } from "@/lib/utils/call";
+import { useRouter } from "expo-router";
+import { CALL_TYPE_VALUE } from "@/lib/types/enums/hoting-chat";
 
 interface NotificationContextType {
 	token: string | null;
 	error: Error | null;
-	notification: Notifications.Notification | null;
 }
 
 const NotificationContext = React.createContext<
@@ -32,72 +42,108 @@ type Props = {
 };
 
 export const NotificationProvider: React.FC<Props> = ({ children }) => {
-	const router = useRouter();
 	const [token, setToken] = React.useState<string | null>(null);
 	const [error, setError] = React.useState<Error | null>(null);
-	const [notification, setNotification] =
-		React.useState<Notifications.Notification | null>(null);
-	const notificationListener = React.useRef<EventSubscription>(null);
-	const responseListener = React.useRef<EventSubscription>(null);
 	const { user } = useUser();
 	const [_, updateToken] = useUpdatePushNotificationTokenMutation();
+	const router = useRouter();
 
 	React.useEffect(() => {
-		registerForPushNotificationsAsync()
-			.then((token) => {
-				if (
-					user.user &&
-					user.user.notificationSettings.token !== token &&
-					token
-				) {
-					updateToken({
-						expoToken: token,
+		const messagingInstance = getMessaging();
+		const requestPermissionEffect = async () => {
+			const authStatus = await requestPermission(messagingInstance);
+			const enabled =
+				authStatus === AuthorizationStatus.AUTHORIZED ||
+				authStatus === AuthorizationStatus.PROVISIONAL;
+			if (enabled) {
+				const fcmToken = await getToken(messagingInstance);
+				if (fcmToken && user.user) {
+					updateToken({ input: { fcmToken } });
+				}
+				setToken(fcmToken);
+			} else {
+				setError(new Error("Permission denied"));
+			}
+		};
+
+		requestPermissionEffect();
+
+		const unsubscribeForeground = onMessage(
+			messagingInstance,
+			async (remoteMessage) => {
+				const data = remoteMessage.data;
+				if (data?.intent === CALL_TYPE_VALUE[CallType.Voice]) {
+					router.push({
+						pathname: "/chats/[id]/call/voice",
+						params: {
+							id: String(data.chatId),
+							initiate: "false",
+						},
+					});
+				} else if (data?.intent === CALL_TYPE_VALUE[CallType.Video]) {
+					router.push({
+						pathname: "/chats/[id]/call/video",
+						params: {
+							id: String(data.chatId),
+							initiate: "false",
+						},
 					});
 				}
-				setToken(token ?? null);
-			})
-			.catch((err) => setError(err ?? null));
+			},
+		);
 
-		notificationListener.current =
-			Notifications.addNotificationReceivedListener((notification) => {
-				console.log("Notifications Recieved", notification);
-				setNotification(notification);
-			});
+		setBackgroundMessageHandler(messagingInstance, handleIncomingCall);
+		notifee.setNotificationCategories([
+			{
+				id: "incoming-call",
+				actions: [
+					{
+						id: "accept",
+						title: "Accept",
+						foreground: true,
+					},
+					{
+						id: "reject",
+						title: "Reject",
+						destructive: true,
+					},
+				],
+			},
+		]);
 
-		responseListener.current =
-			Notifications.addNotificationResponseReceivedListener((response) => {
-				const actionId = response.actionIdentifier;
-				const data = response.notification.request.content.data;
-
-				if (data.intent === "voice-call") {
-					if (actionId === "answer") {
-						router.push(`/chats/${data.chatId}/voice?answer=true`);
-					} else if (actionId === "decline") {
-						console.log("Declined");
-					} else if (actionId === Notifications.DEFAULT_ACTION_IDENTIFIER) {
-						router.push(`/chats/${data.chatId}/voice?initiate=false`);
-					}
+		notifee.getInitialNotification().then((notification) => {
+			if (notification) {
+				const data = notification.notification.data as any;
+				if (data?.intent === CALL_TYPE_VALUE[CallType.Voice]) {
+					router.push({
+						pathname: "/chats/[id]/call/voice",
+						params: {
+							id: String(data.chatId),
+							initiate: "false",
+						},
+					});
+				} else if (data?.intent === CALL_TYPE_VALUE[CallType.Video]) {
+					router.push({
+						pathname: "/chats/[id]/call/video",
+						params: {
+							id: String(data.chatId),
+							initiate: "false",
+						},
+					});
 				}
+			}
+		});
 
-				console.log(
-					"Notification Response",
-					JSON.stringify(response, null, 2),
-					JSON.stringify(response.notification.request.content.data, null, 2),
-				);
-			});
+		notifee.onBackgroundEvent(handleNotifeeEvent);
+		notifee.onForegroundEvent(handleNotifeeEvent);
 
 		return () => {
-			if (notificationListener.current) {
-				notificationListener.current.remove();
-			}
-			if (responseListener.current) {
-				responseListener.current.remove();
-			}
+			unsubscribeForeground();
 		};
 	}, [user]);
 
 	return (
-		<NotificationContext.Provider value={{ error, token, notification }}>
+		<NotificationContext.Provider value={{ error, token }}>
 			{children}
 		</NotificationContext.Provider>
 	);

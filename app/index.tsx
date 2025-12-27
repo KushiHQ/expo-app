@@ -9,15 +9,11 @@ import { useRefreshTokenMutation } from "@/lib/services/graphql/generated";
 import { getAuthTokens, saveAuthTokens } from "@/lib/utils/auth";
 import { useUser } from "@/lib/hooks/user";
 import { UserType } from "@/lib/types/users";
-import { checkActiveCalls } from "@/lib/utils/call";
-import { useStreamVideoClient } from "@stream-io/video-react-native-sdk";
 
 export default function HomeScreen() {
 	const { user, updateUser } = useUser();
 	const [, refreshToken] = useRefreshTokenMutation();
 	const router = useRouter();
-
-	const client = useStreamVideoClient();
 
 	React.useEffect(() => {
 		const handleRefreshToken = async () => {
@@ -34,19 +30,16 @@ export default function HomeScreen() {
 				router.replace("/onboarding");
 			} else {
 				handleRefreshToken().then(async (res) => {
-					if (client) {
-						await checkActiveCalls(client, user.user?.id ?? "", router);
-					}
 					if (res?.error) {
 						router.replace("/auth/sign-in");
 					}
 					if (res?.data?.refreshToken.data) {
-						updateUser(res.data.refreshToken.data.user);
 						const tokens = res.data.refreshToken.data;
 						saveAuthTokens({
 							access: tokens.token,
 							refresh: tokens.refreshToken,
 						});
+						updateUser(res.data.refreshToken.data.user);
 						if (user.userType === UserType.Host) {
 							router.replace("/host/analytics");
 						} else {

@@ -103,6 +103,11 @@ export enum BookingStatus {
   Paid = 'PAID'
 }
 
+export enum CallType {
+  Video = 'VIDEO',
+  Voice = 'VOICE'
+}
+
 export type CompletePasswordChangeInput = {
   email: Scalars['String']['input'];
   otp: Scalars['String']['input'];
@@ -514,7 +519,7 @@ export type Mutations = {
   requestPasswordChange: MessageResponse;
   resendEmailVerificationOtp: MessageResponse;
   resendPasswordChangeOtp: MessageResponse;
-  sendChatVoiceCallNotification: MessageResponse;
+  sendChatCallNotification: MessageResponse;
   signUp: UserResponse;
   updateGuest: GuestResponse;
   updateHost: HostResponse;
@@ -651,7 +656,8 @@ export type MutationsResendPasswordChangeOtpArgs = {
 };
 
 
-export type MutationsSendChatVoiceCallNotificationArgs = {
+export type MutationsSendChatCallNotificationArgs = {
+  callType: CallType;
   chatId: Scalars['String']['input'];
 };
 
@@ -677,7 +683,7 @@ export type MutationsUpdateProfileArgs = {
 
 
 export type MutationsUpdatePushNotificationTokenArgs = {
-  expoToken: Scalars['String']['input'];
+  tokens: UpdateNotificationTokensInput;
 };
 
 
@@ -712,11 +718,12 @@ export type NotificationSettings = {
   appUpdates: Scalars['Boolean']['output'];
   createdAt: Scalars['String']['output'];
   email: Scalars['Boolean']['output'];
+  fcmToken?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
   pushNotifications: Scalars['Boolean']['output'];
   specialOffers: Scalars['Boolean']['output'];
-  token?: Maybe<Scalars['String']['output']>;
+  voipToken?: Maybe<Scalars['String']['output']>;
 };
 
 export type NotificationSettingsInput = {
@@ -1053,6 +1060,11 @@ export enum TransactionType {
   HostBookingPayment = 'host_booking_payment'
 }
 
+export type UpdateNotificationTokensInput = {
+  fcmToken?: InputMaybe<Scalars['String']['input']>;
+  voipToken?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type User = {
   __typename?: 'User';
   dateAdded: Scalars['String']['output'];
@@ -1087,7 +1099,7 @@ export type RefreshTokenMutationVariables = Exact<{
 }>;
 
 
-export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, token?: string | null, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean } } } | null } };
+export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean } } } | null } };
 
 export type VerifyEmailMutationVariables = Exact<{
   input: Otpinput;
@@ -1108,7 +1120,7 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutations', login: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, token?: string | null, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean } } } | null } };
+export type LoginMutation = { __typename?: 'Mutations', login: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean } } } | null } };
 
 export type RequestPasswordChangeMutationVariables = Exact<{
   input: RequestPasswordChangeInput;
@@ -1173,12 +1185,13 @@ export type ClearChatUrnreadMessagesMutationVariables = Exact<{
 
 export type ClearChatUrnreadMessagesMutation = { __typename?: 'Mutations', clearChatUrnreadMessages: { __typename?: 'MessageResponse', message: string } };
 
-export type SendChatVoiceCallNotificationMutationVariables = Exact<{
+export type SendChatCallNotificationMutationVariables = Exact<{
   chatId: Scalars['String']['input'];
+  callType: CallType;
 }>;
 
 
-export type SendChatVoiceCallNotificationMutation = { __typename?: 'Mutations', sendChatVoiceCallNotification: { __typename?: 'MessageResponse', message: string } };
+export type SendChatCallNotificationMutation = { __typename?: 'Mutations', sendChatCallNotification: { __typename?: 'MessageResponse', message: string } };
 
 export type CreateUpdateSavedHostingFolderMutationVariables = Exact<{
   input: SavedHostingFolderInput;
@@ -1286,7 +1299,7 @@ export type UpdateGuestMutationVariables = Exact<{
 export type UpdateGuestMutation = { __typename?: 'Mutations', updateGuest: { __typename?: 'GuestResponse', message: string, data?: { __typename?: 'Guest', signature?: { __typename?: 'Asset', publicUrl: string, id: string } | null } | null } };
 
 export type UpdatePushNotificationTokenMutationVariables = Exact<{
-  expoToken: Scalars['String']['input'];
+  input: UpdateNotificationTokensInput;
 }>;
 
 
@@ -1434,7 +1447,7 @@ export type FlutterwaveCardPaymentMethodsQuery = { __typename?: 'Query', flutter
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, token?: string | null, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean } } };
+export type MeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean } } };
 
 export type AuthStreamUserTokenQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1512,7 +1525,6 @@ export const RefreshTokenDocument = gql`
         }
         notificationSettings {
           id
-          token
           email
           appUpdates
           pushNotifications
@@ -1572,7 +1584,6 @@ export const LoginDocument = gql`
         }
         notificationSettings {
           id
-          token
           email
           appUpdates
           pushNotifications
@@ -1719,16 +1730,16 @@ export const ClearChatUrnreadMessagesDocument = gql`
 export function useClearChatUrnreadMessagesMutation() {
   return Urql.useMutation<ClearChatUrnreadMessagesMutation, ClearChatUrnreadMessagesMutationVariables>(ClearChatUrnreadMessagesDocument);
 };
-export const SendChatVoiceCallNotificationDocument = gql`
-    mutation SendChatVoiceCallNotification($chatId: String!) {
-  sendChatVoiceCallNotification(chatId: $chatId) {
+export const SendChatCallNotificationDocument = gql`
+    mutation SendChatCallNotification($chatId: String!, $callType: CallType!) {
+  sendChatCallNotification(chatId: $chatId, callType: $callType) {
     message
   }
 }
     `;
 
-export function useSendChatVoiceCallNotificationMutation() {
-  return Urql.useMutation<SendChatVoiceCallNotificationMutation, SendChatVoiceCallNotificationMutationVariables>(SendChatVoiceCallNotificationDocument);
+export function useSendChatCallNotificationMutation() {
+  return Urql.useMutation<SendChatCallNotificationMutation, SendChatCallNotificationMutationVariables>(SendChatCallNotificationDocument);
 };
 export const CreateUpdateSavedHostingFolderDocument = gql`
     mutation CreateUpdateSavedHostingFolder($input: SavedHostingFolderInput!) {
@@ -1999,8 +2010,8 @@ export function useUpdateGuestMutation() {
   return Urql.useMutation<UpdateGuestMutation, UpdateGuestMutationVariables>(UpdateGuestDocument);
 };
 export const UpdatePushNotificationTokenDocument = gql`
-    mutation UpdatePushNotificationToken($expoToken: String!) {
-  updatePushNotificationToken(expoToken: $expoToken) {
+    mutation UpdatePushNotificationToken($input: UpdateNotificationTokensInput!) {
+  updatePushNotificationToken(tokens: $input) {
     message
   }
 }
@@ -2606,7 +2617,6 @@ export const MeDocument = gql`
     }
     notificationSettings {
       id
-      token
       email
       appUpdates
       pushNotifications

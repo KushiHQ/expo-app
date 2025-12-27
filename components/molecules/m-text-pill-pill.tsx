@@ -35,6 +35,7 @@ const TextPill: React.FC<Props> = ({ icon, children, selected, onSelect }) => {
 				/>
 			)}
 			<ThemedText
+				className="whitespace-nowrap"
 				style={{
 					fontSize: 14,
 					color: hexToRgba(

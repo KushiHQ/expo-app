@@ -18,6 +18,7 @@ export default ({ config }) => ({
 		supportsTablet: true,
 		bundleIdentifier: "com.mceazy2700.kushi",
 		googleServicesFile: "./GoogleService-Info.plist",
+		useNextNotificationsApi: true,
 		entitlements: {
 			"com.apple.developer.usernotifications.communication": true,
 			"aps-environment": "production",
@@ -27,6 +28,7 @@ export default ({ config }) => ({
 				"This app needs access to your location to determine the address of properties.",
 
 			ITSAppUsesNonExemptEncryption: false,
+			UIBackgroundModes: ["remote-notification", "audio"],
 		},
 		icon: {
 			dark: "./assets/icons/ios-dark.png",
@@ -48,6 +50,21 @@ export default ({ config }) => ({
 			"android.permission.POST_NOTIFICATIONS",
 			"android.permission.FOREGROUND_SERVICE",
 			"android.permission.USE_FULL_SCREEN_INTENT",
+			"android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE",
+			"android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING",
+			"android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+			"android.permission.FOREGROUND_SERVICE_CAMERA",
+			"android.permission.FOREGROUND_SERVICE_MICROPHONE",
+			"android.permission.FOREGROUND_SERVICE_PHONE_CALL",
+			"android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING",
+			"ACCESS_NETWORK_STATE",
+			"BLUETOOTH",
+			"CAMERA",
+			"INTERNET",
+			"MODIFY_AUDIO_SETTINGS",
+			"RECORD_AUDIO",
+			"SYSTEM_ALERT_WINDOW",
+			"WAKE_LOCK",
 		],
 		config: {
 			googleMaps: {
@@ -63,20 +80,19 @@ export default ({ config }) => ({
 		favicon: "./assets/icons/adaptive-icon.png",
 	},
 	extra: {
+		router: {
+			origin: false,
+		},
 		eas: {
 			projectId: "c5a2d72c-0706-49ba-b9ea-9a063526c049",
 		},
 	},
 	owner: "mceazy2700",
 	plugins: [
+		"./lib/plugins/withViopPush.js",
+		"./lib/plugins/withNotifeeForeground.js",
 		"expo-audio",
 		"expo-web-browser",
-		[
-			"expo-notifications",
-			{
-				icon: "./assets/icons/adaptive-icon.png",
-			},
-		],
 		[
 			"@react-native-community/datetimepicker",
 			{
@@ -160,8 +176,6 @@ export default ({ config }) => ({
 				locationPermission: "Allow $(PRODUCT_NAME) to use your location",
 			},
 		],
-		"@react-native-firebase/app",
-		"@react-native-firebase/messaging",
 		[
 			"@stream-io/video-react-native-sdk",
 			{
@@ -173,7 +187,6 @@ export default ({ config }) => ({
 				androidKeepCallAlive: true,
 			},
 		],
-		"@config-plugins/react-native-callkeep",
 		[
 			"@config-plugins/react-native-webrtc",
 			{
@@ -184,6 +197,8 @@ export default ({ config }) => ({
 				runServiceOnBoot: true,
 			},
 		],
+		"@react-native-firebase/app",
+		"@react-native-firebase/messaging",
 	],
 	experiments: {
 		typedRoutes: true,

@@ -29,8 +29,8 @@ export const UPDATE_GUEST = gql`
 `;
 
 export const UPDATE_PUSH_NOTIFICATION_TOKEN = gql`
-  mutation UpdatePushNotificationToken($expoToken: String!) {
-    updatePushNotificationToken(expoToken: $expoToken) {
+  mutation UpdatePushNotificationToken($input: UpdateNotificationTokensInput!) {
+    updatePushNotificationToken(tokens: $input) {
       message
     }
   }

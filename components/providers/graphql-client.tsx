@@ -38,6 +38,7 @@ const wsClient = createWSClient({
 const createClient = () => {
 	return new Client({
 		url: process.env.EXPO_PUBLIC_GRAPHQL_URL ?? "",
+		preferGetMethod: false,
 		exchanges: [
 			cacheExchange,
 			authExchange(async (utils) => {

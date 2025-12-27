@@ -31,7 +31,6 @@ export const REFRESH_TOKEN_MUTATION = gql`
           }
           notificationSettings {
             id
-            token
             email
             appUpdates
             pushNotifications
@@ -82,7 +81,6 @@ export const LOGIN_MUTATION = gql`
           }
           notificationSettings {
             id
-            token
             email
             appUpdates
             pushNotifications

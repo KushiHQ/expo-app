@@ -1,6 +1,7 @@
 import {
-  useCall,
-  useStreamVideoClient,
+	callManager,
+	useCall,
+	useCallStateHooks,
 } from "@stream-io/video-react-native-sdk";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
@@ -9,132 +10,200 @@ import { useHostingChatQuery } from "../services/graphql/generated";
 import { cast } from "../types/utils";
 import { useCountUp } from "./use-countup";
 import { useAudioPlayer } from "expo-audio";
-import { checkActiveCalls, joinWithRetry } from "../utils/call";
+import { joinWithRetry } from "../utils/call";
+import { CameraType } from "expo-camera";
 
 const callerRingtone = require("@/assets/audio/caller-ringtone.mp3");
 const receiverRingtone = require("@/assets/audio/ringtone.mp3");
 
-export const useIncomingCallListener = () => {
-  const { user } = useUser();
-  const client = useStreamVideoClient();
-  const router = useRouter();
-
-  React.useEffect(() => {
-    if (!client) return;
-
-    const unsubscribe = client.on("call.ring", (e) => {
-      const call = e.call;
-
-      const callId = call.cid.split(":")[1];
-
-      router.push(`/chats/${callId}/voice?initiate=false`);
-    });
-
-    checkActiveCalls(client, user.user?.id ?? "", router);
-
-    return () => {
-      unsubscribe();
-    };
-  }, [client, user]);
-};
-
 export const useActiveCall = () => {
-  const router = useRouter();
-  const { id, initiate } = useLocalSearchParams();
-  const { user } = useUser();
-  const call = useCall();
-  const [isRinging, setIsRinging] = React.useState(true);
-  const [{ data: chatData }] = useHostingChatQuery({
-    variables: { chatId: cast(id) },
-  });
-  const { formatted: callDuration } = useCountUp(!isRinging);
-  const player = useAudioPlayer(
-    initiate === "true" ? callerRingtone : receiverRingtone,
-  );
+	const router = useRouter();
+	const { id, initiate, accept, video } = useLocalSearchParams();
+	const { user } = useUser();
+	const call = useCall();
+	const { useRemoteParticipants } = useCallStateHooks();
+	const [facing, setFacing] = React.useState<CameraType>("front");
+	const [isRinging, setIsRinging] = React.useState(true);
+	const [{ data: chatData }] = useHostingChatQuery({
+		variables: { chatId: cast(id) },
+	});
+	const [cameraEnabled, setCameraEnabled] = React.useState(false);
+	const [micEnabled, setMicEnabled] = React.useState(true);
+	const { formatted: callDuration } = useCountUp(!isRinging);
+	const player = useAudioPlayer(
+		initiate === "true" ? callerRingtone : receiverRingtone,
+	);
+	const [isSpeakerOn, setIsSpeakerOn] = React.useState(false);
+	const remoteParticipants = useRemoteParticipants();
+	const isVideoCall = video === "true";
 
-  React.useEffect(() => {
-    const playRingTone = async () => {
-      try {
-        player.loop = true;
-        player.seekTo(0);
-        player.play();
-        setIsRinging(true);
-      } catch (err) {
-        console.log("Error loading ringtone", err);
-      }
-    };
-    playRingTone();
-  }, [player]);
+	React.useEffect(() => {
+		const playRingTone = async () => {
+			try {
+				player.loop = true;
+				player.seekTo(0);
+				player.play();
+				setIsRinging(true);
+			} catch (err) {
+				console.log("Error loading ringtone", err);
+			}
+		};
+		playRingTone();
+	}, [player]);
 
-  React.useEffect(() => {
-    return () => {
-      call?.endCall();
-      call?.update({
-        custom: {
-          recipient: null,
-        },
-      });
-    };
-  }, [call]);
+	React.useEffect(() => {
+		if (call) {
+			call.camera.selectDirection(facing);
+		}
+	}, [facing]);
 
-  React.useEffect(() => {
-    const unsubscribe = call?.on("call.session_participant_joined", (p) => {
-      if (p.participant.user.id !== user.user?.id) {
-        stopRingtone();
-        setIsRinging(false);
-      }
-    });
-    const unsubscribeAccepted = call?.on("call.accepted", () => {
-      stopRingtone();
-      setIsRinging(false);
-    });
-    const unsubscribeCallEnd = call?.on("call.ended", () => {
-      router.back();
-    });
+	React.useEffect(() => {
+		if (accept === "true") {
+			handleJoin();
+		} else if (accept === "false") {
+			handleLeave();
+		}
+	}, [accept]);
 
-    return () => {
-      unsubscribe?.();
-      unsubscribeAccepted?.();
-      unsubscribeCallEnd?.();
-    };
-  }, [call]);
+	React.useEffect(() => {
+		const unsubscribe = call?.on("call.session_participant_joined", (p) => {
+			if (p.participant.user.id !== user.user?.id) {
+				stopRingtone();
+				setIsRinging(false);
+			}
+		});
+		const unsubscribeAccepted = call?.on("call.accepted", () => {
+			stopRingtone();
+			setIsRinging(false);
+		});
+		const unsubscribeCallEnd = call?.on(
+			"call.session_participant_left",
+			(p) => {
+				if (p.participant.user.id !== user.user?.id) {
+					router.back();
+				}
+			},
+		);
 
-  const stopRingtone = async () => {
-    try {
-      if (player) {
-        player.pause();
-      }
-    } catch { }
-    setIsRinging(false);
-  };
+		return () => {
+			unsubscribe?.();
+			unsubscribeAccepted?.();
+			unsubscribeCallEnd?.();
+		};
+	}, [call]);
 
-  function handleLeave() {
-    stopRingtone();
-    try {
-      if (initiate === "true") {
-        call?.leave();
-      } else {
-        call?.reject();
-      }
-    } catch { }
-    router.replace(`/chats/${id}`);
-  }
+	React.useEffect(() => {
+		if (call) {
+			callManager.speaker.setForceSpeakerphoneOn(isSpeakerOn);
+		}
+	}, [isSpeakerOn]);
 
-  async function handleJoin() {
-    stopRingtone();
-    try {
-      if (call) joinWithRetry(call);
-    } catch (e) {
-      console.error("Join failed", e);
-    }
-  }
+	React.useEffect(() => {
+		if (call) {
+			if (!micEnabled) {
+				call.microphone.disable();
+			} else {
+				call.microphone.enable();
+			}
+		}
+	}, [call, micEnabled]);
 
-  return {
-    callDuration,
-    isCaller: initiate === "true",
-    recipient: chatData?.hostingChat.recipientUser,
-    leaveCall: handleLeave,
-    joinCall: handleJoin,
-    isRinging,
-  };
+	const stopRingtone = async () => {
+		try {
+			if (player) {
+				player.pause();
+			}
+		} catch {}
+		setIsRinging(false);
+	};
+
+	function handleLeave() {
+		stopRingtone();
+		try {
+			if (initiate === "true") {
+				call?.leave();
+			} else {
+				call?.reject();
+			}
+		} catch {}
+		router.replace(`/chats/${id}`);
+	}
+
+	async function handleJoin() {
+		stopRingtone();
+		try {
+			if (call) {
+				joinWithRetry(call, {
+					video: isVideoCall,
+					data: {
+						settings_override: {
+							video: {
+								camera_default_on: isVideoCall,
+								target_resolution: {
+									bitrate: 400000,
+									height: 640,
+									width: 360,
+								},
+							},
+						},
+					},
+				});
+				if (isVideoCall) {
+					await call.camera.enable();
+					setCameraEnabled(true);
+				}
+			}
+		} catch (e) {
+			console.error("Join failed", e);
+		}
+	}
+
+	function toggleSpeakerOn() {
+		setIsSpeakerOn((c) => !c);
+	}
+
+	function toggleFacingCamera() {
+		setFacing((c) => {
+			if (c === "front") {
+				return "back";
+			} else {
+				return "front";
+			}
+		});
+	}
+
+	function toggleCamera() {
+		if (call) {
+			if (!cameraEnabled) {
+				call.camera.enable();
+				setCameraEnabled(true);
+			} else {
+				call.camera.disable();
+				setCameraEnabled(false);
+			}
+		}
+	}
+
+	function toggleMic() {
+		setMicEnabled((c) => !c);
+	}
+
+	return {
+		call,
+		callDuration,
+		isCaller: initiate === "true",
+		recipient: chatData?.hostingChat.recipientUser,
+		leaveCall: handleLeave,
+		joinCall: handleJoin,
+		isRinging,
+		isSpeakerOn,
+		toggleSpeakerOn,
+		remoteParticipant: remoteParticipants.at(0),
+		toggleFacingCamera,
+		setFacing,
+		toggleCamera,
+		cameraEnabled,
+		micEnabled,
+		toggleMic,
+	};
 };
