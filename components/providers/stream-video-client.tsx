@@ -1,5 +1,6 @@
 import { useUser } from "@/lib/hooks/user";
 import { useAuthStreamUserTokenQuery } from "@/lib/services/graphql/generated";
+import { cast } from "@/lib/types/utils";
 import {
 	StreamVideo,
 	StreamVideoClient,
@@ -20,7 +21,7 @@ const StreamVideoClientProvider: React.FC<Props> = ({ children }) => {
 				apiKey: process.env.EXPO_PUBLIC_STREAM_API_KEY ?? "",
 				user: { id: user.user?.id ?? "" },
 				token: tokenData?.authStreamUserToken,
-				options: {
+				options: cast({
 					locationHintTimeout: 10000,
 					logLevel: "error",
 					iceServers: [
@@ -30,7 +31,7 @@ const StreamVideoClientProvider: React.FC<Props> = ({ children }) => {
 						{ urls: "stun:stun3.l.google.com:19302" },
 						{ urls: "stun:stun4.l.google.com:19302" },
 					],
-				},
+				}),
 			});
 			return client;
 		}

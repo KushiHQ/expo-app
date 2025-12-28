@@ -177,9 +177,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 							{withVideo && (
 								<Pressable
 									onPress={() =>
-										router.push(
-											`/chats/${id}/call/video?video=true&initiate=true`,
-										)
+										router.push(`/chats/${id}/call/video?initiate=true`)
 									}
 									className="h-8 w-8 rounded-full justify-center items-center"
 									style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}

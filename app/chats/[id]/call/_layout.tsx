@@ -13,7 +13,7 @@ import {
 	useStreamVideoClient,
 	callManager,
 } from "@stream-io/video-react-native-sdk";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, usePathname } from "expo-router";
 import React, { useEffect, useState } from "react";
 import CallScreen from "@/components/screens/call";
 import ChatVideoCallScreen from "@/components/screens/video-call";
@@ -21,8 +21,9 @@ import ChatVideoCallScreen from "@/components/screens/video-call";
 export default function Layout() {
 	const { user } = useUser();
 
-	const { id, initiate, video } = useLocalSearchParams();
-	const isVideoCall = video === "true";
+	const pathname = usePathname();
+	const { id, initiate } = useLocalSearchParams();
+	const isVideoCall = pathname.endsWith("video");
 
 	const [{ data: tokenData }] = useAuthStreamUserTokenQuery();
 	const [{ data: chatData }] = useHostingChatQuery({
@@ -80,6 +81,10 @@ export default function Layout() {
 							},
 						},
 					});
+
+					if (isVideoCall) {
+						await myCall.camera.enable();
+					}
 
 					await sendNotification({
 						chatId: cast(id),

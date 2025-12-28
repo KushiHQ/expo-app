@@ -18,7 +18,6 @@ export const joinWithRetry = async (
 ) => {
 	for (let attempt = 1; attempt <= retries; attempt++) {
 		try {
-			console.log("OPTS", options);
 			await call.join(options);
 			return;
 		} catch (error: any) {

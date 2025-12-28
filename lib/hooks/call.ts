@@ -3,7 +3,7 @@ import {
 	useCall,
 	useCallStateHooks,
 } from "@stream-io/video-react-native-sdk";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, usePathname, useRouter } from "expo-router";
 import React from "react";
 import { useUser } from "./user";
 import { useHostingChatQuery } from "../services/graphql/generated";
@@ -18,10 +18,12 @@ const receiverRingtone = require("@/assets/audio/ringtone.mp3");
 
 export const useActiveCall = () => {
 	const router = useRouter();
-	const { id, initiate, accept, video } = useLocalSearchParams();
+	const pathname = usePathname();
+	const isVideoCall = pathname.endsWith("video");
+	const { id, initiate, accept } = useLocalSearchParams();
 	const { user } = useUser();
 	const call = useCall();
-	const { useRemoteParticipants } = useCallStateHooks();
+	const { useRemoteParticipants, useLocalParticipant } = useCallStateHooks();
 	const [facing, setFacing] = React.useState<CameraType>("front");
 	const [isRinging, setIsRinging] = React.useState(true);
 	const [{ data: chatData }] = useHostingChatQuery({
@@ -33,9 +35,9 @@ export const useActiveCall = () => {
 	const player = useAudioPlayer(
 		initiate === "true" ? callerRingtone : receiverRingtone,
 	);
-	const [isSpeakerOn, setIsSpeakerOn] = React.useState(false);
+	const [isSpeakerOn, setIsSpeakerOn] = React.useState(isVideoCall);
 	const remoteParticipants = useRemoteParticipants();
-	const isVideoCall = video === "true";
+	const localPaticipant = useLocalParticipant();
 
 	React.useEffect(() => {
 		const playRingTone = async () => {
@@ -84,6 +86,8 @@ export const useActiveCall = () => {
 				}
 			},
 		);
+
+		callManager.speaker.setForceSpeakerphoneOn(isSpeakerOn);
 
 		return () => {
 			unsubscribe?.();
@@ -199,6 +203,7 @@ export const useActiveCall = () => {
 		isSpeakerOn,
 		toggleSpeakerOn,
 		remoteParticipant: remoteParticipants.at(0),
+		localPaticipant,
 		toggleFacingCamera,
 		setFacing,
 		toggleCamera,

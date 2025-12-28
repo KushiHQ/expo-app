@@ -17,6 +17,7 @@ import { cast } from "@/lib/types/utils";
 import { GravityUiArrowsRotateRight } from "../icons/i-rotate";
 import CallParticipantProfile from "../molecules/m-call-participant-profile";
 import { useRouter } from "expo-router";
+import { VideoRenderer } from "@stream-io/video-react-native-sdk";
 
 type Props = {
 	callData?: ReturnType<typeof useActiveCall>;
@@ -26,7 +27,7 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
 	const router = useRouter();
 	const colors = useThemeColors();
 
-	const myStream = callData?.call?.camera?.state?.mediaStream;
+	const myStream = callData?.localPaticipant?.videoStream;
 	const remoteStream = callData?.remoteParticipant?.videoStream;
 
 	const activeStream =
@@ -34,16 +35,9 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
 			? myStream
 			: remoteStream;
 
-	console.log(callData?.remoteParticipant?.videoStream);
-
-	console.log(
-		cast<any>(remoteStream)?.toURL?.(),
-		cast<any>(myStream)?.toURL?.(),
-	);
-
 	React.useEffect(() => {
 		let timeout: number;
-		if (callData?.cameraEnabled !== true) {
+		if (!callData?.cameraEnabled) {
 			callData?.toggleCamera();
 			timeout = setTimeout(() => {
 				callData?.setFacing("front");
@@ -57,17 +51,30 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
 
 	return (
 		<View style={styles.container}>
-			{activeStream && (
-				<RTCView
-					style={{ position: "absolute", inset: 0 }}
-					streamURL={cast<any>(activeStream)?.toURL?.()}
-					mirror={callData?.isRinging}
-					objectFit="cover"
+			{callData?.remoteParticipant ? (
+				<VideoRenderer
+					participant={callData.remoteParticipant}
+					// style={{ position: "absolute", inset: 0 }}
 				/>
+			) : (
+				activeStream && (
+					<RTCView
+						style={{ position: "absolute", inset: 0 }}
+						streamURL={cast<any>(activeStream)?.toURL?.()}
+						mirror={callData?.isRinging}
+						objectFit="cover"
+					/>
+				)
 			)}
 			<View className="absolute inset-0">
 				<DetailsLayout
-					title="Calling..."
+					title={
+						callData?.isRinging || !callData
+							? !callData || callData?.isCaller
+								? "Calling..."
+								: "Incoming Call"
+							: callData.recipient?.profile.fullName
+					}
 					backButton="solid"
 					background="transparent"
 				>
@@ -98,14 +105,18 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
 									},
 								]}
 							>
-								<RTCView
-									streamURL={cast<any>(
-										callData?.call?.camera.state.mediaStream,
-									)?.toURL?.()}
-									style={{ height: "100%", width: "100%", borderRadius: 16 }}
-									mirror={callData?.call?.camera.state.direction === "front"}
-									objectFit="cover"
-								/>
+								{callData.localPaticipant ? (
+									<VideoRenderer participant={callData.localPaticipant} />
+								) : (
+									<RTCView
+										streamURL={cast<any>(
+											callData?.call?.camera.state.mediaStream,
+										)?.toURL?.()}
+										style={{ height: "100%", width: "100%", borderRadius: 16 }}
+										mirror={callData?.call?.camera.state.direction === "front"}
+										objectFit="cover"
+									/>
+								)}
 							</View>
 						)}
 
@@ -278,11 +289,11 @@ const styles = StyleSheet.create({
 		position: "absolute",
 		bottom: 200,
 		right: 20,
-		width: 120,
-		height: 160,
-		borderRadius: 16,
+		width: 140,
+		height: 200,
+		borderRadius: 10,
 		overflow: "hidden",
-		borderWidth: 1,
+		borderWidth: 3,
 	},
 	controlsContainer: {
 		position: "absolute",
