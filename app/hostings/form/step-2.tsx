@@ -263,12 +263,19 @@ export default function NewHostingStep2() {
 							<View className="flex-row items-center gap-2">
 								<SelectInput
 									focused
-									value={rooms[index] ? Room[rooms[index].name] : undefined}
+									defaultValue={
+										rooms[index]
+											? {
+													label: Room[rooms[index].name],
+													value: Room[rooms[index].name],
+												}
+											: undefined
+									}
 									label="Room"
 									placeholder="Select room or exterior to add image"
 									onSelect={(v) =>
 										handleSaveHostingRoom(index, {
-											name: v.value,
+											name: cast(v.value),
 											images: [],
 											count: 1,
 										})
@@ -474,10 +481,10 @@ export default function NewHostingStep2() {
 										source={
 											rooms[deleteModalIndex].images.length
 												? {
-													uri: failedImages.has(0)
-														? FALLBACK_IMAGE
-														: rooms[deleteModalIndex].images[0],
-												}
+														uri: failedImages.has(0)
+															? FALLBACK_IMAGE
+															: rooms[deleteModalIndex].images[0],
+													}
 												: require("@/assets/images/room-image.jpg")
 										}
 										style={{

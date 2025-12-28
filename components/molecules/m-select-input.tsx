@@ -3,7 +3,6 @@ import { FloatingLabelInputProps } from "../atoms/a-floating-label-input";
 import BottomSheet from "../atoms/a-bottom-sheet";
 import { GestureResponderEvent, Pressable, View } from "react-native";
 import ThemedText from "../atoms/a-themed-text";
-import { CarbonCircleFilled, CarbonCircleOutline } from "../icons/i-circle";
 import { ChevronDown } from "lucide-react-native";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
@@ -17,6 +16,8 @@ export type SelectionDetails = { selected?: boolean };
 
 interface BaseProps<T> extends Omit<FloatingLabelInputProps, "defaultValue"> {
 	defaultValue?: T;
+	getValueString?: (value: any) => string;
+	selectedValueString?: string;
 	options: T[];
 	onSelect?: (v: T) => void;
 	renderItem: React.FC<T & SelectionDetails>;
@@ -47,14 +48,15 @@ const SelectInput = <T extends {}>(props: Props<T>) => {
 	const [value, setValue] = React.useState(props.defaultValue);
 	const [search, setSearch] = React.useState("");
 	const colors = useThemeColors();
-	const selectedValue = React.useMemo(() => getValueString(value), [value]);
+	const valueStringFunc = props.getValueString ?? getValueString;
+	const selectedValue = React.useMemo(() => valueStringFunc(value), [value]);
 
 	const filtered = rest.searchable
 		? options.filter((v) =>
-			String(cast<Record<string, string>>(v)[rest.searchField])
-				.toLowerCase()
-				.includes(search.toLowerCase()),
-		)
+				String(cast<Record<string, string>>(v)[rest.searchField])
+					.toLowerCase()
+					.includes(search.toLowerCase()),
+			)
 		: options;
 
 	const handlePress = (e: GestureResponderEvent) => {
@@ -63,8 +65,6 @@ const SelectInput = <T extends {}>(props: Props<T>) => {
 
 		setOpen(true);
 	};
-
-	console.log(value);
 
 	return (
 		<>
@@ -89,10 +89,12 @@ const SelectInput = <T extends {}>(props: Props<T>) => {
 							ellipsizeMode="tail"
 							style={{
 								fontSize: 14,
+								maxWidth: "80%",
 								color: !value ? hexToRgba(colors.text, 0.4) : colors.text,
 							}}
 						>
-							{capitalize(selectedValue ?? rest.placeholder ?? "")}
+							{props.selectedValueString ??
+								capitalize(selectedValue ?? rest.placeholder ?? "")}
 						</ThemedText>
 						<ChevronDown color={hexToRgba(colors.text, 0.4)} />
 					</View>
@@ -125,7 +127,7 @@ const SelectInput = <T extends {}>(props: Props<T>) => {
 									{...v}
 									selected={
 										String(selectedValue).toLowerCase() ===
-										String(getValueString(v)).toLowerCase()
+										String(valueStringFunc(v)).toLowerCase()
 									}
 								/>
 							</Pressable>

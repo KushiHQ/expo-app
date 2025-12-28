@@ -7,7 +7,8 @@ import { useFallbackImages } from "@/lib/hooks/images";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import ThemedText from "../atoms/a-themed-text";
-import { CarbonCircleFilled, CarbonCircleOutline } from "../icons/i-circle";
+import Checkbox from "../atoms/a-checkbox";
+import { hexToRgba } from "@/lib/utils/colors";
 
 type Props = Bank & SelectionDetails;
 
@@ -50,11 +51,10 @@ const BankSelectOption: React.FC<Props> = ({ selected, ...bank }) => {
 				</View>
 				<ThemedText>{bank.name}</ThemedText>
 			</View>
-			{selected ? (
-				<CarbonCircleFilled size={16} color={colors.primary} />
-			) : (
-				<CarbonCircleOutline size={16} color={colors.primary} />
-			)}
+			<Checkbox
+				color={selected ? colors.primary : hexToRgba(colors.text, 0.6)}
+				checked={selected}
+			/>
 		</View>
 	);
 };

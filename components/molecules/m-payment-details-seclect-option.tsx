@@ -6,9 +6,9 @@ import { useFallbackImages } from "@/lib/hooks/images";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import ThemedText from "../atoms/a-themed-text";
-import { CarbonCircleFilled, CarbonCircleOutline } from "../icons/i-circle";
 import { HostPaymentDetailsQuery } from "@/lib/services/graphql/generated";
 import { hexToRgba } from "@/lib/utils/colors";
+import Checkbox from "../atoms/a-checkbox";
 
 type Props = HostPaymentDetailsQuery["hostPaymentDetails"][number] &
 	SelectionDetails;
@@ -62,11 +62,10 @@ const PaymentDetailsSelectOption: React.FC<Props> = ({
 					</ThemedText>
 				</View>
 			</View>
-			{selected ? (
-				<CarbonCircleFilled size={16} color={colors.primary} />
-			) : (
-				<CarbonCircleOutline size={16} color={colors.primary} />
-			)}
+			<Checkbox
+				color={selected ? colors.primary : hexToRgba(colors.text, 0.6)}
+				checked={selected}
+			/>
 		</View>
 	);
 };

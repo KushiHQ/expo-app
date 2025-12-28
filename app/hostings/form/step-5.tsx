@@ -22,6 +22,7 @@ import {
 	useVerifyAccountQuery,
 	VerifyAccountInput,
 } from "@/lib/services/graphql/generated";
+import { Bank } from "@/lib/types/queries/banks";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
@@ -60,6 +61,16 @@ export default function NewHostingStep5() {
 
 	const [{ fetching: creatingPaymentDetail }, savePaymentDetails] =
 		useCreateUpdateHostPaymentDetailsMutation();
+
+	const selectedAccountString = React.useMemo(() => {
+		if (selectedAccount) {
+			const num = selectedAccount.accountNumber;
+			const acc = `${num.slice(-3)}***${num.slice(0, 3)}`;
+
+			return `${acc} ${selectedAccount.bankDetails?.name}`;
+		}
+		return null;
+	}, [selectedAccount]);
 
 	React.useEffect(() => {
 		if (verifiedAccount && !selectedAccount) {
@@ -148,7 +159,14 @@ export default function NewHostingStep5() {
 								focused
 								label="Payment Interval"
 								placeholder="Anually"
-								value={cast(input.paymentInterval)}
+								defaultValue={
+									input.paymentInterval
+										? {
+												label: input.paymentInterval,
+												value: input.paymentInterval,
+											}
+										: undefined
+								}
 								onSelect={(v) => updateInput({ paymentInterval: v.value })}
 								options={Object.keys(PaymentInterval).map((v) => ({
 									label: v,
@@ -179,6 +197,7 @@ export default function NewHostingStep5() {
 									searchable
 									searchField="name"
 									label="Account"
+									selectedValueString={selectedAccountString ?? undefined}
 									placeholder="Select account"
 									defaultValue={selectedAccount ?? undefined}
 									onSelect={setSelectedAcount}
@@ -218,6 +237,7 @@ export default function NewHostingStep5() {
 										setNewAccountInput((c) => ({ ...c, bankCode: v.code }));
 									}}
 									renderItem={BankSelectOption}
+									getValueString={(v: Bank) => v?.name}
 									options={data ?? []}
 								/>
 							</View>

@@ -18,6 +18,7 @@ import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { CustomSvgProps } from "@/lib/types/svgType";
 import { hexToRgba } from "@/lib/utils/colors";
+import { Image } from "expo-image";
 import { Href, useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
 import React from "react";
@@ -154,14 +155,22 @@ const ProfileScreen = () => {
 				isVisible={logoutConfirm}
 				onClose={() => setLogoutConfirm(false)}
 			>
-				<View className="items-center gap-8 pb-8">
+				<View className="items-center gap-8 pb-20">
+					<Image
+						style={{
+							width: 250,
+							height: 250,
+							objectFit: "cover",
+						}}
+						source={require("@/assets/images/caution.png")}
+					/>
 					<ThemedText type="semibold">
 						Are you sure you want to logout?
 					</ThemedText>
-					<View className="flex-row items-center gap-4">
+					<View className="flex-row max-w-[400px] items-center gap-4">
 						<Button
 							type="error"
-							className="py-2 flex-1"
+							className="flex-1"
 							onPress={() => router.replace("/logout")}
 						>
 							<ThemedText content="error">Logout</ThemedText>
@@ -169,7 +178,7 @@ const ProfileScreen = () => {
 						<Button
 							variant="outline"
 							type="shade"
-							className="py-2 flex-1"
+							className="flex-1"
 							onPress={() => setLogoutConfirm(false)}
 						>
 							<ThemedText>Cancel</ThemedText>

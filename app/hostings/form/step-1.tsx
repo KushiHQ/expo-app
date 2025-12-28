@@ -12,7 +12,6 @@ import { HOSTING_VARIANTS } from "@/lib/types/enums/hostings";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
-import { capitalize } from "@/lib/utils/text";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
 import React from "react";
@@ -44,7 +43,7 @@ export default function NewHostingStep1() {
 
 	return (
 		<DetailsLayout
-			title="Hosting"
+			title="Property Details"
 			footer={
 				<HostingStepper
 					loading={mutating}
@@ -82,7 +81,11 @@ export default function NewHostingStep1() {
 						focused
 						label="Property Type"
 						placeholder="Residential"
-						value={cast(input?.propertyType)}
+						defaultValue={
+							input.propertyType
+								? { label: input.propertyType, value: input.propertyType }
+								: undefined
+						}
 						options={HOSTING_VARIANTS.map((v) => ({ label: v, value: v }))}
 						onSelect={(v) => updateInput({ propertyType: v.value })}
 						renderItem={SelectOption}
@@ -91,7 +94,11 @@ export default function NewHostingStep1() {
 						focused
 						label="Listing Type"
 						placeholder="Rent"
-						value={capitalize(input?.listingType ?? "")}
+						defaultValue={
+							input.listingType
+								? { label: input.listingType, value: input.listingType }
+								: undefined
+						}
 						options={Object.keys(ListingType).map((v) => ({
 							label: `For ${v}`,
 							value: v,

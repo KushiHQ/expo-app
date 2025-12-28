@@ -1,4 +1,3 @@
-import Button from "@/components/atoms/a-button";
 import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
 import LoadingModal from "@/components/atoms/a-loading-modal";
 import LocationCard from "@/components/atoms/a-location-card";
@@ -75,7 +74,9 @@ export default function NewHostingStep3() {
 	}, [fetchingHosting, user, input]);
 
 	React.useEffect(() => {
-		if (!input.longitude || !input.latitude) {
+		if (!permission?.granted) {
+			requestPermission();
+		} else if (!input.longitude || !input.latitude) {
 			fetchLocation();
 		}
 	}, [permission]);
@@ -99,47 +100,6 @@ export default function NewHostingStep3() {
 			}
 		});
 	};
-
-	if (!permission) {
-		return (
-			<View
-				style={{
-					flex: 1,
-					backgroundColor: "#000",
-				}}
-			/>
-		);
-	}
-
-	if (!permission.granted) {
-		return (
-			<DetailsLayout
-				backgroundStyles={{
-					backgroundColor: "#000000",
-				}}
-				background="transparent"
-				backButton="solid"
-			>
-				<View
-					style={{
-						flex: 1,
-						justifyContent: "center",
-						alignItems: "center",
-						padding: 20,
-					}}
-				>
-					<ThemedText
-						style={{ textAlign: "center", marginBottom: 20, color: "white" }}
-					>
-						We need location permissions to continue
-					</ThemedText>
-					<Button onPress={requestPermission} type="primary">
-						<ThemedText content="primary">Grant Permission</ThemedText>
-					</Button>
-				</View>
-			</DetailsLayout>
-		);
-	}
 
 	return (
 		<>

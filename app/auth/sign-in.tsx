@@ -26,7 +26,7 @@ export default function Login() {
 		email: cast(email),
 	});
 	const { user, updateUser } = useUser();
-	const [savePassword, setSavePassword] = React.useState(false);
+	const [savePassword, setSavePassword] = React.useState(!!user.password);
 	const [res, mutate] = useLoginMutation();
 
 	const handlePress = () => {
@@ -92,7 +92,7 @@ export default function Login() {
 								checked={savePassword}
 								color={colors["primary"]}
 							/>
-							<ThemedText>Remeber Password</ThemedText>
+							<ThemedText>Remember Password</ThemedText>
 						</View>
 						<Link href="/auth/forgot-password">
 							<ThemedText>Forgot password?</ThemedText>
