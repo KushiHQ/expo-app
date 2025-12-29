@@ -477,6 +477,21 @@ export type InitiateBookingInput = {
   phoneNumber: Scalars['String']['input'];
 };
 
+export type Kyc = {
+  __typename?: 'Kyc';
+  bvnVerified?: Maybe<Scalars['Boolean']['output']>;
+  createdAt: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  image?: Maybe<Asset>;
+  lastUpdated: Scalars['String']['output'];
+  ninVerified?: Maybe<Scalars['Boolean']['output']>;
+};
+
+export type KycInput = {
+  bvn?: InputMaybe<Scalars['String']['input']>;
+  nin?: InputMaybe<Scalars['String']['input']>;
+};
+
 export enum ListingType {
   Rent = 'RENT',
   Sale = 'SALE'
@@ -526,8 +541,10 @@ export type Mutations = {
   updateProfile: ProfileResponse;
   updatePushNotificationToken: NotificationSettingsResponse;
   updateUserNotificationSettings: NotificationSettingsResponse;
+  uploadKycImage: Kyc;
   verifyBookingPayment: BookingResponse;
   verifyEmail: MessageResponse;
+  verifyKyc: Kyc;
 };
 
 
@@ -692,6 +709,11 @@ export type MutationsUpdateUserNotificationSettingsArgs = {
 };
 
 
+export type MutationsUploadKycImageArgs = {
+  file: Scalars['Upload']['input'];
+};
+
+
 export type MutationsVerifyBookingPaymentArgs = {
   id: Scalars['String']['input'];
 };
@@ -699,6 +721,11 @@ export type MutationsVerifyBookingPaymentArgs = {
 
 export type MutationsVerifyEmailArgs = {
   input: Otpinput;
+};
+
+
+export type MutationsVerifyKycArgs = {
+  input: KycInput;
 };
 
 export type Notification = {
@@ -1070,6 +1097,7 @@ export type User = {
   dateAdded: Scalars['String']['output'];
   email: Scalars['String']['output'];
   id: Scalars['String']['output'];
+  kyc: Kyc;
   lastUpdated: Scalars['String']['output'];
   notificationSettings: NotificationSettings;
   onlineUser: OnlineUser;
@@ -1099,7 +1127,7 @@ export type RefreshTokenMutationVariables = Exact<{
 }>;
 
 
-export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean } } } | null } };
+export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } } } | null } };
 
 export type VerifyEmailMutationVariables = Exact<{
   input: Otpinput;
@@ -1120,7 +1148,7 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutations', login: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean } } } | null } };
+export type LoginMutation = { __typename?: 'Mutations', login: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } } } | null } };
 
 export type RequestPasswordChangeMutationVariables = Exact<{
   input: RequestPasswordChangeInput;
@@ -1447,7 +1475,7 @@ export type FlutterwaveCardPaymentMethodsQuery = { __typename?: 'Query', flutter
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean } } };
+export type MeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } } };
 
 export type AuthStreamUserTokenQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1530,6 +1558,15 @@ export const RefreshTokenDocument = gql`
           pushNotifications
           specialOffers
         }
+        kyc {
+          id
+          bvnVerified
+          ninVerified
+          image {
+            id
+            publicUrl
+          }
+        }
       }
     }
   }
@@ -1588,6 +1625,15 @@ export const LoginDocument = gql`
           appUpdates
           pushNotifications
           specialOffers
+        }
+        kyc {
+          id
+          bvnVerified
+          ninVerified
+          image {
+            id
+            publicUrl
+          }
         }
       }
     }
@@ -2621,6 +2667,15 @@ export const MeDocument = gql`
       appUpdates
       pushNotifications
       specialOffers
+    }
+    kyc {
+      id
+      bvnVerified
+      ninVerified
+      image {
+        id
+        publicUrl
+      }
     }
   }
 }

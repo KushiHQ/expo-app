@@ -26,6 +26,8 @@ type Props = {
 const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
 	const router = useRouter();
 	const colors = useThemeColors();
+	const [hasRenderedRemoteStream, setHasRenderedRemoteStream] =
+		React.useState(false);
 
 	const myStream = callData?.localPaticipant?.videoStream;
 	const remoteStream = callData?.remoteParticipant?.videoStream;
@@ -49,13 +51,21 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
 		};
 	}, [callData?.cameraEnabled]);
 
+	React.useEffect(() => {
+		let timeout: number;
+		if (callData?.remoteParticipant?.videoStream) {
+			timeout = setTimeout(() => setHasRenderedRemoteStream(true), 1000);
+		}
+
+		return () => {
+			clearTimeout(timeout);
+		};
+	}, [callData?.remoteParticipant?.videoStream]);
+
 	return (
 		<View style={styles.container}>
 			{callData?.remoteParticipant ? (
-				<VideoRenderer
-					participant={callData.remoteParticipant}
-					// style={{ position: "absolute", inset: 0 }}
-				/>
+				<VideoRenderer participant={callData.remoteParticipant} />
 			) : (
 				activeStream && (
 					<RTCView
@@ -105,14 +115,36 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
 									},
 								]}
 							>
-								{callData.localPaticipant ? (
-									<VideoRenderer participant={callData.localPaticipant} />
+								{callData.localPaticipant && hasRenderedRemoteStream ? (
+									<>
+										<RTCView
+											streamURL={cast<any>(
+												callData?.call?.camera.state.mediaStream,
+											)?.toURL?.()}
+											style={{
+												height: "100%",
+												width: "100%",
+												borderRadius: 16,
+												backgroundColor: "black",
+											}}
+											mirror={
+												callData?.call?.camera.state.direction === "front"
+											}
+											objectFit="cover"
+										/>
+										{console.log("Rendering LocalStream")}
+									</>
 								) : (
 									<RTCView
 										streamURL={cast<any>(
 											callData?.call?.camera.state.mediaStream,
 										)?.toURL?.()}
-										style={{ height: "100%", width: "100%", borderRadius: 16 }}
+										style={{
+											height: "100%",
+											width: "100%",
+											borderRadius: 16,
+											backgroundColor: "black",
+										}}
 										mirror={callData?.call?.camera.state.direction === "front"}
 										objectFit="cover"
 									/>
@@ -289,9 +321,10 @@ const styles = StyleSheet.create({
 		position: "absolute",
 		bottom: 200,
 		right: 20,
-		width: 140,
-		height: 200,
+		width: 120,
+		height: 160,
 		borderRadius: 10,
+		backgroundColor: "#000000",
 		overflow: "hidden",
 		borderWidth: 3,
 	},

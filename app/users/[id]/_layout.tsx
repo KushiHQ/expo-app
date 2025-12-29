@@ -5,7 +5,6 @@ export default function Layout() {
 	return (
 		<Stack screenOptions={{ animation: "fade" }}>
 			<Stack.Screen name="profile" options={{ headerShown: false }} />
-			<Stack.Screen name="bookings" options={{ headerShown: false }} />
 			<Stack.Screen
 				name="notification-settings"
 				options={{ headerShown: false }}

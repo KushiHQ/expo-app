@@ -58,7 +58,7 @@ const ProfileScreen = () => {
 		},
 		{
 			icon: HugeiconsShieldUser,
-			href: "/hostings/",
+			href: "/kyc",
 			label: "KYC",
 		},
 		{

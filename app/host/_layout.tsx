@@ -17,6 +17,8 @@ import {
 } from "@/components/icons/i-user";
 import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { useUser } from "@/lib/hooks/user";
+import { UserType } from "@/lib/types/users";
 import { EventEmitter } from "@/lib/utils/event-emitter";
 import { Tabs, useRouter, useSegments } from "expo-router";
 import { View } from "react-native";
@@ -26,6 +28,7 @@ export default function Layout() {
 	const colors = useThemeColors();
 	const router = useRouter();
 	const segments = useSegments();
+	const { updateUser } = useUser();
 
 	const currentTab = segments[1];
 
@@ -92,7 +95,8 @@ export default function Layout() {
 				listeners={{
 					tabPress: (e) => {
 						e.preventDefault();
-						router.push("/guest/home");
+						updateUser({ userType: UserType.Guest });
+						router.replace("/guest/home");
 					},
 				}}
 				options={{

@@ -22,6 +22,15 @@ export const ME_QUERY = gql`
         pushNotifications
         specialOffers
       }
+      kyc {
+        id
+        bvnVerified
+        ninVerified
+        image {
+          id
+          publicUrl
+        }
+      }
     }
   }
 `;

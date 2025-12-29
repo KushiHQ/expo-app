@@ -82,6 +82,7 @@ export const useActiveCall = () => {
 			"call.session_participant_left",
 			(p) => {
 				if (p.participant.user.id !== user.user?.id) {
+					call.endCall();
 					router.back();
 				}
 			},

@@ -129,6 +129,10 @@ export default function RootLayout() {
 															options={{ headerShown: false }}
 														/>
 														<Stack.Screen
+															name="kyc"
+															options={{ headerShown: false }}
+														/>
+														<Stack.Screen
 															name="bookings"
 															options={{ headerShown: false }}
 														/>

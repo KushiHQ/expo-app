@@ -36,6 +36,15 @@ export const REFRESH_TOKEN_MUTATION = gql`
             pushNotifications
             specialOffers
           }
+          kyc {
+            id
+            bvnVerified
+            ninVerified
+            image {
+              id
+              publicUrl
+            }
+          }
         }
       }
     }
@@ -85,6 +94,15 @@ export const LOGIN_MUTATION = gql`
             appUpdates
             pushNotifications
             specialOffers
+          }
+          kyc {
+            id
+            bvnVerified
+            ninVerified
+            image {
+              id
+              publicUrl
+            }
           }
         }
       }
