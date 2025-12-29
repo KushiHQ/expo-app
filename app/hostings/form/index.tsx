@@ -5,6 +5,7 @@ import HostingStepper from "@/components/molecules/m-hosting-stepper";
 import { ONBOARDING_STEPS } from "@/lib/constants/hosting/onboarding";
 import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { useUser } from "@/lib/hooks/user";
 import { hexToRgba } from "@/lib/utils/colors";
 import { ImageBackground } from "expo-image";
 import { Link, useRouter } from "expo-router";
@@ -12,15 +13,18 @@ import React from "react";
 import { View } from "react-native";
 
 export default function NewHosting() {
+	const { user } = useUser();
 	const router = useRouter();
 	const colors = useThemeColors();
-	const [kycComplete, setKycComplete] = React.useState(false);
 
 	return (
 		<DetailsLayout
 			title="Hosting"
 			footer={
 				<HostingStepper
+					disabled={
+						!(!!user.user?.kyc.ninVerified && !!user.user.kyc.bvnVerified)
+					}
 					onPress={() => {
 						router.push("/hostings/form/step-1");
 					}}
@@ -34,19 +38,32 @@ export default function NewHosting() {
 						<ThemedText style={{ fontFamily: Fonts.medium }}>
 							KYC Application
 						</ThemedText>
-						<ThemedSwitch value={kycComplete} onValueChange={setKycComplete} />
+						<ThemedSwitch
+							value={
+								!!user.user?.kyc.ninVerified && !!user.user.kyc.bvnVerified
+							}
+							onValueChange={() => {
+								if (
+									!(!!user.user?.kyc.ninVerified && !!user.user.kyc.bvnVerified)
+								) {
+									router.push("/kyc");
+								}
+							}}
+						/>
 					</View>
-					<ThemedText style={{ fontSize: 12 }}>
-						Unfortunately, your KYC application has not been completed. Please
-						fill out the KYC form before you can access the hosting services.{" "}
-						<Link
-							href="/hostings/form"
-							style={{ color: colors.accent }}
-							className="underline"
-						>
-							Submit your KYC application.
-						</Link>
-					</ThemedText>
+					{!(!!user.user?.kyc.ninVerified && !!user.user.kyc.bvnVerified) && (
+						<ThemedText style={{ fontSize: 12 }}>
+							Unfortunately, your KYC application has not been completed. Please
+							fill out the KYC form before you can access the hosting services.{" "}
+							<Link
+								href="/kyc"
+								style={{ color: colors.accent }}
+								className="underline"
+							>
+								Submit your KYC application.
+							</Link>
+						</ThemedText>
+					)}
 				</View>
 				<View>
 					<View className="rounded-lg overflow-hidden mt-8">

@@ -66,3 +66,29 @@ export const UPDATE_USER_PROFILE = gql`
     }
   }
 `;
+
+export const UPLOAD_KYC_IMAGE = gql`
+  mutation UploadKycImage($file: Upload!) {
+    uploadKycImage(file: $file) {
+      id
+      image {
+        id
+        publicUrl
+      }
+    }
+  }
+`;
+
+export const VERIFY_KYC = gql`
+  mutation VerifyKyc($input: KycInput!) {
+    verifyKyc(input: $input) {
+      bvnVerified
+      id
+      ninVerified
+      image {
+        id
+        publicUrl
+      }
+    }
+  }
+`;

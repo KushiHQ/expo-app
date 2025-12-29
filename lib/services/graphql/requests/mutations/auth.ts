@@ -8,6 +8,49 @@ export const SIGN_UP_MUTATION = gql`
   }
 `;
 
+export const GOOGLE_SIGN_UP = gql`
+  mutation GoogleSignUp($idToken: String!) {
+    googleSignUp(idToken: $idToken) {
+      message
+      data {
+        token
+        refreshToken
+        expiresAt
+        user {
+          id
+          email
+          dateAdded
+          lastUpdated
+          profile {
+            id
+            fullName
+            phoneNumber
+            gender
+            dateAdded
+            lastUpdated
+          }
+          notificationSettings {
+            id
+            email
+            appUpdates
+            pushNotifications
+            specialOffers
+          }
+          kyc {
+            id
+            bvnVerified
+            ninVerified
+            image {
+              id
+              publicUrl
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const REFRESH_TOKEN_MUTATION = gql`
   mutation RefreshToken($input: RefreshTokenInput!) {
     refreshToken(input: $input) {
@@ -63,6 +106,49 @@ export const RESEND_EMAIL_VERIFICATION_OTP_MUTATION = gql`
   mutation ResendEmailVerificationOtp($email: String!) {
     resendEmailVerificationOtp(email: $email) {
       message
+    }
+  }
+`;
+
+export const GOOGLE_LOGIN = gql`
+  mutation GoogleLogin($idToken: String!) {
+    googleLogin(idToken: $idToken) {
+      message
+      data {
+        token
+        refreshToken
+        expiresAt
+        user {
+          id
+          email
+          dateAdded
+          lastUpdated
+          profile {
+            id
+            fullName
+            phoneNumber
+            gender
+            dateAdded
+            lastUpdated
+          }
+          notificationSettings {
+            id
+            email
+            appUpdates
+            pushNotifications
+            specialOffers
+          }
+          kyc {
+            id
+            bvnVerified
+            ninVerified
+            image {
+              id
+              publicUrl
+            }
+          }
+        }
+      }
     }
   }
 `;

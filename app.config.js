@@ -15,6 +15,7 @@ export default ({ config }) => ({
 	userInterfaceStyle: "automatic",
 	newArchEnabled: true,
 	ios: {
+		usesAppleSignIn: true,
 		supportsTablet: true,
 		bundleIdentifier: "com.mceazy2700.kushi",
 		googleServicesFile: "./GoogleService-Info.plist",
@@ -88,9 +89,12 @@ export default ({ config }) => ({
 		},
 	},
 	owner: "mceazy2700",
+
 	plugins: [
 		"./lib/plugins/withViopPush.js",
 		"./lib/plugins/withNotifeeForeground.js",
+		"./lib/plugins/withAndroidSigning.js",
+		"react-native-vision-camera",
 		"expo-audio",
 		"expo-web-browser",
 		[
@@ -133,7 +137,7 @@ export default ({ config }) => ({
 			"expo-build-properties",
 			{
 				android: {
-					minSdkVersion: 24,
+					minSdkVersion: 26,
 					extraMavenRepos: [
 						"../../node_modules/@stream-io/video-react-native-sdk/android",
 						"../../node_modules/@notifee/react-native/android/libs",
@@ -199,6 +203,8 @@ export default ({ config }) => ({
 		],
 		"@react-native-firebase/app",
 		"@react-native-firebase/messaging",
+		"@react-native-google-signin/google-signin",
+		"expo-apple-authentication",
 	],
 	experiments: {
 		typedRoutes: true,

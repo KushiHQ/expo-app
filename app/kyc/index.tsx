@@ -22,7 +22,13 @@ export default function KycHome() {
 		<DetailsLayout
 			title="KYC Registration"
 			footer={
-				<View className="p-4" style={{ backgroundColor: colors.background }}>
+				<View
+					className="p-4 border-t"
+					style={{
+						backgroundColor: colors.background,
+						borderColor: hexToRgba(colors.text, 0.2),
+					}}
+				>
 					<Button
 						onPress={() => router.push("/kyc/image")}
 						type="primary"

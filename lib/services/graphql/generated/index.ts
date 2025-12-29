@@ -527,6 +527,8 @@ export type Mutations = {
   deleteHostingRoomImage: MessageResponse;
   deleteSavedHosting: MessageResponse;
   finalizeBooking: Booking;
+  googleLogin: AuthTokenResponse;
+  googleSignUp: AuthTokenResponse;
   initiateBooking: BookingResponse;
   initiateHostingChat: HostingChat;
   login: AuthTokenResponse;
@@ -635,6 +637,16 @@ export type MutationsDeleteSavedHostingArgs = {
 
 export type MutationsFinalizeBookingArgs = {
   bookingId: Scalars['String']['input'];
+};
+
+
+export type MutationsGoogleLoginArgs = {
+  idToken: Scalars['String']['input'];
+};
+
+
+export type MutationsGoogleSignUpArgs = {
+  idToken: Scalars['String']['input'];
 };
 
 
@@ -827,7 +839,7 @@ export type Profile = {
   gender?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
-  phoneNumber: Scalars['String']['output'];
+  phoneNumber?: Maybe<Scalars['String']['output']>;
 };
 
 export type ProfileResponse = {
@@ -839,7 +851,7 @@ export type ProfileResponse = {
 export type ProfileUpdateInput = {
   fullName: Scalars['String']['input'];
   gender?: InputMaybe<Scalars['String']['input']>;
-  phoneNumber: Scalars['String']['input'];
+  phoneNumber?: InputMaybe<Scalars['String']['input']>;
 };
 
 export enum PublishStatus {
@@ -1037,7 +1049,7 @@ export type SignUpInput = {
   email: Scalars['String']['input'];
   fullName: Scalars['String']['input'];
   password: Scalars['String']['input'];
-  phoneNumber: Scalars['String']['input'];
+  phoneNumber?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Subscriptions = {
@@ -1122,12 +1134,19 @@ export type SignUpMutationVariables = Exact<{
 
 export type SignUpMutation = { __typename?: 'Mutations', signUp: { __typename?: 'UserResponse', message: string } };
 
+export type GoogleSignUpMutationVariables = Exact<{
+  idToken: Scalars['String']['input'];
+}>;
+
+
+export type GoogleSignUpMutation = { __typename?: 'Mutations', googleSignUp: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber?: string | null, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } } } | null } };
+
 export type RefreshTokenMutationVariables = Exact<{
   input: RefreshTokenInput;
 }>;
 
 
-export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } } } | null } };
+export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber?: string | null, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } } } | null } };
 
 export type VerifyEmailMutationVariables = Exact<{
   input: Otpinput;
@@ -1143,12 +1162,19 @@ export type ResendEmailVerificationOtpMutationVariables = Exact<{
 
 export type ResendEmailVerificationOtpMutation = { __typename?: 'Mutations', resendEmailVerificationOtp: { __typename?: 'MessageResponse', message: string } };
 
+export type GoogleLoginMutationVariables = Exact<{
+  idToken: Scalars['String']['input'];
+}>;
+
+
+export type GoogleLoginMutation = { __typename?: 'Mutations', googleLogin: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber?: string | null, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } } } | null } };
+
 export type LoginMutationVariables = Exact<{
   input: LoginInput;
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutations', login: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } } } | null } };
+export type LoginMutation = { __typename?: 'Mutations', login: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber?: string | null, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } } } | null } };
 
 export type RequestPasswordChangeMutationVariables = Exact<{
   input: RequestPasswordChangeInput;
@@ -1345,7 +1371,21 @@ export type UpdateProfileMutationVariables = Exact<{
 }>;
 
 
-export type UpdateProfileMutation = { __typename?: 'Mutations', updateProfile: { __typename?: 'ProfileResponse', message: string, data?: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string } | null } };
+export type UpdateProfileMutation = { __typename?: 'Mutations', updateProfile: { __typename?: 'ProfileResponse', message: string, data?: { __typename?: 'Profile', id: string, fullName: string, phoneNumber?: string | null, gender?: string | null, dateAdded: string, lastUpdated: string } | null } };
+
+export type UploadKycImageMutationVariables = Exact<{
+  file: Scalars['Upload']['input'];
+}>;
+
+
+export type UploadKycImageMutation = { __typename?: 'Mutations', uploadKycImage: { __typename?: 'Kyc', id: string, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } };
+
+export type VerifyKycMutationVariables = Exact<{
+  input: KycInput;
+}>;
+
+
+export type VerifyKycMutation = { __typename?: 'Mutations', verifyKyc: { __typename?: 'Kyc', bvnVerified?: boolean | null, id: string, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } };
 
 export type BookingsQueryVariables = Exact<{
   filter?: InputMaybe<BookingFilterInput>;
@@ -1475,7 +1515,7 @@ export type FlutterwaveCardPaymentMethodsQuery = { __typename?: 'Query', flutter
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber: string, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } } };
+export type MeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, dateAdded: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, phoneNumber?: string | null, gender?: string | null, dateAdded: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } } };
 
 export type AuthStreamUserTokenQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1529,6 +1569,52 @@ export const SignUpDocument = gql`
 
 export function useSignUpMutation() {
   return Urql.useMutation<SignUpMutation, SignUpMutationVariables>(SignUpDocument);
+};
+export const GoogleSignUpDocument = gql`
+    mutation GoogleSignUp($idToken: String!) {
+  googleSignUp(idToken: $idToken) {
+    message
+    data {
+      token
+      refreshToken
+      expiresAt
+      user {
+        id
+        email
+        dateAdded
+        lastUpdated
+        profile {
+          id
+          fullName
+          phoneNumber
+          gender
+          dateAdded
+          lastUpdated
+        }
+        notificationSettings {
+          id
+          email
+          appUpdates
+          pushNotifications
+          specialOffers
+        }
+        kyc {
+          id
+          bvnVerified
+          ninVerified
+          image {
+            id
+            publicUrl
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useGoogleSignUpMutation() {
+  return Urql.useMutation<GoogleSignUpMutation, GoogleSignUpMutationVariables>(GoogleSignUpDocument);
 };
 export const RefreshTokenDocument = gql`
     mutation RefreshToken($input: RefreshTokenInput!) {
@@ -1597,6 +1683,52 @@ export const ResendEmailVerificationOtpDocument = gql`
 
 export function useResendEmailVerificationOtpMutation() {
   return Urql.useMutation<ResendEmailVerificationOtpMutation, ResendEmailVerificationOtpMutationVariables>(ResendEmailVerificationOtpDocument);
+};
+export const GoogleLoginDocument = gql`
+    mutation GoogleLogin($idToken: String!) {
+  googleLogin(idToken: $idToken) {
+    message
+    data {
+      token
+      refreshToken
+      expiresAt
+      user {
+        id
+        email
+        dateAdded
+        lastUpdated
+        profile {
+          id
+          fullName
+          phoneNumber
+          gender
+          dateAdded
+          lastUpdated
+        }
+        notificationSettings {
+          id
+          email
+          appUpdates
+          pushNotifications
+          specialOffers
+        }
+        kyc {
+          id
+          bvnVerified
+          ninVerified
+          image {
+            id
+            publicUrl
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useGoogleLoginMutation() {
+  return Urql.useMutation<GoogleLoginMutation, GoogleLoginMutationVariables>(GoogleLoginDocument);
 };
 export const LoginDocument = gql`
     mutation Login($input: LoginInput!) {
@@ -2102,6 +2234,38 @@ export const UpdateProfileDocument = gql`
 
 export function useUpdateProfileMutation() {
   return Urql.useMutation<UpdateProfileMutation, UpdateProfileMutationVariables>(UpdateProfileDocument);
+};
+export const UploadKycImageDocument = gql`
+    mutation UploadKycImage($file: Upload!) {
+  uploadKycImage(file: $file) {
+    id
+    image {
+      id
+      publicUrl
+    }
+  }
+}
+    `;
+
+export function useUploadKycImageMutation() {
+  return Urql.useMutation<UploadKycImageMutation, UploadKycImageMutationVariables>(UploadKycImageDocument);
+};
+export const VerifyKycDocument = gql`
+    mutation VerifyKyc($input: KycInput!) {
+  verifyKyc(input: $input) {
+    bvnVerified
+    id
+    ninVerified
+    image {
+      id
+      publicUrl
+    }
+  }
+}
+    `;
+
+export function useVerifyKycMutation() {
+  return Urql.useMutation<VerifyKycMutation, VerifyKycMutationVariables>(VerifyKycDocument);
 };
 export const BookingsDocument = gql`
     query Bookings($filter: BookingFilterInput, $pagination: PaginationInput) {
