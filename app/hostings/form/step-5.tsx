@@ -23,7 +23,6 @@ import {
 	VerifyAccountInput,
 } from "@/lib/services/graphql/generated";
 import { Bank } from "@/lib/types/queries/banks";
-import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -96,7 +95,13 @@ export default function NewHostingStep5() {
 				refetchPaymentDetails();
 			});
 		}
-	}, [verifiedAccount]);
+	}, [
+		verifiedAccount,
+		newAccountInput.bankCode,
+		refetchPaymentDetails,
+		savePaymentDetails,
+		selectedAccount,
+	]);
 
 	const handleMutate = () => {
 		updateInput({ paymentDetailsId: selectedAccount?.id });
@@ -147,7 +152,7 @@ export default function NewHostingStep5() {
 								size={12}
 							/>
 							{"  "}
-							Define your property's Pricing and how often you expect rent
+							Define your property&apos;s Pricing and how often you expect rent
 							(e.g., Annually). Then, link a Bank Account for secure payments,
 							either by selecting a saved account or adding a new one.
 						</ThemedText>
@@ -162,9 +167,9 @@ export default function NewHostingStep5() {
 								defaultValue={
 									input.paymentInterval
 										? {
-												label: input.paymentInterval,
-												value: input.paymentInterval,
-											}
+											label: input.paymentInterval,
+											value: input.paymentInterval,
+										}
 										: undefined
 								}
 								onSelect={(v) => updateInput({ paymentInterval: v.value })}

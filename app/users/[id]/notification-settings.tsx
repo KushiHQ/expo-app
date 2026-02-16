@@ -23,7 +23,7 @@ export default function UserNotificationSettings() {
 		appUpdates: user.user?.notificationSettings.appUpdates,
 	} as NotificationSettingsInput);
 	const debouncedInputs = useDebounce(inputs, 1000);
-	const [_, updateNotifications] = useUpdateUserNotificationSettingsMutation();
+	const [, updateNotifications] = useUpdateUserNotificationSettingsMutation();
 
 	React.useEffect(() => {
 		updateNotifications({ input: debouncedInputs }).then((res) => {
@@ -44,7 +44,7 @@ export default function UserNotificationSettings() {
 				});
 			}
 		});
-	}, [debouncedInputs]);
+	}, [debouncedInputs, updateNotifications, updateUser, user.user]);
 
 	return (
 		<DetailsLayout title="Notification Settings">

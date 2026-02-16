@@ -42,21 +42,24 @@ const getValueString = (value: any) => {
 	}
 };
 
-const SelectInput = <T extends {}>(props: Props<T>) => {
+const SelectInput = <T extends object>(props: Props<T>) => {
 	const { options, renderItem: RenderItem, onSelect, ...rest } = props;
 	const [open, setOpen] = React.useState(false);
 	const [value, setValue] = React.useState(props.defaultValue);
 	const [search, setSearch] = React.useState("");
 	const colors = useThemeColors();
 	const valueStringFunc = props.getValueString ?? getValueString;
-	const selectedValue = React.useMemo(() => valueStringFunc(value), [value]);
+	const selectedValue = React.useMemo(
+		() => valueStringFunc(value),
+		[value, valueStringFunc],
+	);
 
 	const filtered = rest.searchable
 		? options.filter((v) =>
-				String(cast<Record<string, string>>(v)[rest.searchField])
-					.toLowerCase()
-					.includes(search.toLowerCase()),
-			)
+			String(cast<Record<string, string>>(v)[rest.searchField])
+				.toLowerCase()
+				.includes(search.toLowerCase()),
+		)
 		: options;
 
 	const handlePress = (e: GestureResponderEvent) => {
@@ -142,12 +145,12 @@ const SelectInput = <T extends {}>(props: Props<T>) => {
 
 export default SelectInput;
 
-export type SelectOption = {
+export type SelectOptionType = {
 	label: string;
 	value: string;
 };
 
-export const SelectOption: React.FC<SelectOption & SelectionDetails> = ({
+export const SelectOption: React.FC<SelectOptionType & SelectionDetails> = ({
 	label,
 	selected,
 }) => {

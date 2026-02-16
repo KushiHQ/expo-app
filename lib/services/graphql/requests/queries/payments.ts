@@ -29,7 +29,7 @@ export const HOST_PAYMENT_DETAILS = gql`
       id
       accountNumber
       bankCode
-      dateAdded
+      createdAt
       lastUpdated
       bankDetails {
         name

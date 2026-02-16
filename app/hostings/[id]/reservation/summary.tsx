@@ -52,12 +52,12 @@ export default function ReservationSummary() {
 	React.useEffect(() => {
 		mutate({
 			input: { ...input, phoneNumber: input.phoneNumber.slice(1) },
-		}).then((res) => {
+		}).then((res: any) => {
 			if (res.error) {
 				handleError(res.error);
 			}
 		});
-	}, []);
+	}, [input, mutate]);
 
 	const handleAuthorizeWithOtp = (otp: string) => {
 		authorizeWithOtp({
@@ -193,7 +193,7 @@ export default function ReservationSummary() {
 									₦
 									{Number(
 										bookingData?.initiateBooking.data?.guestServiceCharge ??
-											"0",
+										"0",
 									)?.toLocaleString()}
 								</ThemedText>
 							</View>
@@ -213,7 +213,7 @@ export default function ReservationSummary() {
 										Number(hosting?.price) +
 										Number(
 											bookingData?.initiateBooking.data?.guestServiceCharge ??
-												"0",
+											"0",
 										)
 									).toLocaleString()}
 								</ThemedText>

@@ -58,7 +58,7 @@ const ChatInput: React.FC<Props> = ({
         setMedia(gallery);
         clearGallery();
       }
-    }, [fromCamera, gallery]),
+    }, [fromCamera, gallery, clearGallery]),
   );
 
   const handleContentSizeChange = (event: any) => {

@@ -21,11 +21,7 @@ import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Pressable, View } from "react-native";
 import Toast from "react-native-toast-message";
-import {
-  GoogleSignin,
-  GoogleSigninButton,
-  statusCodes,
-} from "@react-native-google-signin/google-signin";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import * as AppleAuthentication from "expo-apple-authentication";
 
 GoogleSignin.configure({
@@ -43,7 +39,7 @@ export default function Login() {
   const { user, updateUser } = useUser();
   const [savePassword, setSavePassword] = React.useState(!!user.password);
   const [res, mutate] = useLoginMutation();
-  const [googleRes, googleLogin] = useGoogleLoginMutation();
+  const [, googleLogin] = useGoogleLoginMutation();
 
   const signInWithGoogle = async () => {
     try {
@@ -92,7 +88,6 @@ export default function Login() {
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
-      console.log("Apple Credential:", credential);
       // Send credential.identityToken to your backend for verification
     } catch (e: any) {
       console.error(e);

@@ -47,6 +47,8 @@ export default function UserBooking() {
 	const booking = data?.booking;
 	const loading = finalizing || fetchingBooking || verifyingBookingPayment;
 
+	console.log(booking?.tenancyAgreementAsset);
+
 	React.useEffect(() => {
 		if (!booking?.tenancyAgreementAsset?.publicUrl) return;
 
@@ -64,13 +66,19 @@ export default function UserBooking() {
 				console.error("PDF preload failed:", err);
 			}
 		})();
-	}, [booking?.tenancyAgreementAsset?.publicUrl]);
+	}, [
+		booking?.tenancyAgreementAsset?.publicUrl,
+		getLocalUri,
+		download,
+		booking?.id,
+		booking?.tenancyAgreementAsset,
+	]);
 
 	React.useEffect(() => {
 		if (booking?.paymentStatus === PaymentStatus.Pending) {
 			verifyBookingPayment({ verifyBookingPaymentId: booking.id });
 		}
-	}, [booking]);
+	}, [booking, verifyBookingPayment]);
 
 	const handleFinailze = () => {
 		finanlizeBooking({ bookingId: cast(id) }).then((res) => {

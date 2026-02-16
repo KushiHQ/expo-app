@@ -49,7 +49,7 @@ export default function HomeScreen() {
 				});
 			}
 		})();
-	}, [user]);
+	}, [user, refreshToken, router, updateUser]);
 
 	return (
 		<SafeAreaView style={{ flex: 1 }}>

@@ -71,7 +71,6 @@ export const BOOKING_QUERY = gql`
       phoneNumber
       fullName
       email
-      gender
       paymentMethod
       tenancyAgreementAsset {
         id

@@ -24,7 +24,7 @@ export const HOSTING_QUERY = gql`
       averageRating
       totalRatings
       publishStatus
-      dateAdded
+      createdAt
       lastUpdated
       saved
       rooms {
@@ -32,11 +32,11 @@ export const HOSTING_QUERY = gql`
         name
         count
         description
-        dateAdded
+        createdAt
         lastUpdated
         images {
           id
-          dateAdded
+          createdAt
           lastUpdated
           asset {
             id
@@ -55,11 +55,11 @@ export const HOSTING_QUERY = gql`
             id
           }
         }
-        dateAdded
+        createdAt
       }
       coverImage {
         id
-        dateAdded
+        createdAt
         lastUpdated
         asset {
           id
@@ -71,7 +71,7 @@ export const HOSTING_QUERY = gql`
         accountNumber
         accountName
         bankCode
-        dateAdded
+        createdAt
         lastUpdated
         bankDetails {
           name
@@ -144,7 +144,7 @@ export const HOSTINGS_QUERY = gql`
         }
       }
       paymentInterval
-      dateAdded
+      createdAt
     }
   }
 `;
@@ -217,7 +217,7 @@ export const HOST_LISTINGS_QUERY = gql`
       state
       city
       publishStatus
-      dateAdded
+      createdAt
       lastUpdated
     }
   }

@@ -1,4 +1,3 @@
-import { Notification } from "@/lib/constants/mocks/notifications";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import React from "react";

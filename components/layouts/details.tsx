@@ -239,4 +239,6 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 	},
 );
 
+DetailsLayout.displayName = "DetailsLayout";
+
 export default DetailsLayout;

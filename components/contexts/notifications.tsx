@@ -45,7 +45,7 @@ export const NotificationProvider: React.FC<Props> = ({ children }) => {
 	const [token, setToken] = React.useState<string | null>(null);
 	const [error, setError] = React.useState<Error | null>(null);
 	const { user } = useUser();
-	const [_, updateToken] = useUpdatePushNotificationTokenMutation();
+	const [, updateToken] = useUpdatePushNotificationTokenMutation();
 	const router = useRouter();
 
 	React.useEffect(() => {
@@ -140,7 +140,7 @@ export const NotificationProvider: React.FC<Props> = ({ children }) => {
 		return () => {
 			unsubscribeForeground();
 		};
-	}, [user]);
+	}, [user, router, updateToken]);
 
 	return (
 		<NotificationContext.Provider value={{ error, token }}>

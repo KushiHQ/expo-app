@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserData, UserType } from "../types/users";
 
 const DEFAULT_USER: UserData = {
-	hostListingsView: "list",
+	hostListingsView: "block",
 	userType: UserType.Guest,
 };
 

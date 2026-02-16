@@ -21,10 +21,10 @@ interface GooglePlacePrediction {
 		main_text: string;
 		secondary_text: string;
 	};
-	terms: Array<{
+	terms: {
 		offset: number;
 		value: string;
-	}>;
+	}[];
 }
 
 interface GooglePlacesResponse {
@@ -43,11 +43,11 @@ interface GooglePlaceDetails {
 		formatted_address: string;
 		name: string;
 		place_id: string;
-		address_components: Array<{
+		address_components: {
 			long_name: string;
 			short_name: string;
 			types: string[];
-		}>;
+		}[];
 	};
 }
 
@@ -66,8 +66,6 @@ type Props = {
 	onClose: () => void;
 	onSelect?: (location: SelectedLocation) => void;
 };
-
-const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 const LocationSelectInput: React.FC<Props> = ({
 	isVisible,
@@ -88,7 +86,6 @@ const LocationSelectInput: React.FC<Props> = ({
 			);
 
 			url.searchParams.append("input", debouncedQuery);
-			url.searchParams.append("key", GOOGLE_API_KEY!);
 			url.searchParams.append("components", "country:ng");
 			url.searchParams.append("types", "geocode");
 
@@ -104,11 +101,11 @@ const LocationSelectInput: React.FC<Props> = ({
 				"https://maps.googleapis.com/maps/api/place/details/json",
 			);
 
+			url.searchParams.append("endpoint", "details");
 			url.searchParams.append("place_id", prediction.place_id);
-			url.searchParams.append("key", GOOGLE_API_KEY!);
 			url.searchParams.append(
 				"fields",
-				"geometry,formatted_address,name,place_id,address_components",
+				"address_components,geometry,formatted_address,name,place_id",
 			);
 
 			const res = await fetch(url.toString());

@@ -8,7 +8,6 @@ import HostingStepper from "@/components/molecules/m-hosting-stepper";
 import { Fonts } from "@/lib/constants/theme";
 import { useHostingForm } from "@/lib/hooks/hosting-form";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { useUser } from "@/lib/hooks/user";
 import { HOSTING_VARIANT_ICONS } from "@/lib/types/enums/hosting-icons";
 import { HostingVariant } from "@/lib/types/enums/hostings";
 import { cast } from "@/lib/types/utils";
@@ -29,7 +28,6 @@ export default function NewHostingStep3() {
 	const { id } = useLocalSearchParams();
 	const [locationFetching, setLocationFetching] = React.useState(false);
 	const [permission, requestPermission] = Location.useForegroundPermissions();
-	const { user } = useUser();
 	const {
 		input,
 		mutate,
@@ -40,7 +38,7 @@ export default function NewHostingStep3() {
 
 	const loading = fetchingHosting || locationFetching || mutating;
 
-	const fetchLocation = async () => {
+	const fetchLocation = React.useCallback(async () => {
 		setLocationFetching(true);
 		try {
 			const loc = await getLocationAsync();
@@ -65,13 +63,7 @@ export default function NewHostingStep3() {
 		} finally {
 			setLocationFetching(false);
 		}
-	};
-
-	React.useEffect(() => {
-		if (!fetchingHosting && !input.contact && user.user?.profile.phoneNumber) {
-			updateInput({ contact: user.user?.profile.phoneNumber });
-		}
-	}, [fetchingHosting, user, input]);
+	}, [updateInput]);
 
 	React.useEffect(() => {
 		if (!permission?.granted) {
@@ -79,7 +71,13 @@ export default function NewHostingStep3() {
 		} else if (!input.longitude || !input.latitude) {
 			fetchLocation();
 		}
-	}, [permission]);
+	}, [
+		permission,
+		input.latitude,
+		input.longitude,
+		fetchLocation,
+		requestPermission,
+	]);
 
 	const Icon = HOSTING_VARIANT_ICONS[HostingVariant.Residential];
 
@@ -128,9 +126,9 @@ export default function NewHostingStep3() {
 					>
 						<CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
 						{"  "}
-						Pin your property's Location on the map. We'll automatically find
-						the Address, and you can add extra details like Contact info and
-						nearby Landmarks to help guests find you.
+						Pin your property&apos;s Location on the map. We&apos;ll
+						automatically find the Address, and you can add extra details like
+						Contact info and nearby Landmarks to help guests find you.
 					</ThemedText>
 					<View>
 						{!input.longitude || !input.latitude ? (

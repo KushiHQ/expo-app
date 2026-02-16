@@ -5,7 +5,10 @@ import {
 } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import "react-native-reanimated";
+import {
+	configureReanimatedLogger,
+	ReanimatedLogLevel,
+} from "react-native-reanimated";
 import * as SplashScreen from "expo-splash-screen";
 import {
 	Inter_100Thin,
@@ -33,10 +36,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import GraphqlClientProvider from "@/components/providers/graphql-client";
 import Toast from "react-native-toast-message";
 import toastConfig from "@/components/atoms/a-toast";
-import {
-	configureReanimatedLogger,
-	ReanimatedLogLevel,
-} from "react-native-reanimated";
 import { NotificationProvider } from "@/components/contexts/notifications";
 import StreamVideoClientProvider from "@/components/providers/stream-video-client";
 

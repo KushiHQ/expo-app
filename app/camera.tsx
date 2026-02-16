@@ -32,7 +32,7 @@ export default function CameraPage() {
 				append(images.replaceAll(",", ""));
 			}
 			setActiveIndex(0);
-		}, []),
+		}, [setActiveIndex, append, images, setGallery]),
 	);
 
 	React.useEffect(() => {

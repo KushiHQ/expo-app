@@ -9,6 +9,7 @@ import { Fonts } from "@/lib/constants/theme";
 import { hexToRgba } from "@/lib/utils/colors";
 import { MynauiStarSolid } from "../icons/i-star";
 import { HostAnalyticsQuery } from "@/lib/services/graphql/generated";
+import { capitalize } from "@/lib/utils/text";
 
 type Props = {
 	hosting: HostAnalyticsQuery["hostAnalytics"]["topListing"];
@@ -58,7 +59,8 @@ const TopListingCard: React.FC<Props> = ({ hosting }) => {
 				</ThemedText>
 				<View className="flex-row items-center justify-between">
 					<ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14 }}>
-						₦{hosting?.price?.toLocaleString()} {hosting?.paymentInterval}
+						₦{Number(hosting?.price ?? "0").toLocaleString()}{" "}
+						{capitalize(hosting?.paymentInterval ?? "")}
 					</ThemedText>
 					<View className="flex-row items-center gap-1">
 						<MynauiStarSolid color={colors.accent} size={16} />

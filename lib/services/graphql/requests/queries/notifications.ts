@@ -12,8 +12,6 @@ export const NOTIFICATIONS_QUERY = gql`
       type
       createdAt
       lastUpdated
-      action
-      actionData
     }
   }
 `;

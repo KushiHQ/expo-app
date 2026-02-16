@@ -3,13 +3,9 @@ import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
 import LoadingModal from "@/components/atoms/a-loading-modal";
 import ThemedText from "@/components/atoms/a-themed-text";
 import DetailsLayout from "@/components/layouts/details";
-import SelectInput, {
-	SelectOption,
-} from "@/components/molecules/m-select-input";
 import UserProfileSummary from "@/components/molecules/m-user-profile-summary";
 import { useUser } from "@/lib/hooks/user";
 import {
-	Gender,
 	ProfileUpdateInput,
 	User,
 	useUpdateProfileMutation,
@@ -26,7 +22,6 @@ export default function UserProfileEdit() {
 	const [inputs, setInputs] = React.useState({
 		fullName: user.user?.profile.fullName,
 		gender: user.user?.profile.gender,
-		phoneNumber: user.user?.profile.phoneNumber,
 	} as ProfileUpdateInput);
 	const [{ fetching }, updateProfile] = useUpdateProfileMutation();
 
@@ -93,38 +88,6 @@ export default function UserProfileEdit() {
 									<ThemedText content="primary">Change</ThemedText>
 								</Button>
 							</View>
-							<View className="flex-row gap-4">
-								<SelectInput
-									focused
-									label="Gender"
-									placeholder="Male"
-									defaultValue={{
-										label: inputs.gender ?? Gender.Male,
-										value: inputs.gender ?? Gender.Male,
-									}}
-									onSelect={(v) =>
-										setInputs((c) => ({ ...c, gender: v.value }))
-									}
-									options={[Gender.Male, Gender.Female].map((v) => ({
-										label: v,
-										value: v,
-									}))}
-									renderItem={SelectOption}
-								/>
-								<View className="flex-1">
-									<FloatingLabelInput
-										focused
-										label="Phone Number"
-										inputMode="tel"
-										autoComplete="tel"
-										value={inputs.phoneNumber}
-										placeholder="08032145687"
-										onChangeText={(v) =>
-											setInputs((c) => ({ ...c, phoneNumber: v }))
-										}
-									/>
-								</View>
-							</View>
 						</View>
 					</View>
 					<Button
@@ -132,7 +95,6 @@ export default function UserProfileEdit() {
 						onPress={handleUpdate}
 						disabled={
 							user.user?.profile.fullName === inputs.fullName &&
-							user.user.profile.phoneNumber === inputs.phoneNumber &&
 							user.user.profile.gender === inputs.gender
 						}
 					>

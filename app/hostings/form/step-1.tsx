@@ -67,7 +67,8 @@ export default function NewHostingStep1() {
 					{"  "}
 					Provide the essential details for your listing, including a catchy
 					Title, a Description, and what Type of property it is (e.g.,
-					Residential, Commercial) and how you're listing it (For Sale or Rent).
+					Residential, Commercial) and how you&apos;re listing it (For Sale or
+					Rent).
 				</ThemedText>
 				<FloatingLabelInput
 					focused

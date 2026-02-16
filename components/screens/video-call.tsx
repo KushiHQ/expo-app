@@ -49,7 +49,7 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
 		return () => {
 			clearTimeout(timeout);
 		};
-	}, [callData?.cameraEnabled]);
+	}, [callData]);
 
 	React.useEffect(() => {
 		let timeout: number;
@@ -132,7 +132,6 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
 											}
 											objectFit="cover"
 										/>
-										{console.log("Rendering LocalStream")}
 									</>
 								) : (
 									<RTCView

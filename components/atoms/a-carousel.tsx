@@ -41,7 +41,7 @@ const Carousel: FC<CarouselProps> = ({
 		}
 	};
 
-	const startAutoplay = () => {
+	const startAutoplay = React.useCallback(() => {
 		if (totalSlides <= 1) return;
 
 		if (intervalRef.current) {
@@ -58,7 +58,7 @@ const Carousel: FC<CarouselProps> = ({
 				return nextSlide;
 			});
 		}, interval);
-	};
+	}, [interval, carouselWidth, totalSlides]);
 
 	const stopAutoplay = () => {
 		if (intervalRef.current) {
@@ -73,7 +73,7 @@ const Carousel: FC<CarouselProps> = ({
 			stopAutoplay();
 		}
 		return () => stopAutoplay();
-	}, [autoplay, totalSlides, interval]);
+	}, [autoplay, totalSlides, interval, startAutoplay]);
 
 	return (
 		<View style={style}>

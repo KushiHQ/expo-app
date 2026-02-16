@@ -44,7 +44,7 @@ export default function NewHostingStep4() {
 		const other = selected.filter((v) => !defaultFacilities.includes(cast(v)));
 
 		return [...defaultFacilities, ...other];
-	}, [input.facilities]);
+	}, [input.facilities, input.propertyType]);
 
 	const toggleFacilitySelect = (facility: string) => {
 		const facilities = [...(input.facilities ?? [])];

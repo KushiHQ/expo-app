@@ -1,16 +1,8 @@
 import { gql } from "urql";
 
-export const INITIATE_BOOKING = gql`
-  mutation InitiateBooking($input: InitiateBookingInput!) {
-    initiateBooking(input: $input) {
-      data {
-        id
-        guestServiceCharge
-        transaction {
-          amount
-          id
-        }
-      }
+export const INITIATE_BOOKING_APPLICATION = gql`
+  mutation InitiateBookingApplication($hostingId: String!) {
+    initiateBookingApplication(hostingId: $hostingId) {
       message
     }
   }

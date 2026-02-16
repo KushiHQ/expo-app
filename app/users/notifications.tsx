@@ -33,7 +33,7 @@ export default function UserNotifications() {
 		if (!notifications.length) {
 			setNotifications(generateMockNotifications(20));
 		}
-	}, []);
+	}, [setNotifications, notifications.length]);
 
 	return (
 		<DetailsLayout title="Notifications">

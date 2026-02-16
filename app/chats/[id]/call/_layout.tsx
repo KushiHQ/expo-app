@@ -110,6 +110,8 @@ export default function Layout() {
 		user.user?.id,
 		tokenData?.authStreamUserToken,
 		recipientStreamUser?.getStreamUserId,
+		isVideoCall,
+		sendNotification,
 	]);
 
 	useEffect(() => {

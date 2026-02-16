@@ -33,7 +33,7 @@ const LoadingModal: React.FC<Props> = ({ visible }) => {
     } else {
       scaleAnim.setValue(1);
     }
-  }, [visible]);
+  }, [visible, scaleAnim]);
 
   return (
     <Modal

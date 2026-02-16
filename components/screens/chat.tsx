@@ -48,7 +48,7 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 		if (!chats.length) {
 			setChats(generateMockChatsWithHistory(20));
 		}
-	}, []);
+	}, [chats.length, setChats]);
 
 	return (
 		<DetailsLayout

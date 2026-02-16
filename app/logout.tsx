@@ -21,7 +21,7 @@ export default function Logout() {
 		reset();
 
 		router.replace("/onboarding");
-	}, []);
+	}, [setSecuritySettings, reset]);
 
 	return null;
 }

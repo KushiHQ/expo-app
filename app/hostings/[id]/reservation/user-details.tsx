@@ -5,14 +5,10 @@ import TextArea from "@/components/atoms/a-textarea";
 import ThemedText from "@/components/atoms/a-themed-text";
 import DetailsLayout from "@/components/layouts/details";
 import DateInput from "@/components/molecules/m-date-input";
-import SelectInput, {
-	SelectOption,
-} from "@/components/molecules/m-select-input";
 import SignatureImage from "@/components/molecules/m-signature-image";
 import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import {
-	Gender,
 	PaymentInterval,
 	UpdateGuestMutation,
 	UpdateGuestMutationVariables,
@@ -27,7 +23,6 @@ import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
 import { generateRNFile } from "@/lib/utils/file";
-import { capitalize } from "@/lib/utils/text";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { MapPin } from "lucide-react-native";
 import React from "react";
@@ -73,7 +68,7 @@ export default function ReservationUserDetails() {
 			checkOutDate: endDate.toISOString().split("T")[0],
 			checkInDate: startDate.toISOString().split("T")[0],
 		});
-	}, [hosting]);
+	}, [hosting, updateInput]);
 
 	useFocusEffect(
 		React.useCallback(() => {
@@ -108,7 +103,12 @@ export default function ReservationUserDetails() {
 					})
 					.finally(() => setUploading(false));
 			}
-		}, [gallery]),
+		}, [
+			gallery,
+			guestFetching,
+			guestQueryData?.authGuest.signature?.publicUrl,
+			refetchGuest,
+		]),
 	);
 
 	return (
@@ -161,18 +161,6 @@ export default function ReservationUserDetails() {
 										onChangeText={(v) => updateInput({ phoneNumber: v })}
 									/>
 								</View>
-								<SelectInput
-									focused
-									value={input.gender}
-									label="Gender"
-									placeholder="Male"
-									onSelect={(v) => updateInput({ gender: v.value })}
-									options={Object.values(Gender).map((v) => ({
-										label: capitalize(v),
-										value: v,
-									}))}
-									renderItem={SelectOption}
-								/>
 							</View>
 							<View className="flex-row gap-4">
 								<DateInput

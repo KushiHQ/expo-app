@@ -19,14 +19,13 @@ export const GOOGLE_SIGN_UP = gql`
         user {
           id
           email
-          dateAdded
+          createdAt
           lastUpdated
           profile {
             id
             fullName
-            phoneNumber
             gender
-            dateAdded
+            createdAt
             lastUpdated
           }
           notificationSettings {
@@ -62,14 +61,13 @@ export const REFRESH_TOKEN_MUTATION = gql`
         user {
           id
           email
-          dateAdded
+          createdAt
           lastUpdated
           profile {
             id
             fullName
-            phoneNumber
             gender
-            dateAdded
+            createdAt
             lastUpdated
           }
           notificationSettings {
@@ -121,14 +119,13 @@ export const GOOGLE_LOGIN = gql`
         user {
           id
           email
-          dateAdded
+          createdAt
           lastUpdated
           profile {
             id
             fullName
-            phoneNumber
             gender
-            dateAdded
+            createdAt
             lastUpdated
           }
           notificationSettings {
@@ -164,14 +161,13 @@ export const LOGIN_MUTATION = gql`
         user {
           id
           email
-          dateAdded
+          createdAt
           lastUpdated
           profile {
             id
             fullName
-            phoneNumber
             gender
-            dateAdded
+            createdAt
             lastUpdated
           }
           notificationSettings {

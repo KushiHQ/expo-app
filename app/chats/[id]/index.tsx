@@ -54,7 +54,7 @@ export default function ChatDetails() {
 	) => {
 		setMessages((c) => {
 			const items = [...c];
-			const itemIndex = items.findIndex((v) => v.id == msg.id);
+			const itemIndex = items.findIndex((v) => v.id === msg.id);
 			if (itemIndex >= 0) {
 				items[itemIndex] = msg;
 			} else {
@@ -88,7 +88,7 @@ export default function ChatDetails() {
 
 	React.useEffect(() => {
 		clearUnread({ chatId: cast(id) });
-	}, []);
+	}, [clearUnread, id]);
 
 	React.useEffect(() => {
 		if (error) {

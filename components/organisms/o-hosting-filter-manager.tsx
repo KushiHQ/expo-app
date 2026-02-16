@@ -51,7 +51,7 @@ const HostingFilterManager = () => {
 		updateFilter({
 			facilities: facilities.includes("All") ? undefined : facilities,
 		});
-	}, [facilities]);
+	}, [facilities, updateFilter]);
 
 	return (
 		<View>

@@ -133,9 +133,9 @@ export default function NewHostingStep6() {
 					>
 						<CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
 						{"  "}
-						You're almost there! Please review all the details below carefully.
-						Ensure everything is correct, agree to our terms, and choose whether
-						to Publish your listing now or save it as a draft.
+						You&apos;re almost there! Please review all the details below
+						carefully. Ensure everything is correct, agree to our terms, and
+						choose whether to Publish your listing now or save it as a draft.
 					</ThemedText>
 					{hosting && <HostingCard disabled hosting={hosting} />}
 					<View className="border p-2 rounded-xl gap-3">
@@ -274,7 +274,7 @@ export default function NewHostingStep6() {
 								onValueChange={(v) => setAccepted((c) => ({ ...c, tos: v }))}
 							/>
 							<ThemedText className="flex-1" style={{ fontSize: 14 }}>
-								I agree to Kushi's hosting terms of service
+								I agree to Kushi&apos;s hosting terms of service
 							</ThemedText>
 						</Pressable>
 					</View>

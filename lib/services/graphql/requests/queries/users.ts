@@ -5,14 +5,13 @@ export const ME_QUERY = gql`
     me {
       id
       email
-      dateAdded
+      createdAt
       lastUpdated
       profile {
         id
         fullName
-        phoneNumber
         gender
-        dateAdded
+        createdAt
         lastUpdated
       }
       notificationSettings {
@@ -90,7 +89,7 @@ export const AUTH_HOST = gql`
   query AuthHost {
     authHost {
       id
-      dateAdded
+      createdAt
       lastUpdated
       signature {
         id
@@ -104,7 +103,7 @@ export const AUTH_GUEST = gql`
   query AuthGuest {
     authGuest {
       id
-      dateAdded
+      createdAt
       lastUpdated
       signature {
         id

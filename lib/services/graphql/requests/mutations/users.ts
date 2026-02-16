@@ -58,9 +58,8 @@ export const UPDATE_USER_PROFILE = gql`
       data {
         id
         fullName
-        phoneNumber
         gender
-        dateAdded
+        createdAt
         lastUpdated
       }
     }

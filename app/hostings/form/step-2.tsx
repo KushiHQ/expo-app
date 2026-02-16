@@ -127,7 +127,15 @@ export default function NewHostingStep2() {
 				}
 				clearGallery();
 			}
-		}, [gallery]),
+		}, [
+			gallery,
+			activeIndex,
+			clearGallery,
+			refetchHosting,
+			rooms,
+			updateActiveRoom,
+			updateActiveRoomImage,
+		]),
 	);
 
 	useFocusEffect(
@@ -143,7 +151,7 @@ export default function NewHostingStep2() {
 					})) ?? [],
 				);
 			}
-		}, [hosting]),
+		}, [hosting, setRooms]),
 	);
 
 	const handleDeleteImage = (roomIndex: number, imageIndex: number) => {
@@ -153,8 +161,8 @@ export default function NewHostingStep2() {
 			deleteRoomImage(roomIndex, imageIndex);
 		} else {
 			const imageId = hosting?.rooms
-				.find((r) => r.id == room.id)
-				?.images.find((i) => i.asset.publicUrl == image)?.id;
+				.find((r) => r.id === room.id)
+				?.images.find((i) => i.asset.publicUrl === image)?.id;
 			if (imageId) {
 				deleteImageMutate({ hostingRoomImageId: imageId }).then((res) => {
 					if (res.error) {
@@ -253,10 +261,11 @@ export default function NewHostingStep2() {
 					>
 						<CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
 						{"  "}
-						Show off your property! 📸 Select a Room (like 'Bedroom' or
-						'Kitchen'), then tap the camera icon to upload all the Photos for
-						that specific space. Add as many room categories as you need, and
-						tap 'Details' to specify the Count of each room.
+						Show off your property! 📸 Select a Room (like &lsquo;Bedroom&rsquo;
+						or &lsquo;Kitchen&rsquo;), then tap the camera icon to upload all
+						the Photos for that specific space. Add as many room categories as
+						you need, and tap &lsquo;Details&rsquo; to specify the Count of each
+						room.
 					</ThemedText>
 					{Array.from({ length: rooms.length + 1 }).map((_, index) => (
 						<View key={index} className="gap-2">
@@ -266,9 +275,9 @@ export default function NewHostingStep2() {
 									defaultValue={
 										rooms[index]
 											? {
-													label: Room[rooms[index].name],
-													value: Room[rooms[index].name],
-												}
+												label: Room[rooms[index].name],
+												value: Room[rooms[index].name],
+											}
 											: undefined
 									}
 									label="Room"
@@ -481,10 +490,10 @@ export default function NewHostingStep2() {
 										source={
 											rooms[deleteModalIndex].images.length
 												? {
-														uri: failedImages.has(0)
-															? FALLBACK_IMAGE
-															: rooms[deleteModalIndex].images[0],
-													}
+													uri: failedImages.has(0)
+														? FALLBACK_IMAGE
+														: rooms[deleteModalIndex].images[0],
+												}
 												: require("@/assets/images/room-image.jpg")
 										}
 										style={{

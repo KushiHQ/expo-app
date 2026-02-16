@@ -27,7 +27,7 @@ const GettingStartedStep5: React.FC = () => {
 				<Button onPress={() => router.push("/auth/sign-up")} type="primary">
 					<ThemedText content="primary">Sign up / Log in</ThemedText>
 				</Button>
-				<Button type="tinted">
+				<Button type="tinted" onPress={() => router.push("/guest/home")}>
 					<ThemedText content="tinted">Explore</ThemedText>
 				</Button>
 			</View>

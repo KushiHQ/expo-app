@@ -37,18 +37,18 @@ export const CREATE_UPDATE_HOSTING_MUTATION = gql`
         averageRating
         totalRatings
         publishStatus
-        dateAdded
+        createdAt
         lastUpdated
         saved
         rooms {
           id
           name
           description
-          dateAdded
+          createdAt
           lastUpdated
           images {
             id
-            dateAdded
+            createdAt
             lastUpdated
             asset {
               publicUrl
@@ -81,7 +81,7 @@ export const CREATE_UPDATE_HOSTING_ROOM = gql`
           }
         }
         description
-        dateAdded
+        createdAt
         lastUpdated
         count
       }

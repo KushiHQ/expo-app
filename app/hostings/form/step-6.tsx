@@ -109,7 +109,12 @@ export default function NewHostingStep6() {
 					})
 					.finally(() => setUploading(false));
 			}
-		}, [gallery]),
+		}, [
+			gallery,
+			hostFetching,
+			hostQueryData?.authHost.signature?.publicUrl,
+			refetchHost,
+		]),
 	);
 
 	return (
