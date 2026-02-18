@@ -56,10 +56,43 @@ export const CREATE_UPDATE_HOSTING_MUTATION = gql`
             }
           }
         }
-        policies {
-          maxOccupancy
-          notAllowed
-          additionalClauses
+        tenancyAgreementTemplate {
+          sections {
+            id
+            title
+            description
+            priority
+            preamble
+            subClauses {
+              id
+              title
+              description
+              content
+              isMandatory
+              isActive
+              isCustom
+              requiredVariables {
+                name
+                type
+              }
+              providedValues {
+                key
+                value
+              }
+            }
+          }
+        }
+        verification {
+          id
+          landlordFullName
+          landlordAddress
+          verificationTier
+          propertyRelationship
+          declOwnership
+          declLitigation
+          declIndemnity
+          createdAt
+          lastUpdated
         }
       }
     }

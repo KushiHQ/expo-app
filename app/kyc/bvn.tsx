@@ -109,20 +109,21 @@ export default function KycBVN() {
 								label="BVN"
 								focused
 								inputMode="numeric"
+								maxLength={11}
 								placeholder="021234569"
 								disabled={!!user.user?.kyc.bvnVerified}
-								value={user.user?.kyc.ninVerified ? "***********" : bvn}
+								value={user.user?.kyc.bvnVerified ? "***********" : bvn}
 								onChangeText={setBvn}
 							/>
 							<View className="mt-4 items-center">
 								<Button
 									onPress={handleVerify}
 									disabled={
-										user.user?.kyc.ninVerified ? false : bvn.length !== 11
+										user.user?.kyc.bvnVerified ? false : bvn.length !== 11
 									}
 									className="w-full max-w-[200px]"
 									style={{
-										backgroundColor: user.user?.kyc.ninVerified
+										backgroundColor: user.user?.kyc.bvnVerified
 											? colors.success
 											: colors.primary,
 									}}
@@ -130,12 +131,12 @@ export default function KycBVN() {
 									<ThemedText
 										content="primary"
 										style={{
-											color: user.user?.kyc.ninVerified
+											color: user.user?.kyc.bvnVerified
 												? colors["success-content"]
 												: colors["primary-content"],
 										}}
 									>
-										{user.user?.kyc.ninVerified ? "Verified" : "Confirm"}
+										{user.user?.kyc.bvnVerified ? "Verified" : "Confirm"}
 									</ThemedText>
 								</Button>
 							</View>

@@ -39,7 +39,7 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
 		<>
 			<Pressable
 				className="flex-row items-center gap-4"
-				onPress={() => router.push(`/hostings/${hosting.id}`)}
+				onPress={() => router.push(`/hostings/form/step-1?id=${hosting.id}`)}
 			>
 				<View className="h-[80px] w-[100px]">
 					<Image
@@ -87,7 +87,7 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
 						<ThemedText
 							style={{ fontSize: 10, color: hexToRgba(colors.text, 0.6) }}
 						>
-							{new Date(hosting.dateAdded).toLocaleDateString()}
+							{new Date(hosting.createdAt).toLocaleDateString()}
 						</ThemedText>
 						<View className="flex-row items-center">
 							<IconParkOutlineDot color={statusColor} size={10} />

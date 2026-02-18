@@ -15,21 +15,28 @@ import { handleError } from "@/lib/utils/error";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
 import React from "react";
-import { View } from "react-native";
+import { RefreshControl, View } from "react-native";
 import Toast from "react-native-toast-message";
 
 export default function NewHostingStep1() {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
-	const { mutate, mutating, input, updateInput } = useHostingForm(id);
+	const {
+		mutate,
+		mutating,
+		input,
+		updateInput,
+		fetching,
+		refetch: refetchHosting,
+	} = useHostingForm(id);
 	const handleMutate = () => {
 		mutate({ input: input }).then((res) => {
 			if (res.error) {
 				handleError(res.error);
 			}
 			if (res.data?.createOrUpdateHosting) {
-				router.push(
+				router.replace(
 					`/hostings/form/step-2?id=${res.data?.createOrUpdateHosting.data?.id}`,
 				);
 				Toast.show({
@@ -44,6 +51,14 @@ export default function NewHostingStep1() {
 	return (
 		<DetailsLayout
 			title="Property Details"
+			refreshControl={
+				<RefreshControl
+					refreshing={fetching}
+					onRefresh={() =>
+						id && refetchHosting({ requestPolicy: "network-only" })
+					}
+				/>
+			}
 			footer={
 				<HostingStepper
 					loading={mutating}

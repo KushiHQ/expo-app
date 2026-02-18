@@ -3,7 +3,7 @@ import {
 	StyleSheet,
 	Dimensions,
 	View,
-	TouchableOpacity,
+	Pressable,
 	ScrollView,
 } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -11,71 +11,93 @@ import Animated, {
 	useSharedValue,
 	useAnimatedStyle,
 	withSpring,
+	interpolate,
+	Extrapolation,
 	withTiming,
-	useDerivedValue,
 } from "react-native-reanimated";
-import { scheduleOnRN } from "react-native-worklets";
 import { Portal } from "react-native-paper";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useGradualKeyboardAnimation } from "@/lib/hooks/keyboard";
+import { scheduleOnRN } from "react-native-worklets";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-const MAX_HEIGHT = SCREEN_HEIGHT * 0.7;
-const MIN_HEIGHT = SCREEN_HEIGHT * 0.2;
+const MAX_HEIGHT = SCREEN_HEIGHT * 0.6;
 
 interface BottomSheetProps {
+	scrollable?: boolean;
 	isVisible: boolean;
 	onClose: () => void;
 	children: ReactNode;
 }
 
 const BottomSheet: FC<BottomSheetProps> = ({
+	scrollable = true,
 	isVisible,
 	onClose,
 	children,
 }) => {
 	const colors = useThemeColors();
-	const translateY = useSharedValue(0);
-	const context = useSharedValue({ y: 0 });
-	const [contentHeight, setContentHeight] = useState(0);
-	const { height: keyboardHeight } = useGradualKeyboardAnimation();
 
-	const finalHeight = Math.min(contentHeight, MAX_HEIGHT);
-	const MAX_TRANSLATE_Y = -finalHeight;
+	const [isRendered, setIsRendered] = useState(isVisible);
+
+	const sheetHeight = useSharedValue(0);
+	const translateY = useSharedValue(SCREEN_HEIGHT);
+	const { height: keyboardHeight } = useGradualKeyboardAnimation();
 
 	useEffect(() => {
 		if (isVisible) {
-			translateY.value = withSpring(MAX_TRANSLATE_Y, {
+			setIsRendered(true);
+		} else {
+			toggleSheet(false);
+		}
+	}, [isVisible]);
+
+	const toggleSheet = useCallback((show: boolean) => {
+		"worklet";
+		if (show) {
+			translateY.value = withSpring(0, {
 				damping: 50,
 				stiffness: 400,
 			});
 		} else {
-			translateY.value = withTiming(0, { duration: 150 });
+			const dest = sheetHeight.value || SCREEN_HEIGHT;
+			translateY.value = withTiming(dest, { duration: 250 }, (finished) => {
+				if (finished) {
+					scheduleOnRN(setIsRendered, false);
+				}
+			});
 		}
-	}, [isVisible, translateY, MAX_TRANSLATE_Y]);
-
-	const onContentLayout = useCallback((event: any) => {
-		setContentHeight(event.nativeEvent.layout.height + 60);
 	}, []);
 
+	const onLayout = useCallback(
+		(event: any) => {
+			const h = event.nativeEvent.layout.height;
+			const clampedHeight = Math.min(h, MAX_HEIGHT);
+
+			sheetHeight.value = clampedHeight;
+
+			if (isVisible) {
+				toggleSheet(true);
+			}
+		},
+		[isVisible],
+	);
+
 	const panGesture = Gesture.Pan()
-		.onStart(() => {
-			context.value = { y: translateY.value };
-		})
-		.onUpdate((event) => {
-			const newValue = context.value.y + event.translationY;
-			translateY.value = Math.max(MAX_TRANSLATE_Y, Math.min(0, newValue));
+		.onChange((event) => {
+			const offset = event.translationY;
+			if (offset > 0) {
+				translateY.value = offset;
+			} else {
+				translateY.value = offset * 0.1;
+			}
 		})
 		.onEnd(() => {
-			if (translateY.value > MAX_TRANSLATE_Y / 2) {
-				translateY.value = withTiming(0, { duration: 150 });
+			if (translateY.value > sheetHeight.value / 3) {
 				scheduleOnRN(onClose);
 			} else {
-				translateY.value = withSpring(MAX_TRANSLATE_Y, {
-					damping: 50,
-					stiffness: 400,
-				});
+				toggleSheet(true);
 			}
 		});
 
@@ -90,68 +112,65 @@ const BottomSheet: FC<BottomSheetProps> = ({
 
 	const rBackdropStyle = useAnimatedStyle(() => {
 		return {
-			opacity: withTiming(isVisible ? 0.4 : 0, { duration: 200 }),
+			opacity: interpolate(
+				translateY.value,
+				[0, sheetHeight.value],
+				[0.2, 0],
+				Extrapolation.CLAMP,
+			),
 		};
-	}, [isVisible]);
+	});
 
-	const isSheetFullyClosed = useDerivedValue(() => translateY.value <= 0);
-
-	if (!isVisible && isSheetFullyClosed.value) {
-		return null;
-	}
+	if (!isRendered) return null;
 
 	return (
 		<Portal>
-			<View
-				style={[
-					StyleSheet.absoluteFillObject,
-					{ pointerEvents: isVisible ? "auto" : "none" },
-				]}
-			>
-				<TouchableOpacity
-					activeOpacity={1}
-					onPress={onClose}
-					style={StyleSheet.absoluteFillObject}
-				>
+			<View style={StyleSheet.absoluteFill}>
+				<Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
 					<Animated.View
-						style={[StyleSheet.absoluteFillObject, rBackdropStyle]}
+						style={[
+							StyleSheet.absoluteFill,
+							{ backgroundColor: colors.text },
+							rBackdropStyle,
+						]}
 					/>
-				</TouchableOpacity>
+				</Pressable>
 
 				<Animated.View
 					style={[
 						styles.bottomSheetContainer,
 						{
-							backgroundColor: colors["background"],
-							shadowColor: hexToRgba(colors["text"], 0.1),
-							borderTopWidth: 2,
-							borderColor: hexToRgba(colors["text"], 0.09),
-							height: finalHeight > 0 ? finalHeight : MIN_HEIGHT,
+							backgroundColor: colors.background,
+							borderColor: hexToRgba(colors.text, 0.1),
 						},
 						rBottomSheetStyle,
 					]}
 				>
 					<GestureDetector gesture={panGesture}>
-						<View style={{ width: "100%" }}>
+						<View style={styles.handleContainer} hitSlop={20}>
 							<View
 								style={[
 									styles.handle,
-									{
-										backgroundColor: hexToRgba(colors["text"], 0.4),
-										borderRadius: 2.5,
-									},
+									{ backgroundColor: hexToRgba(colors.text, 0.4) },
 								]}
 							/>
 						</View>
 					</GestureDetector>
 
-					<ScrollView
-						showsVerticalScrollIndicator={false}
-						style={styles.contentContainer}
-						keyboardShouldPersistTaps="handled"
-					>
-						<View onLayout={onContentLayout}>{children}</View>
-					</ScrollView>
+					<View onLayout={onLayout} style={{ maxHeight: MAX_HEIGHT }}>
+						{scrollable ? (
+							<ScrollView
+								showsVerticalScrollIndicator={false}
+								keyboardShouldPersistTaps="handled"
+								contentContainerStyle={{ flexGrow: 0 }}
+							>
+								<View style={styles.contentPadding}>{children}</View>
+							</ScrollView>
+						) : (
+							<View style={styles.contentPadding}>{children}</View>
+						)}
+						<View style={{ height: 20 }} />
+					</View>
 				</Animated.View>
 			</View>
 		</Portal>
@@ -162,23 +181,24 @@ const styles = StyleSheet.create({
 	bottomSheetContainer: {
 		width: "100%",
 		position: "absolute",
-		top: SCREEN_HEIGHT + 10,
-		borderRadius: 25,
-		paddingHorizontal: 20,
-		shadowOffset: { width: 0, height: -3 },
-		shadowOpacity: 0.1,
-		shadowRadius: 4,
-		elevation: 5,
+		bottom: 0,
+		borderTopLeftRadius: 25,
+		borderTopRightRadius: 25,
+		borderTopWidth: 1,
+		zIndex: 1000,
+	},
+	handleContainer: {
+		width: "100%",
+		alignItems: "center",
+		paddingVertical: 12,
 	},
 	handle: {
 		width: 40,
-		height: 6,
-		alignSelf: "center",
-		marginVertical: 10,
+		height: 5,
+		borderRadius: 3,
 	},
-	contentContainer: {
-		flexGrow: 1,
-		paddingBottom: 20,
+	contentPadding: {
+		paddingHorizontal: 20,
 	},
 });
 

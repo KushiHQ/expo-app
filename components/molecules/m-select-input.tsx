@@ -1,7 +1,14 @@
 import React from "react";
 import { FloatingLabelInputProps } from "../atoms/a-floating-label-input";
 import BottomSheet from "../atoms/a-bottom-sheet";
-import { GestureResponderEvent, Pressable, View } from "react-native";
+import {
+	Dimensions,
+	FlatList,
+	GestureResponderEvent,
+	ListRenderItem,
+	Pressable,
+	View,
+} from "react-native";
 import ThemedText from "../atoms/a-themed-text";
 import { ChevronDown } from "lucide-react-native";
 import { hexToRgba } from "@/lib/utils/colors";
@@ -12,6 +19,8 @@ import EmptyList from "./m-empty-list";
 import { capitalize } from "@/lib/utils/text";
 import Checkbox from "../atoms/a-checkbox";
 
+const SCREEN_HEIGHT = Dimensions.get("window").height;
+const LIST_MAX_HEIGHT = SCREEN_HEIGHT * 0.45;
 export type SelectionDetails = { selected?: boolean };
 
 interface BaseProps<T> extends Omit<FloatingLabelInputProps, "defaultValue"> {
@@ -54,13 +63,28 @@ const SelectInput = <T extends object>(props: Props<T>) => {
 		[value, valueStringFunc],
 	);
 
-	const filtered = rest.searchable
-		? options.filter((v) =>
-			String(cast<Record<string, string>>(v)[rest.searchField])
-				.toLowerCase()
-				.includes(search.toLowerCase()),
-		)
-		: options;
+	const filtered = React.useMemo(() => {
+		let result = options;
+
+		if (rest.searchable && search) {
+			result = options.filter((v) =>
+				String(cast<Record<string, string>>(v)[rest.searchField])
+					.toLowerCase()
+					.includes(search.toLowerCase()),
+			);
+		}
+
+		return [...result].sort((a, b) => {
+			const fieldA = rest.searchable
+				? String(cast<Record<string, string>>(a)[rest.searchField])
+				: valueStringFunc(a);
+			const fieldB = rest.searchable
+				? String(cast<Record<string, string>>(b)[rest.searchField])
+				: valueStringFunc(b);
+
+			return fieldA.localeCompare(fieldB);
+		});
+	}, [rest, search, options, valueStringFunc]);
 
 	const handlePress = (e: GestureResponderEvent) => {
 		e.preventDefault();
@@ -68,6 +92,29 @@ const SelectInput = <T extends object>(props: Props<T>) => {
 
 		setOpen(true);
 	};
+
+	const renderListOption: ListRenderItem<T> = React.useCallback(
+		({ item }) => {
+			const isSelected =
+				String(selectedValue).toLowerCase() ===
+				String(valueStringFunc(item)).toLowerCase();
+
+			return (
+				<Pressable
+					className="py-2"
+					onPress={() => {
+						setValue(item);
+						onSelect?.(item);
+						setOpen(false);
+						setSearch("");
+					}}
+				>
+					<RenderItem {...item} selected={isSelected} />
+				</Pressable>
+			);
+		},
+		[selectedValue, valueStringFunc, onSelect, RenderItem],
+	);
 
 	return (
 		<>
@@ -103,39 +150,43 @@ const SelectInput = <T extends object>(props: Props<T>) => {
 					</View>
 				</Pressable>
 			</View>
-			<BottomSheet isVisible={open} onClose={() => setOpen(false)}>
-				<View className="gap-4">
-					<ThemedText type="semibold">{props.label}</ThemedText>
-					<View>
-						{rest.searchable && (
-							<View className="mb-4">
-								<SearchInput
-									value={search}
-									onChangeText={setSearch}
-									placeholder="Search..."
-								/>
-							</View>
-						)}
-						{filtered.map((v, index) => (
-							<Pressable
-								className="p-2 px-0"
-								onPress={() => {
-									setValue(v);
-									onSelect?.(v);
-									setOpen(false);
-								}}
-								key={index}
-							>
-								<RenderItem
-									{...v}
-									selected={
-										String(selectedValue).toLowerCase() ===
-										String(valueStringFunc(v)).toLowerCase()
-									}
-								/>
-							</Pressable>
-						))}
-						{!filtered.length && <EmptyList message="No items found" />}
+
+			<BottomSheet
+				scrollable={false}
+				isVisible={open}
+				onClose={() => setOpen(false)}
+			>
+				<View style={{ paddingBottom: 20 }}>
+					<ThemedText type="semibold" className="mb-4">
+						{props.label}
+					</ThemedText>
+
+					{rest.searchable && (
+						<View className="mb-4">
+							<SearchInput
+								value={search}
+								onChangeText={setSearch}
+								placeholder="Search..."
+							/>
+						</View>
+					)}
+
+					<View style={{ maxHeight: LIST_MAX_HEIGHT }}>
+						<FlatList
+							data={filtered}
+							renderItem={renderListOption}
+							keyExtractor={(item, index) => {
+								return (
+									(item as any).id || (item as any).code || index.toString()
+								);
+							}}
+							initialNumToRender={10}
+							maxToRenderPerBatch={10}
+							windowSize={5}
+							showsVerticalScrollIndicator={false}
+							ListEmptyComponent={<EmptyList message="No items found" />}
+							keyboardShouldPersistTaps="handled"
+						/>
 					</View>
 				</View>
 			</BottomSheet>

@@ -101,6 +101,7 @@ export default function KycNIN() {
 							<FloatingLabelInput
 								label="NIN"
 								focused
+								maxLength={11}
 								inputMode="numeric"
 								placeholder="021234569"
 								disabled={!!user.user?.kyc.ninVerified}

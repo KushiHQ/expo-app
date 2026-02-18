@@ -350,7 +350,6 @@ export type Hosting = {
   facilities?: Maybe<Array<Scalars['String']['output']>>;
   host: Host;
   id: Scalars['String']['output'];
-  landLordMandate?: Maybe<Scalars['JSON']['output']>;
   landmarks?: Maybe<Scalars['String']['output']>;
   lastUpdated: Scalars['String']['output'];
   latitude?: Maybe<Scalars['String']['output']>;
@@ -358,7 +357,6 @@ export type Hosting = {
   longitude?: Maybe<Scalars['String']['output']>;
   paymentDetails?: Maybe<HostAccountDetails>;
   paymentInterval?: Maybe<PaymentInterval>;
-  policies?: Maybe<HostingPolicies>;
   postalCode?: Maybe<Scalars['String']['output']>;
   price?: Maybe<Scalars['Decimal']['output']>;
   propertyType?: Maybe<Scalars['String']['output']>;
@@ -369,9 +367,10 @@ export type Hosting = {
   saved: Scalars['Boolean']['output'];
   state?: Maybe<Scalars['String']['output']>;
   street?: Maybe<Scalars['String']['output']>;
+  tenancyAgreementTemplate?: Maybe<TenancyTemplate>;
   title?: Maybe<Scalars['String']['output']>;
   totalRatings?: Maybe<Scalars['Int']['output']>;
-  verificationTier?: Maybe<Scalars['String']['output']>;
+  verification?: Maybe<HostingVerification>;
 };
 
 
@@ -461,29 +460,20 @@ export type HostingInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   facilities?: InputMaybe<Array<Scalars['String']['input']>>;
   id?: InputMaybe<Scalars['String']['input']>;
-  landLordMandate?: InputMaybe<Scalars['JSON']['input']>;
   landmarks?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['String']['input']>;
   listingType?: InputMaybe<ListingType>;
   longitude?: InputMaybe<Scalars['String']['input']>;
   paymentDetailsId?: InputMaybe<Scalars['String']['input']>;
   paymentInterval?: InputMaybe<PaymentInterval>;
-  policies?: InputMaybe<HostingPoliciesInput>;
   postalCode?: InputMaybe<Scalars['String']['input']>;
   price?: InputMaybe<Scalars['Decimal']['input']>;
   propertyType?: InputMaybe<Scalars['String']['input']>;
   publishStatus?: InputMaybe<PublishStatus>;
   state?: InputMaybe<Scalars['String']['input']>;
   street?: InputMaybe<Scalars['String']['input']>;
+  tenancyAgreementTemplate?: InputMaybe<TenancyTemplateInput>;
   title?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type HostingPolicies = {
-  __typename?: 'HostingPolicies';
-  additionalClauses?: Maybe<Scalars['String']['output']>;
-  correspondenceAddress: Scalars['String']['output'];
-  maxOccupancy?: Maybe<Scalars['Int']['output']>;
-  notAllowed?: Maybe<Array<Scalars['String']['output']>>;
 };
 
 export type HostingPoliciesInput = {
@@ -492,6 +482,12 @@ export type HostingPoliciesInput = {
   maxOccupancy?: InputMaybe<Scalars['Int']['input']>;
   notAllowed?: InputMaybe<Array<Scalars['String']['input']>>;
 };
+
+export enum HostingPropertyRelationship {
+  Agent = 'AGENT',
+  Landlord = 'LANDLORD',
+  Subletter = 'SUBLETTER'
+}
 
 export type HostingResponse = {
   __typename?: 'HostingResponse';
@@ -594,6 +590,45 @@ export type HostingRoomResponse = {
   message: Scalars['String']['output'];
 };
 
+export type HostingVerification = {
+  __typename?: 'HostingVerification';
+  createdAt: Scalars['String']['output'];
+  declIndemnity: Scalars['Boolean']['output'];
+  declLitigation: Scalars['Boolean']['output'];
+  declOwnership: Scalars['Boolean']['output'];
+  id: Scalars['String']['output'];
+  landlordAddress: Scalars['String']['output'];
+  landlordFullName: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+  propertyRelationship: HostingPropertyRelationship;
+  verificationTier: HostingVerificationTier;
+};
+
+export type HostingVerificationInput = {
+  declIndemnity: Scalars['Boolean']['input'];
+  declLitigation: Scalars['Boolean']['input'];
+  declOwnership: Scalars['Boolean']['input'];
+  hostingId: Scalars['String']['input'];
+  id?: InputMaybe<Scalars['String']['input']>;
+  landlordAddress: Scalars['String']['input'];
+  landlordFullName: Scalars['String']['input'];
+  propertyRelationship: HostingPropertyRelationship;
+};
+
+export type HostingVerificationResponse = {
+  __typename?: 'HostingVerificationResponse';
+  data?: Maybe<HostingVerification>;
+  message: Scalars['String']['output'];
+};
+
+export enum HostingVerificationTier {
+  AddressVerified = 'ADDRESS_VERIFIED',
+  IdentityVerified = 'IDENTITY_VERIFIED',
+  KushiVetted = 'KUSHI_VETTED',
+  OwnerVerified = 'OWNER_VERIFIED',
+  Unverified = 'UNVERIFIED'
+}
+
 export type Kyc = {
   __typename?: 'Kyc';
   bvnVerified?: Maybe<Scalars['Boolean']['output']>;
@@ -656,6 +691,7 @@ export type Mutations = {
   googleLogin: AuthTokenResponse;
   googleSignUp: AuthTokenResponse;
   hostUpdateBookingApplicationStatus: BookingApplicationResponse;
+  initateHostingVerification: HostingVerificationResponse;
   initiateBookingApplication: BookingApplicationResponse;
   initiateBookingApplicationSubmission: MessageResponse;
   initiateHostingChat: HostingChat;
@@ -792,6 +828,11 @@ export type MutationsGoogleSignUpArgs = {
 
 export type MutationsHostUpdateBookingApplicationStatusArgs = {
   input: BookingApplicationStatusUpdateInput;
+};
+
+
+export type MutationsInitateHostingVerificationArgs = {
+  input: HostingVerificationInput;
 };
 
 
@@ -1545,7 +1586,7 @@ export type CreateOrUpdateHostingMutationVariables = Exact<{
 }>;
 
 
-export type CreateOrUpdateHostingMutation = { __typename?: 'Mutations', createOrUpdateHosting: { __typename?: 'HostingResponse', message: string, data?: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', publicUrl: string, id: string } }> }>, policies?: { __typename?: 'HostingPolicies', maxOccupancy?: number | null, notAllowed?: Array<string> | null, additionalClauses?: string | null } | null } | null } };
+export type CreateOrUpdateHostingMutation = { __typename?: 'Mutations', createOrUpdateHosting: { __typename?: 'HostingResponse', message: string, data?: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', publicUrl: string, id: string } }> }>, tenancyAgreementTemplate?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, verification?: { __typename?: 'HostingVerification', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, createdAt: string, lastUpdated: string } | null } | null } };
 
 export type CreateOrUpdateHostingRoomMutationVariables = Exact<{
   input: HostingRoomInput;
@@ -1720,7 +1761,7 @@ export type HostingQueryVariables = Exact<{
 }>;
 
 
-export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, createdAt: string, user: { __typename?: 'User', id: string, email: string, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string } } }, coverImage?: { __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, createdAt: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, policies?: { __typename?: 'HostingPolicies', maxOccupancy?: number | null, notAllowed?: Array<string> | null, additionalClauses?: string | null, correspondenceAddress: string } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null } } };
+export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, createdAt: string, user: { __typename?: 'User', id: string, email: string, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string } } }, coverImage?: { __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, createdAt: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null }, tenancyAgreementTemplate?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, verification?: { __typename?: 'HostingVerification', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, createdAt: string, lastUpdated: string } | null } };
 
 export type HostingsQueryVariables = Exact<{
   filters?: InputMaybe<HostingFilterInput>;
@@ -2252,10 +2293,43 @@ export const CreateOrUpdateHostingDocument = gql`
           }
         }
       }
-      policies {
-        maxOccupancy
-        notAllowed
-        additionalClauses
+      tenancyAgreementTemplate {
+        sections {
+          id
+          title
+          description
+          priority
+          preamble
+          subClauses {
+            id
+            title
+            description
+            content
+            isMandatory
+            isActive
+            isCustom
+            requiredVariables {
+              name
+              type
+            }
+            providedValues {
+              key
+              value
+            }
+          }
+        }
+      }
+      verification {
+        id
+        landlordFullName
+        landlordAddress
+        verificationTier
+        propertyRelationship
+        declOwnership
+        declLitigation
+        declIndemnity
+        createdAt
+        lastUpdated
       }
     }
   }
@@ -2836,12 +2910,6 @@ export const HostingDocument = gql`
         image
       }
     }
-    policies {
-      maxOccupancy
-      notAllowed
-      additionalClauses
-      correspondenceAddress
-    }
     reviews(pagination: $pagination) {
       averageRating
       description
@@ -2863,6 +2931,44 @@ export const HostingDocument = gql`
       location
       checkIn
       value
+    }
+    tenancyAgreementTemplate {
+      sections {
+        id
+        title
+        description
+        priority
+        preamble
+        subClauses {
+          id
+          title
+          description
+          content
+          isMandatory
+          isActive
+          isCustom
+          requiredVariables {
+            name
+            type
+          }
+          providedValues {
+            key
+            value
+          }
+        }
+      }
+    }
+    verification {
+      id
+      landlordFullName
+      landlordAddress
+      verificationTier
+      propertyRelationship
+      declOwnership
+      declLitigation
+      declIndemnity
+      createdAt
+      lastUpdated
     }
   }
 }

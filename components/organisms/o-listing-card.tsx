@@ -36,7 +36,9 @@ const ListingCard: React.FC<Props> = ({ hosting }) => {
 					: colors.error;
 	return (
 		<>
-			<Pressable onPress={() => router.push(`/hostings/${hosting.id}`)}>
+			<Pressable
+				onPress={() => router.push(`/hostings/form/step-1?id=${hosting.id}`)}
+			>
 				<View
 					className="gap-4 border p-4 rounded-xl"
 					style={{ borderColor: hexToRgba(colors.text, 0.2) }}
@@ -93,7 +95,7 @@ const ListingCard: React.FC<Props> = ({ hosting }) => {
 					<ThemedText
 						style={{ fontSize: 10, color: hexToRgba(colors.text, 0.6) }}
 					>
-						{new Date(hosting.dateAdded).toLocaleDateString()}
+						{new Date(hosting.createdAt).toLocaleDateString()}
 					</ThemedText>
 					<View className="flex-row items-center">
 						<IconParkOutlineDot color={statusColor} size={10} />

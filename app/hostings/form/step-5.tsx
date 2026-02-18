@@ -157,7 +157,7 @@ export default function NewHostingStep5() {
 							either by selecting a saved account or adding a new one.
 						</ThemedText>
 						<ThemedText style={{ fontFamily: Fonts.medium }}>
-							Pricing & Payment Details
+							{"Pricing & Payment Details"}
 						</ThemedText>
 						<View className="flex-row gap-4">
 							<SelectInput
@@ -167,9 +167,9 @@ export default function NewHostingStep5() {
 								defaultValue={
 									input.paymentInterval
 										? {
-											label: input.paymentInterval,
-											value: input.paymentInterval,
-										}
+												label: input.paymentInterval,
+												value: input.paymentInterval,
+											}
 										: undefined
 								}
 								onSelect={(v) => updateInput({ paymentInterval: v.value })}
@@ -215,7 +215,7 @@ export default function NewHostingStep5() {
 									<ThemedText>Or</ThemedText>
 								</Centered>
 								<ThemedText style={{ fontFamily: Fonts.medium }}>
-									Create New
+									Create New Account
 								</ThemedText>
 							</View>
 						</View>

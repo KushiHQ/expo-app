@@ -71,10 +71,10 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting }) => {
 							type="primary"
 							onPress={() => {
 								onClose?.();
-								router.push(`/hostings/form/step-1?id=${hosting.id}`);
+								router.push(`/hostings/${hosting.id}`);
 							}}
 						>
-							<ThemedText content="primary">Edit Listing</ThemedText>
+							<ThemedText content="primary">View Listing</ThemedText>
 						</Button>
 						<Button
 							style={{ backgroundColor: hexToRgba(colors.error, 0.15) }}

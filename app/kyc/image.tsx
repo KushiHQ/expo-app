@@ -282,18 +282,26 @@ export default function KycImage() {
 								<View className="flex-row  max-w-[400px] gap-4">
 									<Button
 										onPress={() => setKycImage(undefined)}
-										style={{ backgroundColor: colors.accent }}
+										style={{
+											borderColor: hexToRgba(colors.accent, 0.5),
+											borderWidth: 1,
+										}}
 										className="mt-8 flex-1"
 									>
-										<ThemedText style={{ color: "white" }}>Retake</ThemedText>
+										<ThemedText style={{ color: colors.accent }}>
+											Retake
+										</ThemedText>
 									</Button>
 									<Button
 										onPress={handleUploadImage}
 										disabled={!kycImage.startsWith("file")}
-										type="primary"
+										style={{
+											borderColor: hexToRgba(colors.primary, 0.7),
+											borderWidth: 1,
+										}}
 										className="mt-8 flex-1"
 									>
-										<ThemedText content="primary">Confirm</ThemedText>
+										<ThemedText content="tinted">Confirm</ThemedText>
 									</Button>
 								</View>
 							</View>

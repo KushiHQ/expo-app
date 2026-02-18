@@ -82,12 +82,7 @@ export const HOSTING_QUERY = gql`
           image
         }
       }
-      policies {
-        maxOccupancy
-        notAllowed
-        additionalClauses
-        correspondenceAddress
-      }
+
       reviews(pagination: $pagination) {
         averageRating
         description
@@ -109,6 +104,44 @@ export const HOSTING_QUERY = gql`
         location
         checkIn
         value
+      }
+      tenancyAgreementTemplate {
+        sections {
+          id
+          title
+          description
+          priority
+          preamble
+          subClauses {
+            id
+            title
+            description
+            content
+            isMandatory
+            isActive
+            isCustom
+            requiredVariables {
+              name
+              type
+            }
+            providedValues {
+              key
+              value
+            }
+          }
+        }
+      }
+      verification {
+        id
+        landlordFullName
+        landlordAddress
+        verificationTier
+        propertyRelationship
+        declOwnership
+        declLitigation
+        declIndemnity
+        createdAt
+        lastUpdated
       }
     }
   }

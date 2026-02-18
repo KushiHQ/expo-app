@@ -13,238 +13,54 @@ import SelectInput, {
 } from "@/components/molecules/m-select-input";
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
-import { useCameraScreen } from "@/lib/hooks/camera";
-import { useHostingForm } from "@/lib/hooks/hosting-form";
+import { useHostingFormRoomUtils } from "@/lib/hooks/forms/use-hosting-form-room-utils";
 import { useFallbackImages } from "@/lib/hooks/images";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import {
-	CreateHostingRoomImageMutation,
-	CreateHostingRoomImageMutationVariables,
-	useCreateOrUpdateHostingRoomMutation,
-	useDeleteHostingRoomImageMutation,
-	useDeleteHostingRoomMutation,
-} from "@/lib/services/graphql/generated";
-import { CREATE_UPDATE_HOSTING_ROOM_IMAGE } from "@/lib/services/graphql/requests/mutations/hostings";
-import { formMutation } from "@/lib/services/graphql/utils/fetch";
-import { useGalleryStore } from "@/lib/stores/gallery";
-import { RoomData, useHostingRoomsStore } from "@/lib/stores/hostings";
 import { Room, ROOM_KEYS } from "@/lib/types/enums/hostings";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
-import { handleError } from "@/lib/utils/error";
-import { generateRNFile } from "@/lib/utils/file";
 import { Image } from "expo-image";
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
 import React from "react";
-import { View } from "react-native";
-import Toast from "react-native-toast-message";
+import { RefreshControl, View } from "react-native";
 
 export default function NewHostingStep2() {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
-	const { gallery, clearGallery } = useGalleryStore();
-	const [activeModalIndex, setActiveModalIndex] = React.useState<number>();
-	const [deleteModalIndex, setDeleteModalIndex] = React.useState<number>();
-	const { redirect } = useCameraScreen();
 	const { failedImages, handleImageError } = useFallbackImages();
+
 	const {
 		rooms,
-		activeIndex,
-		setRooms,
-		saveRoom,
-		deleteRoom,
-		setActiveIndex,
-		updateActiveRoom,
-		updateRoom,
-		deleteRoomImage,
-		updateActiveRoomImage,
-	} = useHostingRoomsStore();
-	const {
 		hosting,
-		refetch: refetchHosting,
-		fetching: fetchingHosting,
-	} = useHostingForm(id);
-
-	const [{ fetching: hostingRoomSaving }, saveHostingRoomMutate] =
-		useCreateOrUpdateHostingRoomMutation();
-	const [{ fetching: deleteingImage }, deleteImageMutate] =
-		useDeleteHostingRoomImageMutation();
-	const [{ fetching: deletingRoom }, deleteRoomMutate] =
-		useDeleteHostingRoomMutation();
-	const [addingImages, setAddingImages] = React.useState(false);
-
-	const loading =
-		deleteingImage ||
-		deletingRoom ||
-		fetchingHosting ||
-		hostingRoomSaving ||
-		addingImages;
-
-	useFocusEffect(
-		React.useCallback(() => {
-			if (gallery.length > 0) {
-				updateActiveRoom({ images: gallery });
-				const roomId = rooms[activeIndex]?.id;
-
-				if (roomId) {
-					gallery.forEach(async (image, index) => {
-						if (image.startsWith("file")) {
-							setAddingImages(true);
-							formMutation<
-								CreateHostingRoomImageMutation,
-								CreateHostingRoomImageMutationVariables
-							>(CREATE_UPDATE_HOSTING_ROOM_IMAGE, {
-								input: {
-									roomId,
-									asset: generateRNFile(image),
-								},
-							})
-								.then((res) => {
-									setAddingImages(false);
-									if (res.error) {
-										handleError(res.error);
-									}
-									if (res.data?.createHostingRoomImage.data) {
-										Toast.show({
-											type: "success",
-											text1: "Success",
-											text2: res.data.createHostingRoomImage.message,
-										});
-										updateActiveRoomImage(
-											index,
-											res.data.createHostingRoomImage.data.asset.publicUrl,
-										);
-										refetchHosting({ requestPolicy: "network-only" });
-									}
-								})
-								.catch(() => {
-									setAddingImages(false);
-								});
-						}
-					});
-				}
-				clearGallery();
-			}
-		}, [
-			gallery,
-			activeIndex,
-			clearGallery,
-			refetchHosting,
-			rooms,
-			updateActiveRoom,
-			updateActiveRoomImage,
-		]),
-	);
-
-	useFocusEffect(
-		React.useCallback(() => {
-			if (hosting) {
-				setRooms(
-					hosting.rooms?.map(({ images, ...room }) => ({
-						id: cast(room.id),
-						name: cast(room.name),
-						count: cast(room.count),
-						description: cast(room.description),
-						images: images?.map((img) => img.asset.publicUrl) ?? [],
-					})) ?? [],
-				);
-			}
-		}, [hosting, setRooms]),
-	);
-
-	const handleDeleteImage = (roomIndex: number, imageIndex: number) => {
-		const room = rooms[roomIndex];
-		const image = room.images[imageIndex];
-		if (image.startsWith("file")) {
-			deleteRoomImage(roomIndex, imageIndex);
-		} else {
-			const imageId = hosting?.rooms
-				.find((r) => r.id === room.id)
-				?.images.find((i) => i.asset.publicUrl === image)?.id;
-			if (imageId) {
-				deleteImageMutate({ hostingRoomImageId: imageId }).then((res) => {
-					if (res.error) {
-						handleError(res.error);
-					}
-					if (res.data?.deleteHostingRoomImage.message) {
-						Toast.show({
-							type: "success",
-							text2: res.data.deleteHostingRoomImage.message,
-						});
-						deleteRoomImage(roomIndex, imageIndex);
-						refetchHosting({ requestPolicy: "network-only" });
-					}
-				});
-			}
-		}
-	};
-
-	const handleDeleteActiveRoom = () => {
-		const roomId = rooms[activeIndex].id;
-		if (roomId) {
-			deleteRoomMutate({ hostingRoomId: roomId }).then((res) => {
-				if (res.error) {
-					handleError(res.error);
-				}
-				if (res.data?.deleteHostingRoom.message) {
-					Toast.show({
-						type: "success",
-						text2: res.data.deleteHostingRoom.message,
-					});
-					setActiveModalIndex(undefined);
-					setDeleteModalIndex(undefined);
-					refetchHosting({ requestPolicy: "network-only" });
-					deleteRoom(activeIndex);
-					setActiveIndex(0);
-				}
-			});
-		}
-	};
-
-	const handleSaveHostingRoom = (
-		index: number,
-		{ images, ...rest }: RoomData,
-	) => {
-		if (!hosting?.id) return;
-		saveRoom(rest.name, index);
-		saveHostingRoomMutate({ input: { ...rest, hostingId: hosting?.id } }).then(
-			(res) => {
-				if (res.error) {
-					handleError(res.error);
-				}
-				if (res.data) {
-					Toast.show({
-						type: "success",
-						text1: "Success",
-						text2: res.data.createOrUpdateHostingRoom.message,
-					});
-					const created = res.data.createOrUpdateHostingRoom.data;
-					updateRoom(index, {
-						id: created?.id,
-						name: cast(created?.name),
-						count: created?.count ?? 1,
-						description: cast(created?.description),
-					});
-				}
-			},
-		);
-	};
-
-	const handleRoomImageEdit = (index: number) => {
-		const images = rooms.at(index)?.images ?? [];
-		setActiveIndex(index);
-		redirect({
-			clear: true,
-			images,
-		});
-	};
+		loading,
+		hostingRoomSaving,
+		activeModalIndex,
+		deleteRoomImage,
+		deleteModalIndex,
+		activeIndex,
+		fetchingHosting,
+		refetchHosting,
+		handleSaveHostingRoom,
+		handleRoomImageEdit,
+		handleDeleteImage,
+		setActiveModalIndex,
+		updateActiveRoom,
+		setDeleteModalIndex,
+		handleDeleteActiveRoom,
+	} = useHostingFormRoomUtils(String(id));
 
 	return (
 		<>
 			<DetailsLayout
 				title="Hosting"
+				refreshControl={
+					<RefreshControl
+						refreshing={fetchingHosting}
+						onRefresh={() => refetchHosting({ requestPolicy: "network-only" })}
+					/>
+				}
 				footer={
 					<HostingStepper
 						disabled={!rooms.length}
@@ -275,9 +91,9 @@ export default function NewHostingStep2() {
 									defaultValue={
 										rooms[index]
 											? {
-												label: Room[rooms[index].name],
-												value: Room[rooms[index].name],
-											}
+													label: Room[rooms[index].name],
+													value: Room[rooms[index].name],
+												}
 											: undefined
 									}
 									label="Room"
@@ -490,10 +306,10 @@ export default function NewHostingStep2() {
 										source={
 											rooms[deleteModalIndex].images.length
 												? {
-													uri: failedImages.has(0)
-														? FALLBACK_IMAGE
-														: rooms[deleteModalIndex].images[0],
-												}
+														uri: failedImages.has(0)
+															? FALLBACK_IMAGE
+															: rooms[deleteModalIndex].images[0],
+													}
 												: require("@/assets/images/room-image.jpg")
 										}
 										style={{
