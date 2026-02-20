@@ -1,5 +1,37 @@
 import { gql } from "urql";
 
+export const TENANCY_AGREEMENT_TEMPLATE = gql`
+  query TenancyAgreementTemplate {
+    tenancyAgreementTemplate {
+      sections {
+        id
+        title
+        description
+        priority
+        preamble
+        subClauses {
+          id
+          title
+          description
+          content
+          isMandatory
+          isActive
+          isCustom
+          requiredVariables {
+            name
+            type
+          }
+          providedValues {
+            key
+            value
+          }
+          priority
+        }
+      }
+    }
+  }
+`;
+
 export const HOSTING_QUERY = gql`
   query Hosting($hostingId: String!, $pagination: PaginationInput) {
     hosting(hostingId: $hostingId) {
@@ -119,6 +151,7 @@ export const HOSTING_QUERY = gql`
             content
             isMandatory
             isActive
+            priority
             isCustom
             requiredVariables {
               name
@@ -143,6 +176,8 @@ export const HOSTING_QUERY = gql`
         createdAt
         lastUpdated
       }
+      cautionFee
+      serviceCharge
     }
   }
 `;
@@ -253,11 +288,5 @@ export const HOST_LISTINGS_QUERY = gql`
       createdAt
       lastUpdated
     }
-  }
-`;
-
-export const TENANCY_AGREEMENT_TEMPLAGE = gql`
-  query HostTenancyAgreementPreview($policies: HostingPoliciesInput) {
-    hostTenancyAgreementPreview(policies: $policies)
   }
 `;

@@ -37,7 +37,9 @@ const ListingCard: React.FC<Props> = ({ hosting }) => {
 	return (
 		<>
 			<Pressable
-				onPress={() => router.push(`/hostings/form/step-1?id=${hosting.id}`)}
+				onPress={() =>
+					router.push(`/hostings/form/onboarding?id=${hosting.id}`)
+				}
 			>
 				<View
 					className="gap-4 border p-4 rounded-xl"

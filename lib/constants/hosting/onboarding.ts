@@ -6,6 +6,7 @@ import {
 	HousePlus,
 	Images,
 	MapPinHouse,
+	ShieldCheck,
 	Sparkles,
 } from "lucide-react-native";
 
@@ -41,9 +42,15 @@ export const ONBOARDING_STEPS = [
 	},
 	{
 		icon: FileSignature,
-		title: "Legal & House Rules",
+		title: "Tenancy Terms & Rules",
 		description:
-			"Specify occupancy limits, disallowed items, and provide your digital signature for the tenancy agreement.",
+			"Set clear boundaries to protect your property. Define occupancy limits, set house rules, and digitally sign your standardized lease agreement.",
+	},
+	{
+		icon: ShieldCheck,
+		title: "Landlord Mandate",
+		description:
+			"Verify your authorization to let this property. Upload your mandate to build trust with guests and enable secure payouts.",
 	},
 	{
 		icon: MagePreviewFill,

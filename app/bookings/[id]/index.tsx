@@ -47,8 +47,6 @@ export default function UserBooking() {
 	const booking = data?.booking;
 	const loading = finalizing || fetchingBooking || verifyingBookingPayment;
 
-	console.log(booking?.tenancyAgreementAsset);
-
 	React.useEffect(() => {
 		if (!booking?.tenancyAgreementAsset?.publicUrl) return;
 

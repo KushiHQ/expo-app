@@ -341,6 +341,7 @@ export type Hosting = {
   __typename?: 'Hosting';
   averageRating?: Maybe<Scalars['Float']['output']>;
   categories?: Maybe<Array<Scalars['String']['output']>>;
+  cautionFee?: Maybe<Scalars['Decimal']['output']>;
   city?: Maybe<Scalars['String']['output']>;
   contact?: Maybe<Scalars['String']['output']>;
   country?: Maybe<Scalars['String']['output']>;
@@ -365,6 +366,7 @@ export type Hosting = {
   reviews: Array<HostingReview>;
   rooms: Array<HostingRoom>;
   saved: Scalars['Boolean']['output'];
+  serviceCharge?: Maybe<Scalars['Decimal']['output']>;
   state?: Maybe<Scalars['String']['output']>;
   street?: Maybe<Scalars['String']['output']>;
   tenancyAgreementTemplate?: Maybe<TenancyTemplate>;
@@ -454,6 +456,7 @@ export type HostingFilterInput = {
 export type HostingInput = {
   averageRating?: InputMaybe<Scalars['Float']['input']>;
   categories?: InputMaybe<Array<Scalars['String']['input']>>;
+  cautionFee?: InputMaybe<Scalars['Decimal']['input']>;
   city?: InputMaybe<Scalars['String']['input']>;
   contact?: InputMaybe<Scalars['String']['input']>;
   country?: InputMaybe<Scalars['String']['input']>;
@@ -470,17 +473,11 @@ export type HostingInput = {
   price?: InputMaybe<Scalars['Decimal']['input']>;
   propertyType?: InputMaybe<Scalars['String']['input']>;
   publishStatus?: InputMaybe<PublishStatus>;
+  serviceCharge?: InputMaybe<Scalars['Decimal']['input']>;
   state?: InputMaybe<Scalars['String']['input']>;
   street?: InputMaybe<Scalars['String']['input']>;
   tenancyAgreementTemplate?: InputMaybe<TenancyTemplateInput>;
   title?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type HostingPoliciesInput = {
-  additionalClauses?: InputMaybe<Scalars['String']['input']>;
-  correspondenceAddress: Scalars['String']['input'];
-  maxOccupancy?: InputMaybe<Scalars['Int']['input']>;
-  notAllowed?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 export enum HostingPropertyRelationship {
@@ -1099,7 +1096,6 @@ export type Query = {
   guestBookingTenancyAgreementPreview: Scalars['String']['output'];
   hostAnalytics: HostAnalytics;
   hostPaymentDetails: Array<HostAccountDetails>;
-  hostTenancyAgreementPreview: Scalars['String']['output'];
   hosting: Hosting;
   hostingChat: HostingChat;
   hostings: Array<Hosting>;
@@ -1110,6 +1106,7 @@ export type Query = {
   savedHostingFolder: SavedHostingFolder;
   savedHostingFolders: Array<SavedHostingFolder>;
   savedHostings: Array<SavedHosting>;
+  tenancyAgreementTemplate: TenancyTemplate;
   tenantMandateOptions: TenantMandateConfig;
   userChats: Array<HostingChat>;
   userStreamUserToken: Scalars['String']['output'];
@@ -1157,11 +1154,6 @@ export type QueryGuestBookingTenancyAgreementPreviewArgs = {
 
 export type QueryHostPaymentDetailsArgs = {
   pagination?: InputMaybe<PaginationInput>;
-};
-
-
-export type QueryHostTenancyAgreementPreviewArgs = {
-  policies?: InputMaybe<HostingPoliciesInput>;
 };
 
 
@@ -1291,6 +1283,7 @@ export type SubClause = {
   isActive: Scalars['Boolean']['output'];
   isCustom: Scalars['Boolean']['output'];
   isMandatory: Scalars['Boolean']['output'];
+  priority: Scalars['Int']['output'];
   providedValues: Array<SubClauseValue>;
   requiredVariables: Array<SubClauseVariable>;
   title: Scalars['String']['output'];
@@ -1303,6 +1296,7 @@ export type SubClauseInput = {
   isActive: Scalars['Boolean']['input'];
   isCustom: Scalars['Boolean']['input'];
   isMandatory: Scalars['Boolean']['input'];
+  priority: Scalars['Int']['input'];
   providedValues: Array<SubClauseValueInput>;
   requiredVariables: Array<SubClauseVariableInput>;
   title: Scalars['String']['input'];
@@ -1637,6 +1631,13 @@ export type CreateUpdateHostingReviewMutationVariables = Exact<{
 
 export type CreateUpdateHostingReviewMutation = { __typename?: 'Mutations', createOrUpdateHostingReview: { __typename?: 'HostingReviewResponse', message: string, data?: { __typename?: 'HostingReview', id: string } | null } };
 
+export type InitateHostingVerificationMutationVariables = Exact<{
+  input: HostingVerificationInput;
+}>;
+
+
+export type InitateHostingVerificationMutation = { __typename?: 'Mutations', initateHostingVerification: { __typename?: 'HostingVerificationResponse', message: string, data?: { __typename?: 'HostingVerification', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, createdAt: string, lastUpdated: string } | null } };
+
 export type CreateUpdateHostPaymentDetailsMutationVariables = Exact<{
   input: HostAccountDetailsInput;
 }>;
@@ -1755,13 +1756,18 @@ export type HostingChatQueryVariables = Exact<{
 
 export type HostingChatQuery = { __typename?: 'Query', hostingChat: { __typename?: 'HostingChat', id: string, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, state?: string | null, street?: string | null, landmarks?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, recipientUser: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', gender?: string | null, id: string, fullName: string } } } };
 
+export type TenancyAgreementTemplateQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type TenancyAgreementTemplateQuery = { __typename?: 'Query', tenancyAgreementTemplate: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, priority: number, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } };
+
 export type HostingQueryVariables = Exact<{
   hostingId: Scalars['String']['input'];
   pagination?: InputMaybe<PaginationInput>;
 }>;
 
 
-export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, createdAt: string, user: { __typename?: 'User', id: string, email: string, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string } } }, coverImage?: { __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, createdAt: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null }, tenancyAgreementTemplate?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, verification?: { __typename?: 'HostingVerification', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, createdAt: string, lastUpdated: string } | null } };
+export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, cautionFee?: any | null, serviceCharge?: any | null, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, createdAt: string, user: { __typename?: 'User', id: string, email: string, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string } } }, coverImage?: { __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, createdAt: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null }, tenancyAgreementTemplate?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, priority: number, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, verification?: { __typename?: 'HostingVerification', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, createdAt: string, lastUpdated: string } | null } };
 
 export type HostingsQueryVariables = Exact<{
   filters?: InputMaybe<HostingFilterInput>;
@@ -1801,13 +1807,6 @@ export type HostListingsQueryVariables = Exact<{
 
 
 export type HostListingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, title?: string | null, state?: string | null, city?: string | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, originalFilename?: string | null } } | null }> };
-
-export type HostTenancyAgreementPreviewQueryVariables = Exact<{
-  policies?: InputMaybe<HostingPoliciesInput>;
-}>;
-
-
-export type HostTenancyAgreementPreviewQuery = { __typename?: 'Query', hostTenancyAgreementPreview: string };
 
 export type NotificationsQueryVariables = Exact<{
   filter?: InputMaybe<NotificationsFilterInput>;
@@ -2441,6 +2440,29 @@ export const CreateUpdateHostingReviewDocument = gql`
 export function useCreateUpdateHostingReviewMutation() {
   return Urql.useMutation<CreateUpdateHostingReviewMutation, CreateUpdateHostingReviewMutationVariables>(CreateUpdateHostingReviewDocument);
 };
+export const InitateHostingVerificationDocument = gql`
+    mutation InitateHostingVerification($input: HostingVerificationInput!) {
+  initateHostingVerification(input: $input) {
+    message
+    data {
+      id
+      landlordFullName
+      landlordAddress
+      verificationTier
+      propertyRelationship
+      declOwnership
+      declLitigation
+      declIndemnity
+      createdAt
+      lastUpdated
+    }
+  }
+}
+    `;
+
+export function useInitateHostingVerificationMutation() {
+  return Urql.useMutation<InitateHostingVerificationMutation, InitateHostingVerificationMutationVariables>(InitateHostingVerificationDocument);
+};
 export const CreateUpdateHostPaymentDetailsDocument = gql`
     mutation CreateUpdateHostPaymentDetails($input: HostAccountDetailsInput!) {
   createUpdateHostPaymentDetails(input: $input) {
@@ -2828,6 +2850,41 @@ export const HostingChatDocument = gql`
 export function useHostingChatQuery(options: Omit<Urql.UseQueryArgs<HostingChatQueryVariables>, 'query'>) {
   return Urql.useQuery<HostingChatQuery, HostingChatQueryVariables>({ query: HostingChatDocument, ...options });
 };
+export const TenancyAgreementTemplateDocument = gql`
+    query TenancyAgreementTemplate {
+  tenancyAgreementTemplate {
+    sections {
+      id
+      title
+      description
+      priority
+      preamble
+      subClauses {
+        id
+        title
+        description
+        content
+        isMandatory
+        isActive
+        isCustom
+        requiredVariables {
+          name
+          type
+        }
+        providedValues {
+          key
+          value
+        }
+        priority
+      }
+    }
+  }
+}
+    `;
+
+export function useTenancyAgreementTemplateQuery(options?: Omit<Urql.UseQueryArgs<TenancyAgreementTemplateQueryVariables>, 'query'>) {
+  return Urql.useQuery<TenancyAgreementTemplateQuery, TenancyAgreementTemplateQueryVariables>({ query: TenancyAgreementTemplateDocument, ...options });
+};
 export const HostingDocument = gql`
     query Hosting($hostingId: String!, $pagination: PaginationInput) {
   hosting(hostingId: $hostingId) {
@@ -2946,6 +3003,7 @@ export const HostingDocument = gql`
           content
           isMandatory
           isActive
+          priority
           isCustom
           requiredVariables {
             name
@@ -2970,6 +3028,8 @@ export const HostingDocument = gql`
       createdAt
       lastUpdated
     }
+    cautionFee
+    serviceCharge
   }
 }
     `;
@@ -3090,15 +3150,6 @@ export const HostListingsDocument = gql`
 
 export function useHostListingsQuery(options?: Omit<Urql.UseQueryArgs<HostListingsQueryVariables>, 'query'>) {
   return Urql.useQuery<HostListingsQuery, HostListingsQueryVariables>({ query: HostListingsDocument, ...options });
-};
-export const HostTenancyAgreementPreviewDocument = gql`
-    query HostTenancyAgreementPreview($policies: HostingPoliciesInput) {
-  hostTenancyAgreementPreview(policies: $policies)
-}
-    `;
-
-export function useHostTenancyAgreementPreviewQuery(options?: Omit<Urql.UseQueryArgs<HostTenancyAgreementPreviewQueryVariables>, 'query'>) {
-  return Urql.useQuery<HostTenancyAgreementPreviewQuery, HostTenancyAgreementPreviewQueryVariables>({ query: HostTenancyAgreementPreviewDocument, ...options });
 };
 export const NotificationsDocument = gql`
     query Notifications($filter: NotificationsFilterInput, $pagination: PaginationInput) {

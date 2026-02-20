@@ -97,6 +97,7 @@
     "react-native-worklets-core": "^1.6.2",
     "rn-range-slider": "^2.2.2",
     "tailwind-merge": "^3.3.1",
+    "to-words": "^5.1.0",
     "urql": "^5.0.1",
     "zustand": "^5.0.8"
   },

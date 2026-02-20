@@ -39,7 +39,9 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
 		<>
 			<Pressable
 				className="flex-row items-center gap-4"
-				onPress={() => router.push(`/hostings/form/step-1?id=${hosting.id}`)}
+				onPress={() =>
+					router.push(`/hostings/form/onboarding?id=${hosting.id}`)
+				}
 			>
 				<View className="h-[80px] w-[100px]">
 					<Image

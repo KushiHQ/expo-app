@@ -148,13 +148,34 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>(
 				saved,
 				reviews,
 				reviewAverage,
+				tenancyAgreementTemplate,
 				__typename,
 				verification,
 				...rest
 			} = hosting;
+
+			const { sections } = tenancyAgreementTemplate ?? { sections: [] };
+			const secs = sections.map(({ __typename, subClauses, ...rest }) => {
+				const refinedSubClauses = subClauses.map(({ __typename, ...rest }) => {
+					const { requiredVariables, providedValues, ...restVals } = rest;
+
+					return {
+						...restVals,
+						requiredVariables: requiredVariables.map(
+							({ __typename, ...v }) => v,
+						),
+						providedValues: providedValues.map(({ __typename, ...v }) => v),
+					};
+				});
+				return { ...rest, subClauses: refinedSubClauses };
+			});
+
 			set(() => ({
 				input: {
 					...rest,
+					tenancyAgreementTemplate: {
+						sections: secs,
+					},
 					paymentDetailsId: paymentDetails?.id,
 				},
 				hosting,

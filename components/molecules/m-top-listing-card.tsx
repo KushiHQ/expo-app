@@ -8,11 +8,16 @@ import ThemedText from "../atoms/a-themed-text";
 import { Fonts } from "@/lib/constants/theme";
 import { hexToRgba } from "@/lib/utils/colors";
 import { MynauiStarSolid } from "../icons/i-star";
-import { HostAnalyticsQuery } from "@/lib/services/graphql/generated";
+import {
+	HostAnalyticsQuery,
+	HostingQuery,
+} from "@/lib/services/graphql/generated";
 import { capitalize } from "@/lib/utils/text";
 
 type Props = {
-	hosting: HostAnalyticsQuery["hostAnalytics"]["topListing"];
+	hosting:
+	| HostAnalyticsQuery["hostAnalytics"]["topListing"]
+	| HostingQuery["hosting"];
 };
 
 const TopListingCard: React.FC<Props> = ({ hosting }) => {
@@ -62,29 +67,31 @@ const TopListingCard: React.FC<Props> = ({ hosting }) => {
 						₦{Number(hosting?.price ?? "0").toLocaleString()}{" "}
 						{capitalize(hosting?.paymentInterval ?? "")}
 					</ThemedText>
-					<View className="flex-row items-center gap-1">
-						<MynauiStarSolid color={colors.accent} size={16} />
-						<View className="flex-row gap-1 items-center">
-							<ThemedText
-								style={{
-									fontFamily: Fonts.medium,
-									fontSize: 14,
-									color: hexToRgba(colors.text, 0.9),
-								}}
-							>
-								{hosting?.averageRating?.toFixed(2)}
-							</ThemedText>
-							<ThemedText
-								style={{
-									fontFamily: Fonts.light,
-									fontSize: 14,
-									color: hexToRgba(colors.text, 0.8),
-								}}
-							>
-								({hosting?.totalRatings})
-							</ThemedText>
+					{hosting?.totalRatings && (
+						<View className="flex-row items-center gap-1">
+							<MynauiStarSolid color={colors.accent} size={16} />
+							<View className="flex-row gap-1 items-center">
+								<ThemedText
+									style={{
+										fontFamily: Fonts.medium,
+										fontSize: 14,
+										color: hexToRgba(colors.text, 0.9),
+									}}
+								>
+									{hosting?.averageRating?.toFixed(2)}
+								</ThemedText>
+								<ThemedText
+									style={{
+										fontFamily: Fonts.light,
+										fontSize: 14,
+										color: hexToRgba(colors.text, 0.8),
+									}}
+								>
+									({hosting?.totalRatings})
+								</ThemedText>
+							</View>
 						</View>
-					</View>
+					)}
 				</View>
 			</View>
 		</Pressable>

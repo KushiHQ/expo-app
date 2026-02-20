@@ -1,10 +1,12 @@
 import React from "react";
 import { Pressable, StyleProp, View, ViewStyle } from "react-native";
 import { CheckboxChecked, CheckboxUnchecked } from "../icons/i-checkbox";
+import { twMerge } from "tailwind-merge";
 
 type Props = {
 	color?: string;
 	size?: number;
+	disabled?: boolean;
 	checked?: boolean;
 	style?: StyleProp<ViewStyle>;
 	iconStyles?: StyleProp<ViewStyle>;
@@ -14,6 +16,7 @@ type Props = {
 const Checkbox: React.FC<Props> = ({
 	color,
 	checked: defChecked,
+	disabled,
 	size,
 	style,
 	iconStyles,
@@ -33,7 +36,12 @@ const Checkbox: React.FC<Props> = ({
 	};
 
 	return (
-		<Pressable style={style} onPress={toggleChecked}>
+		<Pressable
+			disabled={disabled}
+			className={twMerge("", disabled && "opacity-60")}
+			style={style}
+			onPress={toggleChecked}
+		>
 			<View style={iconStyles}>
 				{checkedVal ? (
 					<CheckboxChecked color={color} size={size} />

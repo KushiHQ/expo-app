@@ -127,6 +127,8 @@ export default function NewHostingStep5() {
 	const loading =
 		creatingPaymentDetail || verifying || mutating || fetchingHosting;
 
+	console.log(input.serviceCharge);
+
 	return (
 		<>
 			<DetailsLayout
@@ -167,9 +169,9 @@ export default function NewHostingStep5() {
 								defaultValue={
 									input.paymentInterval
 										? {
-												label: input.paymentInterval,
-												value: input.paymentInterval,
-											}
+											label: input.paymentInterval,
+											value: input.paymentInterval,
+										}
 										: undefined
 								}
 								onSelect={(v) => updateInput({ paymentInterval: v.value })}
@@ -184,9 +186,49 @@ export default function NewHostingStep5() {
 									focused
 									inputMode="numeric"
 									label="Price"
-									value={input.price}
+									value={Number(input.price).toLocaleString()}
 									onChangeText={(v) =>
-										updateInput({ price: v.replace("₦", "") })
+										updateInput({
+											price: v.replace("₦", "").replaceAll(",", ""),
+										})
+									}
+									placeholder="100,000 (₦)"
+								/>
+							</View>
+						</View>
+						<View className="flex-row gap-4">
+							<View className="flex-1">
+								<FloatingLabelInput
+									focused
+									inputMode="numeric"
+									label="Service Charge (Optional)"
+									value={
+										input.serviceCharge
+											? Number(input.serviceCharge).toLocaleString()
+											: undefined
+									}
+									onChangeText={(v) =>
+										updateInput({
+											serviceCharge: v.replace("₦", "").replaceAll(",", ""),
+										})
+									}
+									placeholder="100,000 (₦)"
+								/>
+							</View>
+							<View className="flex-1">
+								<FloatingLabelInput
+									focused
+									inputMode="numeric"
+									label="Caution Fee (Optional)"
+									value={
+										input.cautionFee
+											? Number(input.cautionFee).toLocaleString()
+											: undefined
+									}
+									onChangeText={(v) =>
+										updateInput({
+											cautionFee: v.replace("₦", "").replaceAll(",", ""),
+										})
 									}
 									placeholder="100,000 (₦)"
 								/>
