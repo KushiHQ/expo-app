@@ -13,7 +13,7 @@ const ItemSummary: React.FC<ItemSummaryProps> = ({ label, summary }) => {
   const colors = useThemeColors();
 
   return (
-    <View className="flex-row items-center gap-2">
+    <View className="flex-row flex-wrap items-center gap-2">
       <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14 }}>
         {label}:
       </ThemedText>

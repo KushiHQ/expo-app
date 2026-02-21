@@ -41,16 +41,16 @@ export const ONBOARDING_STEPS = [
 			"Define your price, payment interval (e.g., /year), and the bank account for your payouts.",
 	},
 	{
-		icon: FileSignature,
-		title: "Tenancy Terms & Rules",
-		description:
-			"Set clear boundaries to protect your property. Define occupancy limits, set house rules, and digitally sign your standardized lease agreement.",
-	},
-	{
 		icon: ShieldCheck,
 		title: "Landlord Mandate",
 		description:
 			"Verify your authorization to let this property. Upload your mandate to build trust with guests and enable secure payouts.",
+	},
+	{
+		icon: FileSignature,
+		title: "Tenancy Terms & Rules",
+		description:
+			"Set clear boundaries to protect your property. Define occupancy limits, set house rules, and digitally sign your standardized lease agreement.",
 	},
 	{
 		icon: MagePreviewFill,

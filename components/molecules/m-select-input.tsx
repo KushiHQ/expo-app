@@ -10,7 +10,7 @@ import {
 	View,
 } from "react-native";
 import ThemedText from "../atoms/a-themed-text";
-import { ChevronDown } from "lucide-react-native";
+import { ChevronDown, CircleQuestionMark } from "lucide-react-native";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import SearchInput from "../atoms/a-search-input";
@@ -18,6 +18,7 @@ import { cast } from "@/lib/types/utils";
 import EmptyList from "./m-empty-list";
 import { capitalize } from "@/lib/utils/text";
 import Checkbox from "../atoms/a-checkbox";
+import Tooltip from "../atoms/a-tooltip";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const LIST_MAX_HEIGHT = SCREEN_HEIGHT * 0.45;
@@ -118,7 +119,7 @@ const SelectInput = <T extends object>(props: Props<T>) => {
 
 	return (
 		<>
-			<View className="flex-1">
+			<View className="flex-1 relative">
 				<Pressable
 					onPress={handlePress}
 					className="border p-3.5 rounded-xl relative"
@@ -127,12 +128,23 @@ const SelectInput = <T extends object>(props: Props<T>) => {
 						backgroundColor: hexToRgba(colors.text, 0.05),
 					}}
 				>
-					<ThemedText
-						className="absolute top-1.5"
-						style={{ fontSize: 12, left: 13 }}
-					>
-						{props.label}
-					</ThemedText>
+					<View className="absolute top-1.5 flex-row gap-5">
+						<ThemedText style={{ fontSize: 12, left: 13 }}>
+							{props.label}
+						</ThemedText>
+						{rest.description && (
+							<Tooltip
+								title={rest.label}
+								description={rest.description}
+								className="mt-[3px]"
+							>
+								<CircleQuestionMark
+									color={hexToRgba(colors.text, 0.7)}
+									size={14}
+								/>
+							</Tooltip>
+						)}
+					</View>
 					<View className="flex-row mt-3 justify-between items-center">
 						<ThemedText
 							numberOfLines={1}
@@ -198,11 +210,13 @@ export default SelectInput;
 
 export type SelectOptionType = {
 	label: string;
+	description?: string;
 	value: string;
 };
 
 export const SelectOption: React.FC<SelectOptionType & SelectionDetails> = ({
 	label,
+	description,
 	selected,
 }) => {
 	const colors = useThemeColors();
@@ -221,7 +235,16 @@ export const SelectOption: React.FC<SelectOptionType & SelectionDetails> = ({
 				),
 			}}
 		>
-			<ThemedText>{capitalize(label)}</ThemedText>
+			<View className="flex-row gap-2 items-center">
+				<ThemedText numberOfLines={1} ellipsizeMode="tail">
+					{capitalize(label)}
+				</ThemedText>
+				{description && (
+					<Tooltip title={label} description={description}>
+						<CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={14} />
+					</Tooltip>
+				)}
+			</View>
 			<Checkbox
 				color={selected ? colors.primary : hexToRgba(colors.text, 0.6)}
 				checked={selected}

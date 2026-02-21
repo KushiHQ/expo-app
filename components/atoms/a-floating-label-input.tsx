@@ -20,10 +20,13 @@ import Animated, {
 	withTiming,
 } from "react-native-reanimated";
 import { MageEye, MageEyeOff } from "../icons/i-eye";
+import Tooltip from "./a-tooltip";
+import { CircleQuestionMark } from "lucide-react-native";
 
 export type FloatingLabelInputProps = TextInputProps & {
 	focused?: boolean;
 	label?: string;
+	description?: string;
 	suffix?: React.ReactNode;
 	disabled?: boolean;
 	containerStyle?: StyleProp<ViewStyle>;
@@ -36,6 +39,7 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 			style,
 			disabled,
 			placeholder,
+			description,
 			focused: fixedFocused,
 			onChangeText,
 			secureTextEntry: defaultSecureText,
@@ -108,6 +112,18 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 		return (
 			<View style={{ minHeight: 64 }}>
 				<View className="relative">
+					{description && (
+						<Tooltip
+							className="absolute top-1 right-1"
+							title={label}
+							description={description}
+						>
+							<CircleQuestionMark
+								color={hexToRgba(colors.text, 0.7)}
+								size={14}
+							/>
+						</Tooltip>
+					)}
 					<Pressable
 						onPress={handleConntainerPress}
 						className="relative flex-1 border px-2.5 pt-[18px] rounded-xl"

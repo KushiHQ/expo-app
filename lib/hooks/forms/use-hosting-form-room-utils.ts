@@ -90,7 +90,7 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
 											index,
 											res.data.createHostingRoomImage.data.asset.publicUrl,
 										);
-										refetchHosting({ requestPolicy: "network-only" });
+										refetchHosting();
 									}
 								})
 								.catch(() => {
@@ -148,7 +148,7 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
 							text2: res.data.deleteHostingRoomImage.message,
 						});
 						deleteRoomImage(roomIndex, imageIndex);
-						refetchHosting({ requestPolicy: "network-only" });
+						refetchHosting();
 					}
 				});
 			}
@@ -169,7 +169,7 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
 					});
 					setActiveModalIndex(undefined);
 					setDeleteModalIndex(undefined);
-					refetchHosting({ requestPolicy: "network-only" });
+					refetchHosting();
 					deleteRoom(activeIndex);
 					setActiveIndex(0);
 				}

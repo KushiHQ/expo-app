@@ -17,10 +17,16 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 interface TooltipProps {
   title?: string;
   description: string;
+  className?: string;
   children: React.ReactNode;
 }
 
-const Tooltip: React.FC<TooltipProps> = ({ title, description, children }) => {
+const Tooltip: React.FC<TooltipProps> = ({
+  title,
+  className,
+  description,
+  children,
+}) => {
   const colors = useThemeColors();
   const triggerRef = useRef<View>(null);
 
@@ -70,7 +76,7 @@ const Tooltip: React.FC<TooltipProps> = ({ title, description, children }) => {
 
   return (
     <>
-      <Pressable onPress={openTooltip} hitSlop={10}>
+      <Pressable onPress={openTooltip} hitSlop={10} className={className}>
         <View ref={triggerRef} collapsable={false}>
           {children}
         </View>

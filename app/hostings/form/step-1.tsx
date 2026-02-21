@@ -54,9 +54,7 @@ export default function NewHostingStep1() {
 			refreshControl={
 				<RefreshControl
 					refreshing={fetching}
-					onRefresh={() =>
-						id && refetchHosting({ requestPolicy: "network-only" })
-					}
+					onRefresh={() => id && refetchHosting()}
 				/>
 			}
 			footer={

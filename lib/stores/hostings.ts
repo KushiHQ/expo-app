@@ -7,8 +7,9 @@ import {
 	HostingFilterInput,
 	HostingInput,
 	HostingQuery,
+	HostingVerificationInput,
 } from "../services/graphql/generated";
-import { cast } from "../types/utils";
+import { cleanupAgreementTemplateInput } from "../utils/hosting/tenancyAgreement";
 
 const DEFAULT_HOSTINGS: Hosting[] = [];
 
@@ -126,16 +127,20 @@ export const useHostingFilterStore = create<HostingFilterStore>((set) => ({
 
 interface ActiveFormHostingStore {
 	input: HostingInput;
+	verificationInput: Partial<HostingVerificationInput>;
 	hosting?: HostingQuery["hosting"];
 	initiate: (hosting: HostingQuery["hosting"]) => void;
 	updateInput: (data: Partial<HostingInput>) => void;
+	updateVerificationInput: (data: Partial<HostingVerificationInput>) => void;
 	clear: () => void;
 }
 
 export const useActiveFormHosingStore = create<ActiveFormHostingStore>(
 	(set) => ({
 		input: {} as HostingInput,
+		verificationInput: {} as HostingVerificationInput,
 		hosting: {} as HostingQuery["hosting"],
+
 		initiate: (hosting) => {
 			const {
 				host,
@@ -154,36 +159,34 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>(
 				...rest
 			} = hosting;
 
-			const { sections } = tenancyAgreementTemplate ?? { sections: [] };
-			const secs = sections.map(({ __typename, subClauses, ...rest }) => {
-				const refinedSubClauses = subClauses.map(({ __typename, ...rest }) => {
-					const { requiredVariables, providedValues, ...restVals } = rest;
-
-					return {
-						...restVals,
-						requiredVariables: requiredVariables.map(
-							({ __typename, ...v }) => v,
-						),
-						providedValues: providedValues.map(({ __typename, ...v }) => v),
-					};
-				});
-				return { ...rest, subClauses: refinedSubClauses };
-			});
+			const {
+				__typename: __vTypeName,
+				verificationTier,
+				...vRest
+			} = verification ?? {};
 
 			set(() => ({
 				input: {
 					...rest,
-					tenancyAgreementTemplate: {
-						sections: secs,
-					},
+					tenancyAgreementTemplate: cleanupAgreementTemplateInput(
+						tenancyAgreementTemplate ?? { sections: [] },
+					),
 					paymentDetailsId: paymentDetails?.id,
 				},
+				verificationInput: { hostingId: hosting.id, ...vRest },
 				hosting,
 			}));
 		},
 		updateInput: (data) =>
 			set((state) => ({
-				input: { ...state.input, ...cast<HostingInput>(data) },
+				input: { ...state.input, ...data },
+			})),
+		updateVerificationInput: (data) =>
+			set((state) => ({
+				verificationInput: {
+					...state.verificationInput,
+					...data,
+				},
 			})),
 		clear: () => set({ input: undefined, hosting: undefined }),
 	}),

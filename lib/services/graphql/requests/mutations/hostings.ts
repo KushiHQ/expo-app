@@ -181,21 +181,9 @@ export const CREATE_UPDATE_HOSTING_REVIEW = gql`
 `;
 
 export const INITIATE_HOSTING_VERFICATION = gql`
-  mutation InitateHostingVerification($input: HostingVerificationInput!) {
-    initateHostingVerification(input: $input) {
+  mutation InitiateHostingVerification($input: HostingVerificationInput!) {
+    initiateHostingVerification(input: $input) {
       message
-      data {
-        id
-        landlordFullName
-        landlordAddress
-        verificationTier
-        propertyRelationship
-        declOwnership
-        declLitigation
-        declIndemnity
-        createdAt
-        lastUpdated
-      }
     }
   }
 `;

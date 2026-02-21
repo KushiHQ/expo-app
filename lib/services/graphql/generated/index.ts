@@ -688,10 +688,10 @@ export type Mutations = {
   googleLogin: AuthTokenResponse;
   googleSignUp: AuthTokenResponse;
   hostUpdateBookingApplicationStatus: BookingApplicationResponse;
-  initateHostingVerification: HostingVerificationResponse;
   initiateBookingApplication: BookingApplicationResponse;
   initiateBookingApplicationSubmission: MessageResponse;
   initiateHostingChat: HostingChat;
+  initiateHostingVerification: HostingVerificationResponse;
   initiatePhoneNumberVerification: MessageResponse;
   login: AuthTokenResponse;
   refreshToken: AuthTokenResponse;
@@ -828,11 +828,6 @@ export type MutationsHostUpdateBookingApplicationStatusArgs = {
 };
 
 
-export type MutationsInitateHostingVerificationArgs = {
-  input: HostingVerificationInput;
-};
-
-
 export type MutationsInitiateBookingApplicationArgs = {
   hostingId: Scalars['String']['input'];
 };
@@ -845,6 +840,11 @@ export type MutationsInitiateBookingApplicationSubmissionArgs = {
 
 export type MutationsInitiateHostingChatArgs = {
   hostingId: Scalars['String']['input'];
+};
+
+
+export type MutationsInitiateHostingVerificationArgs = {
+  input: HostingVerificationInput;
 };
 
 
@@ -1631,12 +1631,12 @@ export type CreateUpdateHostingReviewMutationVariables = Exact<{
 
 export type CreateUpdateHostingReviewMutation = { __typename?: 'Mutations', createOrUpdateHostingReview: { __typename?: 'HostingReviewResponse', message: string, data?: { __typename?: 'HostingReview', id: string } | null } };
 
-export type InitateHostingVerificationMutationVariables = Exact<{
+export type InitiateHostingVerificationMutationVariables = Exact<{
   input: HostingVerificationInput;
 }>;
 
 
-export type InitateHostingVerificationMutation = { __typename?: 'Mutations', initateHostingVerification: { __typename?: 'HostingVerificationResponse', message: string, data?: { __typename?: 'HostingVerification', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, createdAt: string, lastUpdated: string } | null } };
+export type InitiateHostingVerificationMutation = { __typename?: 'Mutations', initiateHostingVerification: { __typename?: 'HostingVerificationResponse', message: string } };
 
 export type CreateUpdateHostPaymentDetailsMutationVariables = Exact<{
   input: HostAccountDetailsInput;
@@ -2440,28 +2440,16 @@ export const CreateUpdateHostingReviewDocument = gql`
 export function useCreateUpdateHostingReviewMutation() {
   return Urql.useMutation<CreateUpdateHostingReviewMutation, CreateUpdateHostingReviewMutationVariables>(CreateUpdateHostingReviewDocument);
 };
-export const InitateHostingVerificationDocument = gql`
-    mutation InitateHostingVerification($input: HostingVerificationInput!) {
-  initateHostingVerification(input: $input) {
+export const InitiateHostingVerificationDocument = gql`
+    mutation InitiateHostingVerification($input: HostingVerificationInput!) {
+  initiateHostingVerification(input: $input) {
     message
-    data {
-      id
-      landlordFullName
-      landlordAddress
-      verificationTier
-      propertyRelationship
-      declOwnership
-      declLitigation
-      declIndemnity
-      createdAt
-      lastUpdated
-    }
   }
 }
     `;
 
-export function useInitateHostingVerificationMutation() {
-  return Urql.useMutation<InitateHostingVerificationMutation, InitateHostingVerificationMutationVariables>(InitateHostingVerificationDocument);
+export function useInitiateHostingVerificationMutation() {
+  return Urql.useMutation<InitiateHostingVerificationMutation, InitiateHostingVerificationMutationVariables>(InitiateHostingVerificationDocument);
 };
 export const CreateUpdateHostPaymentDetailsDocument = gql`
     mutation CreateUpdateHostPaymentDetails($input: HostAccountDetailsInput!) {
