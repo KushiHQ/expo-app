@@ -1,16 +1,24 @@
 import { MagePreviewFill } from "@/components/icons/i-preview";
 import { SolarTagPriceOutline } from "@/components/icons/i-price";
 import { SolarVerifiedCheckOutline } from "@/components/icons/i-verified";
+import { CustomSvgProps } from "@/lib/types/svgType";
 import {
 	FileSignature,
 	HousePlus,
 	Images,
+	LucideIcon,
 	MapPinHouse,
 	ShieldCheck,
 	Sparkles,
 } from "lucide-react-native";
 
-export const ONBOARDING_STEPS = [
+export type OnboardingStep = {
+	icon: LucideIcon | React.FC<CustomSvgProps>;
+	title: string;
+	description: string;
+};
+
+export const ONBOARDING_STEPS: OnboardingStep[] = [
 	{
 		icon: HousePlus,
 		title: "Enter Property Details",

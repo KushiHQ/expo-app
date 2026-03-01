@@ -28,6 +28,7 @@ const DateInput: React.FC<
 	const onChange = (_: DateTimePickerEvent, date?: Date) => {
 		if (date) {
 			setDate(date);
+			props.onChangeText?.(date.toISOString().split("T")[0]);
 		}
 		setOpen(false);
 	};

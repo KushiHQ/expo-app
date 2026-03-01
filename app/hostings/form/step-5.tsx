@@ -127,8 +127,6 @@ export default function NewHostingStep5() {
 	const loading =
 		creatingPaymentDetail || verifying || mutating || fetchingHosting;
 
-	console.log(input.serviceCharge);
-
 	return (
 		<>
 			<DetailsLayout

@@ -69,7 +69,7 @@ export default function HostingDetails() {
 							onPress={() => {
 								updateInput({ hostingId: cast(id) });
 								router.push(
-									`/hostings/${hosting?.id}/reservation/user-details/`,
+									`/hostings/${hosting?.id}/reservation/checkout-summary/`,
 								);
 							}}
 							type="primary"

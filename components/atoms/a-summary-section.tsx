@@ -8,12 +8,11 @@ const SummarySection: React.FC<{ children?: React.ReactNode }> = ({
   const colors = useThemeColors();
   return (
     <View
-      className="p-3 rounded gap-2"
+      className="p-3 rounded-xl gap-2"
       style={{
         borderWidth: 2,
-        borderStyle: "dashed",
-        borderColor: hexToRgba(colors.primary, 0.4),
-        backgroundColor: hexToRgba(colors.primary, 0.1),
+        borderColor: hexToRgba(colors.primary, 0.08),
+        backgroundColor: hexToRgba(colors.primary, 0.08),
       }}
     >
       {children}

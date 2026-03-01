@@ -22,6 +22,7 @@ import Animated, {
 import { MageEye, MageEyeOff } from "../icons/i-eye";
 import Tooltip from "./a-tooltip";
 import { CircleQuestionMark } from "lucide-react-native";
+import ThemedText from "./a-themed-text";
 
 export type FloatingLabelInputProps = TextInputProps & {
 	focused?: boolean;
@@ -112,18 +113,6 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 		return (
 			<View style={{ minHeight: 64 }}>
 				<View className="relative">
-					{description && (
-						<Tooltip
-							className="absolute top-1 right-1"
-							title={label}
-							description={description}
-						>
-							<CircleQuestionMark
-								color={hexToRgba(colors.text, 0.7)}
-								size={14}
-							/>
-						</Tooltip>
-					)}
 					<Pressable
 						onPress={handleConntainerPress}
 						className="relative flex-1 border px-2.5 pt-[18px] rounded-xl"
@@ -137,12 +126,24 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 						]}
 					>
 						<Animated.Text
+							className="flex-row items-center gap-2"
 							style={[
 								{ color: colors["text"], left: 12, position: "absolute" },
 								animatedLabelStyle,
 							]}
 						>
-							{label}
+							<ThemedText>
+								{label}
+								{"  "}
+							</ThemedText>
+							{description && (
+								<Tooltip title={label} description={description}>
+									<CircleQuestionMark
+										color={hexToRgba(colors.text, 0.7)}
+										size={14}
+									/>
+								</Tooltip>
+							)}
 						</Animated.Text>
 
 						{showCustomPlaceholder && (

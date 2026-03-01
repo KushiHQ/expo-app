@@ -1,16 +1,21 @@
 import ThemedText from "@/components/atoms/a-themed-text";
+import { FluentFormMultiple24Regular } from "@/components/icons/i-document";
 import DetailsLayout from "@/components/layouts/details";
+import HostingFormOnboardingAction from "@/components/molecules/m-hosting-form-onboarding-action";
 import TopListingCard from "@/components/molecules/m-top-listing-card";
 import { ONBOARDING_STEPS } from "@/lib/constants/hosting/onboarding";
 import { Fonts } from "@/lib/constants/theme";
 import { useHostingForm } from "@/lib/hooks/hosting-form";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import {
+	PublishStatus,
+	useBookingApplicationsCountQuery,
+} from "@/lib/services/graphql/generated";
 import { hexToRgba } from "@/lib/utils/colors";
 import { Href, useLocalSearchParams, useRouter } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
 import React from "react";
-import { Pressable, RefreshControl, View } from "react-native";
-import { twMerge } from "tailwind-merge";
+import { RefreshControl, View } from "react-native";
 
 type Action = {
 	filled: boolean;
@@ -23,6 +28,13 @@ export default function HostingOnboarding() {
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
 	const { hosting, refetch, fetching } = useHostingForm(id);
+	const [{ data: countData }] = useBookingApplicationsCountQuery({
+		variables: {
+			filter: {
+				hostingId: hosting?.id,
+			},
+		},
+	});
 
 	const actions = React.useMemo(() => {
 		const actions: Record<number, Action> = {};
@@ -32,6 +44,10 @@ export default function HostingOnboarding() {
 				disabled: true,
 				link: `/hostings/form/step-${index + 1}?id=${hosting?.id}`,
 			};
+			if (index === ONBOARDING_STEPS.length - 1) {
+				actions[index]["link"] =
+					`/hostings/form/verification?id=${hosting?.id}`;
+			}
 		});
 
 		ONBOARDING_STEPS.forEach((_, index) => {
@@ -62,6 +78,9 @@ export default function HostingOnboarding() {
 				actions[index]["filled"] = !!hosting?.verification;
 			} else if (index === 6) {
 				actions[index]["filled"] = !!hosting?.tenancyAgreementTemplate;
+			} else if (index === 7) {
+				actions[index]["filled"] =
+					hosting?.publishStatus === PublishStatus.Live;
 			}
 		});
 
@@ -93,11 +112,40 @@ export default function HostingOnboarding() {
 					before it reaches future tenants.
 				</ThemedText>
 				<TopListingCard hosting={hosting} />
+				{countData?.bookingApplicationsCount && (
+					<View
+						className="border-b py-4"
+						style={{ borderColor: hexToRgba(colors.text, 0.15) }}
+					>
+						<HostingFormOnboardingAction
+							icon={FluentFormMultiple24Regular}
+							color="accent"
+							onPress={() =>
+								router.push(`/hostings/${hosting?.id}/booking-applications/`)
+							}
+						>
+							<View className="flex-1">
+								<ThemedText style={{ fontFamily: Fonts.bold }}>
+									Booking Applications (
+									{countData.bookingApplicationsCount.toLocaleString()})
+								</ThemedText>
+								<ThemedText
+									style={{
+										fontSize: 12,
+										color: hexToRgba(colors.text, 0.6),
+									}}
+								>
+									Review and manage pending tenant applications for this
+									property.
+								</ThemedText>
+							</View>
+						</HostingFormOnboardingAction>
+					</View>
+				)}
 				<View className="gap-4 mt-8">
 					{ONBOARDING_STEPS.map((step, index) => {
-						const Icon = step.icon;
 						return (
-							<Pressable
+							<HostingFormOnboardingAction
 								key={index}
 								onPress={() => {
 									if (actions[index]?.link) {
@@ -105,42 +153,23 @@ export default function HostingOnboarding() {
 									}
 								}}
 								disabled={!actions[index]?.link || actions[index]?.disabled}
-								className={twMerge(
-									"flex-row items-center gap-4 rounded-3xl border p-[14px]",
-									(!actions[index]?.link || actions[index]?.disabled) &&
-									"opacity-50",
-								)}
-								style={{
-									borderColor: actions[index]?.filled
-										? hexToRgba(colors.primary, 0.2)
-										: hexToRgba(colors.text, 0.15),
-									backgroundColor: actions[index]?.filled
-										? hexToRgba(colors.primary, 0.15)
-										: undefined,
-								}}
+								color={actions[index]?.filled ? "primary" : "default"}
+								icon={step.icon}
 							>
-								<View
-									className="w-12 h-12 items-center justify-center rounded-full border"
-									style={{
-										backgroundColor: hexToRgba(colors.primary, 0.1),
-										borderColor: actions[index]?.filled
-											? hexToRgba(colors.primary, 0.2)
-											: hexToRgba(colors.text, 0.1),
-									}}
-								>
-									<Icon size={20} color={colors.text} />
-								</View>
 								<View className="flex-1">
 									<ThemedText style={{ fontFamily: Fonts.bold }}>
 										{step.title}
 									</ThemedText>
 									<ThemedText
-										style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}
+										style={{
+											fontSize: 12,
+											color: hexToRgba(colors.text, 0.6),
+										}}
 									>
 										{step.description}
 									</ThemedText>
 								</View>
-							</Pressable>
+							</HostingFormOnboardingAction>
 						);
 					})}
 				</View>

@@ -58,6 +58,7 @@ export default function RootLayout() {
 		[Fonts.bold]: Inter_700Bold,
 		[Fonts.extrabold]: Inter_800ExtraBold,
 		[Fonts.black]: Inter_900Black,
+		TwemojiMozilla: require("react-native-country-select/lib/assets/fonts/TwemojiMozilla.woff2"),
 	});
 
 	React.useEffect(() => {

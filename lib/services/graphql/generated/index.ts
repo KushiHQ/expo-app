@@ -105,6 +105,17 @@ export type BookingApplication = {
   statusDetails?: Maybe<Scalars['String']['output']>;
 };
 
+export type BookingApplicationFilter = {
+  checkInDate?: InputMaybe<Scalars['String']['input']>;
+  guestEmploymentStatus?: InputMaybe<GuestFormEmploymentStatus>;
+  hostingId?: InputMaybe<Scalars['String']['input']>;
+  incomeRanges?: InputMaybe<GuestFormIncomeRange>;
+  intervalMultiplier?: InputMaybe<Scalars['Int']['input']>;
+  occupancyTypes?: InputMaybe<GuestFormOccupancyType>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<BookingApplicationStatus>;
+};
+
 export type BookingApplicationResponse = {
   __typename?: 'BookingApplicationResponse';
   data?: Maybe<BookingApplication>;
@@ -114,6 +125,7 @@ export type BookingApplicationResponse = {
 export enum BookingApplicationStatus {
   Accepted = 'ACCEPTED',
   AdminVerified = 'ADMIN_VERIFIED',
+  HostVerified = 'HOST_VERIFIED',
   InProgress = 'IN_PROGRESS',
   Rejected = 'REJECTED',
   Submited = 'SUBMITED',
@@ -139,7 +151,6 @@ export type BookingApplicationUpdateInput = {
   guestFormData?: InputMaybe<GuestFormDataInput>;
   id: Scalars['String']['input'];
   intervalMultiplier?: InputMaybe<Scalars['Int']['input']>;
-  paymentMethodId?: InputMaybe<Scalars['String']['input']>;
   phoneNumber?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -171,34 +182,6 @@ export type CompletePasswordChangeInput = {
   password2: Scalars['String']['input'];
 };
 
-export type FlutterwaveCardInput = {
-  cardHolderName: Scalars['String']['input'];
-  cardNumber: Scalars['String']['input'];
-  cvv: Scalars['String']['input'];
-  expiryMonth: Scalars['String']['input'];
-  expiryYear: Scalars['String']['input'];
-};
-
-export type FlutterwaveCardPaymentMethodData = {
-  __typename?: 'FlutterwaveCardPaymentMethodData';
-  cardHolderName: Scalars['String']['output'];
-  createdAt: Scalars['String']['output'];
-  expiryMonth: Scalars['Int']['output'];
-  expiryYear: Scalars['Int']['output'];
-  first6: Scalars['String']['output'];
-  flutterwaveId: Scalars['String']['output'];
-  id: Scalars['String']['output'];
-  last4: Scalars['String']['output'];
-  lastUpdated: Scalars['String']['output'];
-  network: Scalars['String']['output'];
-};
-
-export type FlutterwaveCardPaymentMethodDataResponse = {
-  __typename?: 'FlutterwaveCardPaymentMethodDataResponse';
-  data?: Maybe<FlutterwaveCardPaymentMethodData>;
-  message: Scalars['String']['output'];
-};
-
 export type Guest = {
   __typename?: 'Guest';
   createdAt: Scalars['String']['output'];
@@ -214,8 +197,6 @@ export type GuestFormData = {
   guarantorRelationships?: Maybe<GuestFormGuarantorRelationships>;
   incomeRanges?: Maybe<GuestFormIncomeRange>;
   occupancyTypes: GuestFormOccupancyType;
-  reasonsForMoving: GuestFormReasonForMoving;
-  residentialStatus: GuestFormResidentialStatus;
 };
 
 export type GuestFormDataInput = {
@@ -223,8 +204,6 @@ export type GuestFormDataInput = {
   guarantorRelationships?: InputMaybe<GuestFormGuarantorRelationships>;
   incomeRanges?: InputMaybe<GuestFormIncomeRange>;
   occupancyTypes: GuestFormOccupancyType;
-  reasonsForMoving: GuestFormReasonForMoving;
-  residentialStatus: GuestFormResidentialStatus;
 };
 
 export enum GuestFormEmploymentStatus {
@@ -256,21 +235,6 @@ export enum GuestFormOccupancyType {
   LargeFamily = 'LARGE_FAMILY',
   Single = 'SINGLE',
   SmallFamily = 'SMALL_FAMILY'
-}
-
-export enum GuestFormReasonForMoving {
-  DonwSizing = 'DONW_SIZING',
-  Marriage = 'MARRIAGE',
-  Other = 'OTHER',
-  Relocation = 'RELOCATION',
-  RentIncrease = 'RENT_INCREASE',
-  Upsizing = 'UPSIZING'
-}
-
-export enum GuestFormResidentialStatus {
-  CurrentTenant = 'CURRENT_TENANT',
-  FirstTime = 'FIRST_TIME',
-  PropertyOwner = 'PROPERTY_OWNER'
 }
 
 export type GuestInput = {
@@ -447,6 +411,7 @@ export type HostingFilterInput = {
   minPrice?: InputMaybe<Scalars['Decimal']['input']>;
   minRating?: InputMaybe<Scalars['Int']['input']>;
   onSale?: InputMaybe<Scalars['Boolean']['input']>;
+  propertyType?: InputMaybe<Scalars['String']['input']>;
   publishStatus?: InputMaybe<PublishStatus>;
   state?: InputMaybe<Scalars['String']['input']>;
   street?: InputMaybe<Scalars['String']['input']>;
@@ -666,12 +631,10 @@ export type MessageResponse = {
 export type Mutations = {
   __typename?: 'Mutations';
   authorizeTransactionWithOtp: TransactionResponse;
-  authorizeTransactionWithPin: TransactionResponse;
   clearChatUrnreadMessages: MessageResponse;
   completeBookingApplicationSubmission: BookingApplicationResponse;
   completePasswordChange: MessageResponse;
   completePhoneNumberVerification: PhoneNumberResponse;
-  createFlutterwaveCardPaymentMethods: FlutterwaveCardPaymentMethodDataResponse;
   createHostingRoomImage: HostingRoomImageResponse;
   createOrUpdateHosting: HostingResponse;
   createOrUpdateHostingReview: HostingReviewResponse;
@@ -718,11 +681,6 @@ export type MutationsAuthorizeTransactionWithOtpArgs = {
 };
 
 
-export type MutationsAuthorizeTransactionWithPinArgs = {
-  input: TransactionPinAuthInput;
-};
-
-
 export type MutationsClearChatUrnreadMessagesArgs = {
   chatId: Scalars['String']['input'];
 };
@@ -740,11 +698,6 @@ export type MutationsCompletePasswordChangeArgs = {
 
 export type MutationsCompletePhoneNumberVerificationArgs = {
   input: PhoneNumberVerificationInput;
-};
-
-
-export type MutationsCreateFlutterwaveCardPaymentMethodsArgs = {
-  input: FlutterwaveCardInput;
 };
 
 
@@ -1088,10 +1041,12 @@ export type Query = {
   authStreamUserToken: Scalars['String']['output'];
   banks: Array<Bank>;
   booking: Booking;
+  bookingApplication: BookingApplication;
+  bookingApplications: Array<BookingApplication>;
+  bookingApplicationsCount: Scalars['Int']['output'];
   bookings: Array<Booking>;
   calculateHostingFees: HostingFees;
   chatMessages: Array<HostingChatMessage>;
-  flutterwaveCardPaymentMethods: Array<FlutterwaveCardPaymentMethodData>;
   getStreamUserId: Scalars['String']['output'];
   guestBookingTenancyAgreementPreview: Scalars['String']['output'];
   hostAnalytics: HostAnalytics;
@@ -1119,6 +1074,22 @@ export type QueryBookingArgs = {
 };
 
 
+export type QueryBookingApplicationArgs = {
+  bookingApplicationId: Scalars['String']['input'];
+};
+
+
+export type QueryBookingApplicationsArgs = {
+  filter?: InputMaybe<BookingApplicationFilter>;
+  pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QueryBookingApplicationsCountArgs = {
+  filter?: InputMaybe<BookingApplicationFilter>;
+};
+
+
 export type QueryBookingsArgs = {
   filter?: InputMaybe<BookingFilterInput>;
   pagination?: InputMaybe<PaginationInput>;
@@ -1133,11 +1104,6 @@ export type QueryCalculateHostingFeesArgs = {
 
 export type QueryChatMessagesArgs = {
   chatId: Scalars['String']['input'];
-  pagination?: InputMaybe<PaginationInput>;
-};
-
-
-export type QueryFlutterwaveCardPaymentMethodsArgs = {
   pagination?: InputMaybe<PaginationInput>;
 };
 
@@ -1393,11 +1359,6 @@ export type TransactionOtpAuthInput = {
   transactionId: Scalars['String']['input'];
 };
 
-export type TransactionPinAuthInput = {
-  pin: Scalars['String']['input'];
-  transactionId: Scalars['String']['input'];
-};
-
 export type TransactionResponse = {
   __typename?: 'TransactionResponse';
   data?: Maybe<Transaction>;
@@ -1523,7 +1484,14 @@ export type InitiateBookingApplicationMutationVariables = Exact<{
 }>;
 
 
-export type InitiateBookingApplicationMutation = { __typename?: 'Mutations', initiateBookingApplication: { __typename?: 'BookingApplicationResponse', message: string } };
+export type InitiateBookingApplicationMutation = { __typename?: 'Mutations', initiateBookingApplication: { __typename?: 'BookingApplicationResponse', message: string, data?: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, checkInDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, bookingAggrement?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes: GuestFormOccupancyType, guarantorRelationships?: GuestFormGuarantorRelationships | null } | null } | null } };
+
+export type UpdateBookingApplicationMutationVariables = Exact<{
+  input: BookingApplicationUpdateInput;
+}>;
+
+
+export type UpdateBookingApplicationMutation = { __typename?: 'Mutations', updateBookingApplication: { __typename?: 'BookingApplicationResponse', message: string, data?: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, checkInDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, bookingAggrement?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes: GuestFormOccupancyType, guarantorRelationships?: GuestFormGuarantorRelationships | null } | null } | null } };
 
 export type VerifyBookingPaymentMutationVariables = Exact<{
   verifyBookingPaymentId: Scalars['String']['input'];
@@ -1538,6 +1506,27 @@ export type FinalizeBookingMutationVariables = Exact<{
 
 
 export type FinalizeBookingMutation = { __typename?: 'Mutations', finalizeBooking: { __typename?: 'Booking', id: string } };
+
+export type InitiateBookingApplicationSubmissionMutationVariables = Exact<{
+  applicationId: Scalars['String']['input'];
+}>;
+
+
+export type InitiateBookingApplicationSubmissionMutation = { __typename?: 'Mutations', initiateBookingApplicationSubmission: { __typename?: 'MessageResponse', message: string } };
+
+export type CompleteBookingApplicationSubmissionMutationVariables = Exact<{
+  input: BookingApplicationSubmissionInput;
+}>;
+
+
+export type CompleteBookingApplicationSubmissionMutation = { __typename?: 'Mutations', completeBookingApplicationSubmission: { __typename?: 'BookingApplicationResponse', message: string } };
+
+export type HostUpdateBookingApplicationStatusMutationVariables = Exact<{
+  input: BookingApplicationStatusUpdateInput;
+}>;
+
+
+export type HostUpdateBookingApplicationStatusMutation = { __typename?: 'Mutations', hostUpdateBookingApplicationStatus: { __typename?: 'BookingApplicationResponse', message: string } };
 
 export type InitiateHostingChatMutationVariables = Exact<{
   hostingId: Scalars['String']['input'];
@@ -1645,27 +1634,6 @@ export type CreateUpdateHostPaymentDetailsMutationVariables = Exact<{
 
 export type CreateUpdateHostPaymentDetailsMutation = { __typename?: 'Mutations', createUpdateHostPaymentDetails: { __typename?: 'HostAccountDetailsResponse', message: string, data?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, bankCode: string, createdAt: string, lastUpdated: string, accountName?: string | null, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null } };
 
-export type CreateFlutterwaveCardPaymentMethodsMutationVariables = Exact<{
-  input: FlutterwaveCardInput;
-}>;
-
-
-export type CreateFlutterwaveCardPaymentMethodsMutation = { __typename?: 'Mutations', createFlutterwaveCardPaymentMethods: { __typename?: 'FlutterwaveCardPaymentMethodDataResponse', message: string } };
-
-export type AuthorizeTransactionWithOtpMutationVariables = Exact<{
-  input: TransactionOtpAuthInput;
-}>;
-
-
-export type AuthorizeTransactionWithOtpMutation = { __typename?: 'Mutations', authorizeTransactionWithOtp: { __typename?: 'TransactionResponse', message: string } };
-
-export type AuthorizeTransactionWithPinMutationVariables = Exact<{
-  input: TransactionPinAuthInput;
-}>;
-
-
-export type AuthorizeTransactionWithPinMutation = { __typename?: 'Mutations', authorizeTransactionWithPin: { __typename?: 'TransactionResponse', message: string } };
-
 export type UpdateHostMutationVariables = Exact<{
   input: HostInput;
 }>;
@@ -1714,6 +1682,50 @@ export type VerifyKycMutationVariables = Exact<{
 
 
 export type VerifyKycMutation = { __typename?: 'Mutations', verifyKyc: { __typename?: 'Kyc', bvnVerified?: boolean | null, id: string, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } };
+
+export type InitiatePhoneNumberVerificationMutationVariables = Exact<{
+  phoneNumber: Scalars['String']['input'];
+}>;
+
+
+export type InitiatePhoneNumberVerificationMutation = { __typename?: 'Mutations', initiatePhoneNumberVerification: { __typename?: 'MessageResponse', message: string } };
+
+export type CompletePhoneNumberVerificationMutationVariables = Exact<{
+  input: PhoneNumberVerificationInput;
+}>;
+
+
+export type CompletePhoneNumberVerificationMutation = { __typename?: 'Mutations', completePhoneNumberVerification: { __typename?: 'PhoneNumberResponse', message: string } };
+
+export type BookingApplicationsCountQueryVariables = Exact<{
+  filter?: InputMaybe<BookingApplicationFilter>;
+}>;
+
+
+export type BookingApplicationsCountQuery = { __typename?: 'Query', bookingApplicationsCount: number };
+
+export type BookingApplicationsQueryVariables = Exact<{
+  filter?: InputMaybe<BookingApplicationFilter>;
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type BookingApplicationsQuery = { __typename?: 'Query', bookingApplications: Array<{ __typename?: 'BookingApplication', checkInDate?: string | null, fullName?: string | null, createdAt: string, status: BookingApplicationStatus, id: string, intervalMultiplier?: number | null }> };
+
+export type CalculateHostingFeesQueryVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+  multiplier: Scalars['Int']['input'];
+}>;
+
+
+export type CalculateHostingFeesQuery = { __typename?: 'Query', calculateHostingFees: { __typename?: 'HostingFees', baseRent: any, totalPayableAmount: any, cautionFee: any, serviceCharge: any, legalFee: any, guestServiceCharge: any, hostServiceCharge: any } };
+
+export type BookingApplicationQueryVariables = Exact<{
+  bookingApplicationId: Scalars['String']['input'];
+}>;
+
+
+export type BookingApplicationQuery = { __typename?: 'Query', bookingApplication: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, checkInDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes: GuestFormOccupancyType, guarantorRelationships?: GuestFormGuarantorRelationships | null } | null, bookingAggrement?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null } };
 
 export type BookingsQueryVariables = Exact<{
   filter?: InputMaybe<BookingFilterInput>;
@@ -1833,11 +1845,6 @@ export type HostPaymentDetailsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type HostPaymentDetailsQuery = { __typename?: 'Query', hostPaymentDetails: Array<{ __typename?: 'HostAccountDetails', id: string, accountNumber: string, bankCode: string, createdAt: string, lastUpdated: string, accountName?: string | null, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null }> };
 
-export type FlutterwaveCardPaymentMethodsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type FlutterwaveCardPaymentMethodsQuery = { __typename?: 'Query', flutterwaveCardPaymentMethods: Array<{ __typename?: 'FlutterwaveCardPaymentMethodData', id: string, first6: string, last4: string, expiryMonth: number, expiryYear: number, network: string, cardHolderName: string }> };
-
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1869,6 +1876,13 @@ export type AuthGuestQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type AuthGuestQuery = { __typename?: 'Query', authGuest: { __typename?: 'Guest', id: string, createdAt: string, lastUpdated: string, signature?: { __typename?: 'Asset', id: string, publicUrl: string } | null } };
+
+export type UserPhoneNumersQueryVariables = Exact<{
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type UserPhoneNumersQuery = { __typename?: 'Query', me: { __typename?: 'User', phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus, createdAt: string, lastUpdated: string }> } };
 
 export type LatestHostingChatMessageSubscriptionVariables = Exact<{
   chatId: Scalars['String']['input'];
@@ -2135,12 +2149,115 @@ export const InitiateBookingApplicationDocument = gql`
     mutation InitiateBookingApplication($hostingId: String!) {
   initiateBookingApplication(hostingId: $hostingId) {
     message
+    data {
+      id
+      fullName
+      email
+      phoneNumber
+      checkInDate
+      correspondenceAddress
+      intervalMultiplier
+      status
+      statusDetails
+      createdAt
+      lastUpdated
+      bookingAggrement {
+        sections {
+          id
+          title
+          description
+          priority
+          preamble
+          subClauses {
+            id
+            title
+            description
+            priority
+            content
+            isMandatory
+            isActive
+            isCustom
+            requiredVariables {
+              name
+              type
+            }
+            providedValues {
+              key
+              value
+            }
+          }
+        }
+      }
+      guestFormData {
+        employmentStatus
+        incomeRanges
+        occupancyTypes
+        guarantorRelationships
+      }
+    }
   }
 }
     `;
 
 export function useInitiateBookingApplicationMutation() {
   return Urql.useMutation<InitiateBookingApplicationMutation, InitiateBookingApplicationMutationVariables>(InitiateBookingApplicationDocument);
+};
+export const UpdateBookingApplicationDocument = gql`
+    mutation UpdateBookingApplication($input: BookingApplicationUpdateInput!) {
+  updateBookingApplication(input: $input) {
+    message
+    data {
+      id
+      fullName
+      email
+      phoneNumber
+      checkInDate
+      correspondenceAddress
+      intervalMultiplier
+      status
+      statusDetails
+      createdAt
+      lastUpdated
+      bookingAggrement {
+        sections {
+          id
+          title
+          description
+          priority
+          preamble
+          subClauses {
+            id
+            title
+            description
+            priority
+            content
+            isMandatory
+            isActive
+            isCustom
+            requiredVariables {
+              name
+              type
+            }
+            providedValues {
+              key
+              value
+            }
+          }
+        }
+      }
+      guestFormData {
+        employmentStatus
+        incomeRanges
+        occupancyTypes
+        guarantorRelationships
+      }
+    }
+  }
+}
+    `;
+
+export function useUpdateBookingApplicationMutation() {
+  return Urql.useMutation<UpdateBookingApplicationMutation, UpdateBookingApplicationMutationVariables>(UpdateBookingApplicationDocument);
 };
 export const VerifyBookingPaymentDocument = gql`
     mutation VerifyBookingPayment($verifyBookingPaymentId: String!) {
@@ -2167,6 +2284,39 @@ export const FinalizeBookingDocument = gql`
 
 export function useFinalizeBookingMutation() {
   return Urql.useMutation<FinalizeBookingMutation, FinalizeBookingMutationVariables>(FinalizeBookingDocument);
+};
+export const InitiateBookingApplicationSubmissionDocument = gql`
+    mutation InitiateBookingApplicationSubmission($applicationId: String!) {
+  initiateBookingApplicationSubmission(applicationId: $applicationId) {
+    message
+  }
+}
+    `;
+
+export function useInitiateBookingApplicationSubmissionMutation() {
+  return Urql.useMutation<InitiateBookingApplicationSubmissionMutation, InitiateBookingApplicationSubmissionMutationVariables>(InitiateBookingApplicationSubmissionDocument);
+};
+export const CompleteBookingApplicationSubmissionDocument = gql`
+    mutation CompleteBookingApplicationSubmission($input: BookingApplicationSubmissionInput!) {
+  completeBookingApplicationSubmission(input: $input) {
+    message
+  }
+}
+    `;
+
+export function useCompleteBookingApplicationSubmissionMutation() {
+  return Urql.useMutation<CompleteBookingApplicationSubmissionMutation, CompleteBookingApplicationSubmissionMutationVariables>(CompleteBookingApplicationSubmissionDocument);
+};
+export const HostUpdateBookingApplicationStatusDocument = gql`
+    mutation HostUpdateBookingApplicationStatus($input: BookingApplicationStatusUpdateInput!) {
+  hostUpdateBookingApplicationStatus(input: $input) {
+    message
+  }
+}
+    `;
+
+export function useHostUpdateBookingApplicationStatusMutation() {
+  return Urql.useMutation<HostUpdateBookingApplicationStatusMutation, HostUpdateBookingApplicationStatusMutationVariables>(HostUpdateBookingApplicationStatusDocument);
 };
 export const InitiateHostingChatDocument = gql`
     mutation InitiateHostingChat($hostingId: String!) {
@@ -2478,39 +2628,6 @@ export const CreateUpdateHostPaymentDetailsDocument = gql`
 export function useCreateUpdateHostPaymentDetailsMutation() {
   return Urql.useMutation<CreateUpdateHostPaymentDetailsMutation, CreateUpdateHostPaymentDetailsMutationVariables>(CreateUpdateHostPaymentDetailsDocument);
 };
-export const CreateFlutterwaveCardPaymentMethodsDocument = gql`
-    mutation CreateFlutterwaveCardPaymentMethods($input: FlutterwaveCardInput!) {
-  createFlutterwaveCardPaymentMethods(input: $input) {
-    message
-  }
-}
-    `;
-
-export function useCreateFlutterwaveCardPaymentMethodsMutation() {
-  return Urql.useMutation<CreateFlutterwaveCardPaymentMethodsMutation, CreateFlutterwaveCardPaymentMethodsMutationVariables>(CreateFlutterwaveCardPaymentMethodsDocument);
-};
-export const AuthorizeTransactionWithOtpDocument = gql`
-    mutation AuthorizeTransactionWithOtp($input: TransactionOtpAuthInput!) {
-  authorizeTransactionWithOtp(input: $input) {
-    message
-  }
-}
-    `;
-
-export function useAuthorizeTransactionWithOtpMutation() {
-  return Urql.useMutation<AuthorizeTransactionWithOtpMutation, AuthorizeTransactionWithOtpMutationVariables>(AuthorizeTransactionWithOtpDocument);
-};
-export const AuthorizeTransactionWithPinDocument = gql`
-    mutation AuthorizeTransactionWithPin($input: TransactionPinAuthInput!) {
-  authorizeTransactionWithPin(input: $input) {
-    message
-  }
-}
-    `;
-
-export function useAuthorizeTransactionWithPinMutation() {
-  return Urql.useMutation<AuthorizeTransactionWithPinMutation, AuthorizeTransactionWithPinMutationVariables>(AuthorizeTransactionWithPinDocument);
-};
 export const UpdateHostDocument = gql`
     mutation UpdateHost($input: HostInput!) {
   updateHost(input: $input) {
@@ -2623,6 +2740,124 @@ export const VerifyKycDocument = gql`
 
 export function useVerifyKycMutation() {
   return Urql.useMutation<VerifyKycMutation, VerifyKycMutationVariables>(VerifyKycDocument);
+};
+export const InitiatePhoneNumberVerificationDocument = gql`
+    mutation InitiatePhoneNumberVerification($phoneNumber: String!) {
+  initiatePhoneNumberVerification(phoneNumber: $phoneNumber) {
+    message
+  }
+}
+    `;
+
+export function useInitiatePhoneNumberVerificationMutation() {
+  return Urql.useMutation<InitiatePhoneNumberVerificationMutation, InitiatePhoneNumberVerificationMutationVariables>(InitiatePhoneNumberVerificationDocument);
+};
+export const CompletePhoneNumberVerificationDocument = gql`
+    mutation CompletePhoneNumberVerification($input: PhoneNumberVerificationInput!) {
+  completePhoneNumberVerification(input: $input) {
+    message
+  }
+}
+    `;
+
+export function useCompletePhoneNumberVerificationMutation() {
+  return Urql.useMutation<CompletePhoneNumberVerificationMutation, CompletePhoneNumberVerificationMutationVariables>(CompletePhoneNumberVerificationDocument);
+};
+export const BookingApplicationsCountDocument = gql`
+    query BookingApplicationsCount($filter: BookingApplicationFilter) {
+  bookingApplicationsCount(filter: $filter)
+}
+    `;
+
+export function useBookingApplicationsCountQuery(options?: Omit<Urql.UseQueryArgs<BookingApplicationsCountQueryVariables>, 'query'>) {
+  return Urql.useQuery<BookingApplicationsCountQuery, BookingApplicationsCountQueryVariables>({ query: BookingApplicationsCountDocument, ...options });
+};
+export const BookingApplicationsDocument = gql`
+    query BookingApplications($filter: BookingApplicationFilter, $pagination: PaginationInput) {
+  bookingApplications(filter: $filter, pagination: $pagination) {
+    checkInDate
+    fullName
+    createdAt
+    status
+    id
+    intervalMultiplier
+  }
+}
+    `;
+
+export function useBookingApplicationsQuery(options?: Omit<Urql.UseQueryArgs<BookingApplicationsQueryVariables>, 'query'>) {
+  return Urql.useQuery<BookingApplicationsQuery, BookingApplicationsQueryVariables>({ query: BookingApplicationsDocument, ...options });
+};
+export const CalculateHostingFeesDocument = gql`
+    query CalculateHostingFees($hostingId: String!, $multiplier: Int!) {
+  calculateHostingFees(hostingId: $hostingId, multiplier: $multiplier) {
+    baseRent
+    totalPayableAmount
+    cautionFee
+    serviceCharge
+    legalFee
+    guestServiceCharge
+    hostServiceCharge
+  }
+}
+    `;
+
+export function useCalculateHostingFeesQuery(options: Omit<Urql.UseQueryArgs<CalculateHostingFeesQueryVariables>, 'query'>) {
+  return Urql.useQuery<CalculateHostingFeesQuery, CalculateHostingFeesQueryVariables>({ query: CalculateHostingFeesDocument, ...options });
+};
+export const BookingApplicationDocument = gql`
+    query BookingApplication($bookingApplicationId: String!) {
+  bookingApplication(bookingApplicationId: $bookingApplicationId) {
+    id
+    fullName
+    email
+    phoneNumber
+    checkInDate
+    correspondenceAddress
+    intervalMultiplier
+    status
+    statusDetails
+    createdAt
+    lastUpdated
+    guestFormData {
+      employmentStatus
+      incomeRanges
+      occupancyTypes
+      guarantorRelationships
+    }
+    bookingAggrement {
+      sections {
+        id
+        title
+        description
+        priority
+        preamble
+        subClauses {
+          id
+          title
+          description
+          priority
+          content
+          isMandatory
+          isActive
+          isCustom
+          requiredVariables {
+            name
+            type
+          }
+          providedValues {
+            key
+            value
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useBookingApplicationQuery(options: Omit<Urql.UseQueryArgs<BookingApplicationQueryVariables>, 'query'>) {
+  return Urql.useQuery<BookingApplicationQuery, BookingApplicationQueryVariables>({ query: BookingApplicationDocument, ...options });
 };
 export const BookingsDocument = gql`
     query Bookings($filter: BookingFilterInput, $pagination: PaginationInput) {
@@ -3208,23 +3443,6 @@ export const HostPaymentDetailsDocument = gql`
 export function useHostPaymentDetailsQuery(options?: Omit<Urql.UseQueryArgs<HostPaymentDetailsQueryVariables>, 'query'>) {
   return Urql.useQuery<HostPaymentDetailsQuery, HostPaymentDetailsQueryVariables>({ query: HostPaymentDetailsDocument, ...options });
 };
-export const FlutterwaveCardPaymentMethodsDocument = gql`
-    query FlutterwaveCardPaymentMethods {
-  flutterwaveCardPaymentMethods {
-    id
-    first6
-    last4
-    expiryMonth
-    expiryYear
-    network
-    cardHolderName
-  }
-}
-    `;
-
-export function useFlutterwaveCardPaymentMethodsQuery(options?: Omit<Urql.UseQueryArgs<FlutterwaveCardPaymentMethodsQueryVariables>, 'query'>) {
-  return Urql.useQuery<FlutterwaveCardPaymentMethodsQuery, FlutterwaveCardPaymentMethodsQueryVariables>({ query: FlutterwaveCardPaymentMethodsDocument, ...options });
-};
 export const MeDocument = gql`
     query Me {
   me {
@@ -3355,6 +3573,23 @@ export const AuthGuestDocument = gql`
 
 export function useAuthGuestQuery(options?: Omit<Urql.UseQueryArgs<AuthGuestQueryVariables>, 'query'>) {
   return Urql.useQuery<AuthGuestQuery, AuthGuestQueryVariables>({ query: AuthGuestDocument, ...options });
+};
+export const UserPhoneNumersDocument = gql`
+    query UserPhoneNumers($pagination: PaginationInput) {
+  me {
+    phoneNumbers(pagination: $pagination) {
+      id
+      number
+      verificationStatus
+      createdAt
+      lastUpdated
+    }
+  }
+}
+    `;
+
+export function useUserPhoneNumersQuery(options?: Omit<Urql.UseQueryArgs<UserPhoneNumersQueryVariables>, 'query'>) {
+  return Urql.useQuery<UserPhoneNumersQuery, UserPhoneNumersQueryVariables>({ query: UserPhoneNumersDocument, ...options });
 };
 export const LatestHostingChatMessageDocument = gql`
     subscription LatestHostingChatMessage($chatId: String!) {

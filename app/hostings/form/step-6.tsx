@@ -108,27 +108,29 @@ export default function NewHostingStep6() {
 									updateVerificationInput({ landlordAddress: v });
 								}}
 							/>
-							<SelectInput
-								focused
-								description="Select your role in managing this property. Are you the legal owner (Landlord), an appointed representative (Agent), or a current tenant with permission to rent it out (Subletter)?"
-								label="Property Relationship"
-								placeholder="Landlord"
-								defaultValue={
-									verificationInput.propertyRelationship
-										? {
-												label: verificationInput.propertyRelationship,
-												value: verificationInput.propertyRelationship,
-											}
-										: undefined
-								}
-								onSelect={(v) =>
-									updateVerificationInput({
-										propertyRelationship: cast(v.value),
-									})
-								}
-								options={HOSTING_VERIFICATION_OPTIONS}
-								renderItem={SelectOption}
-							/>
+							<View>
+								<SelectInput
+									focused
+									description="Select your role in managing this property. Are you the legal owner (Landlord), an appointed representative (Agent), or a current tenant with permission to rent it out (Subletter)?"
+									label="Property Relationship"
+									placeholder="Landlord"
+									defaultValue={
+										verificationInput.propertyRelationship
+											? {
+													label: verificationInput.propertyRelationship,
+													value: verificationInput.propertyRelationship,
+												}
+											: undefined
+									}
+									onSelect={(v) =>
+										updateVerificationInput({
+											propertyRelationship: cast(v.value),
+										})
+									}
+									options={HOSTING_VERIFICATION_OPTIONS}
+									renderItem={SelectOption}
+								/>
+							</View>
 						</View>
 						<View className="gap-4 mt-4">
 							<CheckboxInput
@@ -136,22 +138,38 @@ export default function NewHostingStep6() {
 								onCheckChange={(v) =>
 									updateVerificationInput({ declOwnership: v })
 								}
-								description="I hereby declare that I am the legal owner of this property, or I possess explicit, documented authorization (such as a mandate, power of attorney, or landlord's consent to sublease) to rent out this space"
-							/>
+							>
+								<ThemedText>
+									I hereby declare that I am the legal owner of this property,
+									or I possess explicit, documented authorization (such as a
+									mandate, power of attorney, or landlord's consent to sublease)
+									to rent out this space
+								</ThemedText>
+							</CheckboxInput>
 							<CheckboxInput
 								checked={verificationInput.declLitigation}
 								onCheckChange={(v) =>
 									updateVerificationInput({ declLitigation: v })
 								}
-								description="I confirm that there are no ongoing court cases, legal disputes, or foreclosures involving this property that would prevent a tenant from living here peacefully."
-							/>
+							>
+								<ThemedText>
+									I confirm that there are no ongoing court cases, legal
+									disputes, or foreclosures involving this property that would
+									prevent a tenant from living here peacefully.
+								</ThemedText>
+							</CheckboxInput>
 							<CheckboxInput
 								checked={verificationInput.declIndemnity}
 								onCheckChange={(v) =>
 									updateVerificationInput({ declIndemnity: v })
 								}
-								description="I agree to take full legal and financial responsibility, protecting Kushi from any claims or lawsuits, if the ownership or litigation information I have provided is false."
-							/>
+							>
+								<ThemedText>
+									I agree to take full legal and financial responsibility,
+									protecting Kushi from any claims or lawsuits, if the ownership
+									or litigation information I have provided is false.
+								</ThemedText>
+							</CheckboxInput>
 						</View>
 					</View>
 				</View>

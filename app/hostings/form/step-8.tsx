@@ -5,12 +5,11 @@ import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import React from "react";
-import { Platform, Pressable, View } from "react-native";
+import { Platform, View } from "react-native";
 import Button from "@/components/atoms/a-button";
 import { FluentSlideTextEdit28Regular } from "@/components/icons/i-edit";
-import { Href, useLocalSearchParams, useRouter } from "expo-router";
+import { Href, Link, useLocalSearchParams, useRouter } from "expo-router";
 import { CircleQuestionMark, Home } from "lucide-react-native";
-import Checkbox from "@/components/atoms/a-checkbox";
 import { useHostingForm } from "@/lib/hooks/hosting-form";
 import { capitalize } from "@/lib/utils/text";
 import HostingCard from "@/components/molecules/m-hosting-card";
@@ -23,6 +22,7 @@ import TextSelectButton from "@/components/molecules/m-text-select-button";
 import ItemSummary from "@/components/molecules/m-item-summary";
 import SummarySection from "@/components/atoms/a-summary-section";
 import { SimpleGrid } from "react-native-super-grid";
+import CheckboxInput from "@/components/molecules/m-checkbox-input";
 
 const EditButton: React.FC<{ href: Href }> = ({ href }) => {
 	const router = useRouter();
@@ -89,7 +89,7 @@ export default function NewHostingStep6() {
 			}
 			if (res.data?.createOrUpdateHosting) {
 				router.push(
-					`/hostings/form/step-6?id=${res.data?.createOrUpdateHosting.data?.id}`,
+					`/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`,
 				);
 				Toast.show({
 					type: "success",
@@ -107,6 +107,10 @@ export default function NewHostingStep6() {
 		router.replace("/host/analytics");
 	};
 
+	function editStep(step: 1 | 2 | 3 | 4 | 5 | 6 | 7) {
+		return `/hostings/form/step-${step}?id=${hosting?.id}` as Href;
+	}
+
 	return (
 		<>
 			<DetailsLayout
@@ -120,7 +124,7 @@ export default function NewHostingStep6() {
 							(!accepted.tos || !accepted.truth) &&
 							hosting?.publishStatus !== PublishStatus.Live
 						}
-						step={7}
+						step={8}
 					/>
 				}
 			>
@@ -157,7 +161,7 @@ export default function NewHostingStep6() {
 									{input.description}
 								</ThemedText>
 							</View>
-							<EditButton href={"/hostings/form/step-1"} />
+							<EditButton href={editStep(1)} />
 						</SummarySection>
 						<SummarySection>
 							<View className="flex-row gap-4 flex-wrap">
@@ -175,7 +179,7 @@ export default function NewHostingStep6() {
 									summary={`${hosting?.rooms?.map((v) => v.images.length).reduce((p, c) => p + c) ?? 0}`}
 								/>
 							</View>
-							<EditButton href={"/hostings/form/step-2"} />
+							<EditButton href={editStep(2)} />
 						</SummarySection>
 						<SummarySection>
 							<View
@@ -219,7 +223,7 @@ export default function NewHostingStep6() {
 								label="Landmarks"
 								summary={input.landmarks ?? "nil"}
 							/>
-							<EditButton href={"/hostings/form/step-3"} />
+							<EditButton href={editStep(3)} />
 						</SummarySection>
 						<SummarySection>
 							<ThemedText>{"Features & Amenities"}</ThemedText>
@@ -231,7 +235,7 @@ export default function NewHostingStep6() {
 									<TextSelectButton value={item} selected />
 								)}
 							/>
-							<EditButton href={"/hostings/form/step-4"} />
+							<EditButton href={editStep(4)} />
 						</SummarySection>
 
 						<SummarySection>
@@ -251,32 +255,51 @@ export default function NewHostingStep6() {
 								label="Price"
 								summary={`₦${Number(hosting?.price).toLocaleString()}`}
 							/>
-							<EditButton href={"/hostings/form/step-5"} />
+							<EditButton href={editStep(5)} />
+						</SummarySection>
+
+						<SummarySection>
+							<ItemSummary
+								label="Landlord Full Name"
+								summary={hosting?.verification?.landlordFullName ?? ""}
+							/>
+							<ItemSummary
+								label="Landlord Address"
+								summary={hosting?.verification?.landlordAddress ?? ""}
+							/>
+							<ItemSummary
+								label="Property"
+								summary={capitalize(
+									hosting?.verification?.propertyRelationship ?? "",
+								)}
+							/>
+							<EditButton href={editStep(6)} />
 						</SummarySection>
 					</View>
 					<View className="gap-2">
-						<Pressable className="flex-row items-start gap-1">
-							<Checkbox
-								color={colors.primary}
-								size={20}
-								checked={accepted.truth}
-								onValueChange={(v) => setAccepted((c) => ({ ...c, truth: v }))}
-							/>
+						<CheckboxInput
+							checked={accepted.truth}
+							onCheckChange={(v) => setAccepted((c) => ({ ...c, truth: v }))}
+						>
 							<ThemedText className="flex-1" style={{ fontSize: 14 }}>
 								I confirm that the above information is true and accurate.
 							</ThemedText>
-						</Pressable>
-						<Pressable className="flex-row items-start gap-1">
-							<Checkbox
-								color={colors.primary}
-								size={20}
-								checked={accepted.tos}
-								onValueChange={(v) => setAccepted((c) => ({ ...c, tos: v }))}
-							/>
+						</CheckboxInput>
+						<CheckboxInput
+							checked={accepted.tos}
+							onCheckChange={(v) => setAccepted((c) => ({ ...c, tos: v }))}
+						>
 							<ThemedText className="flex-1" style={{ fontSize: 14 }}>
-								I agree to Kushi&apos;s hosting terms of service
+								I agree to Kushi&apos;s hosting{" "}
+								<Link
+									href="https://kushicorp.com/legal/terms-of-service"
+									className="underline"
+									style={{ color: colors.primary }}
+								>
+									terms of service
+								</Link>
 							</ThemedText>
-						</Pressable>
+						</CheckboxInput>
 					</View>
 				</View>
 			</DetailsLayout>

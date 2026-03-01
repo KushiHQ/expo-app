@@ -30,6 +30,7 @@ interface BaseProps<T> extends Omit<FloatingLabelInputProps, "defaultValue"> {
 	selectedValueString?: string;
 	options: T[];
 	onSelect?: (v: T) => void;
+	footer?: React.ReactNode;
 	renderItem: React.FC<T & SelectionDetails>;
 }
 
@@ -52,6 +53,14 @@ const getValueString = (value: any) => {
 	}
 };
 
+const getLabelString = (value: any) => {
+	if (typeof value === "object") {
+		return cast<Record<string, any>>(value).label;
+	} else {
+		return value;
+	}
+};
+
 const SelectInput = <T extends object>(props: Props<T>) => {
 	const { options, renderItem: RenderItem, onSelect, ...rest } = props;
 	const [open, setOpen] = React.useState(false);
@@ -62,6 +71,10 @@ const SelectInput = <T extends object>(props: Props<T>) => {
 	const selectedValue = React.useMemo(
 		() => valueStringFunc(value),
 		[value, valueStringFunc],
+	);
+	const selectedLabel = React.useMemo(
+		() => getLabelString(value),
+		[value, getLabelString],
 	);
 
 	const filtered = React.useMemo(() => {
@@ -83,9 +96,19 @@ const SelectInput = <T extends object>(props: Props<T>) => {
 				? String(cast<Record<string, string>>(b)[rest.searchField])
 				: valueStringFunc(b);
 
+			if ((a as any).sequence && (b as any).sequence) {
+				return (a as any).sequence - (b as any).sequence;
+			}
+
 			return fieldA.localeCompare(fieldB);
 		});
 	}, [rest, search, options, valueStringFunc]);
+
+	React.useEffect(() => {
+		if (props.defaultValue && !value) {
+			setValue(props.defaultValue);
+		}
+	}, [props.defaultValue, value]);
 
 	const handlePress = (e: GestureResponderEvent) => {
 		e.preventDefault();
@@ -156,7 +179,7 @@ const SelectInput = <T extends object>(props: Props<T>) => {
 							}}
 						>
 							{props.selectedValueString ??
-								capitalize(selectedValue ?? rest.placeholder ?? "")}
+								capitalize(selectedLabel ?? rest.placeholder ?? "")}
 						</ThemedText>
 						<ChevronDown color={hexToRgba(colors.text, 0.4)} />
 					</View>
@@ -200,6 +223,7 @@ const SelectInput = <T extends object>(props: Props<T>) => {
 							keyboardShouldPersistTaps="handled"
 						/>
 					</View>
+					{props.footer}
 				</View>
 			</BottomSheet>
 		</>

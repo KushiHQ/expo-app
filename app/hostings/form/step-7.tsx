@@ -29,14 +29,14 @@ import { UPDATE_HOST } from "@/lib/services/graphql/requests/mutations/users";
 import { generateRNFile } from "@/lib/utils/file";
 import SignatureImage from "@/components/molecules/m-signature-image";
 import Collapsible from "@/components/molecules/m-collapsible";
-import { capitalize, splitVariables } from "@/lib/utils/text";
+import { capitalize } from "@/lib/utils/text";
 import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
 import BottomSheet from "@/components/atoms/a-bottom-sheet";
 import Button from "@/components/atoms/a-button";
 import { FluentTextBulletListSquareEdit20Regular } from "@/components/icons/i-edit";
 import Skeleton from "@/components/atoms/a-skeleton";
-import { formatNaira } from "@/lib/utils/currency";
 import { cleanupAgreementTemplateInput } from "@/lib/utils/hosting/tenancyAgreement";
+import TenancyAgreementVariableText from "@/components/molecules/m-tenancy-aggreement-variable-text";
 
 export default function NewHostingStep6() {
 	const router = useRouter();
@@ -376,16 +376,17 @@ export default function NewHostingStep6() {
 						final digital lease signed by your tenant.
 					</ThemedText>
 					<View className="gap-2">
-						{loading && (
-							<View className="gap-3">
-								{Array.from({ length: 7 }).map((_, index) => (
-									<Skeleton
-										key={index}
-										style={{ height: 50, borderRadius: 12 }}
-									/>
-								))}
-							</View>
-						)}
+						{templateFetching ||
+							(fetchingHosting && (
+								<View className="gap-3">
+									{Array.from({ length: 7 }).map((_, index) => (
+										<Skeleton
+											key={index}
+											style={{ height: 50, borderRadius: 12 }}
+										/>
+									))}
+								</View>
+							))}
 						<View>
 							{input.tenancyAgreementTemplate?.sections.map(
 								(section, sectionIndex) => (
@@ -396,7 +397,10 @@ export default function NewHostingStep6() {
 									>
 										<View className="mt-4">
 											{section.preamble && (
-												<VariableText text={section.preamble} />
+												<TenancyAgreementVariableText
+													hostingId={String(id)}
+													text={section.preamble}
+												/>
 											)}
 										</View>
 										<View className="mt-4">
@@ -408,7 +412,8 @@ export default function NewHostingStep6() {
 												>
 													<View className="mt-4">
 														{clause.content && (
-															<VariableText
+															<TenancyAgreementVariableText
+																hostingId={String(id)}
 																providedValues={clause.providedValues}
 																text={clause.content}
 															/>
@@ -425,10 +430,10 @@ export default function NewHostingStep6() {
 																			clause.providedValues[index]?.value
 																				? variable.type === VariableType.Number
 																					? Number(
-																						clause.providedValues[
-																							index
-																						]?.value.replaceAll(",", ""),
-																					).toLocaleString()
+																							clause.providedValues[
+																								index
+																							]?.value.replaceAll(",", ""),
+																						).toLocaleString()
 																					: clause.providedValues[index]?.value
 																				: undefined
 																		}
@@ -516,7 +521,11 @@ export default function NewHostingStep6() {
 						>
 							<View className="mt-4">
 								{section.preamble && (
-									<VariableText replace={false} text={section.preamble} />
+									<TenancyAgreementVariableText
+										hostingId={String(id)}
+										replace={false}
+										text={section.preamble}
+									/>
 								)}
 							</View>
 							<View className="mt-4">
@@ -533,7 +542,11 @@ export default function NewHostingStep6() {
 									>
 										<View className="mt-4">
 											{clause.content && (
-												<VariableText replace={false} text={clause.content} />
+												<TenancyAgreementVariableText
+													hostingId={String(id)}
+													replace={false}
+													text={clause.content}
+												/>
 											)}
 										</View>
 										{clause.requiredVariables.length > 0 && (
@@ -571,107 +584,3 @@ export default function NewHostingStep6() {
 		</>
 	);
 }
-
-const VariableText: React.FC<{
-	text: string;
-	replace?: boolean;
-	providedValues?: SubClauseValueInput[];
-}> = React.memo(({ text, providedValues, replace = true }) => {
-	const colors = useThemeColors();
-	const { id } = useLocalSearchParams();
-	const { hosting } = useHostingForm(id);
-
-	const hostingAddress = React.useMemo(() => {
-		if (!hosting) {
-			return "";
-		}
-		return [
-			hosting.landmarks ?? "",
-			hosting.city ?? "",
-			hosting.state ?? "",
-			hosting.country ?? "",
-		]
-			.filter((v) => v.length > 0)
-			.join(" ");
-	}, [hosting]);
-
-	const replacedText = React.useMemo(() => {
-		if (!replace) return text;
-
-		const formated = formatNaira(hosting?.price);
-
-		let newText = text
-			.replaceAll(
-				"{{PROPERTY_DESCRIPTION}}",
-				`{{<<${capitalize(hosting?.title ?? "", true)}>>}}`,
-			)
-			.replaceAll(
-				"{{PROPERTY_ADDRESS}}",
-				`{{<<${capitalize(hostingAddress, true)}>>}}`,
-			)
-			.replaceAll("{{PRICE}}", `{{<<${formated.formated}>>}}`)
-			.replaceAll("{{PRICE_IN_WORDS}}", `{{<<${formated.amountInWords}>>}}`);
-
-		if (hosting?.cautionFee) {
-			newText = newText.replace(
-				"{{CAUTION_FEE}}",
-				`{{<<${formatNaira(hosting.cautionFee).formated}>>}}`,
-			);
-		}
-		if (hosting?.serviceCharge) {
-			newText = newText.replace(
-				"{{SERVICE_CHARGE}}",
-				`{{<<${formatNaira(hosting.serviceCharge).formated}>>}}`,
-			);
-		}
-
-		if (hosting?.verification) {
-			newText = newText.replaceAll(
-				"{{LANDLORD_FULL_NAME}}",
-				`{{<<${capitalize(hosting.verification.landlordFullName, true)}>>}}`,
-			);
-			newText = newText.replaceAll(
-				"{{LANDLORD_ADDRESS}}",
-				`{{<<${capitalize(hosting.verification.landlordFullName, true)}>>}}`,
-			);
-		}
-
-		if (providedValues && providedValues.length > 0) {
-			providedValues.forEach((val) => {
-				if (val.value && val.value.trim() !== "") {
-					newText = newText.replaceAll(
-						`{{${val.key}}}`,
-						`{{<<${Number.isNaN(Number(val.value)) ? val.value : Number(val.value).toLocaleString()}>>}}`,
-					);
-				}
-			});
-		}
-
-		return newText;
-	}, [text, replace, hosting, hostingAddress, providedValues]);
-
-	return (
-		<ThemedText>
-			{splitVariables(replacedText).map((part, index) => {
-				if (part.startsWith("{{") && part.endsWith("}}")) {
-					const rawVariable = part.slice(2, -2);
-					const cleanVariable = rawVariable.replace(/_/g, " ");
-					const isValue = cleanVariable.startsWith("<<");
-					return (
-						<ThemedText
-							key={index}
-							type="semibold"
-							style={{ color: colors.accent }}
-						>
-							{isValue
-								? cleanVariable.replaceAll("<<", "").replaceAll(">>", "")
-								: `[${cleanVariable}]`}
-						</ThemedText>
-					);
-				}
-				return part;
-			})}
-		</ThemedText>
-	);
-});
-VariableText.displayName = "VariableText";

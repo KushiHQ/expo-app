@@ -3,7 +3,7 @@ import ThemedText from "../atoms/a-themed-text";
 import React from "react";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { LetsIconsBoxOpenFillDuotone } from "../icons/i-box";
+import { Image } from "expo-image";
 
 type Props = {
 	message: string;
@@ -13,11 +13,15 @@ const EmptyList: React.FC<Props> = ({ message }) => {
 	const colors = useThemeColors();
 
 	return (
-		<View
-			className="p-4 py-20 items-center justify-center border rounded-2xl gap-4"
-			style={{ borderColor: hexToRgba(colors.text, 0.15) }}
-		>
-			<LetsIconsBoxOpenFillDuotone color={colors.primary} size={60} />
+		<View className="p-4 py-14 items-center justify-center gap-4">
+			<Image
+				style={{
+					width: 250,
+					height: 170,
+					objectFit: "cover",
+				}}
+				source={require("@/assets/images/empty-folder-3d.png")}
+			/>
 			<ThemedText style={{ color: hexToRgba(colors.text, 0.6) }}>
 				{message}
 			</ThemedText>

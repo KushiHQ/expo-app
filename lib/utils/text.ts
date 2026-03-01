@@ -16,3 +16,7 @@ export const capitalize = (str: string, words: boolean = false): string => {
 export function splitVariables(text: string) {
   return text.split(/(\{\{.*?\}\})/g);
 }
+
+export function toTitleCase(str: string): string {
+  return str.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+}
