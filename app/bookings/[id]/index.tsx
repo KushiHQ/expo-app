@@ -10,9 +10,9 @@ import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import {
 	BookingStatus,
 	PaymentStatus,
+	TransactionStatus,
 	useBookingQuery,
 	useFinalizeBookingMutation,
-	useVerifyBookingPaymentMutation,
 } from "@/lib/services/graphql/generated";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
@@ -40,12 +40,10 @@ export default function UserBooking() {
 	});
 	const [{ fetching: finalizing }, finanlizeBooking] =
 		useFinalizeBookingMutation();
-	const [{ fetching: verifyingBookingPayment }, verifyBookingPayment] =
-		useVerifyBookingPaymentMutation();
 	const [localPdfUri, setLocalPdfUri] = React.useState<string | null>(null);
 
 	const booking = data?.booking;
-	const loading = finalizing || fetchingBooking || verifyingBookingPayment;
+	const loading = finalizing || fetchingBooking;
 
 	React.useEffect(() => {
 		if (!booking?.tenancyAgreementAsset?.publicUrl) return;
@@ -71,12 +69,6 @@ export default function UserBooking() {
 		booking?.id,
 		booking?.tenancyAgreementAsset,
 	]);
-
-	React.useEffect(() => {
-		if (booking?.paymentStatus === PaymentStatus.Pending) {
-			verifyBookingPayment({ verifyBookingPaymentId: booking.id });
-		}
-	}, [booking, verifyBookingPayment]);
 
 	const handleFinailze = () => {
 		finanlizeBooking({ bookingId: cast(id) }).then((res) => {
@@ -114,12 +106,8 @@ export default function UserBooking() {
 							summary={booking?.phoneNumber ?? ""}
 						/>
 						<ItemSummary
-							label="Payment Method"
-							summary={capitalize(booking?.paymentMethod ?? "")}
-						/>
-						<ItemSummary
 							label="Payment Status"
-							summary={capitalize(booking?.paymentStatus ?? "")}
+							summary={capitalize(booking?.transaction?.status ?? "")}
 						/>
 					</SummarySection>
 					<SummarySection>
@@ -194,8 +182,8 @@ export default function UserBooking() {
 				<View>
 					{booking?.status !== BookingStatus.Completed &&
 						booking?.status !== BookingStatus.Canceled &&
-						booking?.paymentStatus === PaymentStatus.Paid && (
-							<View className="gap-4">
+						booking?.transaction?.status === TransactionStatus.Success && (
+							<View className="gap-4 mt-8">
 								<ThemedText
 									style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}
 								>
@@ -225,36 +213,45 @@ export default function UserBooking() {
 							</View>
 						)}
 				</View>
-				{!localPdfUri ? (
-					<Skeleton style={{ height: 700, borderRadius: 20, marginTop: 16 }} />
-				) : (
-					<View className="mt-4 relative">
-						<Pdf
-							scrollEnabled={false}
-							enablePaging
-							singlePage
-							source={{
-								uri: localPdfUri,
-								cache: false,
-							}}
-							style={{
-								height: 640,
-								borderColor: hexToRgba(colors.text, 0.4),
-								borderWidth: 1,
-								borderRadius: 20,
-							}}
-						/>
-						<Button
-							onPress={openTenancyAgreement}
-							variant="outline"
-							type="tinted"
-							className="absolute top-2 right-2"
-						>
-							<View className="flex-row items-center gap-2">
-								<Download color={hexToRgba(colors.primary, 0.6)} size={18} />
-								<ThemedText content="tinted">Open</ThemedText>
+				{booking?.status == BookingStatus.Completed && (
+					<View>
+						{!localPdfUri ? (
+							<Skeleton
+								style={{ height: 700, borderRadius: 20, marginTop: 16 }}
+							/>
+						) : (
+							<View className="mt-4 relative">
+								<Pdf
+									scrollEnabled={false}
+									enablePaging
+									singlePage
+									source={{
+										uri: localPdfUri,
+										cache: false,
+									}}
+									style={{
+										height: 640,
+										borderColor: hexToRgba(colors.text, 0.4),
+										borderWidth: 1,
+										borderRadius: 20,
+									}}
+								/>
+								<Button
+									onPress={openTenancyAgreement}
+									variant="outline"
+									type="tinted"
+									className="absolute top-2 right-2"
+								>
+									<View className="flex-row items-center gap-2">
+										<Download
+											color={hexToRgba(colors.primary, 0.6)}
+											size={18}
+										/>
+										<ThemedText content="tinted">Open</ThemedText>
+									</View>
+								</Button>
 							</View>
-						</Button>
+						)}
 					</View>
 				)}
 			</DetailsLayout>

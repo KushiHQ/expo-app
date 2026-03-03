@@ -19,7 +19,7 @@ import {
 	PaymentInterval,
 	useCreateUpdateHostPaymentDetailsMutation,
 	useHostPaymentDetailsQuery,
-	useVerifyAccountQuery,
+	useResolveBankAccountQuery,
 	VerifyAccountInput,
 } from "@/lib/services/graphql/generated";
 import { Bank } from "@/lib/types/queries/banks";
@@ -52,14 +52,18 @@ export default function NewHostingStep5() {
 	);
 	const [{ data: hostPaymentDetails }, refetchPaymentDetails] =
 		useHostPaymentDetailsQuery({ requestPolicy: "network-only" });
-	const [{ fetching: verifying, data: verifiedAccount }, verifyAccount] =
-		useVerifyAccountQuery({
-			variables: { input: newAccountInput },
-			pause: true,
-		});
+	const [
+		{ fetching: resolving, data: resolveData, error: resolveError },
+		verifyAccount,
+	] = useResolveBankAccountQuery({
+		variables: { input: newAccountInput },
+		pause: true,
+	});
 
-	const [{ fetching: creatingPaymentDetail }, savePaymentDetails] =
-		useCreateUpdateHostPaymentDetailsMutation();
+	const [
+		{ fetching: creatingPaymentDetail, error: savePaymentDetailsError },
+		savePaymentDetails,
+	] = useCreateUpdateHostPaymentDetailsMutation();
 
 	const selectedAccountString = React.useMemo(() => {
 		if (selectedAccount) {
@@ -72,11 +76,20 @@ export default function NewHostingStep5() {
 	}, [selectedAccount]);
 
 	React.useEffect(() => {
-		if (verifiedAccount && !selectedAccount) {
+		if (resolveError) {
+			handleError(resolveError);
+		}
+		if (savePaymentDetailsError) {
+			handleError(savePaymentDetailsError);
+		}
+	}, [resolveError, savePaymentDetailsError]);
+
+	React.useEffect(() => {
+		if (resolveData && !selectedAccount) {
 			savePaymentDetails({
 				input: {
-					accountNumber: verifiedAccount.verifyAccount.accountNumber,
-					accountName: verifiedAccount.verifyAccount.accountName,
+					accountNumber: newAccountInput.accountNumber,
+					accountName: resolveData.resolveBankAccount,
 					bankCode: newAccountInput.bankCode,
 				},
 			}).then((res) => {
@@ -96,7 +109,7 @@ export default function NewHostingStep5() {
 			});
 		}
 	}, [
-		verifiedAccount,
+		resolveData,
 		newAccountInput.bankCode,
 		refetchPaymentDetails,
 		savePaymentDetails,
@@ -125,7 +138,7 @@ export default function NewHostingStep5() {
 	};
 
 	const loading =
-		creatingPaymentDetail || verifying || mutating || fetchingHosting;
+		creatingPaymentDetail || resolving || mutating || fetchingHosting;
 
 	return (
 		<>
@@ -247,6 +260,7 @@ export default function NewHostingStep5() {
 									defaultValue={selectedAccount ?? undefined}
 									onSelect={setSelectedAcount}
 									renderItem={PaymentDetailsSelectOption}
+									getValueString={(v) => v.id}
 									options={hostPaymentDetails?.hostPaymentDetails ?? []}
 								/>
 							</View>
@@ -281,6 +295,7 @@ export default function NewHostingStep5() {
 									onSelect={(v) => {
 										setNewAccountInput((c) => ({ ...c, bankCode: v.code }));
 									}}
+									getLabelString={(v) => v?.name ?? ""}
 									renderItem={BankSelectOption}
 									getValueString={(v: Bank) => v?.name}
 									options={data ?? []}
@@ -288,13 +303,16 @@ export default function NewHostingStep5() {
 							</View>
 							<Button
 								type="text"
-								onPress={verifyAccount}
+								onPress={() => {
+									setSelectedAcount(undefined);
+									verifyAccount({ requestPolicy: "network-only" });
+								}}
 								disabled={
 									!newAccountInput.bankCode ||
 									!newAccountInput.accountNumber ||
-									verifying
+									resolving
 								}
-								loading={verifying}
+								loading={resolving}
 							>
 								<ThemedText content="text">Save</ThemedText>
 							</Button>

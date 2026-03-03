@@ -8,10 +8,10 @@ import { Fonts } from "@/lib/constants/theme";
 import { hexToRgba } from "@/lib/utils/colors";
 import { MynauiStarSolid } from "../icons/i-star";
 import { useFallbackImages } from "@/lib/hooks/images";
-import { HostingQuery } from "@/lib/services/graphql/generated";
+import { BookingQuery, HostingQuery } from "@/lib/services/graphql/generated";
 
 type Props = {
-	hosting: HostingQuery["hosting"];
+	hosting: HostingQuery["hosting"] | BookingQuery["booking"]["hosting"];
 };
 
 const HostingSummaryCard: React.FC<Props> = ({ hosting }) => {

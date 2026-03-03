@@ -20,13 +20,6 @@ export type Scalars = {
   Upload: { input: any; output: any; }
 };
 
-export type AccountDetails = {
-  __typename?: 'AccountDetails';
-  accountName: Scalars['String']['output'];
-  accountNumber: Scalars['String']['output'];
-  bankId?: Maybe<Scalars['Int']['output']>;
-};
-
 export type Asset = {
   __typename?: 'Asset';
   contentType?: Maybe<Scalars['String']['output']>;
@@ -67,21 +60,29 @@ export type Bank = {
 export type Booking = {
   __typename?: 'Booking';
   amount: Scalars['Decimal']['output'];
+  bookingApplication: BookingApplication;
+  cautionFee?: Maybe<Scalars['Decimal']['output']>;
   checkInDate?: Maybe<Scalars['String']['output']>;
   checkOutDate?: Maybe<Scalars['String']['output']>;
+  correspondenceAddress?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['String']['output'];
+  durationDescription?: Maybe<Scalars['String']['output']>;
   email: Scalars['String']['output'];
   expiresAt?: Maybe<Scalars['String']['output']>;
   fullName: Scalars['String']['output'];
+  guest: Guest;
   guestServiceCharge: Scalars['Decimal']['output'];
   hostServiceCharge: Scalars['Decimal']['output'];
+  hostTransaction?: Maybe<Transaction>;
   hosting: Hosting;
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
+  legalFee?: Maybe<Scalars['Decimal']['output']>;
   noteToHost?: Maybe<Scalars['String']['output']>;
   paymentMethod?: Maybe<Scalars['String']['output']>;
   paymentStatus: PaymentStatus;
   phoneNumber: Scalars['String']['output'];
+  serviceCharge?: Maybe<Scalars['Decimal']['output']>;
   status?: Maybe<BookingStatus>;
   tenancyAgreementAsset?: Maybe<Asset>;
   transaction?: Maybe<Transaction>;
@@ -258,7 +259,6 @@ export type Host = {
 
 export type HostAccountDetails = {
   __typename?: 'HostAccountDetails';
-  accountDetails: AccountDetails;
   accountName?: Maybe<Scalars['String']['output']>;
   accountNumber: Scalars['String']['output'];
   bankCode: Scalars['String']['output'];
@@ -630,7 +630,6 @@ export type MessageResponse = {
 
 export type Mutations = {
   __typename?: 'Mutations';
-  authorizeTransactionWithOtp: TransactionResponse;
   clearChatUrnreadMessages: MessageResponse;
   completeBookingApplicationSubmission: BookingApplicationResponse;
   completePasswordChange: MessageResponse;
@@ -673,11 +672,7 @@ export type Mutations = {
   verifyBookingPayment: BookingResponse;
   verifyEmail: MessageResponse;
   verifyKyc: Kyc;
-};
-
-
-export type MutationsAuthorizeTransactionWithOtpArgs = {
-  input: TransactionOtpAuthInput;
+  verifyTransactionByReference: TransactionResponse;
 };
 
 
@@ -891,6 +886,11 @@ export type MutationsVerifyKycArgs = {
   input: KycInput;
 };
 
+
+export type MutationsVerifyTransactionByReferenceArgs = {
+  reference: Scalars['String']['input'];
+};
+
 export type Notification = {
   __typename?: 'Notification';
   createdAt: Scalars['String']['output'];
@@ -1057,15 +1057,16 @@ export type Query = {
   landlordMandateOptions: LandlordMandateConfig;
   me: User;
   notifications: Array<Notification>;
+  resolveBankAccount: Scalars['String']['output'];
   savedHosting: SavedHosting;
   savedHostingFolder: SavedHostingFolder;
   savedHostingFolders: Array<SavedHostingFolder>;
   savedHostings: Array<SavedHosting>;
   tenancyAgreementTemplate: TenancyTemplate;
   tenantMandateOptions: TenantMandateConfig;
+  transactionByReference: Transaction;
   userChats: Array<HostingChat>;
   userStreamUserToken: Scalars['String']['output'];
-  verifyAccount: AccountDetails;
 };
 
 
@@ -1145,6 +1146,11 @@ export type QueryNotificationsArgs = {
 };
 
 
+export type QueryResolveBankAccountArgs = {
+  input: VerifyAccountInput;
+};
+
+
 export type QuerySavedHostingArgs = {
   id: Scalars['String']['input'];
 };
@@ -1166,6 +1172,11 @@ export type QuerySavedHostingsArgs = {
 };
 
 
+export type QueryTransactionByReferenceArgs = {
+  reference: Scalars['String']['input'];
+};
+
+
 export type QueryUserChatsArgs = {
   pagination?: InputMaybe<PaginationInput>;
 };
@@ -1173,11 +1184,6 @@ export type QueryUserChatsArgs = {
 
 export type QueryUserStreamUserTokenArgs = {
   userId: Scalars['String']['input'];
-};
-
-
-export type QueryVerifyAccountArgs = {
-  input: VerifyAccountInput;
 };
 
 export type RefreshTokenInput = {
@@ -1351,12 +1357,9 @@ export type Transaction = {
   flutterwaveChargeId?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
+  reference?: Maybe<Scalars['String']['output']>;
+  status: TransactionStatus;
   type: TransactionType;
-};
-
-export type TransactionOtpAuthInput = {
-  otp: Scalars['String']['input'];
-  transactionId: Scalars['String']['input'];
 };
 
 export type TransactionResponse = {
@@ -1364,6 +1367,15 @@ export type TransactionResponse = {
   data?: Maybe<Transaction>;
   message: Scalars['String']['output'];
 };
+
+export enum TransactionStatus {
+  Cancelled = 'CANCELLED',
+  Failed = 'FAILED',
+  Pending = 'PENDING',
+  Processing = 'PROCESSING',
+  Refunded = 'REFUNDED',
+  Success = 'SUCCESS'
+}
 
 export enum TransactionType {
   BookingPayment = 'booking_payment',
@@ -1634,6 +1646,13 @@ export type CreateUpdateHostPaymentDetailsMutationVariables = Exact<{
 
 export type CreateUpdateHostPaymentDetailsMutation = { __typename?: 'Mutations', createUpdateHostPaymentDetails: { __typename?: 'HostAccountDetailsResponse', message: string, data?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, bankCode: string, createdAt: string, lastUpdated: string, accountName?: string | null, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null } };
 
+export type VerifyTransactionByReferenceMutationVariables = Exact<{
+  reference: Scalars['String']['input'];
+}>;
+
+
+export type VerifyTransactionByReferenceMutation = { __typename?: 'Mutations', verifyTransactionByReference: { __typename?: 'TransactionResponse', message: string, data?: { __typename?: 'Transaction', id: string, status: TransactionStatus } | null } };
+
 export type UpdateHostMutationVariables = Exact<{
   input: HostInput;
 }>;
@@ -1733,14 +1752,14 @@ export type BookingsQueryVariables = Exact<{
 }>;
 
 
-export type BookingsQuery = { __typename?: 'Query', bookings: Array<{ __typename?: 'Booking', id: string, expiresAt?: string | null, paymentStatus: PaymentStatus, createdAt: string, checkInDate?: string | null, checkOutDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string } | null }> };
+export type BookingsQuery = { __typename?: 'Query', bookings: Array<{ __typename?: 'Booking', id: string, expiresAt?: string | null, paymentStatus: PaymentStatus, createdAt: string, checkInDate?: string | null, checkOutDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, cautionFee?: any | null, legalFee?: any | null, serviceCharge?: any | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string } | null }> };
 
 export type BookingQueryVariables = Exact<{
   bookingId: Scalars['String']['input'];
 }>;
 
 
-export type BookingQuery = { __typename?: 'Query', booking: { __typename?: 'Booking', id: string, expiresAt?: string | null, paymentStatus: PaymentStatus, createdAt: string, checkInDate?: string | null, checkOutDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, fullName: string, email: string, paymentMethod?: string | null, status?: BookingStatus | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, propertyType?: string | null, street?: string | null, landmarks?: string | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string } | null, tenancyAgreementAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null, userReview?: { __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, checkIn?: number | null, accuracy?: number | null, cleanliness?: number | null, communication?: number | null, value?: number | null, location?: number | null, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } } | null } };
+export type BookingQuery = { __typename?: 'Query', booking: { __typename?: 'Booking', id: string, expiresAt?: string | null, paymentStatus: PaymentStatus, createdAt: string, checkInDate?: string | null, checkOutDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, fullName: string, email: string, paymentMethod?: string | null, status?: BookingStatus | null, cautionFee?: any | null, serviceCharge?: any | null, legalFee?: any | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, propertyType?: string | null, street?: string | null, landmarks?: string | null, averageRating?: number | null, totalRatings?: number | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string, status: TransactionStatus } | null, tenancyAgreementAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null, userReview?: { __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, checkIn?: number | null, accuracy?: number | null, cleanliness?: number | null, communication?: number | null, value?: number | null, location?: number | null, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } } | null, bookingApplication: { __typename?: 'BookingApplication', id: string, intervalMultiplier?: number | null, checkInDate?: string | null } } };
 
 export type GuestBookingTenancyAgreementPreviewQueryVariables = Exact<{
   bookingId: Scalars['String']['input'];
@@ -1833,17 +1852,24 @@ export type BanksQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type BanksQuery = { __typename?: 'Query', banks: Array<{ __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string }> };
 
-export type VerifyAccountQueryVariables = Exact<{
+export type ResolveBankAccountQueryVariables = Exact<{
   input: VerifyAccountInput;
 }>;
 
 
-export type VerifyAccountQuery = { __typename?: 'Query', verifyAccount: { __typename?: 'AccountDetails', accountNumber: string, accountName: string, bankId?: number | null } };
+export type ResolveBankAccountQuery = { __typename?: 'Query', resolveBankAccount: string };
 
 export type HostPaymentDetailsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type HostPaymentDetailsQuery = { __typename?: 'Query', hostPaymentDetails: Array<{ __typename?: 'HostAccountDetails', id: string, accountNumber: string, bankCode: string, createdAt: string, lastUpdated: string, accountName?: string | null, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null }> };
+
+export type TransactionByReferenceQueryVariables = Exact<{
+  reference: Scalars['String']['input'];
+}>;
+
+
+export type TransactionByReferenceQuery = { __typename?: 'Query', transactionByReference: { __typename?: 'Transaction', id: string, amount: any, type: TransactionType, createdAt: string, lastUpdated: string, flutterwaveChargeId?: string | null, reference?: string | null, status: TransactionStatus } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2628,6 +2654,21 @@ export const CreateUpdateHostPaymentDetailsDocument = gql`
 export function useCreateUpdateHostPaymentDetailsMutation() {
   return Urql.useMutation<CreateUpdateHostPaymentDetailsMutation, CreateUpdateHostPaymentDetailsMutationVariables>(CreateUpdateHostPaymentDetailsDocument);
 };
+export const VerifyTransactionByReferenceDocument = gql`
+    mutation VerifyTransactionByReference($reference: String!) {
+  verifyTransactionByReference(reference: $reference) {
+    message
+    data {
+      id
+      status
+    }
+  }
+}
+    `;
+
+export function useVerifyTransactionByReferenceMutation() {
+  return Urql.useMutation<VerifyTransactionByReferenceMutation, VerifyTransactionByReferenceMutationVariables>(VerifyTransactionByReferenceDocument);
+};
 export const UpdateHostDocument = gql`
     mutation UpdateHost($input: HostInput!) {
   updateHost(input: $input) {
@@ -2890,6 +2931,9 @@ export const BookingsDocument = gql`
     guestServiceCharge
     amount
     phoneNumber
+    cautionFee
+    legalFee
+    serviceCharge
   }
 }
     `;
@@ -2919,11 +2963,14 @@ export const BookingDocument = gql`
       propertyType
       street
       landmarks
+      averageRating
+      totalRatings
     }
     expiresAt
     paymentStatus
     transaction {
       id
+      status
     }
     createdAt
     checkInDate
@@ -2959,6 +3006,14 @@ export const BookingDocument = gql`
       value
       location
     }
+    bookingApplication {
+      id
+      intervalMultiplier
+      checkInDate
+    }
+    cautionFee
+    serviceCharge
+    legalFee
   }
 }
     `;
@@ -3406,18 +3461,14 @@ export const BanksDocument = gql`
 export function useBanksQuery(options?: Omit<Urql.UseQueryArgs<BanksQueryVariables>, 'query'>) {
   return Urql.useQuery<BanksQuery, BanksQueryVariables>({ query: BanksDocument, ...options });
 };
-export const VerifyAccountDocument = gql`
-    query VerifyAccount($input: VerifyAccountInput!) {
-  verifyAccount(input: $input) {
-    accountNumber
-    accountName
-    bankId
-  }
+export const ResolveBankAccountDocument = gql`
+    query ResolveBankAccount($input: VerifyAccountInput!) {
+  resolveBankAccount(input: $input)
 }
     `;
 
-export function useVerifyAccountQuery(options: Omit<Urql.UseQueryArgs<VerifyAccountQueryVariables>, 'query'>) {
-  return Urql.useQuery<VerifyAccountQuery, VerifyAccountQueryVariables>({ query: VerifyAccountDocument, ...options });
+export function useResolveBankAccountQuery(options: Omit<Urql.UseQueryArgs<ResolveBankAccountQueryVariables>, 'query'>) {
+  return Urql.useQuery<ResolveBankAccountQuery, ResolveBankAccountQueryVariables>({ query: ResolveBankAccountDocument, ...options });
 };
 export const HostPaymentDetailsDocument = gql`
     query HostPaymentDetails {
@@ -3442,6 +3493,24 @@ export const HostPaymentDetailsDocument = gql`
 
 export function useHostPaymentDetailsQuery(options?: Omit<Urql.UseQueryArgs<HostPaymentDetailsQueryVariables>, 'query'>) {
   return Urql.useQuery<HostPaymentDetailsQuery, HostPaymentDetailsQueryVariables>({ query: HostPaymentDetailsDocument, ...options });
+};
+export const TransactionByReferenceDocument = gql`
+    query TransactionByReference($reference: String!) {
+  transactionByReference(reference: $reference) {
+    id
+    amount
+    type
+    createdAt
+    lastUpdated
+    flutterwaveChargeId
+    reference
+    status
+  }
+}
+    `;
+
+export function useTransactionByReferenceQuery(options: Omit<Urql.UseQueryArgs<TransactionByReferenceQueryVariables>, 'query'>) {
+  return Urql.useQuery<TransactionByReferenceQuery, TransactionByReferenceQueryVariables>({ query: TransactionByReferenceDocument, ...options });
 };
 export const MeDocument = gql`
     query Me {

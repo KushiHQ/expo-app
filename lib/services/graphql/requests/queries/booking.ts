@@ -118,6 +118,9 @@ export const BOOKINGS_QUERY = gql`
       guestServiceCharge
       amount
       phoneNumber
+      cautionFee
+      legalFee
+      serviceCharge
     }
   }
 `;
@@ -144,11 +147,14 @@ export const BOOKING_QUERY = gql`
         propertyType
         street
         landmarks
+        averageRating
+        totalRatings
       }
       expiresAt
       paymentStatus
       transaction {
         id
+        status
       }
       createdAt
       checkInDate
@@ -184,6 +190,14 @@ export const BOOKING_QUERY = gql`
         value
         location
       }
+      bookingApplication {
+        id
+        intervalMultiplier
+        checkInDate
+      }
+      cautionFee
+      serviceCharge
+      legalFee
     }
   }
 `;

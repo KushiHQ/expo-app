@@ -14,10 +14,7 @@ type Props = {
 
 const SelectedPaymentDetails: React.FC<Props> = ({ details }) => {
 	const colors = useThemeColors();
-	const { failedImages, handleImageError } = useFallbackImages();
-	const image = details.bankDetails?.image
-		? details.bankDetails.image
-		: "https://png.pngtree.com/png-clipart/20190619/original/pngtree-concept-banking-logo-png-image_4017929.jpg";
+	const { handleImageError } = useFallbackImages();
 
 	return (
 		<View
@@ -42,9 +39,7 @@ const SelectedPaymentDetails: React.FC<Props> = ({ details }) => {
 			<View className="h-[36px] max-w-[65px] flex-1 border">
 				<Image
 					source={{
-						uri: failedImages.has(0)
-							? "https://png.pngtree.com/png-clipart/20190619/original/pngtree-concept-banking-logo-png-image_4017929.jpg"
-							: image,
+						uri: details.bankDetails?.image,
 					}}
 					style={{
 						height: "100%",

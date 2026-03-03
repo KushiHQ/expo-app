@@ -23,3 +23,15 @@ export const CREATE_UPDATE_HOST_PAYMENT_DETAILS = gql`
     }
   }
 `;
+
+export const VERIFY_TRANSACTION_BY_REFERENCE = gql`
+  mutation VerifyTransactionByReference($reference: String!) {
+    verifyTransactionByReference(reference: $reference) {
+      message
+      data {
+        id
+        status
+      }
+    }
+  }
+`;

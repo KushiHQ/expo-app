@@ -13,13 +13,9 @@ export const BANKS_QUERY = gql`
   }
 `;
 
-export const VERIFY_ACCOUNT_QUERY = gql`
-  query VerifyAccount($input: VerifyAccountInput!) {
-    verifyAccount(input: $input) {
-      accountNumber
-      accountName
-      bankId
-    }
+export const RESOLVE_BANK_ACCOUNT = gql`
+  query ResolveBankAccount($input: VerifyAccountInput!) {
+    resolveBankAccount(input: $input)
   }
 `;
 
@@ -40,6 +36,21 @@ export const HOST_PAYMENT_DETAILS = gql`
         image
       }
       accountName
+    }
+  }
+`;
+
+export const TRANSACTION_BY_REFERENCE = gql`
+  query TransactionByReference($reference: String!) {
+    transactionByReference(reference: $reference) {
+      id
+      amount
+      type
+      createdAt
+      lastUpdated
+      flutterwaveChargeId
+      reference
+      status
     }
   }
 `;

@@ -1,98 +1,58 @@
-import Button from "@/components/atoms/a-button";
-import Skeleton from "@/components/atoms/a-skeleton";
-import ThemedText from "@/components/atoms/a-themed-text";
-import DetailsLayout from "@/components/layouts/details";
-import CheckoutSummaryItem from "@/components/molecules/m-checkout-summary-item";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import {
-	PaymentInterval,
+	BookingQuery,
 	useCalculateHostingFeesQuery,
-	useHostingQuery,
 } from "@/lib/services/graphql/generated";
-import { hexToRgba } from "@/lib/utils/colors";
-import { formatNaira } from "@/lib/utils/currency";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react-native";
 import React from "react";
-import { Pressable, View } from "react-native";
+import DetailsLayout from "../layouts/details";
+import { View } from "react-native";
+import Skeleton from "../atoms/a-skeleton";
+import { hexToRgba } from "@/lib/utils/colors";
+import CheckoutSummaryItem from "../molecules/m-checkout-summary-item";
+import { formatNaira } from "@/lib/utils/currency";
+import { hostingDuration } from "@/lib/utils/hosting/tenancyAgreement";
+import { toTitleCase } from "@/lib/utils/text";
 
-export default function CheckoutSummary() {
-	const router = useRouter();
+type Props = {
+	booking?: BookingQuery["booking"];
+	title?: string;
+	footer?: React.ReactNode;
+	header?: React.ReactNode;
+	children?: React.ReactNode;
+};
+
+const CheckoutSummaryScreen: React.FC<Props> = ({
+	title,
+	booking,
+	footer,
+	header,
+	children,
+}) => {
 	const colors = useThemeColors();
-	const { id } = useLocalSearchParams();
-	const [multiplier, setMultiplier] = React.useState(1);
-	const [{ data: hostingData, fetching: hostingFetching }] = useHostingQuery({
-		variables: { hostingId: String(id) },
-	});
-	const [{ data }] = useCalculateHostingFeesQuery({
+	const [{ data, fetching }] = useCalculateHostingFeesQuery({
 		variables: {
-			hostingId: String(id),
-			multiplier,
+			hostingId: booking?.hosting.id ?? "",
+			multiplier: booking?.bookingApplication.intervalMultiplier ?? 1,
 		},
+		pause: !booking || !booking.bookingApplication.intervalMultiplier,
 	});
+
+	const duration = React.useMemo(() => {
+		const checkinDate = booking?.checkInDate;
+		return hostingDuration(
+			booking?.hosting.paymentInterval,
+			booking?.bookingApplication.intervalMultiplier,
+			checkinDate ? new Date(checkinDate) : undefined,
+		);
+	}, [booking]);
 
 	const calculated = data?.calculateHostingFees;
 
-	const duration = React.useMemo(() => {
-		let label = "Years";
-		switch (hostingData?.hosting.paymentInterval) {
-			case PaymentInterval.Weekly:
-				label = "Weeks";
-			case PaymentInterval.Nightly:
-				label = "Nigths";
-			case PaymentInterval.Monthly:
-				label = "Months";
-			default:
-				label = "Years";
-		}
-
-		return label;
-	}, [hostingData]);
 	return (
-		<DetailsLayout
-			title="Checkout Summary"
-			footer={
-				<View
-					className="px-6 pb-4 gap-4"
-					style={{ backgroundColor: colors.background }}
-				>
-					<Button
-						onPress={() => router.push(`/hostings/${id}/reservation/step-1/`)}
-						type="primary"
-					>
-						<ThemedText content="primary">Continue</ThemedText>
-					</Button>
-				</View>
-			}
-		>
+		<DetailsLayout title={title} footer={footer}>
 			<View className="mt-4 gap-6">
-				{hostingFetching ? (
-					<Skeleton style={{ height: 50, borderRadius: 14 }} />
-				) : (
-					<View
-						className="flex-row items-center justify-between p-2 px-6 rounded-2xl"
-						style={{ backgroundColor: hexToRgba(colors.text, 0.03) }}
-					>
-						<ThemedText style={{ fontSize: 18 }}>{duration}</ThemedText>
-						<View className="flex-row items-center gap-6">
-							<Pressable
-								className="p-2"
-								disabled={multiplier <= 1}
-								onPress={() => setMultiplier((c) => c - 1)}
-							>
-								<ChevronLeftIcon color={colors.text} />
-							</Pressable>
-							<ThemedText type="semibold">{multiplier}</ThemedText>
-							<Pressable
-								className="p-2"
-								onPress={() => setMultiplier((c) => c + 1)}
-							>
-								<ChevronRightIcon color={colors.text} />
-							</Pressable>
-						</View>
-					</View>
-				)}
-				{hostingFetching ? (
+				{header}
+				{fetching ? (
 					<Skeleton style={{ height: 500, borderRadius: 18 }} />
 				) : (
 					<View
@@ -102,6 +62,11 @@ export default function CheckoutSummary() {
 							borderRadius: 16,
 						}}
 					>
+						<CheckoutSummaryItem
+							label="Duration"
+							description="The core rental cost for the property for your selected duration. This money is held securely in Kushi's escrow until you move in."
+							value={toTitleCase(duration.metric)}
+						/>
 						<CheckoutSummaryItem
 							label="Base Rent"
 							description="The core rental cost for the property for your selected duration. This money is held securely in Kushi's escrow until you move in."
@@ -145,7 +110,10 @@ export default function CheckoutSummary() {
 						/>
 					</View>
 				)}
+				{children}
 			</View>
 		</DetailsLayout>
 	);
-}
+};
+
+export default CheckoutSummaryScreen;

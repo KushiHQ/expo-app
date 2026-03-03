@@ -26,10 +26,11 @@ export type SelectionDetails = { selected?: boolean };
 
 interface BaseProps<T> extends Omit<FloatingLabelInputProps, "defaultValue"> {
 	defaultValue?: T;
-	getValueString?: (value: any) => string;
+	getValueString?: (value: T) => string;
 	selectedValueString?: string;
 	options: T[];
 	onSelect?: (v: T) => void;
+	getLabelString?: (v?: T) => string;
 	footer?: React.ReactNode;
 	renderItem: React.FC<T & SelectionDetails>;
 }
@@ -69,12 +70,12 @@ const SelectInput = <T extends object>(props: Props<T>) => {
 	const colors = useThemeColors();
 	const valueStringFunc = props.getValueString ?? getValueString;
 	const selectedValue = React.useMemo(
-		() => valueStringFunc(value),
+		() => valueStringFunc(cast(value)),
 		[value, valueStringFunc],
 	);
 	const selectedLabel = React.useMemo(
-		() => getLabelString(value),
-		[value, getLabelString],
+		() => (props.getLabelString ?? getLabelString)(value),
+		[value, getLabelString, props.getLabelString],
 	);
 
 	const filtered = React.useMemo(() => {
