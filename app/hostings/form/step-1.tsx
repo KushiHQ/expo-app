@@ -8,7 +8,7 @@ import SelectInput, {
 import { useHostingForm } from "@/lib/hooks/hosting-form";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { ListingType } from "@/lib/services/graphql/generated";
-import { HOSTING_VARIANTS } from "@/lib/types/enums/hostings";
+import { PROPERTY_TYPE } from "@/lib/types/enums/hostings";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
@@ -100,7 +100,7 @@ export default function NewHostingStep1() {
 								? { label: input.propertyType, value: input.propertyType }
 								: undefined
 						}
-						options={HOSTING_VARIANTS.map((v) => ({ label: v, value: v }))}
+						options={PROPERTY_TYPE.map((v) => ({ label: v, value: v }))}
 						onSelect={(v) => updateInput({ propertyType: v.value })}
 						renderItem={SelectOption}
 					/>

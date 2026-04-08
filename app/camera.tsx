@@ -14,25 +14,34 @@ import { usePhotoGalleryScreen } from "@/lib/hooks/camera";
 import { cast } from "@/lib/types/utils";
 
 export default function CameraPage() {
-	const { images, multiple } = useLocalSearchParams();
+	const { images, multiple, redirect } = useLocalSearchParams();
 	const cameraRef = useRef<CameraView>(null);
 	const [facing, setFacing] = useState<CameraType>("back");
-	const { redirect } = useLocalSearchParams();
 	const { redirect: galleryRedirect } = usePhotoGalleryScreen();
 	const [permission, requestPermission] = useCameraPermissions();
 	const { gallery, append, setGallery, setActiveIndex } = useGalleryStore();
 	const [location, setLocation] = React.useState<LocationObject>();
 
+	const imagesParamString = JSON.stringify(images);
+
 	useFocusEffect(
 		React.useCallback(() => {
-			if (Array.isArray(images)) {
-				setGallery(images.map((i) => i.replaceAll(",", "")));
+			const parsedImages = imagesParamString
+				? JSON.parse(imagesParamString)
+				: null;
+
+			if (Array.isArray(parsedImages)) {
+				setGallery(
+					parsedImages.map((i) =>
+						typeof i === "string" ? i.replaceAll(",", "") : i,
+					),
+				);
 				setActiveIndex(0);
-			} else if (images) {
-				append(images.replaceAll(",", ""));
+			} else if (parsedImages) {
+				append(String(parsedImages).replaceAll(",", ""));
+				setActiveIndex(0);
 			}
-			setActiveIndex(0);
-		}, [setActiveIndex, append, images, setGallery]),
+		}, [imagesParamString, setActiveIndex, append, setGallery]),
 	);
 
 	React.useEffect(() => {

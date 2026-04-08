@@ -1,8 +1,8 @@
-import { useHostingForm } from "@/lib/hooks/hosting-form";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import {
 	SubClauseValueInput,
-	useBookingApplicationQuery,
+	HostingQuery,
+	BookingApplicationQuery,
 } from "@/lib/services/graphql/generated";
 import { formatNaira } from "@/lib/utils/currency";
 import { capitalize, splitVariables } from "@/lib/utils/text";
@@ -10,31 +10,20 @@ import React from "react";
 import ThemedText from "../atoms/a-themed-text";
 import { hostingDuration } from "@/lib/utils/hosting/tenancyAgreement";
 
-const TenancyAgreementVariableText: React.FC<{
-	bookingApplicaitonId?: string;
-	hostingId: string;
+interface Props {
 	text: string;
 	replace?: boolean;
 	providedValues?: SubClauseValueInput[];
-}> = React.memo(
-	({
-		text,
-		providedValues,
-		replace = true,
-		hostingId,
-		bookingApplicaitonId,
-	}) => {
+	hosting?: HostingQuery["hosting"];
+	application?: BookingApplicationQuery["bookingApplication"];
+}
+
+const TenancyAgreementVariableText: React.FC<Props> = React.memo(
+	({ text, providedValues, replace = true, hosting, application }) => {
 		const colors = useThemeColors();
-		const { hosting } = useHostingForm(hostingId);
-		const [{ data: bookingApplicationData }] = useBookingApplicationQuery({
-			variables: { bookingApplicationId: bookingApplicaitonId ?? "" },
-			pause: !bookingApplicaitonId,
-		});
 
 		const hostingAddress = React.useMemo(() => {
-			if (!hosting) {
-				return "";
-			}
+			if (!hosting) return "";
 			return [
 				hosting.landmarks ?? "",
 				hosting.city ?? "",
@@ -83,16 +72,14 @@ const TenancyAgreementVariableText: React.FC<{
 				newText = newText.replaceAll(
 					"{{LANDLORD_ADDRESS}}",
 					`{{<<${capitalize(hosting.verification.landlordFullName, true)}>>}}`,
-				);
+				); // Note: you might want to change this to landlordAddress!
 			}
 
-			if (bookingApplicationData?.bookingApplication) {
-				const application = bookingApplicationData.bookingApplication;
+			if (application) {
 				newText = newText.replaceAll(
 					"{{TENANT_FULL_NAME}}",
 					`{{<<${capitalize(application.fullName ?? "")}>>}}`,
 				);
-
 				newText = newText.replaceAll(
 					"{{TENANT_ADDRESS}}",
 					`{{<<${capitalize(application.correspondenceAddress ?? "")}>>}}`,
@@ -127,23 +114,19 @@ const TenancyAgreementVariableText: React.FC<{
 			if (providedValues && providedValues.length > 0) {
 				providedValues.forEach((val) => {
 					if (val.value && val.value.trim() !== "") {
+						const cleanValue = val.value.replaceAll(",", "");
+						const isNumeric = !Number.isNaN(Number(cleanValue));
+
 						newText = newText.replaceAll(
 							`{{${val.key}}}`,
-							`{{<<${Number.isNaN(Number(val.value)) ? val.value : Number(val.value).toLocaleString()}>>}}`,
+							`{{<<${isNumeric ? Number(cleanValue).toLocaleString("en-US") : val.value}>>}}`,
 						);
 					}
 				});
 			}
 
 			return newText;
-		}, [
-			text,
-			replace,
-			hosting,
-			hostingAddress,
-			providedValues,
-			bookingApplicationData,
-		]);
+		}, [text, replace, hosting, hostingAddress, providedValues, application]);
 
 		return (
 			<ThemedText>

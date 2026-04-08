@@ -20,16 +20,17 @@ export const useHostingForm = (id?: string | string[]) => {
 		hosting,
 		clear,
 	} = useActiveFormHosingStore();
+
 	const [{ data, fetching }, refetch] = useHostingQuery({
 		pause: !id,
 		variables: { hostingId: cast(id) },
 	});
 
 	React.useEffect(() => {
-		if (data) {
+		if (data && (!input.id || input.id !== data.hosting.id)) {
 			initiate(data.hosting);
 		}
-	}, [data]);
+	}, [data, input.id, initiate]);
 
 	return {
 		input,

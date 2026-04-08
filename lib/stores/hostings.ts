@@ -1,7 +1,4 @@
 import { create } from "zustand";
-import ATOM_KEYS from "../constants/atom-keys";
-import { Hosting } from "../constants/mocks/hostings";
-import atomWithStorageStorage from "./utils";
 import { Room } from "../types/enums/hostings";
 import {
 	HostingFilterInput,
@@ -10,13 +7,6 @@ import {
 	HostingVerificationInput,
 } from "../services/graphql/generated";
 import { cleanupAgreementTemplateInput } from "../utils/hosting/tenancyAgreement";
-
-const DEFAULT_HOSTINGS: Hosting[] = [];
-
-export const hostingsAtom = atomWithStorageStorage(
-	ATOM_KEYS.HOSTINGS,
-	DEFAULT_HOSTINGS,
-);
 
 export type RoomData = {
 	id?: string;

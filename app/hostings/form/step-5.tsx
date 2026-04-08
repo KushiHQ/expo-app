@@ -167,7 +167,8 @@ export default function NewHostingStep5() {
 							{"  "}
 							Define your property&apos;s Pricing and how often you expect rent
 							(e.g., Annually). Then, link a Bank Account for secure payments,
-							either by selecting a saved account or adding a new one.
+							payments will be sent here after booking confirmation, either by
+							selecting a saved account or adding a new one.
 						</ThemedText>
 						<ThemedText style={{ fontFamily: Fonts.medium }}>
 							{"Pricing & Payment Details"}
@@ -260,7 +261,7 @@ export default function NewHostingStep5() {
 									defaultValue={selectedAccount ?? undefined}
 									onSelect={setSelectedAcount}
 									renderItem={PaymentDetailsSelectOption}
-									getValueString={(v) => v.id}
+									getValueString={(v) => v?.id}
 									options={hostPaymentDetails?.hostPaymentDetails ?? []}
 								/>
 							</View>

@@ -20,7 +20,9 @@ import { useCameraScreen } from "../camera";
 
 export const useHostingFormRoomUtils = (hostingId: string) => {
 	const { redirect } = useCameraScreen();
-	const { gallery, clearGallery } = useGalleryStore();
+
+	const clearGallery = useGalleryStore((state) => state.clearGallery);
+
 	const [activeModalIndex, setActiveModalIndex] = React.useState<number>();
 	const [deleteModalIndex, setDeleteModalIndex] = React.useState<number>();
 	const {
@@ -35,6 +37,7 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
 		deleteRoomImage,
 		updateActiveRoomImage,
 	} = useHostingRoomsStore();
+
 	const {
 		hosting,
 		refetch: refetchHosting,
@@ -58,12 +61,14 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
 
 	useFocusEffect(
 		React.useCallback(() => {
-			if (gallery.length > 0) {
-				updateActiveRoom({ images: gallery });
+			const currentGallery = useGalleryStore.getState().gallery;
+
+			if (currentGallery.length > 0) {
+				updateActiveRoom({ images: currentGallery });
 				const roomId = rooms[activeIndex]?.id;
 
 				if (roomId) {
-					gallery.forEach(async (image, index) => {
+					currentGallery.forEach(async (image, index) => {
 						if (image.startsWith("file")) {
 							setAddingImages(true);
 							formMutation<
@@ -102,7 +107,6 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
 				clearGallery();
 			}
 		}, [
-			gallery,
 			activeIndex,
 			clearGallery,
 			refetchHosting,

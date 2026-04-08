@@ -48,7 +48,7 @@ const EditButton: React.FC<{ href: Href }> = ({ href }) => {
 	);
 };
 
-export default function NewHostingStep6() {
+export default function NewHostingStep8() {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();

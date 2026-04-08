@@ -3,21 +3,15 @@ import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
 import HostingRoomImage from "@/components/atoms/a-hosting-room-image";
 import LoadingModal from "@/components/atoms/a-loading-modal";
 import ThemedText from "@/components/atoms/a-themed-text";
-import { HeroiconsCamera } from "@/components/icons/i-camera";
-import { FluentContentViewGallery28Regular } from "@/components/icons/i-gallery";
 import DetailsLayout from "@/components/layouts/details";
 import HostingStepper from "@/components/molecules/m-hosting-stepper";
 import ThemedModal from "@/components/molecules/m-modal";
-import SelectInput, {
-	SelectOption,
-} from "@/components/molecules/m-select-input";
+import RoomItemCard from "@/components/organisms/o-room-item-card";
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
 import { useHostingFormRoomUtils } from "@/lib/hooks/forms/use-hosting-form-room-utils";
 import { useFallbackImages } from "@/lib/hooks/images";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { Room, ROOM_KEYS } from "@/lib/types/enums/hostings";
-import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -84,102 +78,21 @@ export default function NewHostingStep2() {
 						room.
 					</ThemedText>
 					{Array.from({ length: rooms.length + 1 }).map((_, index) => (
-						<View key={index} className="gap-2">
-							<View className="flex-row items-center gap-2">
-								<SelectInput
-									focused
-									defaultValue={
-										rooms[index]
-											? {
-													label: Room[rooms[index].name],
-													value: Room[rooms[index].name],
-												}
-											: undefined
-									}
-									label="Room"
-									placeholder="Select room or exterior to add image"
-									onSelect={(v) =>
-										handleSaveHostingRoom(index, {
-											name: cast(v.value),
-											images: [],
-											count: 1,
-										})
-									}
-									options={ROOM_KEYS.map((v) => ({
-										label: Room[v],
-										value: v,
-									}))}
-									renderItem={SelectOption}
-								/>
-								<Button
-									onPress={() => handleRoomImageEdit(index)}
-									disabled={!rooms[index] || hostingRoomSaving}
-									variant="outline"
-									className="p-6"
-									style={{
-										borderColor: hexToRgba(colors.text, 0.25),
-										borderRadius: 12,
-									}}
-								>
-									<HeroiconsCamera color={colors.text} size={20} />
-								</Button>
-							</View>
-							<View className="flex-row gap-2">
-								{rooms[index] && !(rooms[index].images.length > 0) && (
-									<View
-										className="p-4 items-center justify-center flex-1 rounded-xl"
-										style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
-									>
-										<ThemedText
-											style={{
-												color: hexToRgba(colors.text, 0.8),
-												fontSize: 12,
-											}}
-										>
-											No Images Yet
-										</ThemedText>
-									</View>
-								)}
-								{rooms[index]?.images.length > 0 && (
-									<View className="flex-row flex-1 gap-2">
-										{rooms[index].images.slice(0, 4).map((img, id) => (
-											<HostingRoomImage
-												src={img}
-												key={id}
-												imageIndex={id}
-												roomIndex={index}
-												onDeleteRoomImage={handleDeleteImage}
-											/>
-										))}
-									</View>
-								)}
-								{rooms[index] && (
-									<>
-										<Button
-											variant="outline"
-											disabled={hostingRoomSaving}
-											loading={hostingRoomSaving}
-											type="shade"
-											className="py-0.5 pt-2.5 px-3"
-											onPress={() => setActiveModalIndex(index)}
-										>
-											<View className="items-center justify-center">
-												<FluentContentViewGallery28Regular
-													color={colors.text}
-													size={14}
-												/>
-												<ThemedText style={{ fontSize: 10 }}>
-													Details
-												</ThemedText>
-											</View>
-										</Button>
-									</>
-								)}
-							</View>
-						</View>
+						<RoomItemCard
+							key={index}
+							index={index}
+							room={rooms[index]}
+							colors={colors}
+							hostingRoomSaving={hostingRoomSaving}
+							handleSaveHostingRoom={handleSaveHostingRoom}
+							handleRoomImageEdit={handleRoomImageEdit}
+							handleDeleteImage={handleDeleteImage}
+							setActiveModalIndex={setActiveModalIndex}
+						/>
 					))}
 				</View>
 			</DetailsLayout>
+
 			<ThemedModal
 				visible={activeModalIndex !== undefined}
 				onClose={() => setActiveModalIndex(undefined)}
@@ -286,6 +199,7 @@ export default function NewHostingStep2() {
 					)}
 				</View>
 			</ThemedModal>
+
 			<ThemedModal
 				visible={deleteModalIndex !== undefined}
 				onClose={() => setDeleteModalIndex(undefined)}
@@ -306,10 +220,10 @@ export default function NewHostingStep2() {
 										source={
 											rooms[deleteModalIndex].images.length
 												? {
-														uri: failedImages.has(0)
-															? FALLBACK_IMAGE
-															: rooms[deleteModalIndex].images[0],
-													}
+													uri: failedImages.has(0)
+														? FALLBACK_IMAGE
+														: rooms[deleteModalIndex].images[0],
+												}
 												: require("@/assets/images/room-image.jpg")
 										}
 										style={{
@@ -352,6 +266,7 @@ export default function NewHostingStep2() {
 					)}
 				</View>
 			</ThemedModal>
+
 			<LoadingModal visible={loading} />
 		</>
 	);

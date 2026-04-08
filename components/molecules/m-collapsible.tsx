@@ -40,6 +40,8 @@ const Collapsible: React.FC<CollapsibleProps> = ({
   const colors = useThemeColors();
   const [expanded, setExpanded] = useState(defaultExpanded);
 
+  const [hasMounted, setHasMounted] = useState(defaultExpanded);
+
   const progress = useSharedValue(defaultExpanded ? 1 : 0);
   const contentHeight = useSharedValue(0);
 
@@ -47,17 +49,29 @@ const Collapsible: React.FC<CollapsibleProps> = ({
     const nextState = !expanded;
     setExpanded(nextState);
 
-    progress.value = withSpring(nextState ? 1 : 0, {
-      damping: 20,
-      stiffness: 200,
-      mass: 0.8,
-    });
+    if (!hasMounted && nextState) {
+      setHasMounted(true);
+    } else {
+      progress.value = withSpring(nextState ? 1 : 0, {
+        damping: 20,
+        stiffness: 200,
+        mass: 0.8,
+      });
+    }
   };
 
   const onLayout = (event: LayoutChangeEvent) => {
     const newHeight = event.nativeEvent.layout.height;
     if (newHeight > 0 && contentHeight.value !== newHeight) {
       contentHeight.value = newHeight;
+
+      if (expanded && progress.value === 0) {
+        progress.value = withSpring(1, {
+          damping: 20,
+          stiffness: 200,
+          mass: 0.8,
+        });
+      }
     }
   };
 
@@ -144,7 +158,7 @@ const Collapsible: React.FC<CollapsibleProps> = ({
         pointerEvents={expanded ? "auto" : "none"}
       >
         <View onLayout={onLayout} style={styles.absoluteContent}>
-          {children}
+          {hasMounted ? children : null}
         </View>
       </Animated.View>
     </View>
@@ -172,7 +186,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     width: "100%",
-    overflow: "hidden", // Crucial: clips the content while animating
+    overflow: "hidden",
   },
   absoluteContent: {
     position: "absolute",

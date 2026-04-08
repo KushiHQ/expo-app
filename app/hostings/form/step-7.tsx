@@ -6,335 +6,46 @@ import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import React from "react";
 import { RefreshControl, View } from "react-native";
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
-import { useHostingForm } from "@/lib/hooks/hosting-form";
-import {
-	PublishStatus,
-	SubClause,
-	SubClauseValueInput,
-	TenancySection,
-	UpdateHostMutation,
-	UpdateHostMutationVariables,
-	useAuthHostQuery,
-	useTenancyAgreementTemplateQuery,
-	VariableType,
-} from "@/lib/services/graphql/generated";
+import { PublishStatus } from "@/lib/services/graphql/generated";
 import LoadingModal from "@/components/atoms/a-loading-modal";
-import { handleError } from "@/lib/utils/error";
-import Toast from "react-native-toast-message";
-import { useGalleryStore } from "@/lib/stores/gallery";
-import { formMutation } from "@/lib/services/graphql/utils/fetch";
-import { UPDATE_HOST } from "@/lib/services/graphql/requests/mutations/users";
-import { generateRNFile } from "@/lib/utils/file";
 import SignatureImage from "@/components/molecules/m-signature-image";
 import Collapsible from "@/components/molecules/m-collapsible";
-import { capitalize } from "@/lib/utils/text";
-import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
 import BottomSheet from "@/components/atoms/a-bottom-sheet";
 import Button from "@/components/atoms/a-button";
 import { FluentTextBulletListSquareEdit20Regular } from "@/components/icons/i-edit";
 import Skeleton from "@/components/atoms/a-skeleton";
-import { cleanupAgreementTemplateInput } from "@/lib/utils/hosting/tenancyAgreement";
 import TenancyAgreementVariableText from "@/components/molecules/m-tenancy-aggreement-variable-text";
 
-export default function NewHostingStep6() {
-	const router = useRouter();
+import { useTenancyTermsForm } from "@/lib/hooks/forms/use-tenancy-terms-form";
+import MemoizedSubClause from "@/components/organisms/o-memoised-sub-clause";
+import { MemoizedEditSection } from "@/components/organisms/o-memoised-edit-sub-clause";
+
+export default function NewHostingStep7() {
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
+
 	const {
 		input,
 		hosting,
-		mutate,
-		refetch,
+		hostQueryData,
+		templateData,
+		editOpen,
+		setEditOpen,
+		loading,
+		fetchingHosting,
+		templateFetching,
 		mutating,
-		updateInput,
-		fetching: fetchingHosting,
-	} = useHostingForm(id);
-	const { gallery } = useGalleryStore();
-	const [{ data: hostQueryData, fetching: hostFetching }, refetchHost] =
-		useAuthHostQuery();
-	const [editOpen, setEditOpen] = React.useState(false);
-	const [uploading, setUploading] = React.useState(false);
-	const [{ data: templateData, fetching: templateFetching }, refetchTemplate] =
-		useTenancyAgreementTemplateQuery();
-
-	const loading = fetchingHosting || mutating || uploading || templateFetching;
-	const activeSectionIds = React.useMemo(() => {
-		const ids = new Set<string>();
-		input.tenancyAgreementTemplate?.sections.forEach((sec) => ids.add(sec.id));
-		return ids;
-	}, [input.tenancyAgreementTemplate?.sections]);
-
-	const activeSubClauseIds = React.useMemo(() => {
-		const ids = new Set<string>();
-		input.tenancyAgreementTemplate?.sections.forEach((sec) => {
-			sec.subClauses.forEach((sub) => ids.add(sub.id));
-		});
-		return ids;
-	}, [input.tenancyAgreementTemplate?.sections]);
-
-	React.useEffect(() => {
-		if (
-			templateData &&
-			(!input.tenancyAgreementTemplate ||
-				input.tenancyAgreementTemplate.sections.length < 1)
-		) {
-			const processedSections = templateData.tenancyAgreementTemplate.sections
-				.reduce(
-					(acc, { __typename, ...section }) => {
-						let activeSubClauses = section.subClauses
-							.filter((sub) => sub.isActive || sub.isMandatory)
-							.sort((a, b) => a.priority - b.priority);
-
-						if (!input.serviceCharge) {
-							activeSubClauses = activeSubClauses.filter(
-								(sub) => sub.id !== "sub_service_charge",
-							);
-						}
-						if (!input.cautionFee) {
-							activeSubClauses = activeSubClauses.filter(
-								(sub) => sub.id !== "sub_caution",
-							);
-						}
-
-						if (activeSubClauses.length > 0 || !section.subClauses.length) {
-							acc.push({
-								...section,
-								subClauses: activeSubClauses,
-							});
-						}
-						return acc;
-					},
-					[] as (typeof templateData)["tenancyAgreementTemplate"]["sections"],
-				)
-				.sort((a, b) => a.priority - b.priority);
-
-			updateInput({
-				tenancyAgreementTemplate: {
-					sections: processedSections,
-				},
-			});
-		}
-	}, [input.tenancyAgreementTemplate, templateData]);
-
-	const handleMutate = () => {
-		for (const section of input.tenancyAgreementTemplate?.sections ?? []) {
-			for (const subClause of section.subClauses) {
-				if (subClause.requiredVariables.length > 0) {
-					for (const variable of subClause.requiredVariables) {
-						if (
-							!subClause.providedValues.find((v) => v.key === variable.name)
-						) {
-							Toast.show({
-								type: "error",
-								text1: "Missing Value",
-								text2: `Please provide a value for ${variable.name}`,
-							});
-							return;
-						}
-					}
-				}
-			}
-		}
-		mutate({
-			input: {
-				...input,
-				tenancyAgreementTemplate: cleanupAgreementTemplateInput(
-					input.tenancyAgreementTemplate!,
-				),
-			},
-		}).then((res) => {
-			if (res.error) {
-				handleError(res.error);
-			}
-			if (res.data) {
-				Toast.show({
-					type: "success",
-					text1: "Success",
-					text2: res.data.createOrUpdateHosting.message,
-				});
-				refetch();
-				router.push(
-					`/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`,
-				);
-			}
-		});
-	};
-
-	useFocusEffect(
-		React.useCallback(() => {
-			let signature = gallery.at(0);
-
-			if (
-				signature &&
-				!hostQueryData?.authHost.signature?.publicUrl &&
-				!hostFetching
-			) {
-				setUploading(true);
-				formMutation<UpdateHostMutation, UpdateHostMutationVariables>(
-					UPDATE_HOST,
-					{
-						input: {
-							signature: generateRNFile(signature),
-						},
-					},
-				)
-					.then((res) => {
-						if (res.error) {
-							handleError(res.error);
-						}
-						if (res.data) {
-							refetchHost({ requestPolicy: "network-only" });
-							Toast.show({
-								type: "success",
-								text1: "Success",
-								text2: res.data.updateHost.message,
-							});
-						}
-					})
-					.finally(() => setUploading(false));
-			}
-		}, [
-			gallery,
-			hostFetching,
-			hostQueryData?.authHost.signature?.publicUrl,
-			refetchHost,
-		]),
-	);
-
-	function handleUpdateVariable(
-		sectionIndex: number,
-		subClauseIndex: number,
-		variable: SubClauseValueInput,
-	) {
-		const currentSections = input.tenancyAgreementTemplate?.sections ?? [];
-
-		const newSections = currentSections.map((sec, sIdx) => {
-			if (sIdx !== sectionIndex) return sec;
-
-			return {
-				...sec,
-				subClauses: sec.subClauses.map((sub, cIdx) => {
-					if (cIdx !== subClauseIndex) return sub;
-
-					const newProvidedValues = [...sub.providedValues];
-					const vIndex = newProvidedValues.findIndex(
-						(v) => v.key === variable.key,
-					);
-
-					if (vIndex > -1) {
-						newProvidedValues[vIndex] = variable;
-					} else {
-						newProvidedValues.push(variable);
-					}
-
-					return {
-						...sub,
-						providedValues: newProvidedValues,
-					};
-				}),
-			};
-		});
-
-		updateInput({ tenancyAgreementTemplate: { sections: newSections } });
-	}
-
-	function toggleSection(section: TenancySection) {
-		const toUpdate = {
-			sections: [...(input.tenancyAgreementTemplate?.sections ?? [])],
-		};
-
-		if (toUpdate.sections.find((sec) => sec.id === section.id)) {
-			toUpdate.sections = toUpdate.sections.filter(
-				(sec) => sec.id !== section.id,
-			);
-		} else {
-			toUpdate.sections.push(section);
-		}
-
-		toUpdate.sections.sort((a, b) => a.priority - b.priority);
-
-		updateInput({ tenancyAgreementTemplate: toUpdate });
-	}
-
-	function toggleSubClause(parentSectionId: string, subClause: SubClause) {
-		const currentSections = input.tenancyAgreementTemplate?.sections ?? [];
-		let newSections = currentSections.map((sec) => ({
-			...sec,
-			subClauses: [...sec.subClauses],
-		}));
-
-		const sectionIndex = newSections.findIndex(
-			(sec) => sec.id === parentSectionId,
-		);
-
-		if (sectionIndex > -1) {
-			const subIndex = newSections[sectionIndex].subClauses.findIndex(
-				(sub) => sub.id === subClause.id,
-			);
-
-			if (subIndex > -1) {
-				newSections[sectionIndex].subClauses.splice(subIndex, 1);
-			} else {
-				if (subClause.id === "sub_caution" && !input.cautionFee) {
-					Toast.show({
-						type: "error",
-						text1: "Missing Value",
-						text2:
-							"Please provide cuation fee in the pricing section to add caution fee sub clause",
-					});
-					return;
-				} else if (
-					subClause.id === "sub_service_charge" &&
-					!input.serviceCharge
-				) {
-					Toast.show({
-						type: "error",
-						text1: "Missing Value",
-						text2:
-							"Please provide service charge in the pricing section to add service charge sub clause",
-					});
-					return;
-				}
-				newSections[sectionIndex].subClauses.push(subClause);
-			}
-			newSections[sectionIndex].subClauses.sort(
-				(a, b) => a.priority - b.priority,
-			);
-		} else {
-			const parentSection =
-				templateData?.tenancyAgreementTemplate.sections.find(
-					(s) => s.id === parentSectionId,
-				);
-			if (parentSection) {
-				newSections.push({
-					...parentSection,
-					subClauses: [subClause],
-				});
-			}
-		}
-
-		newSections.sort((a, b) => a.priority - b.priority);
-
-		updateInput({
-			tenancyAgreementTemplate: { sections: newSections },
-		});
-	}
-
-	const hasSection = React.useCallback(
-		(section: TenancySection) => {
-			return activeSectionIds.has(section.id);
-		},
-		[activeSectionIds],
-	);
-
-	const hasSubClause = React.useCallback(
-		(clause: SubClause) => {
-			return activeSubClauseIds.has(clause.id);
-		},
-		[activeSubClauseIds],
-	);
+		refetch,
+		refetchTemplate,
+		handleMutate,
+		handleUpdateVariable,
+		toggleSection,
+		toggleSubClause,
+		hasSection,
+		hasSubClause,
+	} = useTenancyTermsForm(String(id));
 
 	return (
 		<>
@@ -388,92 +99,37 @@ export default function NewHostingStep6() {
 								</View>
 							))}
 						<View>
-							{input.tenancyAgreementTemplate?.sections.map(
-								(section, sectionIndex) => (
-									<Collapsible
-										title={section.title}
-										description={section.description}
-										key={section.id}
-									>
-										<View className="mt-4">
-											{section.preamble && (
-												<TenancyAgreementVariableText
-													hostingId={String(id)}
-													text={section.preamble}
-												/>
-											)}
-										</View>
-										<View className="mt-4">
-											{section.subClauses.map((clause, clauseIndex) => (
-												<Collapsible
-													title={clause.title}
-													description={clause.description}
-													key={clause.id}
-												>
-													<View className="mt-4">
-														{clause.content && (
-															<TenancyAgreementVariableText
-																hostingId={String(id)}
-																providedValues={clause.providedValues}
-																text={clause.content}
-															/>
-														)}
-													</View>
-													{clause.requiredVariables.length > 0 && (
-														<View className="mt-6">
-															{clause.requiredVariables.map(
-																(variable, index) => (
-																	<FloatingLabelInput
-																		key={index}
-																		focused
-																		value={
-																			clause.providedValues[index]?.value
-																				? variable.type === VariableType.Number
-																					? Number(
-																							clause.providedValues[
-																								index
-																							]?.value.replaceAll(",", ""),
-																						).toLocaleString()
-																					: clause.providedValues[index]?.value
-																				: undefined
-																		}
-																		onChangeText={(v) => {
-																			handleUpdateVariable(
-																				sectionIndex,
-																				clauseIndex,
-																				{
-																					key: variable.name,
-																					value: v.replaceAll(",", ""),
-																				},
-																			);
-																		}}
-																		placeholder={
-																			variable.type === VariableType.Number
-																				? "0.00"
-																				: "Enter value"
-																		}
-																		keyboardType={
-																			variable.type === VariableType.Number
-																				? "numeric"
-																				: "default"
-																		}
-																		label={capitalize(
-																			variable.name
-																				.replaceAll("_", " ")
-																				.toLowerCase(),
-																			true,
-																		)}
-																	/>
-																),
-															)}
-														</View>
-													)}
-												</Collapsible>
-											))}
-										</View>
-									</Collapsible>
-								),
-							)}
+							{hosting &&
+								input.tenancyAgreementTemplate?.sections.map(
+									(section, sIdx) => (
+										<Collapsible
+											title={section.title}
+											description={section.description}
+											key={section.id}
+										>
+											<View className="mt-4">
+												{section.preamble && (
+													<TenancyAgreementVariableText
+														hosting={hosting}
+														text={section.preamble}
+													/>
+												)}
+											</View>
+											<View className="mt-4">
+												{section.subClauses.map((clause, cIdx) => (
+													<MemoizedSubClause
+														key={clause.id}
+														clause={clause}
+														sectionIndex={sIdx}
+														clauseIndex={cIdx}
+														hosting={hosting}
+														onUpdateVariable={handleUpdateVariable}
+													/>
+												))}
+											</View>
+										</Collapsible>
+									),
+								)}
 						</View>
 						<View className="mt-4">
 							<Button
@@ -495,91 +151,33 @@ export default function NewHostingStep6() {
 					</View>
 				</View>
 			</DetailsLayout>
+
 			<LoadingModal visible={loading} />
+
 			<BottomSheet isVisible={editOpen} onClose={() => setEditOpen(false)}>
-				<View>
-					<ThemedText
-						type="semibold"
-						style={{ fontSize: 18 }}
-						className="mb-8 px-2"
-					>
-						Edit Clauses
-					</ThemedText>
-					{templateData?.tenancyAgreementTemplate.sections.map((section) => (
-						<Collapsible
-							withCheckbox
-							checked={hasSection(section)}
-							onCheckedChange={() => toggleSection(section)}
-							checkDisabled={
-								!!section.subClauses.find((sub) => sub.isMandatory) ||
-								!section.subClauses.length
-							}
-							tint={hasSection(section) ? "primary" : "shade"}
-							title={section.title}
-							description={section.description}
-							key={section.title}
+				{editOpen && (
+					<View>
+						<ThemedText
+							type="semibold"
+							style={{ fontSize: 18 }}
+							className="mb-8 px-2"
 						>
-							<View className="mt-4">
-								{section.preamble && (
-									<TenancyAgreementVariableText
-										hostingId={String(id)}
-										replace={false}
-										text={section.preamble}
-									/>
-								)}
-							</View>
-							<View className="mt-4">
-								{section.subClauses.map((clause) => (
-									<Collapsible
-										withCheckbox
-										checked={hasSubClause(clause)}
-										onCheckedChange={() => toggleSubClause(section.id, clause)}
-										checkDisabled={clause.isMandatory}
-										tint={hasSubClause(clause) ? "primary" : "shade"}
-										title={clause.title}
-										description={clause.description}
-										key={clause.title}
-									>
-										<View className="mt-4">
-											{clause.content && (
-												<TenancyAgreementVariableText
-													hostingId={String(id)}
-													replace={false}
-													text={clause.content}
-												/>
-											)}
-										</View>
-										{clause.requiredVariables.length > 0 && (
-											<View className="mt-6">
-												{clause.requiredVariables.map((variable, index) => (
-													<FloatingLabelInput
-														focused
-														disabled
-														key={index}
-														placeholder={
-															variable.type === VariableType.Number
-																? "0.00"
-																: "Enter value"
-														}
-														keyboardType={
-															variable.type === VariableType.Number
-																? "numeric"
-																: "default"
-														}
-														label={capitalize(
-															variable.name.replaceAll("_", " ").toLowerCase(),
-															true,
-														)}
-													/>
-												))}
-											</View>
-										)}
-									</Collapsible>
-								))}
-							</View>
-						</Collapsible>
-					))}
-				</View>
+							Edit Clauses
+						</ThemedText>
+						{hosting &&
+							templateData?.tenancyAgreementTemplate.sections.map((section) => (
+								<MemoizedEditSection
+									key={section.id || section.title}
+									section={section}
+									hosting={hosting}
+									isChecked={hasSection(section)}
+									onToggleSection={toggleSection}
+									hasSubClause={hasSubClause}
+									onToggleSubClause={toggleSubClause}
+								/>
+							))}
+					</View>
+				)}
 			</BottomSheet>
 		</>
 	);

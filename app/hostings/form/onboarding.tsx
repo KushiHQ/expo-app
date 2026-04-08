@@ -77,7 +77,9 @@ export default function HostingOnboarding() {
 			} else if (index === 5) {
 				actions[index]["filled"] = !!hosting?.verification;
 			} else if (index === 6) {
-				actions[index]["filled"] = !!hosting?.tenancyAgreementTemplate;
+				actions[index]["filled"] =
+					!!hosting?.tenancyAgreementTemplate &&
+					hosting.tenancyAgreementTemplate.sections.length > 0;
 			} else if (index === 7) {
 				actions[index]["filled"] =
 					hosting?.publishStatus === PublishStatus.Live;
@@ -112,7 +114,7 @@ export default function HostingOnboarding() {
 					before it reaches future tenants.
 				</ThemedText>
 				<TopListingCard hosting={hosting} />
-				{countData?.bookingApplicationsCount && (
+				{countData && countData?.bookingApplicationsCount > 0 && (
 					<View
 						className="border-b py-4"
 						style={{ borderColor: hexToRgba(colors.text, 0.15) }}

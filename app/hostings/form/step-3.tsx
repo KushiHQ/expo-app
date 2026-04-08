@@ -8,8 +8,8 @@ import HostingStepper from "@/components/molecules/m-hosting-stepper";
 import { Fonts } from "@/lib/constants/theme";
 import { useHostingForm } from "@/lib/hooks/hosting-form";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { HOSTING_VARIANT_ICONS } from "@/lib/types/enums/hosting-icons";
-import { HostingVariant } from "@/lib/types/enums/hostings";
+import { PROPERTY_TYPE_ICONS } from "@/lib/types/enums/hosting-icons";
+import { PropertyType } from "@/lib/types/enums/hostings";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
@@ -79,7 +79,7 @@ export default function NewHostingStep3() {
 		requestPermission,
 	]);
 
-	const Icon = HOSTING_VARIANT_ICONS[HostingVariant.Residential];
+	const Icon = PROPERTY_TYPE_ICONS[PropertyType.Residential];
 
 	const handleMutate = () => {
 		mutate({ input: input }).then((res) => {

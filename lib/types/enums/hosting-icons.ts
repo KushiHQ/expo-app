@@ -1,5 +1,5 @@
 import { IconoirElevator } from "@/components/icons/i-elevator";
-import { Facility, HostingVariant } from "./hostings";
+import { Facility, PropertyType } from "./hostings";
 import {
 	ChefHatIcon,
 	LucideIcon,
@@ -112,26 +112,26 @@ export const FACILITY_ICONS: FacilityIconMap = {
 	[Facility.Utilities]: Zap,
 };
 
-export type HostingVariantIconMap = {
-	[key in HostingVariant]: IconType;
+export type PropertyTypeIconMap = {
+	[key in PropertyType]: IconType;
 };
 
-export const HOSTING_VARIANT_ICONS: HostingVariantIconMap = {
-	[HostingVariant.Residential]: Home,
-	[HostingVariant.CommercialRetail]: ShoppingBag,
-	[HostingVariant.Office]: Briefcase,
-	[HostingVariant.Storage]: Archive,
-	[HostingVariant.EventVenue]: CalendarCheck,
-	[HostingVariant.Industrial]: Factory,
-	[HostingVariant.CreativeStudio]: HeroiconsCamera,
-	[HostingVariant.Hospitality]: Hotel,
-	[HostingVariant.LandPlots]: LandPlot,
-	[HostingVariant.Parking]: ParkingCircle,
-	[HostingVariant.Agricultural]: Tractor,
-	[HostingVariant.Medical]: Hospital,
-	[HostingVariant.Educational]: GraduationCap,
-	[HostingVariant.Religious]: Church,
-	[HostingVariant.Custom]: Building2,
+export const PROPERTY_TYPE_ICONS: PropertyTypeIconMap = {
+	[PropertyType.Residential]: Home,
+	[PropertyType.CommercialRetail]: ShoppingBag,
+	[PropertyType.Office]: Briefcase,
+	[PropertyType.Storage]: Archive,
+	[PropertyType.EventVenue]: CalendarCheck,
+	[PropertyType.Industrial]: Factory,
+	[PropertyType.CreativeStudio]: HeroiconsCamera,
+	[PropertyType.Hospitality]: Hotel,
+	[PropertyType.LandPlots]: LandPlot,
+	[PropertyType.Parking]: ParkingCircle,
+	[PropertyType.Agricultural]: Tractor,
+	[PropertyType.Medical]: Hospital,
+	[PropertyType.Educational]: GraduationCap,
+	[PropertyType.Religious]: Church,
+	[PropertyType.Custom]: Building2,
 };
 
 export const FALLBACK_FACILITY_ICON = HelpCircle;
