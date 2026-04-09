@@ -4,7 +4,7 @@ import { Image } from "expo-image";
 import React from "react";
 import { View } from "react-native";
 import ThemedText from "../atoms/a-themed-text";
-import { getImagePlaceholderUrl } from "@/lib/utils/urls";
+import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
 import { hexToRgba } from "@/lib/utils/colors";
@@ -30,7 +30,9 @@ const CallParticipantProfile: React.FC<Props> = ({
 				}}
 			>
 				<Image
-					source={getImagePlaceholderUrl(callData?.recipient?.profile.gender)}
+					source={getDefaultProfileImageUrl(
+						callData?.recipient?.profile.fullName ?? "",
+					)}
 					style={{
 						height: "100%",
 						width: "100%",

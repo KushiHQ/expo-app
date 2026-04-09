@@ -38,6 +38,8 @@ import Toast from "react-native-toast-message";
 import toastConfig from "@/components/atoms/a-toast";
 import { NotificationProvider } from "@/components/contexts/notifications";
 import StreamVideoClientProvider from "@/components/providers/stream-video-client";
+import { initializeNotifications } from "@/lib/utils/notifications";
+import { LogBox } from "react-native";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -45,6 +47,14 @@ configureReanimatedLogger({
 	level: ReanimatedLogLevel.error,
 	strict: false,
 });
+
+LogBox.ignoreLogs([
+	"AddIceCandidate failed because the session was shut down",
+	"Illegal State: call.join() shall be called only once",
+	"The screen 'index' was removed natively but didn't get removed from JS state",
+]);
+
+initializeNotifications();
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme();

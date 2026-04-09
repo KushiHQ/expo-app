@@ -58,6 +58,7 @@ export default function Layout() {
 					audioRole: "communicator",
 					deviceEndpointType: defaultDevice,
 				});
+
 				if (initiate === "true") {
 					const recipientId = recipientStreamUser?.getStreamUserId;
 
@@ -103,6 +104,30 @@ export default function Layout() {
 		};
 
 		startCall();
+
+		return () => {
+			if (isCallInitialized.current) {
+				callManager.stop();
+
+				setCall((currentCall) => {
+					if (currentCall) {
+						currentCall
+							.leave()
+							.catch((err) => console.log("Cleanup error", err));
+
+						if (initiate === "true") {
+							sendNotification({
+								chatId: cast(id),
+								callType: CallType.Cancel,
+							}).catch((err) => console.log("Failed to send cancel push", err));
+						}
+					}
+					return null;
+				});
+
+				isCallInitialized.current = false;
+			}
+		};
 	}, [
 		client,
 		id,
@@ -113,23 +138,6 @@ export default function Layout() {
 		isVideoCall,
 		sendNotification,
 	]);
-
-	useEffect(() => {
-		return () => {
-			if (isCallInitialized.current) {
-				callManager.stop();
-
-				setCall((currentCall) => {
-					currentCall
-						?.leave()
-						.catch((err) => console.log("Cleanup error", err));
-					return null;
-				});
-
-				isCallInitialized.current = false;
-			}
-		};
-	}, []);
 
 	if (!call) {
 		return isVideoCall ? <ChatVideoCallScreen /> : <CallScreen />;

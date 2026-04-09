@@ -5,7 +5,7 @@ import CallBackground from "@/components/atoms/a-call-background";
 import DetailsLayout from "@/components/layouts/details";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { Image } from "expo-image";
-import { getImagePlaceholderUrl } from "@/lib/utils/urls";
+import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import { useHostingChatQuery } from "@/lib/services/graphql/generated";
 import { cast } from "@/lib/types/utils";
 import { useLocalSearchParams } from "expo-router";
@@ -34,7 +34,7 @@ const RingingCallHandler = () => {
 				<DetailsLayout
 					background="transparent"
 					title="Calling..."
-					backButton="solid"
+					backButton="light"
 				>
 					<View className="flex-1 justify-between">
 						<View className="flex-1 items-center gap-4 pb-28 justify-center">
@@ -46,8 +46,8 @@ const RingingCallHandler = () => {
 								}}
 							>
 								<Image
-									source={getImagePlaceholderUrl(
-										chatData?.hostingChat.recipientUser.profile.gender,
+									source={getDefaultProfileImageUrl(
+										chatData?.hostingChat.recipientUser.profile.fullName ?? "",
 									)}
 									style={{
 										height: "100%",

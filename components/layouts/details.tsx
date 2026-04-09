@@ -22,7 +22,7 @@ import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import { useGradualKeyboardAnimation } from "@/lib/hooks/keyboard";
 import ThemedView from "../atoms/a-themed-view";
 import { IonNotificationsOutline } from "../icons/i-notifications";
-import { getImagePlaceholderUrl } from "@/lib/utils/urls";
+import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import { useUser } from "@/lib/hooks/user";
 
 type Props = {
@@ -35,8 +35,8 @@ type Props = {
 	};
 	variant?: "guest" | "host";
 	footer?: React.ReactNode;
-	backButton?: "translucent" | "solid";
-	background?: "transparent" | "solid";
+	backButton?: "translucent" | "solid" | "light";
+	background?: "transparent" | "solid" | "light";
 	withShare?: boolean;
 	withProfile?: boolean;
 	refreshControl?: React.ReactElement<
@@ -111,25 +111,32 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 							<Pressable
 								onPress={() => router.back()}
 								aria-label="Go Back"
-								className="w-8 items-center justify-center rounded-full h-8"
+								className="w-10 items-center justify-center rounded-xl h-10"
 								style={{
 									backgroundColor:
 										backButton === "translucent"
-											? hexToRgba(colors["text"], 0.2)
-											: colors.text,
+											? hexToRgba(colors["text"], 0.15)
+											: backButton === "light"
+												? hexToRgba("#fff", 0.2)
+												: colors.text,
 								}}
 							>
 								<ChevronLeft
 									color={
 										backButton === "translucent"
 											? colors["text"]
-											: colors.background
+											: backButton === "light"
+												? "#fff"
+												: colors.background
 									}
 								/>
 							</Pressable>
 							<View className="flex-row items-center gap-2">
 								{avatar && (
-									<View className="w-8 h-8 rounded-full border border-[#000] overflow-hidden">
+									<View
+										className="w-10 h-10 rounded-xl border overflow-hidden"
+										style={{ borderColor: hexToRgba(colors.text, 0.2) }}
+									>
 										<Image
 											style={{
 												height: "100%",
@@ -143,9 +150,26 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 									</View>
 								)}
 								<View>
-									<ThemedText>{title}</ThemedText>
+									<ThemedText
+										className="py-0"
+										style={{
+											fontSize: 10,
+											height: 20,
+											color: backButton === "light" ? "#fff" : colors.text,
+										}}
+									>
+										{title}
+									</ThemedText>
 									{avatar?.online !== undefined && (
-										<ThemedText style={{ fontSize: 12 }}>
+										<ThemedText
+											className="py-0"
+											style={{
+												fontSize: 10,
+												height: 20,
+												paddingBlock: 0,
+												paddingInline: 0,
+											}}
+										>
 											{avatar?.online
 												? "Online"
 												: `Last seen ${moment(avatar?.lastSeen).fromNow()}`}
@@ -157,7 +181,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 						<View className="flex-row items-center gap-3">
 							{withShare && (
 								<Pressable
-									className="h-8 w-8 rounded-full justify-center items-center"
+									className="h-10 w-10 rounded-xl justify-center items-center"
 									style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
 								>
 									<Share2Icon size={20} color={colors.text} />
@@ -168,7 +192,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 									onPress={() =>
 										router.push(`/chats/${id}/call/voice?initiate=true`)
 									}
-									className="h-8 w-8 rounded-full justify-center items-center"
+									className="h-10 w-10 rounded-xl justify-center items-center"
 									style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
 								>
 									<SolarPhoneOutline size={20} color={colors.text} />
@@ -179,7 +203,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 									onPress={() =>
 										router.push(`/chats/${id}/call/video?initiate=true`)
 									}
-									className="h-8 w-8 rounded-full justify-center items-center"
+									className="h-10 w-10 rounded-xl justify-center items-center"
 									style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
 								>
 									<HugeiconsVideo01 size={20} color={colors.text} />
@@ -199,7 +223,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 											variant === "guest" ? "/guest/profile" : "/host/profile",
 										)
 									}
-									className="w-8 h-8 rounded-full border overflow-hidden"
+									className="w-10 h-10 rounded-xl border overflow-hidden"
 									style={{
 										borderColor: hexToRgba(colors["text"], 0.6),
 										borderWidth: 2,
@@ -212,7 +236,9 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 											objectFit: "cover",
 										}}
 										source={{
-											uri: getImagePlaceholderUrl(user.user?.profile.gender),
+											uri: getDefaultProfileImageUrl(
+												user.user?.profile.fullName ?? "",
+											),
 										}}
 									/>
 								</Pressable>

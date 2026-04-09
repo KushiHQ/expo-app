@@ -11,6 +11,7 @@ import { Image } from "expo-image";
 import { usePathname, useRouter } from "expo-router";
 import { EventEmitter } from "@/lib/utils/event-emitter";
 import { useUser } from "@/lib/hooks/user";
+import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 
 type Props = {
 	children?: React.ReactNode;
@@ -49,7 +50,7 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl }) => {
 						<Pressable
 							onPress={() => router.back()}
 							aria-label="Go Back"
-							className="w-8 items-center justify-center rounded-full h-8"
+							className="w-10 items-center justify-center rounded-xl h-10"
 							style={{ backgroundColor: hexToRgba(colors["text"], 0.2) }}
 						>
 							<ChevronLeft color={colors["text"]} />
@@ -85,7 +86,9 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl }) => {
 									objectFit: "cover",
 								}}
 								source={{
-									uri: "https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=mail@ashallendesign.co.uk",
+									uri: getDefaultProfileImageUrl(
+										user.user?.profile.fullName ?? "",
+									),
 								}}
 							/>
 						</Pressable>

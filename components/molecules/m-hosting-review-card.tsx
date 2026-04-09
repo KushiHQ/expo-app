@@ -8,7 +8,7 @@ import { Fonts } from "@/lib/constants/theme";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { HostingQuery } from "@/lib/services/graphql/generated";
-import { getImagePlaceholderUrl } from "@/lib/utils/urls";
+import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 
 type Props = {
 	review: HostingQuery["hosting"]["reviews"][number];
@@ -29,8 +29,8 @@ const HostingReviewCard: React.FC<Props> = ({ review }) => {
 							borderRadius: 999,
 						}}
 						source={{
-							uri: getImagePlaceholderUrl(
-								review.user.profile.gender?.toLowerCase(),
+							uri: getDefaultProfileImageUrl(
+								review.user.profile.fullName ?? "",
 							),
 						}}
 					/>
@@ -48,7 +48,7 @@ const HostingReviewCard: React.FC<Props> = ({ review }) => {
 				<View className="flex-row items-center gap-1">
 					<MynauiStarSolid color={colors.accent} size={16} />
 					<ThemedText style={{ fontSize: 14 }}>
-						{review.averageRating}
+						{Number(review.averageRating).toFixed(1)}
 					</ThemedText>
 				</View>
 			</View>

@@ -14,7 +14,7 @@ import { useAtom } from "jotai";
 import React from "react";
 import { Pressable, RefreshControl, TextInput, View } from "react-native";
 import Skeleton from "../atoms/a-skeleton";
-import { getImagePlaceholderUrl } from "@/lib/utils/urls";
+import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import EmptyList from "../molecules/m-empty-list";
 
 type Props = {
@@ -87,8 +87,8 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 							<View className="h-[50px] relative w-[50px]">
 								<Image
 									source={{
-										uri: getImagePlaceholderUrl(
-											chat.recipientUser.profile.gender,
+										uri: getDefaultProfileImageUrl(
+											chat.recipientUser.profile.fullName ?? "",
 										),
 									}}
 									style={{

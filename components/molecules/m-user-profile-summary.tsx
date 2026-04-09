@@ -8,7 +8,7 @@ import ThemedText from "../atoms/a-themed-text";
 import { SolarMedalStarBold } from "../icons/i-medal";
 import { Fonts } from "@/lib/constants/theme";
 import React from "react";
-import { getImagePlaceholderUrl } from "@/lib/utils/urls";
+import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import { useUser } from "@/lib/hooks/user";
 import { UserType } from "@/lib/types/users";
 
@@ -31,7 +31,7 @@ const UserProfileSummary: React.FC<Props> = ({ edit }) => {
 			>
 				<Image
 					source={{
-						uri: getImagePlaceholderUrl(user.user?.profile.gender),
+						uri: getDefaultProfileImageUrl(user.user?.profile.fullName ?? ""),
 					}}
 					style={{
 						height: "100%",

@@ -13,7 +13,7 @@ import {
   useInitiateHostingChatMutation,
 } from "@/lib/services/graphql/generated";
 import moment from "moment";
-import { getImagePlaceholderUrl } from "@/lib/utils/urls";
+import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import LoadingModal from "../atoms/a-loading-modal";
 import { handleError } from "@/lib/utils/error";
 import { useRouter } from "expo-router";
@@ -36,6 +36,20 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
         }
         if (res.data) {
           router.push(`/chats/${res.data.initiateHostingChat.id}`);
+        }
+      });
+  };
+
+  const handleInitiateCall = () => {
+    if (hosting)
+      initiateChat({ hostingId: hosting?.id }).then((res) => {
+        if (res.error) {
+          handleError(res.error);
+        }
+        if (res.data) {
+          router.push(
+            `/chats/${res.data.initiateHostingChat.id}/call/voice?initiate=true`,
+          );
         }
       });
   };
@@ -76,8 +90,8 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
                     objectFit: "cover",
                   }}
                   source={{
-                    uri: getImagePlaceholderUrl(
-                      hosting?.host.user.profile.gender,
+                    uri: getDefaultProfileImageUrl(
+                      hosting?.host.user.profile.fullName ?? "",
                     ),
                   }}
                 />
@@ -87,14 +101,14 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
             <View className="flex-row items-center gap-2">
               <CuidaBuildingOutline color={colors.accent} />
               <ThemedText>
-                {moment(hosting?.host.dateAdded).fromNow()}
+                {moment(hosting?.host.createdAt).fromNow()}
               </ThemedText>
             </View>
           </View>
           <View className="flex-row gap-4 items-center">
             <Pressable
               onPress={handleInitiateChat}
-              accessibilityLabel="Initiate chat with hos"
+              accessibilityLabel="Initiate chat with host"
               className="flex-1 rounded items-center p-1 justify-center"
               aria-label="Message"
               style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
@@ -102,6 +116,8 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
               <TablerMessage2 color={colors.accent} />
             </Pressable>
             <Pressable
+              onPress={handleInitiateCall}
+              accessibilityLabel="Initiate call with host"
               className="flex-1 rounded items-center p-1 justify-center"
               aria-label="Call"
               style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}

@@ -19,6 +19,6 @@ export const openGoogleMaps = async (coordinates: Coordinates) => {
 	}
 };
 
-export const getImagePlaceholderUrl = (gender?: string | null) => {
-	return `https://avatar.iran.liara.run/public/${gender === "female" ? "girl" : "boy"}`;
+export const getDefaultProfileImageUrl = (name: string) => {
+	return `https://ui-avatars.com/api/?name=${name.toUpperCase().split(" ").join("+")}=random`;
 };

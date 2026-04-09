@@ -26,7 +26,7 @@ import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
 import { generateRNFile } from "@/lib/utils/file";
-import { getImagePlaceholderUrl } from "@/lib/utils/urls";
+import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import { ScrollView, View } from "react-native";
@@ -143,8 +143,8 @@ export default function ChatDetails() {
 			<DetailsLayout
 				ref={scrollViewRef}
 				avatar={{
-					image: getImagePlaceholderUrl(
-						chatData?.hostingChat.recipientUser?.profile.gender,
+					image: getDefaultProfileImageUrl(
+						chatData?.hostingChat.recipientUser?.profile.fullName ?? "",
 					),
 					online: onlineRecipient?.online,
 					lastSeen: onlineRecipient?.lastSeen,

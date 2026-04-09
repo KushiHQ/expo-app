@@ -16,8 +16,24 @@ export type Scalars = {
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
   Decimal: { input: any; output: any; }
-  JSON: { input: any; output: any; }
   Upload: { input: any; output: any; }
+};
+
+export type AiSearchPrediction = {
+  __typename?: 'AiSearchPrediction';
+  filters: AiSearchPredictionFilter;
+  summary: Scalars['String']['output'];
+};
+
+export type AiSearchPredictionFilter = {
+  __typename?: 'AiSearchPredictionFilter';
+  city?: Maybe<Scalars['String']['output']>;
+  country?: Maybe<Scalars['String']['output']>;
+  facilities?: Maybe<Array<Scalars['String']['output']>>;
+  maxPrice?: Maybe<Scalars['Decimal']['output']>;
+  minPrice?: Maybe<Scalars['Decimal']['output']>;
+  propertyType?: Maybe<Scalars['String']['output']>;
+  state?: Maybe<Scalars['String']['output']>;
 };
 
 export type Asset = {
@@ -172,6 +188,7 @@ export enum BookingStatus {
 }
 
 export enum CallType {
+  Cancel = 'CANCEL',
   Video = 'VIDEO',
   Voice = 'VOICE'
 }
@@ -182,6 +199,11 @@ export type CompletePasswordChangeInput = {
   password1: Scalars['String']['input'];
   password2: Scalars['String']['input'];
 };
+
+export enum GoogleAuthTokenType {
+  AccessToken = 'ACCESS_TOKEN',
+  IdToken = 'ID_TOKEN'
+}
 
 export type Guest = {
   __typename?: 'Guest';
@@ -763,11 +785,13 @@ export type MutationsFinalizeBookingArgs = {
 
 export type MutationsGoogleLoginArgs = {
   idToken: Scalars['String']['input'];
+  tokenType?: InputMaybe<GoogleAuthTokenType>;
 };
 
 
 export type MutationsGoogleSignUpArgs = {
   idToken: Scalars['String']['input'];
+  tokenType?: InputMaybe<GoogleAuthTokenType>;
 };
 
 
@@ -894,12 +918,19 @@ export type MutationsVerifyTransactionByReferenceArgs = {
 export type Notification = {
   __typename?: 'Notification';
   createdAt: Scalars['String']['output'];
-  data?: Maybe<Scalars['JSON']['output']>;
+  data?: Maybe<NotificationData>;
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
   message: Scalars['String']['output'];
   title: Scalars['String']['output'];
-  type: NotificationType;
+  type?: Maybe<NotificationType>;
+};
+
+export type NotificationData = {
+  __typename?: 'NotificationData';
+  id?: Maybe<Scalars['String']['output']>;
+  intent?: Maybe<Scalars['String']['output']>;
+  subject?: Maybe<NotificationSubject>;
 };
 
 export type NotificationSettings = {
@@ -927,6 +958,12 @@ export type NotificationSettingsResponse = {
   data?: Maybe<NotificationSettings>;
   message: Scalars['String']['output'];
 };
+
+export enum NotificationSubject {
+  BookingApplication = 'BOOKING_APPLICATION',
+  Chat = 'CHAT',
+  Hosting = 'HOSTING'
+}
 
 export enum NotificationType {
   General = 'GENERAL',
@@ -1036,6 +1073,7 @@ export enum PublishStatus {
 
 export type Query = {
   __typename?: 'Query';
+  aiHostingSearchPredictions: Array<AiSearchPrediction>;
   authGuest: Guest;
   authHost: Host;
   authStreamUserToken: Scalars['String']['output'];
@@ -1067,6 +1105,11 @@ export type Query = {
   transactionByReference: Transaction;
   userChats: Array<HostingChat>;
   userStreamUserToken: Scalars['String']['output'];
+};
+
+
+export type QueryAiHostingSearchPredictionsArgs = {
+  userInput: Scalars['String']['input'];
 };
 
 
@@ -1845,7 +1888,7 @@ export type NotificationsQueryVariables = Exact<{
 }>;
 
 
-export type NotificationsQuery = { __typename?: 'Query', notifications: Array<{ __typename?: 'Notification', id: string, title: string, message: string, type: NotificationType, createdAt: string, lastUpdated: string }> };
+export type NotificationsQuery = { __typename?: 'Query', notifications: Array<{ __typename?: 'Notification', id: string, title: string, message: string, type?: NotificationType | null, createdAt: string, lastUpdated: string }> };
 
 export type BanksQueryVariables = Exact<{ [key: string]: never; }>;
 

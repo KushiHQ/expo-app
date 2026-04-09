@@ -38,7 +38,7 @@ const CallScreen: React.FC<Props> = ({ callData }) => {
 							: "Incoming Call"
 						: recipient?.profile.fullName
 				}
-				backButton="solid"
+				backButton="light"
 			>
 				<View className="flex-1 justify-between">
 					<CallParticipantProfile callData={callData} withDuration />
