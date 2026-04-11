@@ -28,7 +28,6 @@ import { Fonts } from "@/lib/constants/theme";
 import React from "react";
 import "../global.css";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Provider as JotaiProvider } from "jotai";
 import { PaperProvider } from "react-native-paper";
 import TansStackProvider from "@/components/providers/tanstack";
 import { KeyboardProvider } from "react-native-keyboard-controller";
@@ -37,7 +36,6 @@ import GraphqlClientProvider from "@/components/providers/graphql-client";
 import Toast from "react-native-toast-message";
 import toastConfig from "@/components/atoms/a-toast";
 import { NotificationProvider } from "@/components/contexts/notifications";
-import StreamVideoClientProvider from "@/components/providers/stream-video-client";
 import { initializeNotifications } from "@/lib/utils/notifications";
 import { LogBox } from "react-native";
 
@@ -88,79 +86,75 @@ export default function RootLayout() {
 					<KeyboardProvider>
 						<TansStackProvider>
 							<PaperProvider>
-								<JotaiProvider>
-									<SafeAreaProvider>
-										<NotificationProvider>
-											<StreamVideoClientProvider>
-												<ThemeProvider
-													value={
-														colorScheme === "dark" ? DarkTheme : DefaultTheme
-													}
-												>
-													<Stack screenOptions={{ animation: "fade" }}>
-														<Stack.Screen
-															name="index"
-															options={{ headerShown: false }}
-														/>
-														<Stack.Screen
-															name="+not-found"
-															options={{ headerShown: false }}
-														/>
-														<Stack.Screen
-															name="onboarding"
-															options={{ headerShown: false }}
-														/>
-														<Stack.Screen
-															name="auth"
-															options={{ headerShown: false }}
-														/>
-														<Stack.Screen
-															name="guest"
-															options={{ headerShown: false }}
-														/>
-														<Stack.Screen
-															name="host"
-															options={{ headerShown: false }}
-														/>
-														<Stack.Screen
-															name="camera"
-															options={{ headerShown: false }}
-														/>
-														<Stack.Screen
-															name="photo-gallery"
-															options={{ headerShown: false }}
-														/>
-														<Stack.Screen
-															name="hostings"
-															options={{ headerShown: false }}
-														/>
-														<Stack.Screen
-															name="kyc"
-															options={{ headerShown: false }}
-														/>
-														<Stack.Screen
-															name="bookings"
-															options={{ headerShown: false }}
-														/>
-														<Stack.Screen
-															name="chats"
-															options={{ headerShown: false }}
-														/>
-														<Stack.Screen
-															name="users"
-															options={{ headerShown: false }}
-														/>
-														<Stack.Screen
-															name="logout"
-															options={{ headerShown: false }}
-														/>
-													</Stack>
-													<StatusBar style="auto" />
-												</ThemeProvider>
-											</StreamVideoClientProvider>
-										</NotificationProvider>
-									</SafeAreaProvider>
-								</JotaiProvider>
+								<SafeAreaProvider>
+									<NotificationProvider>
+										<ThemeProvider
+											value={
+												colorScheme === "dark" ? DarkTheme : DefaultTheme
+											}
+										>
+											<Stack screenOptions={{ animation: "fade" }}>
+												<Stack.Screen
+													name="index"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
+													name="+not-found"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
+													name="onboarding"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
+													name="auth"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
+													name="guest"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
+													name="host"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
+													name="camera"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
+													name="photo-gallery"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
+													name="hostings"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
+													name="kyc"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
+													name="bookings"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
+													name="chats"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
+													name="users"
+													options={{ headerShown: false }}
+												/>
+												<Stack.Screen
+													name="logout"
+													options={{ headerShown: false }}
+												/>
+											</Stack>
+											<StatusBar style="auto" />
+										</ThemeProvider>
+									</NotificationProvider>
+								</SafeAreaProvider>
 							</PaperProvider>
 						</TansStackProvider>
 					</KeyboardProvider>

@@ -27,7 +27,6 @@ export default ({ config }) => ({
 		infoPlist: {
 			NSLocationWhenInUseUsageDescription:
 				"This app needs access to your location to determine the address of properties.",
-
 			ITSAppUsesNonExemptEncryption: false,
 			UIBackgroundModes: ["remote-notification", "audio"],
 		},
@@ -51,6 +50,8 @@ export default ({ config }) => ({
 			"android.permission.POST_NOTIFICATIONS",
 			"android.permission.FOREGROUND_SERVICE",
 			"android.permission.USE_FULL_SCREEN_INTENT",
+			"android.permission.WAKE_LOCK",
+			"android.permission.DISABLE_KEYGUARD",
 			"android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE",
 			"android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING",
 			"android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
@@ -94,7 +95,6 @@ export default ({ config }) => ({
 	owner: "mceazy2700",
 
 	plugins: [
-		"./lib/plugins/withViopPush.js",
 		"./lib/plugins/withNotifeeForeground.js",
 		"./lib/plugins/withAndroidSigning.js",
 		"react-native-vision-camera",
@@ -105,32 +105,14 @@ export default ({ config }) => ({
 			{
 				android: {
 					datePicker: {
-						colorAccent: {
-							light: "#266DD3",
-							dark: "#266DD3",
-						},
-						textColorPrimary: {
-							light: "#11181C",
-							dark: "#f0f0f0",
-						},
-						textColorPrimaryInverse: {
-							light: "#ffffff",
-							dark: "#000000",
-						},
-						windowBackground: {
-							light: "#fff",
-							dark: "#000000",
-						},
+						colorAccent: { light: "#266DD3", dark: "#266DD3" },
+						textColorPrimary: { light: "#11181C", dark: "#f0f0f0" },
+						textColorPrimaryInverse: { light: "#ffffff", dark: "#000000" },
+						windowBackground: { light: "#fff", dark: "#000000" },
 					},
 					timePicker: {
-						background: {
-							light: "#266DD3",
-							dark: "#266DD3",
-						},
-						numbersBackgroundColor: {
-							light: "#266DD3",
-							dark: "#266DD3",
-						},
+						background: { light: "#266DD3", dark: "#266DD3" },
+						numbersBackgroundColor: { light: "#266DD3", dark: "#266DD3" },
 					},
 				},
 			},
@@ -142,17 +124,12 @@ export default ({ config }) => ({
 				android: {
 					minSdkVersion: 26,
 					extraMavenRepos: [
-						"../../node_modules/@stream-io/video-react-native-sdk/android",
 						"../../node_modules/@notifee/react-native/android/libs",
 					],
 				},
 				ios: {
 					useFrameworks: "static",
-					forceStaticLinking: [
-						"RNFBApp",
-						"RNFBMessaging",
-						"stream-react-native-webrtc",
-					],
+					forceStaticLinking: ["RNFBApp", "RNFBMessaging"],
 				},
 			},
 		],
@@ -184,14 +161,11 @@ export default ({ config }) => ({
 			},
 		],
 		[
-			"@stream-io/video-react-native-sdk",
+			"@daily-co/config-plugin-rn-daily-js",
 			{
-				ringingPushNotifications: {
-					disableVideoIos: false,
-					includesCallsInRecentsIos: false,
-					showWhenLockedAndroid: true,
-				},
-				androidKeepCallAlive: true,
+				enableCamera: true,
+				enableMicrophone: true,
+				enableScreenShare: false,
 			},
 		],
 		[

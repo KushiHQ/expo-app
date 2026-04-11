@@ -2,15 +2,12 @@ import ThemedText from "@/components/atoms/a-themed-text";
 import { LineiconsSearch1 } from "@/components/icons/i-search";
 import DetailsLayout from "@/components/layouts/details";
 import { PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { generateMockChatsWithHistory } from "@/lib/constants/mocks/chat";
 import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useUserChatsQuery } from "@/lib/services/graphql/generated";
-import { chatsAtom } from "@/lib/stores/chats";
 import { hexToRgba } from "@/lib/utils/colors";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useAtom } from "jotai";
 import React from "react";
 import { Pressable, RefreshControl, TextInput, View } from "react-native";
 import Skeleton from "../atoms/a-skeleton";
@@ -40,15 +37,8 @@ const ChatSkeleton = () => {
 const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 	const router = useRouter();
 	const colors = useThemeColors();
-	const [chats, setChats] = useAtom(chatsAtom);
 	const [{ data: chatData, fetching: chatsFetching }, refetchChat] =
 		useUserChatsQuery();
-
-	React.useEffect(() => {
-		if (!chats.length) {
-			setChats(generateMockChatsWithHistory(20));
-		}
-	}, [chats.length, setChats]);
 
 	return (
 		<DetailsLayout

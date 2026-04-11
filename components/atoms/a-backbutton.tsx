@@ -14,7 +14,7 @@ const BackButton: React.FC<
 		<Pressable
 			style={[{ backgroundColor: hexToRgba(colors["icon"], 0.6) }, style]}
 			className={twMerge(
-				"h-8 w-8 absolute top-16 left-6 items-center justify-center rounded-full",
+				"h-10 w-10 absolute top-16 left-6 items-center justify-center rounded-xl",
 				className,
 			)}
 			{...rest}

@@ -11,10 +11,11 @@ import {
 	requestPermission,
 	AuthorizationStatus,
 } from "@react-native-firebase/messaging";
-import notifee from "@notifee/react-native";
-import { handleNotifeeEvent } from "@/lib/utils/call";
+import notifee, { EventType } from "@notifee/react-native";
+import { handleIncomingCall, handleNotifeeEvent } from "@/lib/utils/call";
 import { useRouter } from "expo-router";
 import { CALL_TYPE_VALUE } from "@/lib/types/enums/hoting-chat";
+import { AppState, AppStateStatus } from "react-native";
 
 interface NotificationContextType {
 	token: string | null;
@@ -44,9 +45,11 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 	const [, updateToken] = useUpdatePushNotificationTokenMutation();
 	const router = useRouter();
 
+	const handledCallId = React.useRef<string | null>(null);
+
 	const routeToCall = React.useCallback(
 		(data: any) => {
-			if (!data?.chatId || !data?.intent) return;
+			if (!data?.chatId || !data?.intent || !data?.callId) return;
 
 			const isVoice = data.intent === CALL_TYPE_VALUE[CallType.Voice];
 			const isVideo = data.intent === CALL_TYPE_VALUE[CallType.Video];
@@ -59,6 +62,7 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 					params: {
 						id: String(data.chatId),
 						initiate: "false",
+						callId: String(data.callId),
 					},
 				});
 			}
@@ -93,24 +97,70 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 
 		setupMessaging();
 
+		const handleAppStateChange = async (nextAppState: AppStateStatus) => {
+			if (nextAppState === "active") {
+				const notifications = await notifee.getDisplayedNotifications();
+
+				const ringingNotification = notifications.find(
+					(n) =>
+						n.notification.data?.intent === CALL_TYPE_VALUE[CallType.Voice] ||
+						n.notification.data?.intent === CALL_TYPE_VALUE[CallType.Video],
+				);
+
+				if (ringingNotification && ringingNotification.notification.data) {
+					const data = ringingNotification.notification.data;
+
+					if (handledCallId.current !== data.callId) {
+						handledCallId.current = String(data.callId);
+						routeToCall(data);
+					}
+				} else {
+					handledCallId.current = null;
+				}
+			}
+		};
+
+		const appStateSub = AppState.addEventListener(
+			"change",
+			handleAppStateChange,
+		);
+
+		handleAppStateChange(AppState.currentState);
+
+		notifee.getInitialNotification().then(async (initialNotification) => {
+			if (initialNotification) {
+				const isAction = initialNotification.pressAction?.id !== "default";
+
+				await handleNotifeeEvent({
+					type: isAction ? EventType.ACTION_PRESS : EventType.PRESS,
+					detail: initialNotification,
+				});
+			}
+		});
+
 		const unsubscribeForeground = onMessage(
 			messagingInstance,
 			async (remoteMessage) => {
-				routeToCall(remoteMessage.data);
+				if (remoteMessage.data?.intent === "cancel_call") {
+					await handleIncomingCall(remoteMessage);
+					return;
+				}
+
+				if (
+					remoteMessage.data?.intent === CALL_TYPE_VALUE[CallType.Voice] ||
+					remoteMessage.data?.intent === CALL_TYPE_VALUE[CallType.Video]
+				) {
+					routeToCall(remoteMessage.data);
+				}
 			},
 		);
-
-		notifee.getInitialNotification().then((notification) => {
-			if (notification?.notification.data) {
-				routeToCall(notification.notification.data);
-			}
-		});
 
 		const unsubscribeNotifee = notifee.onForegroundEvent(async (event) => {
 			await handleNotifeeEvent(event);
 		});
 
 		return () => {
+			appStateSub.remove();
 			unsubscribeForeground();
 			unsubscribeNotifee();
 		};

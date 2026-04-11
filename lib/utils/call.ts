@@ -1,4 +1,4 @@
-import { Call, JoinCallData } from "@stream-io/video-react-native-sdk";
+import * as Crypto from "expo-crypto";
 import * as Linking from "expo-linking";
 import notifee, {
 	Event,
@@ -11,25 +11,7 @@ import notifee, {
 import { createAudioPlayer } from "expo-audio";
 import { CALL_TYPE_VALUE } from "../types/enums/hoting-chat";
 import { CallType } from "../services/graphql/generated";
-
-export const joinWithRetry = async (
-	call: Call,
-	options: JoinCallData = { create: true },
-	retries = 3,
-) => {
-	for (let attempt = 1; attempt <= retries; attempt++) {
-		try {
-			await call.join(options);
-			return;
-		} catch (error: any) {
-			if (error?.code === 16 && attempt < retries) {
-				await new Promise((res) => setTimeout(res, 300 * attempt));
-			} else {
-				throw error;
-			}
-		}
-	}
-};
+import { Href } from "expo-router";
 
 const receiverRingtone = require("@/assets/audio/ringtone.mp3");
 
@@ -53,6 +35,7 @@ export const stopRingtone = async () => {
 
 export const handleIncomingCall = async (remoteMessage: any) => {
 	const data = remoteMessage.data;
+	console.log(data);
 	if (data?.intent === "voice-call" || data?.intent === "video-call") {
 		const channelId = await notifee.createChannel({
 			id: "incoming-call-v3",
@@ -108,7 +91,7 @@ export const handleIncomingCall = async (remoteMessage: any) => {
 
 		await playRingtone();
 	} else if (data?.intent === "cancel_call") {
-		console.log(data);
+		console.log("Recieved Cancel", data);
 		await stopRingtone();
 		await notifee.cancelNotification(data.chatId);
 		await notifee.stopForegroundService();
@@ -120,36 +103,49 @@ export const handleNotifeeEvent = async ({ type, detail }: Event) => {
 		const { pressAction, notification } = detail;
 		const data = notification?.data as any;
 
+		if (pressAction?.id === "full_screen") {
+			if (data?.intent === CALL_TYPE_VALUE[CallType.Voice]) {
+				await Linking.openURL(
+					`kushi://chats/${data.chatId}/call/voice?initiate=false&callId=${data.callId}`,
+				);
+			} else if (data?.intent === CALL_TYPE_VALUE[CallType.Video]) {
+				await Linking.openURL(
+					`kushi://chats/${data.chatId}/call/video?initiate=false&callId=${data.callId}`,
+				);
+			}
+			return;
+		}
+
 		await stopRingtone();
 
 		if (pressAction?.id === "accept") {
 			if (data?.intent === CALL_TYPE_VALUE[CallType.Voice]) {
 				await Linking.openURL(
-					`kushi://chats/${data.chatId}/call/voice?initiate=false&accept=true`,
+					`kushi://chats/${data.chatId}/call/voice?initiate=false&accept=true&callId=${data.callId}`,
 				);
 			} else if (data?.intent === CALL_TYPE_VALUE[CallType.Video]) {
 				await Linking.openURL(
-					`kushi://chats/${data.chatId}/call/video?initiate=false&accept=true`,
+					`kushi://chats/${data.chatId}/call/video?initiate=false&accept=true&callId=${data.callId}`,
 				);
 			}
 		} else if (pressAction?.id === "default") {
 			if (data?.intent === CALL_TYPE_VALUE[CallType.Voice]) {
 				await Linking.openURL(
-					`kushi://chats/${data.chatId}/call/voice?initiate=false`,
+					`kushi://chats/${data.chatId}/call/voice?initiate=false&callId=${data.callId}`,
 				);
 			} else if (data?.intent === CALL_TYPE_VALUE[CallType.Video]) {
 				await Linking.openURL(
-					`kushi://chats/${data.chatId}/call/video?initiate=false`,
+					`kushi://chats/${data.chatId}/call/video?initiate=false&callId=${data.callId}`,
 				);
 			}
 		} else if (pressAction?.id === "reject") {
 			if (data?.intent === CALL_TYPE_VALUE[CallType.Voice]) {
 				await Linking.openURL(
-					`kushi://chats/${data.chatId}/call/voice?initiate=false&accept=false`,
+					`kushi://chats/${data.chatId}/call/voice?initiate=false&accept=false&callId=${data.callId}`,
 				);
 			} else if (data?.intent === CALL_TYPE_VALUE[CallType.Video]) {
 				await Linking.openURL(
-					`kushi://chats/${data.chatId}/call/video?initiate=false&accept=false`,
+					`kushi://chats/${data.chatId}/call/video?initiate=false&accept=false&callId=${data.callId}`,
 				);
 			}
 		}
@@ -161,3 +157,17 @@ export const handleNotifeeEvent = async ({ type, detail }: Event) => {
 		await notifee.stopForegroundService();
 	}
 };
+
+export function buildCallURL(
+	chatId: string,
+	callType: "voice" | "video",
+	initiate = false,
+) {
+	let url: Href = `/chats/${chatId}/call/${callType}`;
+	const uniqueCallId = Crypto.randomUUID();
+	if (initiate) {
+		url = `${url}?initiate=true&callId=${uniqueCallId}`;
+	}
+
+	return url;
+}

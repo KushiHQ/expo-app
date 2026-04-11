@@ -94,7 +94,7 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 						<ThemedText
 							style={{ fontSize: 14, color: hexToRgba(colors.text, 0.8) }}
 						>
-							{formatDate(hosting.dateAdded)}
+							{formatDate(hosting.createdAt)}
 						</ThemedText>
 						<View className="flex-row items-center gap-1">
 							<MynauiStarSolid color={colors.accent} size={16} />

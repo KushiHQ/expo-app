@@ -4,9 +4,8 @@ import DetailsLayout from "@/components/layouts/details";
 import BiometricsVerification from "@/components/molecules/m-biometriecs-verification";
 import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { securitySettingsAtom } from "@/lib/stores/security-settings";
+import { useSecuritySettingsStore } from "@/lib/stores/security-settings";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useAtom } from "jotai";
 import { ChevronRight } from "lucide-react-native";
 import React from "react";
 import { Pressable, View } from "react-native";
@@ -16,13 +15,17 @@ export default function UserSecurity() {
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
 	const [biometrics, setBiometrics] = React.useState<"pay" | "auth">();
-	const [securitySettings, setSecuritySettings] = useAtom(securitySettingsAtom);
+	const securitySettings = useSecuritySettingsStore((state) => state.settings);
+
+	const setSecuritySettings = useSecuritySettingsStore(
+		(state) => state.setSecuritySettings,
+	);
 
 	const handleSuccess = () => {
 		if (biometrics === "auth") {
-			setSecuritySettings((c) => ({ ...c, biometrics: true }));
+			setSecuritySettings({ biometrics: true });
 		} else {
-			setSecuritySettings((c) => ({ ...c, payWithBiometrics: true }));
+			setSecuritySettings({ payWithBiometrics: true });
 		}
 		setBiometrics(undefined);
 	};
@@ -40,7 +43,7 @@ export default function UserSecurity() {
 							onValueChange={(value) =>
 								value
 									? setBiometrics("auth")
-									: setSecuritySettings((c) => ({ ...c, biometrics: false }))
+									: setSecuritySettings({ biometrics: false })
 							}
 						/>
 					</View>
@@ -53,10 +56,7 @@ export default function UserSecurity() {
 							onValueChange={(value) =>
 								value
 									? setBiometrics("pay")
-									: setSecuritySettings((c) => ({
-											...c,
-											payWithBiometrics: false,
-										}))
+									: setSecuritySettings({ payWithBiometrics: false })
 							}
 						/>
 					</View>

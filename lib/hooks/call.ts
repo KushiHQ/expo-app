@@ -1,17 +1,17 @@
-import {
-	callManager,
-	useCall,
-	useCallStateHooks,
-} from "@stream-io/video-react-native-sdk";
 import { useLocalSearchParams, usePathname, useRouter } from "expo-router";
-import React, { useEffect, useRef } from "react";
-import { useUser } from "./user";
-import { useHostingChatQuery } from "../services/graphql/generated";
+import { useEffect, useRef, useState, useCallback } from "react";
+import {
+	CallType,
+	useHostingChatQuery,
+	useSendChatCallNotificationMutation,
+} from "../services/graphql/generated";
 import { cast } from "../types/utils";
 import { useCountUp } from "./use-countup";
 import { useAudioPlayer } from "expo-audio";
-import { joinWithRetry } from "../utils/call";
-import { CameraType } from "expo-camera";
+import Daily, {
+	DailyCall,
+	DailyParticipant,
+} from "@daily-co/react-native-daily-js";
 
 const callerRingtone = require("@/assets/audio/caller-ringtone.mp3");
 const receiverRingtone = require("@/assets/audio/ringtone.mp3");
@@ -20,31 +20,23 @@ export const useActiveCall = () => {
 	const router = useRouter();
 	const pathname = usePathname();
 	const isVideoCall = pathname.endsWith("video");
-	const { id, initiate, accept } = useLocalSearchParams();
-	const { user } = useUser();
-	const call = useCall();
+	const { id, initiate, accept, callId } = useLocalSearchParams();
 
-	const {
-		useRemoteParticipants,
-		useLocalParticipant,
-		useMicrophoneState,
-		useCameraState,
-	} = useCallStateHooks();
+	const [call, setCall] = useState<DailyCall | null>(null);
+	const [localParticipant, setLocalParticipant] =
+		useState<DailyParticipant | null>(null);
+	const [remoteParticipant, setRemoteParticipant] =
+		useState<DailyParticipant | null>(null);
+	const [cameraEnabled, setCameraEnabled] = useState(isVideoCall);
+	const [micEnabled, setMicEnabled] = useState(true);
 
-	const remoteParticipants = useRemoteParticipants();
-	const localParticipant = useLocalParticipant();
-	const { status: micStatus } = useMicrophoneState();
-	const { status: cameraStatus } = useCameraState();
-
-	const [facing, setFacing] = React.useState<CameraType>("front");
-	const [isRinging, setIsRinging] = React.useState(true);
-	const [isSpeakerOn, setIsSpeakerOn] = React.useState(isVideoCall);
+	const [isRinging, setIsRinging] = useState(true);
+	const [isSpeakerOn, setIsSpeakerOn] = useState(isVideoCall);
+	const [, sendNotification] = useSendChatCallNotificationMutation();
 
 	const [{ data: chatData }] = useHostingChatQuery({
 		variables: { chatId: cast(id) },
 	});
-
-	const recipientId = chatData?.hostingChat.recipientUser?.id;
 
 	const { formatted: callDuration } = useCountUp(!isRinging);
 
@@ -52,20 +44,37 @@ export const useActiveCall = () => {
 		initiate === "true" ? callerRingtone : receiverRingtone,
 	);
 
+	// 1. INITIALIZE DAILY CALL OBJECT
+	useEffect(() => {
+		const newCall = Daily.createCallObject();
+		setCall(newCall);
+
+		return () => {
+			newCall.destroy();
+		};
+	}, []);
+
 	useEffect(() => {
 		let timeoutId: ReturnType<typeof setTimeout>;
-
 		if (initiate === "true" && isRinging) {
 			timeoutId = setTimeout(() => {
+				sendNotification({
+					chatId: cast(id),
+					callId: String(callId),
+					callType: CallType.Cancel,
+				}).catch((err) =>
+					console.error("Failed to send timeout cancel push", err),
+				);
+
 				handleLeave();
 			}, 45000);
 		}
-
 		return () => {
 			if (timeoutId) clearTimeout(timeoutId);
 		};
-	}, [initiate, isRinging]);
+	}, [initiate, isRinging, id, callId, sendNotification]);
 
+	// 3. RINGTONE AUDIO
 	useEffect(() => {
 		const startRinging = async () => {
 			try {
@@ -85,85 +94,62 @@ export const useActiveCall = () => {
 		return () => {
 			try {
 				player.pause();
-			} catch (e) {}
+			} catch (e) { }
 		};
 	}, [player, isRinging]);
 
 	useEffect(() => {
 		if (!call) return;
 
-		const handleParticipantJoined = (event: any) => {
-			if (event.participant.user.id !== user.user?.id) {
-				setIsRinging(false);
+		const updateParticipants = () => {
+			const p = call.participants();
+			setLocalParticipant(p.local);
+
+			const remoteIds = Object.keys(p).filter((pid) => pid !== "local");
+			if (remoteIds.length > 0) {
+				setRemoteParticipant(p[remoteIds[0]]);
+				if (isRinging) setIsRinging(false);
+			} else {
+				setRemoteParticipant(null);
 			}
 		};
 
-		const handleCallAccepted = () => setIsRinging(false);
-
-		const handleParticipantLeft = (event: any) => {
-			if (event.participant.user.id !== user.user?.id) {
-				call.endCall();
-				router.back();
-			}
-		};
-
-		const handleCallRejected = () => {
-			setIsRinging(false);
-			call.endCall();
-			router.replace(`/chats/${id}`);
-		};
-
-		const handleCallEnded = () => {
+		const handleLeft = () => {
 			setIsRinging(false);
 			router.replace(`/chats/${id}`);
 		};
 
-		const unsubscribeJoined = call.on(
-			"call.session_participant_joined",
-			handleParticipantJoined,
-		);
-		const unsubscribeAccepted = call.on("call.accepted", handleCallAccepted);
-		const unsubscribeLeft = call.on(
-			"call.session_participant_left",
-			handleParticipantLeft,
-		);
-		const unsubscribeRejected = call.on("call.rejected", handleCallRejected);
-		const unsubscribeEnded = call.on("call.ended", handleCallEnded);
+		call.on("joined-meeting", updateParticipants);
+		call.on("participant-joined", updateParticipants);
+		call.on("participant-updated", updateParticipants);
+
+		call.on("participant-left", handleLeft);
+		call.on("left-meeting", handleLeft);
+		call.on("error", handleLeft);
 
 		return () => {
-			unsubscribeJoined();
-			unsubscribeAccepted();
-			unsubscribeLeft();
-			unsubscribeRejected();
-			unsubscribeEnded();
+			call.off("joined-meeting", updateParticipants);
+			call.off("participant-joined", updateParticipants);
+			call.off("participant-updated", updateParticipants);
+			call.off("participant-left", handleLeft);
+			call.off("left-meeting", handleLeft);
+			call.off("error", handleLeft);
 		};
-	}, [call, user.user?.id, router]);
-
-	useEffect(() => {
-		call?.camera.selectDirection(facing);
-	}, [facing, call]);
-
-	useEffect(() => {
-		callManager.speaker.setForceSpeakerphoneOn(isSpeakerOn);
-	}, [isSpeakerOn]);
+	}, [call, id, router, isRinging]);
 
 	const actionHandled = useRef(false);
-
 	useEffect(() => {
 		if (!call || actionHandled.current) return;
 
 		const setupCall = async () => {
 			try {
 				if (initiate === "true") {
-					if (!recipientId || !user.user?.id) return;
-
 					actionHandled.current = true;
 
-					await call.getOrCreate({
-						ring: true,
-						data: {
-							members: [{ user_id: user.user.id }, { user_id: recipientId }],
-						},
+					await sendNotification({
+						chatId: cast(id),
+						callId: String(callId),
+						callType: isVideoCall ? CallType.Video : CallType.Voice,
 					});
 
 					await handleJoin();
@@ -173,6 +159,10 @@ export const useActiveCall = () => {
 				} else if (accept === "false") {
 					actionHandled.current = true;
 					await handleLeave();
+				} else {
+					if (isVideoCall) {
+						await call.startCamera();
+					}
 				}
 			} catch (error) {
 				console.error("Failed to setup call:", error);
@@ -181,91 +171,74 @@ export const useActiveCall = () => {
 		};
 
 		setupCall();
-	}, [call, initiate, accept, recipientId, user.user?.id]);
+	}, [call, initiate, accept]);
 
-	const handleLeave = async () => {
+	const handleLeave = useCallback(async () => {
 		try {
 			player.pause();
-		} catch (e) {}
-
-		try {
-			if (initiate === "true" && isRinging) {
-				await call?.endCall();
-			} else {
-				await call?.reject();
-			}
-		} catch (e: any) {
-			if (
-				e?.message?.includes("AddIceCandidate") ||
-				e?.message?.includes("shut down")
-			) {
-				console.info("Gracefully ignored background WebRTC cleanup.");
-			} else {
-				console.warn("Error leaving call", e);
-			}
-		}
-
-		router.replace(`/chats/${id}`);
-	};
-
-	const handleJoin = async () => {
-		if (initiate !== "true") {
-			setIsRinging(false);
-		}
-
+		} catch (e) { }
 		try {
 			if (call) {
-				const callingState = call.state.callingState;
-				if (callingState === "joining" || callingState === "joined") {
-					return;
-				}
+				await call.leave();
+			}
+		} catch (e) {
+			console.warn("Error leaving call", e);
+		}
+		router.replace(`/chats/${id}`);
+	}, [call, id, player, router]);
 
-				await joinWithRetry(call, {
-					video: isVideoCall,
-					data: {
-						settings_override: {
-							video: {
-								camera_default_on: isVideoCall,
-								target_resolution: {
-									bitrate: 400000,
-									height: 640,
-									width: 360,
-								},
-							},
-						},
-					},
-				});
+	const handleJoin = useCallback(async () => {
+		try {
+			if (!call) return;
 
-				if (isVideoCall) {
-					await call.camera.enable();
-				}
+			const domain = process.env.EXPO_PUBLIC_DAILY_DOMAIN;
+			if (!domain) {
+				throw new Error("Missing EXPO_PUBLIC_DAILY_DOMAIN in .env");
+			}
+			if (!callId) {
+				throw new Error("Missing callId in route parameters");
+			}
+			const roomUrl = `https://${domain}/${callId}`;
+
+			await call.join({
+				url: roomUrl,
+				videoSource: isVideoCall,
+				audioSource: true,
+			});
+
+			if (initiate !== "true") {
+				setIsRinging(false);
 			}
 		} catch (e) {
 			console.error("Join failed", e);
 		}
-	};
+	}, [call, isVideoCall, initiate, callId]);
 
-	const toggleCamera = async () => {
+	const toggleCamera = useCallback(() => {
 		if (!call) return;
-		if (cameraStatus === "enabled") {
-			await call.camera.disable();
-		} else {
-			await call.camera.enable();
-		}
-	};
+		const newState = !cameraEnabled;
+		call.setLocalVideo(newState);
+		setCameraEnabled(newState);
+	}, [call, cameraEnabled]);
 
-	const toggleMic = async () => {
+	const toggleMic = useCallback(() => {
 		if (!call) return;
-		if (micStatus === "enabled") {
-			await call.microphone.disable();
-		} else {
-			await call.microphone.enable();
+		const newState = !micEnabled;
+		call.setLocalAudio(newState);
+		setMicEnabled(newState);
+	}, [call, micEnabled]);
+
+	const toggleFacingCamera = useCallback(async () => {
+		if (!call) return;
+
+		try {
+			await call.cycleCamera();
+		} catch (e) {
+			console.error("Failed to flip camera:", e);
 		}
-	};
+	}, [call]);
 
 	const toggleSpeakerOn = () => setIsSpeakerOn((c) => !c);
-	const toggleFacingCamera = () =>
-		setFacing((c) => (c === "front" ? "back" : "front"));
 
 	return {
 		call,
@@ -277,13 +250,12 @@ export const useActiveCall = () => {
 		isRinging,
 		isSpeakerOn,
 		toggleSpeakerOn,
-		remoteParticipant: remoteParticipants.at(0),
+		remoteParticipant,
 		localParticipant,
 		toggleFacingCamera,
-		setFacing,
 		toggleCamera,
-		cameraEnabled: cameraStatus === "enabled",
-		micEnabled: micStatus === "enabled",
+		cameraEnabled,
+		micEnabled,
 		toggleMic,
 	};
 };

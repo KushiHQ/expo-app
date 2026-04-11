@@ -6,14 +6,33 @@ import Logo from "../icons/i-logo";
 import ThemedText from "../atoms/a-themed-text";
 import { Fonts } from "@/lib/constants/theme";
 import Button from "../atoms/a-button";
-import { NotificationsQuery } from "@/lib/services/graphql/generated";
+import {
+	NotificationsQuery,
+	NotificationSubject,
+	NotificationType,
+} from "@/lib/services/graphql/generated";
+import { useRouter } from "expo-router";
 
 type Props = {
 	notification: NotificationsQuery["notifications"][number];
 };
 
 const NotificationCard: React.FC<Props> = ({ notification }) => {
+	const router = useRouter();
 	const colors = useThemeColors();
+
+	function handleView() {
+		if (notification?.data?.id) {
+			if (notification.data?.subject === NotificationSubject.Hosting) {
+				router.push(`/hostings/${notification.data.id}`);
+			} else if (notification.data?.subject === NotificationSubject.Chat) {
+				router.push(`/chats/${notification.data.id}/`);
+			} else if (
+				notification.data.subject === NotificationSubject.BookingApplication
+			) {
+			}
+		}
+	}
 
 	return (
 		<Pressable
@@ -42,8 +61,15 @@ const NotificationCard: React.FC<Props> = ({ notification }) => {
 					</ThemedText>
 				</View>
 			</View>
-			<Button variant="outline" type="shade" className="py-2">
-				<ThemedText>Update</ThemedText>
+			<Button
+				variant="outline"
+				type="shade"
+				className="py-2"
+				onPress={handleView}
+			>
+				<ThemedText>
+					{notification.type === NotificationType.System ? "Update" : "View"}
+				</ThemedText>
 			</Button>
 		</Pressable>
 	);

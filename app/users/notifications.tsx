@@ -4,40 +4,29 @@ import NotificationBell from "@/assets/vectors/notification-bell.svg";
 import ThemedText from "@/components/atoms/a-themed-text";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
-import { useAtom } from "jotai";
-import { notificationsAtom } from "@/lib/stores/notifications";
 import React from "react";
-import {
-	generateMockNotifications,
-	NOTIFICATION_CATEGORY,
-} from "@/lib/constants/mocks/notifications";
 import NotificationCard from "@/components/molecules/m-notification-card";
 import Button from "@/components/atoms/a-button";
 import { cast } from "@/lib/types/utils";
+import {
+	NotificationsFilterInput,
+	NotificationType,
+	useNotificationsQuery,
+} from "@/lib/services/graphql/generated";
 
 export default function UserNotifications() {
 	const colors = useThemeColors();
-	const [notifications, setNotifications] = useAtom(notificationsAtom);
-	const [filter, setFilter] = React.useState<"All" | "Guest Alerts" | "System">(
-		"All",
-	);
-
-	const filteredNotifications = React.useMemo(() => {
-		if (filter !== "All") {
-			return notifications.filter((v) => v.category !== filter);
-		}
-		return notifications;
-	}, [filter, notifications]);
-
-	React.useEffect(() => {
-		if (!notifications.length) {
-			setNotifications(generateMockNotifications(20));
-		}
-	}, [setNotifications, notifications.length]);
+	const [filter, setFilter] = React.useState({} as NotificationsFilterInput);
+	const [{ data: notificationsData }] = useNotificationsQuery({
+		variables: {
+			pagination: { limit: 5 },
+			filter,
+		},
+	});
 
 	return (
 		<DetailsLayout title="Notifications">
-			{!notifications.length ? (
+			{!(notificationsData?.notifications ?? []).length ? (
 				<View className="flex-1 items-center justify-center">
 					<View
 						className="items-center justify-center gap-4 border rounded-xl p-10"
@@ -52,11 +41,8 @@ export default function UserNotifications() {
 			) : (
 				<View className="gap-8">
 					<View className="gap-2">
-						<ThemedText style={{ fontSize: 14 }}>
-							Stay updated on your listings, inquiries, and system alerts.
-						</ThemedText>
 						<View className="flex-row items-baseline">
-							{["All", ...NOTIFICATION_CATEGORY].map((v, index) => (
+							{["All", ...Object.keys(NotificationType)].map((v, index) => (
 								<Button
 									key={index}
 									onPress={() => setFilter(cast(v))}
@@ -81,7 +67,7 @@ export default function UserNotifications() {
 						</View>
 					</View>
 					<View className="gap-2">
-						{filteredNotifications.map((notification, index) => (
+						{notificationsData?.notifications.map((notification, index) => (
 							<NotificationCard notification={notification} key={index} />
 						))}
 					</View>

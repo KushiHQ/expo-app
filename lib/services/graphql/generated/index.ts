@@ -851,6 +851,7 @@ export type MutationsResendPasswordChangeOtpArgs = {
 
 
 export type MutationsSendChatCallNotificationArgs = {
+  callId: Scalars['String']['input'];
   callType: CallType;
   chatId: Scalars['String']['input'];
 };
@@ -1607,6 +1608,7 @@ export type ClearChatUrnreadMessagesMutation = { __typename?: 'Mutations', clear
 export type SendChatCallNotificationMutationVariables = Exact<{
   chatId: Scalars['String']['input'];
   callType: CallType;
+  callId: Scalars['String']['input'];
 }>;
 
 
@@ -1888,7 +1890,7 @@ export type NotificationsQueryVariables = Exact<{
 }>;
 
 
-export type NotificationsQuery = { __typename?: 'Query', notifications: Array<{ __typename?: 'Notification', id: string, title: string, message: string, type?: NotificationType | null, createdAt: string, lastUpdated: string }> };
+export type NotificationsQuery = { __typename?: 'Query', notifications: Array<{ __typename?: 'Notification', id: string, title: string, message: string, type?: NotificationType | null, createdAt: string, lastUpdated: string, data?: { __typename?: 'NotificationData', intent?: string | null, subject?: NotificationSubject | null, id?: string | null } | null }> };
 
 export type BanksQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2442,8 +2444,8 @@ export function useClearChatUrnreadMessagesMutation() {
   return Urql.useMutation<ClearChatUrnreadMessagesMutation, ClearChatUrnreadMessagesMutationVariables>(ClearChatUrnreadMessagesDocument);
 };
 export const SendChatCallNotificationDocument = gql`
-    mutation SendChatCallNotification($chatId: String!, $callType: CallType!) {
-  sendChatCallNotification(chatId: $chatId, callType: $callType) {
+    mutation SendChatCallNotification($chatId: String!, $callType: CallType!, $callId: String!) {
+  sendChatCallNotification(chatId: $chatId, callType: $callType, callId: $callId) {
     message
   }
 }
@@ -3481,6 +3483,11 @@ export const NotificationsDocument = gql`
     type
     createdAt
     lastUpdated
+    data {
+      intent
+      subject
+      id
+    }
   }
 }
     `;

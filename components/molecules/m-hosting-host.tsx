@@ -17,6 +17,7 @@ import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import LoadingModal from "../atoms/a-loading-modal";
 import { handleError } from "@/lib/utils/error";
 import { useRouter } from "expo-router";
+import { buildCallURL } from "@/lib/utils/call";
 
 type Props = {
   hosting?: HostingQuery["hosting"];
@@ -48,7 +49,7 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
         }
         if (res.data) {
           router.push(
-            `/chats/${res.data.initiateHostingChat.id}/call/voice?initiate=true`,
+            buildCallURL(res.data.initiateHostingChat.id, "voice", true),
           );
         }
       });

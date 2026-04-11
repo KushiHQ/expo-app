@@ -24,6 +24,7 @@ import ThemedView from "../atoms/a-themed-view";
 import { IonNotificationsOutline } from "../icons/i-notifications";
 import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import { useUser } from "@/lib/hooks/user";
+import { buildCallURL } from "@/lib/utils/call";
 
 type Props = {
 	children?: React.ReactNode;
@@ -153,7 +154,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 									<ThemedText
 										className="py-0"
 										style={{
-											fontSize: 10,
+											fontSize: avatar ? 10 : 16,
 											height: 20,
 											color: backButton === "light" ? "#fff" : colors.text,
 										}}
@@ -189,9 +190,9 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 							)}
 							{withPhone && (
 								<Pressable
-									onPress={() =>
-										router.push(`/chats/${id}/call/voice?initiate=true`)
-									}
+									onPress={() => {
+										router.push(buildCallURL(String(id), "voice", true));
+									}}
 									className="h-10 w-10 rounded-xl justify-center items-center"
 									style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
 								>
@@ -200,9 +201,9 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 							)}
 							{withVideo && (
 								<Pressable
-									onPress={() =>
-										router.push(`/chats/${id}/call/video?initiate=true`)
-									}
+									onPress={() => {
+										router.push(buildCallURL(String(id), "video", true));
+									}}
 									className="h-10 w-10 rounded-xl justify-center items-center"
 									style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
 								>

@@ -12,6 +12,11 @@ export const NOTIFICATIONS_QUERY = gql`
       type
       createdAt
       lastUpdated
+      data {
+        intent
+        subject
+        id
+      }
     }
   }
 `;
