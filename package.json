@@ -9,8 +9,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "codegen": "graphql-codegen --config codegen.ts",
-    "postinstall": "patch-package"
+    "codegen": "graphql-codegen --config codegen.ts"
   },
   "dependencies": {
     "@config-plugins/react-native-webrtc": "^13.0.0",
@@ -71,7 +70,6 @@
     "lucide-react-native": "^0.545.0",
     "moment": "^2.30.1",
     "nativewind": "^4.2.3",
-    "patch-package": "^8.0.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
