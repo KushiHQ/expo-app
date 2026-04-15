@@ -1607,7 +1607,7 @@ export type CreateUpdateMessageMutationVariables = Exact<{
 }>;
 
 
-export type CreateUpdateMessageMutation = { __typename?: 'Mutations', createUpdateMessage: { __typename?: 'HostingChatMessage', id: string, text: string, isSender: boolean, edited?: boolean | null, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
+export type CreateUpdateMessageMutation = { __typename?: 'Mutations', createUpdateMessage: { __typename?: 'HostingChatMessage', id: string, text: string, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
 
 export type ClearChatUrnreadMessagesMutationVariables = Exact<{
   chatId: Scalars['String']['input'];
@@ -1968,7 +1968,7 @@ export type LatestHostingChatMessageSubscriptionVariables = Exact<{
 }>;
 
 
-export type LatestHostingChatMessageSubscription = { __typename?: 'Subscriptions', latestHostingChatMessage: { __typename?: 'HostingChatMessage', id: string, text: string, isSender: boolean, edited?: boolean | null, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
+export type LatestHostingChatMessageSubscription = { __typename?: 'Subscriptions', latestHostingChatMessage: { __typename?: 'HostingChatMessage', id: string, text: string, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
 
 export type OnlineUserSubscriptionVariables = Exact<{
   userId: Scalars['String']['input'];
@@ -2423,6 +2423,7 @@ export const CreateUpdateMessageDocument = gql`
       }
     }
     edited
+    createdAt
     lastUpdated
     assets {
       id
@@ -3740,6 +3741,7 @@ export const LatestHostingChatMessageDocument = gql`
       }
     }
     edited
+    createdAt
     lastUpdated
     assets {
       id

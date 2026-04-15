@@ -23,6 +23,7 @@ export const CREATE_UPDATE_MESSAGE = gql`
         }
       }
       edited
+      createdAt
       lastUpdated
       assets {
         id

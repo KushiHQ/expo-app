@@ -15,6 +15,7 @@ export const LATEST_HOSTING_CHAT_MESSAGES = gql`
         }
       }
       edited
+      createdAt
       lastUpdated
       assets {
         id

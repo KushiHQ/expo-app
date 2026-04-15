@@ -191,7 +191,7 @@ export default function ChatDetails() {
             justifyContent: "flex-end",
           }}
           ListFooterComponent={
-            <View className="mt-4 mb-4">
+            <View className="mt-4 mb-8">
               <View className="items-center justify-center">
                 <ThemedText style={{ fontFamily: Fonts.medium }}>
                   {chatData?.hostingChat.recipientUser?.profile.fullName}
