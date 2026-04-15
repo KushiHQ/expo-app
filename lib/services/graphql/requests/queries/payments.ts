@@ -54,3 +54,24 @@ export const TRANSACTION_BY_REFERENCE = gql`
     }
   }
 `;
+
+export const TRANSACTIONS = gql`
+  query Transactions($filter: TransactionFilter, $pagination: PaginationInput) {
+    transactions(filter: $filter, pagination: $pagination) {
+      id
+      amount
+      type
+      createdAt
+      lastUpdated
+      reference
+      status
+      booking {
+        id
+        hosting {
+          id
+          title
+        }
+      }
+    }
+  }
+`;

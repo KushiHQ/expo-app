@@ -48,7 +48,7 @@ const ProfileScreen = () => {
 		},
 		{
 			icon: SolarWalletMoneyOutline,
-			href: "/hostings/",
+			href: `/users/${id}/transactions`,
 			label: "Payments",
 		},
 		{

@@ -27,8 +27,8 @@ export const USER_CHATS_QUERY = gql`
 `;
 
 export const CHAT_MESSAGES_QUERY = gql`
-  query ChatMessages($chatId: String!) {
-    chatMessages(chatId: $chatId) {
+  query ChatMessages($chatId: String!, $pagination: PaginationInput) {
+    chatMessages(chatId: $chatId, pagination: $pagination) {
       id
       text
       isSender
@@ -41,6 +41,7 @@ export const CHAT_MESSAGES_QUERY = gql`
         }
       }
       edited
+      createdAt
       lastUpdated
       assets {
         id

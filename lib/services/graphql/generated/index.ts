@@ -930,9 +930,15 @@ export type Notification = {
 export type NotificationData = {
   __typename?: 'NotificationData';
   id?: Maybe<Scalars['String']['output']>;
-  intent?: Maybe<Scalars['String']['output']>;
+  intent?: Maybe<NotificationIntent>;
   subject?: Maybe<NotificationSubject>;
 };
+
+export enum NotificationIntent {
+  IncomingCall = 'INCOMING_CALL',
+  MissedCall = 'MISSED_CALL',
+  NewMessage = 'NEW_MESSAGE'
+}
 
 export type NotificationSettings = {
   __typename?: 'NotificationSettings';
@@ -1077,7 +1083,6 @@ export type Query = {
   aiHostingSearchPredictions: Array<AiSearchPrediction>;
   authGuest: Guest;
   authHost: Host;
-  authStreamUserToken: Scalars['String']['output'];
   banks: Array<Bank>;
   booking: Booking;
   bookingApplication: BookingApplication;
@@ -1086,7 +1091,6 @@ export type Query = {
   bookings: Array<Booking>;
   calculateHostingFees: HostingFees;
   chatMessages: Array<HostingChatMessage>;
-  getStreamUserId: Scalars['String']['output'];
   guestBookingTenancyAgreementPreview: Scalars['String']['output'];
   hostAnalytics: HostAnalytics;
   hostPaymentDetails: Array<HostAccountDetails>;
@@ -1104,8 +1108,8 @@ export type Query = {
   tenancyAgreementTemplate: TenancyTemplate;
   tenantMandateOptions: TenantMandateConfig;
   transactionByReference: Transaction;
+  transactions: Array<Transaction>;
   userChats: Array<HostingChat>;
-  userStreamUserToken: Scalars['String']['output'];
 };
 
 
@@ -1150,11 +1154,6 @@ export type QueryCalculateHostingFeesArgs = {
 export type QueryChatMessagesArgs = {
   chatId: Scalars['String']['input'];
   pagination?: InputMaybe<PaginationInput>;
-};
-
-
-export type QueryGetStreamUserIdArgs = {
-  userId: Scalars['String']['input'];
 };
 
 
@@ -1221,13 +1220,14 @@ export type QueryTransactionByReferenceArgs = {
 };
 
 
-export type QueryUserChatsArgs = {
+export type QueryTransactionsArgs = {
+  filter?: InputMaybe<TransactionFilter>;
   pagination?: InputMaybe<PaginationInput>;
 };
 
 
-export type QueryUserStreamUserTokenArgs = {
-  userId: Scalars['String']['input'];
+export type QueryUserChatsArgs = {
+  pagination?: InputMaybe<PaginationInput>;
 };
 
 export type RefreshTokenInput = {
@@ -1397,6 +1397,7 @@ export type TenantMandateConfig = {
 export type Transaction = {
   __typename?: 'Transaction';
   amount: Scalars['Decimal']['output'];
+  booking?: Maybe<Booking>;
   createdAt: Scalars['String']['output'];
   flutterwaveChargeId?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
@@ -1404,6 +1405,16 @@ export type Transaction = {
   reference?: Maybe<Scalars['String']['output']>;
   status: TransactionStatus;
   type: TransactionType;
+};
+
+export type TransactionFilter = {
+  guestId?: InputMaybe<Scalars['String']['input']>;
+  hostId?: InputMaybe<Scalars['String']['input']>;
+  maxAmount?: InputMaybe<Scalars['Decimal']['input']>;
+  minAmount?: InputMaybe<Scalars['Decimal']['input']>;
+  status?: InputMaybe<TransactionStatus>;
+  type?: InputMaybe<TransactionType>;
+  userId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type TransactionResponse = {
@@ -1820,10 +1831,11 @@ export type UserChatsQuery = { __typename?: 'Query', userChats: Array<{ __typena
 
 export type ChatMessagesQueryVariables = Exact<{
   chatId: Scalars['String']['input'];
+  pagination?: InputMaybe<PaginationInput>;
 }>;
 
 
-export type ChatMessagesQuery = { __typename?: 'Query', chatMessages: Array<{ __typename?: 'HostingChatMessage', id: string, text: string, isSender: boolean, edited?: boolean | null, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> }> };
+export type ChatMessagesQuery = { __typename?: 'Query', chatMessages: Array<{ __typename?: 'HostingChatMessage', id: string, text: string, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> }> };
 
 export type HostingChatQueryVariables = Exact<{
   chatId: Scalars['String']['input'];
@@ -1890,7 +1902,7 @@ export type NotificationsQueryVariables = Exact<{
 }>;
 
 
-export type NotificationsQuery = { __typename?: 'Query', notifications: Array<{ __typename?: 'Notification', id: string, title: string, message: string, type?: NotificationType | null, createdAt: string, lastUpdated: string, data?: { __typename?: 'NotificationData', intent?: string | null, subject?: NotificationSubject | null, id?: string | null } | null }> };
+export type NotificationsQuery = { __typename?: 'Query', notifications: Array<{ __typename?: 'Notification', id: string, title: string, message: string, type?: NotificationType | null, createdAt: string, lastUpdated: string, data?: { __typename?: 'NotificationData', intent?: NotificationIntent | null, subject?: NotificationSubject | null, id?: string | null } | null }> };
 
 export type BanksQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1916,22 +1928,18 @@ export type TransactionByReferenceQueryVariables = Exact<{
 
 export type TransactionByReferenceQuery = { __typename?: 'Query', transactionByReference: { __typename?: 'Transaction', id: string, amount: any, type: TransactionType, createdAt: string, lastUpdated: string, flutterwaveChargeId?: string | null, reference?: string | null, status: TransactionStatus } };
 
+export type TransactionsQueryVariables = Exact<{
+  filter?: InputMaybe<TransactionFilter>;
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type TransactionsQuery = { __typename?: 'Query', transactions: Array<{ __typename?: 'Transaction', id: string, amount: any, type: TransactionType, createdAt: string, lastUpdated: string, reference?: string | null, status: TransactionStatus, booking?: { __typename?: 'Booking', id: string, hosting: { __typename?: 'Hosting', id: string, title?: string | null } } | null }> };
+
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type MeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } } };
-
-export type AuthStreamUserTokenQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type AuthStreamUserTokenQuery = { __typename?: 'Query', authStreamUserToken: string };
-
-export type GetStreamUserIdQueryVariables = Exact<{
-  userId: Scalars['String']['input'];
-}>;
-
-
-export type GetStreamUserIdQuery = { __typename?: 'Query', getStreamUserId: string };
 
 export type HostAnalyticsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -3105,8 +3113,8 @@ export function useUserChatsQuery(options?: Omit<Urql.UseQueryArgs<UserChatsQuer
   return Urql.useQuery<UserChatsQuery, UserChatsQueryVariables>({ query: UserChatsDocument, ...options });
 };
 export const ChatMessagesDocument = gql`
-    query ChatMessages($chatId: String!) {
-  chatMessages(chatId: $chatId) {
+    query ChatMessages($chatId: String!, $pagination: PaginationInput) {
+  chatMessages(chatId: $chatId, pagination: $pagination) {
     id
     text
     isSender
@@ -3119,6 +3127,7 @@ export const ChatMessagesDocument = gql`
       }
     }
     edited
+    createdAt
     lastUpdated
     assets {
       id
@@ -3562,6 +3571,30 @@ export const TransactionByReferenceDocument = gql`
 export function useTransactionByReferenceQuery(options: Omit<Urql.UseQueryArgs<TransactionByReferenceQueryVariables>, 'query'>) {
   return Urql.useQuery<TransactionByReferenceQuery, TransactionByReferenceQueryVariables>({ query: TransactionByReferenceDocument, ...options });
 };
+export const TransactionsDocument = gql`
+    query Transactions($filter: TransactionFilter, $pagination: PaginationInput) {
+  transactions(filter: $filter, pagination: $pagination) {
+    id
+    amount
+    type
+    createdAt
+    lastUpdated
+    reference
+    status
+    booking {
+      id
+      hosting {
+        id
+        title
+      }
+    }
+  }
+}
+    `;
+
+export function useTransactionsQuery(options?: Omit<Urql.UseQueryArgs<TransactionsQueryVariables>, 'query'>) {
+  return Urql.useQuery<TransactionsQuery, TransactionsQueryVariables>({ query: TransactionsDocument, ...options });
+};
 export const MeDocument = gql`
     query Me {
   me {
@@ -3598,24 +3631,6 @@ export const MeDocument = gql`
 
 export function useMeQuery(options?: Omit<Urql.UseQueryArgs<MeQueryVariables>, 'query'>) {
   return Urql.useQuery<MeQuery, MeQueryVariables>({ query: MeDocument, ...options });
-};
-export const AuthStreamUserTokenDocument = gql`
-    query AuthStreamUserToken {
-  authStreamUserToken
-}
-    `;
-
-export function useAuthStreamUserTokenQuery(options?: Omit<Urql.UseQueryArgs<AuthStreamUserTokenQueryVariables>, 'query'>) {
-  return Urql.useQuery<AuthStreamUserTokenQuery, AuthStreamUserTokenQueryVariables>({ query: AuthStreamUserTokenDocument, ...options });
-};
-export const GetStreamUserIdDocument = gql`
-    query GetStreamUserId($userId: String!) {
-  getStreamUserId(userId: $userId)
-}
-    `;
-
-export function useGetStreamUserIdQuery(options: Omit<Urql.UseQueryArgs<GetStreamUserIdQueryVariables>, 'query'>) {
-  return Urql.useQuery<GetStreamUserIdQuery, GetStreamUserIdQueryVariables>({ query: GetStreamUserIdDocument, ...options });
 };
 export const HostAnalyticsDocument = gql`
     query HostAnalytics {

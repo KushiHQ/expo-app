@@ -12,6 +12,7 @@ export default function Layout() {
 			<Stack.Screen name="security" options={{ headerShown: false }} />
 			<Stack.Screen name="update-password" options={{ headerShown: false }} />
 			<Stack.Screen name="change-pin" options={{ headerShown: false }} />
+			<Stack.Screen name="transactions" options={{ headerShown: false }} />
 		</Stack>
 	);
 }

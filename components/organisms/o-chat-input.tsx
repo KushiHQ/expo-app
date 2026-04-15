@@ -19,11 +19,13 @@ import { useCameraScreen } from "@/lib/hooks/camera";
 import { useGalleryStore } from "@/lib/stores/gallery";
 import ListImage from "../atoms/a-list-image";
 import ListDocument from "../molecules/m-list-document";
+import { VoiceRecorder } from "../atoms/a-voice-recorder";
 
 export type ChatInputData = {
   text: string;
   documents: DocumentPicker.DocumentPickerAsset[];
   images: string[];
+  audio?: string;
 };
 
 type Props = {
@@ -134,67 +136,83 @@ const ChatInput: React.FC<Props> = ({
           },
         ]}
       >
-        <View
-          className={twMerge(
-            "flex-row items-center justify-between",
-            inputHeight > minHeight && "items-end",
-          )}
-          style={[
-            styles.inputContainer,
-            {
-              backgroundColor: hexToRgba(colors.text, 0.05),
-              height: inputHeight + 10,
-              paddingBottom: inputHeight > minHeight ? 10 : 0,
-            },
-          ]}
-        >
-          <TextInput
-            style={[
-              styles.input,
-              {
-                color: colors.text,
-                fontFamily: Fonts.regular,
-                height: inputHeight,
-              },
-            ]}
-            className="flex-1"
-            cursorColor={colors.primary}
-            placeholder={placeholder}
-            placeholderTextColor={hexToRgba(colors.text, 0.5)}
-            value={message}
-            onChangeText={setMessage}
-            multiline
-            onContentSizeChange={handleContentSizeChange}
-            textAlignVertical="center"
+        {isRecording ? (
+          <VoiceRecorder
+            onCancel={() => setIsRecording(false)}
+            onSend={(audioUri) => {
+              onSend({
+                text: "",
+                images: [],
+                documents: [],
+                audio: audioUri,
+              });
+              setIsRecording(false);
+            }}
           />
-          <View className="flex-row items-center gap-4">
-            <Pressable onPress={handleFilePicker}>
-              <Paperclip size={26} color={colors.text} />
-            </Pressable>
-            <Pressable onPress={handleCamera}>
-              <Camera size={26} color={colors.text} />
-            </Pressable>
-          </View>
-        </View>
+        ) : (
+          <>
+            <View
+              className={twMerge(
+                "flex-row items-center justify-between",
+                inputHeight > minHeight && "items-end",
+              )}
+              style={[
+                styles.inputContainer,
+                {
+                  backgroundColor: hexToRgba(colors.text, 0.05),
+                  height: inputHeight + 10,
+                  paddingBottom: inputHeight > minHeight ? 10 : 0,
+                },
+              ]}
+            >
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    color: colors.text,
+                    fontFamily: Fonts.regular,
+                    height: inputHeight,
+                  },
+                ]}
+                className="flex-1"
+                cursorColor={colors.primary}
+                placeholder={placeholder}
+                placeholderTextColor={hexToRgba(colors.text, 0.5)}
+                value={message}
+                onChangeText={setMessage}
+                multiline
+                onContentSizeChange={handleContentSizeChange}
+                textAlignVertical="center"
+              />
+              <View className="flex-row items-center gap-4">
+                <Pressable onPress={handleFilePicker}>
+                  <Paperclip size={26} color={colors.text} />
+                </Pressable>
+                <Pressable onPress={handleCamera}>
+                  <Camera size={26} color={colors.text} />
+                </Pressable>
+              </View>
+            </View>
 
-        {/* Send or Voice Button */}
-        <TouchableOpacity
-          onPress={hasMessage ? handleSend : handleVoicePress}
-          style={[
-            styles.sendButton,
-            {
-              backgroundColor: hasMessage
-                ? colors.primary
-                : hexToRgba(colors.text, 0.1),
-            },
-          ]}
-        >
-          {hasMessage ? (
-            <Send size={26} color={colors["primary-content"]} />
-          ) : (
-            <Mic size={26} color={isRecording ? colors.error : colors.text} />
-          )}
-        </TouchableOpacity>
+            <TouchableOpacity
+              onPress={hasMessage ? handleSend : handleVoicePress}
+              style={[
+                styles.sendButton,
+                {
+                  backgroundColor: hasMessage
+                    ? colors.primary
+                    : hexToRgba(colors.text, 0.1),
+                },
+              ]}
+            >
+              {hasMessage ? (
+                <Send size={26} color={colors["primary-content"]} />
+              ) : (
+                <Mic size={26} color={colors.text} />
+              )}
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </View>
   );

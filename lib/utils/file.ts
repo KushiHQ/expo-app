@@ -3,6 +3,18 @@ import * as IntentLauncher from "expo-intent-launcher";
 import { Platform } from "react-native";
 import * as Sharing from "expo-sharing";
 
+export const AUDIO_EXTENSIONS = [
+  "m4a",
+  "mp3",
+  "wav",
+  "caf",
+  "3gp",
+  "aac",
+  "ogg",
+  "webm",
+  "amr",
+];
+
 export const getMimeType = (ext: string | undefined): string => {
   switch (ext) {
     case "jpg":
@@ -19,11 +31,14 @@ export const getMimeType = (ext: string | undefined): string => {
 
 export const getMimeTypeFromExtension = (uri: string): string => {
   const extension = uri.split(".").pop()?.toLowerCase() ?? "png";
-  const mimeTypes = {
+
+  const mimeTypes: Record<string, string> = {
     jpg: "image/jpeg",
     jpeg: "image/jpeg",
     png: "image/png",
     gif: "image/gif",
+    heic: "image/heic",
+
     pdf: "application/pdf",
     doc: "application/msword",
     docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -31,13 +46,21 @@ export const getMimeTypeFromExtension = (uri: string): string => {
     xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     ppt: "application/vnd.ms-powerpoint",
     pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    mp4: "video/mp4",
-    mov: "video/quicktime",
-    mp3: "audio/mpeg",
-    wav: "audio/wav",
     txt: "text/plain",
     csv: "text/csv",
-  } as any;
+
+    mp4: "video/mp4",
+    mov: "video/quicktime",
+
+    mp3: "audio/mpeg",
+    wav: "audio/wav",
+
+    m4a: "audio/mp4",
+    caf: "audio/x-caf",
+    "3gp": "audio/3gpp",
+    webm: "audio/webm",
+  };
+
   return mimeTypes[extension] || "application/octet-stream";
 };
 
