@@ -215,3 +215,11 @@ export const COMPLETE_PASSWORD_CHANGE_MUTATION = gql`
     }
   }
 `;
+
+export const LOGOUT = gql`
+  mutation Logout {
+    logout {
+      message
+    }
+  }
+`;

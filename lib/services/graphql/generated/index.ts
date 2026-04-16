@@ -678,6 +678,7 @@ export type Mutations = {
   initiateHostingVerification: HostingVerificationResponse;
   initiatePhoneNumberVerification: MessageResponse;
   login: AuthTokenResponse;
+  logout: MessageResponse;
   refreshToken: AuthTokenResponse;
   requestPasswordChange: MessageResponse;
   resendEmailVerificationOtp: MessageResponse;
@@ -1546,6 +1547,11 @@ export type CompletePasswordChangeMutationVariables = Exact<{
 
 export type CompletePasswordChangeMutation = { __typename?: 'Mutations', completePasswordChange: { __typename?: 'MessageResponse', message: string } };
 
+export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type LogoutMutation = { __typename?: 'Mutations', logout: { __typename?: 'MessageResponse', message: string } };
+
 export type InitiateBookingApplicationMutationVariables = Exact<{
   hostingId: Scalars['String']['input'];
 }>;
@@ -1843,6 +1849,13 @@ export type HostingChatQueryVariables = Exact<{
 
 
 export type HostingChatQuery = { __typename?: 'Query', hostingChat: { __typename?: 'HostingChat', id: string, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, state?: string | null, street?: string | null, landmarks?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, recipientUser: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', gender?: string | null, id: string, fullName: string } } } };
+
+export type AiHostingSearchPredictionsQueryVariables = Exact<{
+  userInput: Scalars['String']['input'];
+}>;
+
+
+export type AiHostingSearchPredictionsQuery = { __typename?: 'Query', aiHostingSearchPredictions: Array<{ __typename?: 'AiSearchPrediction', summary: string, filters: { __typename?: 'AiSearchPredictionFilter', city?: string | null, state?: string | null, country?: string | null, propertyType?: string | null, maxPrice?: any | null, minPrice?: any | null, facilities?: Array<string> | null } }> };
 
 export type TenancyAgreementTemplateQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2223,6 +2236,17 @@ export const CompletePasswordChangeDocument = gql`
 
 export function useCompletePasswordChangeMutation() {
   return Urql.useMutation<CompletePasswordChangeMutation, CompletePasswordChangeMutationVariables>(CompletePasswordChangeDocument);
+};
+export const LogoutDocument = gql`
+    mutation Logout {
+  logout {
+    message
+  }
+}
+    `;
+
+export function useLogoutMutation() {
+  return Urql.useMutation<LogoutMutation, LogoutMutationVariables>(LogoutDocument);
 };
 export const InitiateBookingApplicationDocument = gql`
     mutation InitiateBookingApplication($hostingId: String!) {
@@ -3182,6 +3206,26 @@ export const HostingChatDocument = gql`
 
 export function useHostingChatQuery(options: Omit<Urql.UseQueryArgs<HostingChatQueryVariables>, 'query'>) {
   return Urql.useQuery<HostingChatQuery, HostingChatQueryVariables>({ query: HostingChatDocument, ...options });
+};
+export const AiHostingSearchPredictionsDocument = gql`
+    query AiHostingSearchPredictions($userInput: String!) {
+  aiHostingSearchPredictions(userInput: $userInput) {
+    summary
+    filters {
+      city
+      state
+      country
+      propertyType
+      maxPrice
+      minPrice
+      facilities
+    }
+  }
+}
+    `;
+
+export function useAiHostingSearchPredictionsQuery(options: Omit<Urql.UseQueryArgs<AiHostingSearchPredictionsQueryVariables>, 'query'>) {
+  return Urql.useQuery<AiHostingSearchPredictionsQuery, AiHostingSearchPredictionsQueryVariables>({ query: AiHostingSearchPredictionsDocument, ...options });
 };
 export const TenancyAgreementTemplateDocument = gql`
     query TenancyAgreementTemplate {

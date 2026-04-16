@@ -1,5 +1,22 @@
 import { gql } from "urql";
 
+export const AI_HOSTING_CHAT_PREDICTIONS = gql`
+  query AiHostingSearchPredictions($userInput: String!) {
+    aiHostingSearchPredictions(userInput: $userInput) {
+      summary
+      filters {
+        city
+        state
+        country
+        propertyType
+        maxPrice
+        minPrice
+        facilities
+      }
+    }
+  }
+`;
+
 export const TENANCY_AGREEMENT_TEMPLATE = gql`
   query TenancyAgreementTemplate {
     tenancyAgreementTemplate {
