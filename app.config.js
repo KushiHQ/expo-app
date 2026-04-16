@@ -28,7 +28,7 @@ export default ({ config }) => ({
 			NSLocationWhenInUseUsageDescription:
 				"This app needs access to your location to determine the address of properties.",
 			ITSAppUsesNonExemptEncryption: false,
-			UIBackgroundModes: ["remote-notification", "audio"],
+			UIBackgroundModes: ["remote-notification", "audio", "voip"],
 		},
 		icon: {
 			dark: "./assets/icons/ios-dark.png",
@@ -97,6 +97,7 @@ export default ({ config }) => ({
 	plugins: [
 		"./lib/plugins/withNotifeeForeground.js",
 		"./lib/plugins/withAndroidSigning.js",
+		"./lib/plugins/withLockScreen.js",
 		"react-native-vision-camera",
 		"expo-audio",
 		"expo-web-browser",
