@@ -89,10 +89,10 @@ export default ({ config }) => ({
 			origin: false,
 		},
 		eas: {
-			projectId: "c5a2d72c-0706-49ba-b9ea-9a063526c049",
+			projectId: "bc82e2c9-dff6-4bc1-8494-3dff2c9613a9",
 		},
 	},
-	owner: "kushicorp",
+	owner: "kushi-digital-innovations-ltd",
 
 	plugins: [
 		"./lib/plugins/withNotifeeForeground.js",
