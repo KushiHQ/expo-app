@@ -17,7 +17,7 @@ export default ({ config }) => ({
 	ios: {
 		usesAppleSignIn: true,
 		supportsTablet: true,
-		bundleIdentifier: "com.mceazy2700.kushi",
+		bundleIdentifier: "com.kushicorp.kushi",
 		googleServicesFile: "./GoogleService-Info.plist",
 		useNextNotificationsApi: true,
 		entitlements: {
@@ -37,7 +37,7 @@ export default ({ config }) => ({
 		},
 	},
 	android: {
-		package: "com.mceazy2700.kushi",
+		package: "com.kushicorp.kushi",
 		googleServicesFile: "./google-services.json",
 		adaptiveIcon: {
 			backgroundColor: "#E6F4FE",
@@ -92,7 +92,7 @@ export default ({ config }) => ({
 			projectId: "c5a2d72c-0706-49ba-b9ea-9a063526c049",
 		},
 	},
-	owner: "mceazy2700",
+	owner: "kushicorp",
 
 	plugins: [
 		"./lib/plugins/withNotifeeForeground.js",
