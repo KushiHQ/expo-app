@@ -14,6 +14,7 @@ import Daily, {
 } from "@daily-co/react-native-daily-js";
 import notifee from "@notifee/react-native";
 import { stopRingtone } from "../utils/call";
+import { BackHandler, Platform } from "react-native";
 
 const callerRingtone = require("@/assets/audio/caller-ringtone.mp3");
 const receiverRingtone = require("@/assets/audio/ringtone.mp3");
@@ -34,11 +35,22 @@ export const useActiveCall = () => {
 
 	const [isRinging, setIsRinging] = useState(true);
 	const [isSpeakerOn, setIsSpeakerOn] = useState(isVideoCall);
+	const [isLockScreenLaunch, setIsLockScreenLaunch] = useState(false);
 	const [, sendNotification] = useSendChatCallNotificationMutation();
 
 	const [{ data: chatData }] = useHostingChatQuery({
 		variables: { chatId: cast(id) },
 	});
+
+	useEffect(() => {
+		if (Platform.OS === "android") {
+			notifee.getInitialNotification().then((initial) => {
+				if (initial?.pressAction?.id === "full_screen") {
+					setIsLockScreenLaunch(true);
+				}
+			});
+		}
+	}, []);
 
 	useEffect(() => {
 		const cleanupNotification = async () => {
@@ -78,8 +90,13 @@ export const useActiveCall = () => {
 		} catch (e) {
 			console.warn("Error leaving call", e);
 		}
-		router.replace(`/chats/${id}`);
-	}, [call, id, player, router]);
+
+		if (isLockScreenLaunch) {
+			BackHandler.exitApp();
+		} else {
+			router.replace(`/chats/${id}`);
+		}
+	}, [call, id, player, router, isLockScreenLaunch]);
 
 	const handleJoin = useCallback(async () => {
 		try {
@@ -137,7 +154,6 @@ export const useActiveCall = () => {
 		};
 	}, [initiate, isRinging, id, callId, sendNotification, handleLeave]);
 
-	// 3. RINGTONE AUDIO
 	useEffect(() => {
 		const startRinging = async () => {
 			try {
