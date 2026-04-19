@@ -26,6 +26,7 @@ import * as AppleAuthentication from "expo-apple-authentication";
 
 GoogleSignin.configure({
 	webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_OAUTH_CLIENT_ID,
+	iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_OAUTH_CLIENT_ID,
 	offlineAccess: true,
 });
 
