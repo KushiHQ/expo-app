@@ -33,6 +33,7 @@ export default function GuestHome() {
 	return (
 		<ProfileLayout scrollable={false}>
 			<FlatList
+				showsVerticalScrollIndicator={false}
 				data={hostings}
 				keyExtractor={(item) => item.id}
 				contentContainerStyle={{ padding: 20, paddingTop: 0 }}

@@ -392,6 +392,10 @@ export type HostingChatAsset = {
   lastUpdated: Scalars['String']['output'];
 };
 
+export type HostingChatFilter = {
+  text?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type HostingChatMessage = {
   __typename?: 'HostingChatMessage';
   assets: Array<HostingChatAsset>;
@@ -1228,6 +1232,7 @@ export type QueryTransactionsArgs = {
 
 
 export type QueryUserChatsArgs = {
+  filter?: InputMaybe<HostingChatFilter>;
   pagination?: InputMaybe<PaginationInput>;
 };
 
@@ -1830,10 +1835,13 @@ export type GuestBookingTenancyAgreementPreviewQueryVariables = Exact<{
 
 export type GuestBookingTenancyAgreementPreviewQuery = { __typename?: 'Query', guestBookingTenancyAgreementPreview: string };
 
-export type UserChatsQueryVariables = Exact<{ [key: string]: never; }>;
+export type UserChatsQueryVariables = Exact<{
+  filter?: InputMaybe<HostingChatFilter>;
+  pagination?: InputMaybe<PaginationInput>;
+}>;
 
 
-export type UserChatsQuery = { __typename?: 'Query', userChats: Array<{ __typename?: 'HostingChat', id: string, lastUpdated: string, unreadMessageCount: number, lastMessage?: { __typename?: 'HostingChatMessage', id: string, text: string } | null, recipientUser: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null }, onlineUser: { __typename?: 'OnlineUser', id: string, online: boolean } } }> };
+export type UserChatsQuery = { __typename?: 'Query', userChats: Array<{ __typename?: 'HostingChat', id: string, lastUpdated: string, unreadMessageCount: number, lastMessage?: { __typename?: 'HostingChatMessage', id: string, text: string, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null } }> } | null, recipientUser: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null }, onlineUser: { __typename?: 'OnlineUser', id: string, online: boolean } } }> };
 
 export type ChatMessagesQueryVariables = Exact<{
   chatId: Scalars['String']['input'];
@@ -3109,14 +3117,22 @@ export function useGuestBookingTenancyAgreementPreviewQuery(options: Omit<Urql.U
   return Urql.useQuery<GuestBookingTenancyAgreementPreviewQuery, GuestBookingTenancyAgreementPreviewQueryVariables>({ query: GuestBookingTenancyAgreementPreviewDocument, ...options });
 };
 export const UserChatsDocument = gql`
-    query UserChats {
-  userChats {
+    query UserChats($filter: HostingChatFilter, $pagination: PaginationInput) {
+  userChats(filter: $filter, pagination: $pagination) {
     id
     lastUpdated
     unreadMessageCount
     lastMessage {
       id
       text
+      assets {
+        id
+        asset {
+          id
+          publicUrl
+          contentType
+        }
+      }
     }
     recipientUser {
       id

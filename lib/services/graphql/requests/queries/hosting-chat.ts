@@ -1,14 +1,22 @@
 import { gql } from "urql";
 
 export const USER_CHATS_QUERY = gql`
-  query UserChats {
-    userChats {
+  query UserChats($filter: HostingChatFilter, $pagination: PaginationInput) {
+    userChats(filter: $filter, pagination: $pagination) {
       id
       lastUpdated
       unreadMessageCount
       lastMessage {
         id
         text
+        assets {
+          id
+          asset {
+            id
+            publicUrl
+            contentType
+          }
+        }
       }
       recipientUser {
         id

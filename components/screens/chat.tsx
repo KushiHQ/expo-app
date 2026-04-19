@@ -20,6 +20,8 @@ import {
 import Skeleton from "../atoms/a-skeleton";
 import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import EmptyList from "../molecules/m-empty-list";
+import { Mic } from "lucide-react-native";
+import { AUDIO_EXTENSIONS } from "@/lib/utils/file";
 
 type Props = {
 	variant?: "guest" | "host";
@@ -109,16 +111,46 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 								>
 									{chat.recipientUser.profile.fullName}
 								</ThemedText>
-								<ThemedText
-									ellipsizeMode="tail"
-									numberOfLines={1}
-									style={{
-										fontSize: 14,
-										color: hexToRgba(colors.text, 0.6),
-									}}
-								>
-									{chat.lastMessage?.text}
-								</ThemedText>
+								<View className="flex-row items-center gap-1">
+									{(() => {
+										const lastMessage = chat.lastMessage;
+										if (!lastMessage) return null;
+										const audioAsset = lastMessage.assets.find((a) => {
+											const url = a.asset.publicUrl.toLowerCase();
+											const hasAudioMime =
+												a.asset.contentType?.includes("audio");
+											const hasAudioExt = AUDIO_EXTENSIONS.some((ext) =>
+												url.endsWith(`.${ext}`),
+											);
+
+											return hasAudioMime || hasAudioExt;
+										});
+
+										const isAudioOnly =
+											audioAsset &&
+											(!lastMessage.text ||
+												lastMessage.text.trim().length === 0);
+
+										return (
+											<>
+												{isAudioOnly && (
+													<Mic size={14} color={hexToRgba(colors.text, 0.6)} />
+												)}
+												<ThemedText
+													ellipsizeMode="tail"
+													numberOfLines={1}
+													style={{
+														fontSize: 14,
+														color: hexToRgba(colors.text, 0.6),
+														flex: 1,
+													}}
+												>
+													{isAudioOnly ? "Audio recording" : lastMessage.text}
+												</ThemedText>
+											</>
+										);
+									})()}
+								</View>
 							</View>
 							<View className="min-w-[50px] gap-[8px] items-end">
 								{chat.unreadMessageCount > 0 ? (
