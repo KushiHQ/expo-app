@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, StyleProp, View, ViewStyle } from "react-native";
 import { CheckboxChecked, CheckboxUnchecked } from "../icons/i-checkbox";
 import { twMerge } from "tailwind-merge";
+import * as Haptics from "expo-haptics";
 
 type Props = {
 	color?: string;
@@ -26,7 +27,8 @@ const Checkbox: React.FC<Props> = ({
 	const checkedVal = defChecked !== undefined ? defChecked : checked;
 
 	const toggleChecked = () => {
-		if (checked) {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		if (checkedVal) {
 			onValueChange?.(false);
 			setChecked(false);
 		} else {

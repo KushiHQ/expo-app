@@ -31,12 +31,15 @@ import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import { FlatList, View, ActivityIndicator } from "react-native";
 import { useInfiniteQuery } from "@/lib/hooks/use-infinite-query";
-import { AudioModule } from "expo-audio";
+import { useAudioPlayer } from "expo-audio";
 
 export default function ChatDetails() {
   const { id } = useLocalSearchParams();
   const colors = useThemeColors();
   const flatListRef = React.useRef<FlatList>(null);
+  const sendSoundPlayer = useAudioPlayer(
+    require("@/assets/audio/message-send-sound.mp3"),
+  );
   const [onlineRecipient, setOnlineRecipeint] =
     React.useState<OnlineUserSubscription["onlineUser"]>();
 
@@ -147,10 +150,7 @@ export default function ChatDetails() {
 
     // Play send sound
     try {
-      const player = AudioModule.createAudioPlayer(
-        require("@/assets/audio/message-send-sound.mp3"),
-      );
-      player.play();
+      sendSoundPlayer.play();
     } catch (error) {
       console.log("Failed to play send sound", error);
     }

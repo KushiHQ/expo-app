@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, ViewStyle, Animated } from "react-native";
 import { Check } from "lucide-react-native";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
+import * as Haptics from "expo-haptics";
 
 type Props = {
 	value: boolean;
@@ -44,6 +45,7 @@ const ThemedSwitch: React.FC<Props> = ({
 
 	const handlePress = () => {
 		if (!disabled) {
+			Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 			onValueChange(!value);
 		}
 	};

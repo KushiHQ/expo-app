@@ -19,9 +19,12 @@ type Props = {
 		RefreshControlProps,
 		string | React.JSXElementConstructor<any>
 	>;
+	scrollable?: boolean;
 };
 
-const ProfileLayout: React.FC<Props> = ({ children, refreshControl }) => {
+import * as Haptics from "expo-haptics";
+
+const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable = true }) => {
 	const colors = useThemeColors();
 	const router = useRouter();
 	const scrollViewRef = useRef<ScrollView>(null);
@@ -30,7 +33,9 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl }) => {
 
 	useEffect(() => {
 		const handleScrollToTop = () => {
-			scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+			if (scrollable) {
+				scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+			}
 		};
 
 		const routeName = path.split("/").pop();
@@ -40,7 +45,13 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl }) => {
 		return () => {
 			EventEmitter.off(`scrollToTop:${routeName}`, handleScrollToTop);
 		};
-	}, [path]);
+	}, [path, scrollable]);
+
+	const Content = (
+		<View className={scrollable ? "p-5 pt-0 flex-1" : "flex-1"}>
+			<View className="flex-1">{children}</View>
+		</View>
+	);
 
 	return (
 		<ThemedView className="flex-1">
@@ -48,7 +59,10 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl }) => {
 				<View className="p-5 flex-row items-center justify-between">
 					<View className="flex-row items-center gap-2">
 						<Pressable
-							onPress={() => router.back()}
+							onPress={() => {
+								Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+								router.back();
+							}}
 							aria-label="Go Back"
 							className="w-10 items-center justify-center rounded-xl h-10"
 							style={{ backgroundColor: hexToRgba(colors["text"], 0.2) }}
@@ -68,11 +82,19 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl }) => {
 						</View>
 					</View>
 					<View className="flex-row items-center gap-3">
-						<Pressable onPress={() => router.push("/users/notifications")}>
+						<Pressable
+							onPress={() => {
+								Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+								router.push("/users/notifications");
+							}}
+						>
 							<IonNotificationsOutline color={hexToRgba(colors["text"], 0.7)} />
 						</Pressable>
 						<Pressable
-							onPress={() => router.push("/guest/profile")}
+							onPress={() => {
+								Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+								router.push("/guest/profile");
+							}}
 							className="w-8 h-8 rounded-full border overflow-hidden"
 							style={{
 								borderColor: hexToRgba(colors["text"], 0.6),
@@ -94,17 +116,19 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl }) => {
 						</Pressable>
 					</View>
 				</View>
-				<ScrollView
-					ref={scrollViewRef}
-					className="flex-1"
-					showsVerticalScrollIndicator={false}
-					contentContainerStyle={{ flexGrow: 1 }}
-					refreshControl={refreshControl}
-				>
-					<View className="p-5 pt-0 flex-1">
-						<View className="flex-1">{children}</View>
-					</View>
-				</ScrollView>
+				{scrollable ? (
+					<ScrollView
+						ref={scrollViewRef}
+						className="flex-1"
+						showsVerticalScrollIndicator={false}
+						contentContainerStyle={{ flexGrow: 1 }}
+						refreshControl={refreshControl}
+					>
+						{Content}
+					</ScrollView>
+				) : (
+					<View className="flex-1">{Content}</View>
+				)}
 			</SafeAreaView>
 		</ThemedView>
 	);

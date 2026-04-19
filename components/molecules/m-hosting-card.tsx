@@ -129,29 +129,87 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 export default HostingCard;
 
 export const HostingCardSkeleton = () => {
-	const colors = useThemeColors();
-	const borderColor = hexToRgba(colors.text, 0.5);
-
 	return (
 		<View className="gap-2">
-			{/* Image Carousel Area */}
+			<Skeleton style={{ height: 290, borderRadius: 12 }} />
+			<Skeleton style={{ height: 85, borderRadius: 12 }} />
+		</View>
+	);
+};
+
+export const HostingDetailsSkeleton = () => {
+	const colors = useThemeColors();
+
+	return (
+		<View className="gap-8">
+			{/* Carousel Area */}
 			<Skeleton style={{ height: 290, borderRadius: 12 }} />
 
-			{/* Info Box Area */}
-			<View style={{ borderColor }} className="p-3 rounded-xl border gap-2">
-				{/* Title and Price Row */}
-				<View className="flex-row justify-between">
-					<Skeleton style={{ height: 16, width: "40%", borderRadius: 4 }} />
-					<Skeleton style={{ height: 16, width: "30%", borderRadius: 4 }} />
+			<View className="gap-4">
+				{/* Title and Like Row */}
+				<View className="flex-row justify-between items-center">
+					<Skeleton style={{ height: 24, width: "60%", borderRadius: 4 }} />
+					<Skeleton style={{ height: 24, width: 24, borderRadius: 12 }} />
 				</View>
 
 				{/* Location */}
-				<Skeleton style={{ height: 14, width: "25%", borderRadius: 4 }} />
+				<Skeleton style={{ height: 16, width: "30%", borderRadius: 4 }} />
 
-				{/* Date and Rating Row */}
-				<View className="flex-row items-center justify-between">
-					<Skeleton style={{ height: 14, width: "20%", borderRadius: 4 }} />
-					<Skeleton style={{ height: 16, width: "15%", borderRadius: 4 }} />
+				{/* Rating Row */}
+				<View className="flex-row items-center gap-2">
+					<Skeleton style={{ height: 16, width: 16, borderRadius: 4 }} />
+					<Skeleton style={{ height: 16, width: "20%", borderRadius: 4 }} />
+				</View>
+
+				{/* Description Section */}
+				<View
+					className="mt-8 border-b pb-8"
+					style={{ borderColor: hexToRgba(colors.text, 0.1) }}
+				>
+					<Skeleton
+						style={{
+							height: 22,
+							width: 120,
+							borderRadius: 4,
+							marginBottom: 16,
+						}}
+					/>
+					<Skeleton
+						style={{
+							height: 14,
+							width: "100%",
+							borderRadius: 4,
+							marginBottom: 8,
+						}}
+					/>
+					<Skeleton
+						style={{
+							height: 14,
+							width: "100%",
+							borderRadius: 4,
+							marginBottom: 8,
+						}}
+					/>
+					<Skeleton style={{ height: 14, width: "80%", borderRadius: 4 }} />
+				</View>
+
+				{/* Host Section */}
+				<View className="flex-row items-center gap-4 py-4">
+					<Skeleton style={{ height: 50, width: 50, borderRadius: 25 }} />
+					<View className="gap-2 flex-1">
+						<Skeleton style={{ height: 16, width: "40%", borderRadius: 4 }} />
+						<Skeleton style={{ height: 14, width: "30%", borderRadius: 4 }} />
+					</View>
+				</View>
+
+				{/* Facilities Section */}
+				<View className="gap-4 mt-4">
+					<Skeleton style={{ height: 20, width: 100, borderRadius: 4 }} />
+					<View className="flex-row gap-4">
+						<Skeleton style={{ height: 40, width: 80, borderRadius: 8 }} />
+						<Skeleton style={{ height: 40, width: 80, borderRadius: 8 }} />
+						<Skeleton style={{ height: 40, width: 80, borderRadius: 8 }} />
+					</View>
 				</View>
 			</View>
 		</View>

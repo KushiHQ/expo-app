@@ -16,7 +16,7 @@ import { handleIncomingCall, handleNotifeeEvent } from "@/lib/utils/call";
 import { useRouter } from "expo-router";
 import { CALL_TYPE_VALUE } from "@/lib/types/enums/hoting-chat";
 import { AppState, AppStateStatus } from "react-native";
-import { AudioModule } from "expo-audio";
+import { useAudioPlayer } from "expo-audio";
 
 interface NotificationContextType {
 	token: string | null;
@@ -45,6 +45,9 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 	const { user } = useUser();
 	const [, updateToken] = useUpdatePushNotificationTokenMutation();
 	const router = useRouter();
+	const notificationPlayer = useAudioPlayer(
+		require("@/assets/audio/message-notification.mp3"),
+	);
 
 	const handledCallId = React.useRef<string | null>(null);
 
@@ -155,10 +158,7 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 				} else {
 					// Play notification sound for regular chat messages in foreground
 					try {
-						const player = AudioModule.createAudioPlayer(
-							require("@/assets/audio/message-notification.mp3"),
-						);
-						player.play();
+						notificationPlayer.play();
 					} catch (error) {
 						console.log("Failed to play notification sound", error);
 					}

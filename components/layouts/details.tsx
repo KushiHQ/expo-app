@@ -55,6 +55,8 @@ type Props = {
   scrollable?: boolean;
 };
 
+import * as Haptics from "expo-haptics";
+
 const DetailsLayout = React.forwardRef<ScrollView, Props>(
   (
     {
@@ -131,7 +133,10 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
           <View className="p-5 flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
               <Pressable
-                onPress={() => router.back()}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.back();
+                }}
                 aria-label="Go Back"
                 className="w-10 items-center justify-center rounded-xl h-10"
                 style={{
@@ -212,6 +217,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
               {withPhone && (
                 <Pressable
                   onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     router.push(buildCallURL(String(id), "voice", true));
                   }}
                   className="h-10 w-10 rounded-xl justify-center items-center"
@@ -223,6 +229,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
               {withVideo && (
                 <Pressable
                   onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     router.push(buildCallURL(String(id), "video", true));
                   }}
                   className="h-10 w-10 rounded-xl justify-center items-center"
@@ -232,7 +239,12 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                 </Pressable>
               )}
               {withNotifications && (
-                <Pressable onPress={() => router.push("/users/notifications")}>
+                <Pressable
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push("/users/notifications");
+                  }}
+                >
                   <IonNotificationsOutline
                     color={hexToRgba(colors["text"], 0.7)}
                   />
@@ -240,11 +252,12 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
               )}
               {withProfile && (
                 <Pressable
-                  onPress={() =>
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     router.push(
                       variant === "guest" ? "/guest/profile" : "/host/profile",
-                    )
-                  }
+                    );
+                  }}
                   className="w-10 h-10 rounded-xl border overflow-hidden"
                   style={{
                     borderColor: hexToRgba(colors["text"], 0.6),

@@ -11,143 +11,145 @@ import HostingRoomImage from "../atoms/a-hosting-room-image";
 import { FluentContentViewGallery28Regular } from "../icons/i-gallery";
 
 export interface RoomData {
-  name: keyof typeof Room;
-  images: string[];
-  count: number;
-  description?: string;
+	name: keyof typeof Room;
+	images: string[];
+	count: number;
+	description?: string;
 }
 
 interface RoomItemCardProps {
-  index: number;
-  room?: RoomData;
-  colors: { text: string; background?: string };
-  hostingRoomSaving: boolean;
-  handleSaveHostingRoom: (index: number, data: RoomData) => void;
-  handleRoomImageEdit: (index: number) => void;
-  handleDeleteImage: (roomIndex: number, imageIndex: number) => void;
-  setActiveModalIndex: (index?: number | undefined) => void;
+	index: number;
+	room?: RoomData;
+	colors: { text: string; background?: string };
+	hostingRoomSaving: boolean;
+	handleSaveHostingRoom: (index: number, data: RoomData) => void;
+	handleRoomImageEdit: (index: number) => void;
+	handleDeleteImage: (roomIndex: number, imageIndex: number) => void;
+	setActiveModalIndex: (index?: number | undefined) => void;
 }
 
 const ROOM_OPTIONS = ROOM_KEYS.map((v) => ({
-  label: Room[v as keyof typeof Room],
-  value: v,
+	label: Room[v as keyof typeof Room],
+	value: v,
 }));
 
 const RoomItemCard = memo(
-  ({
-    index,
-    room,
-    colors,
-    hostingRoomSaving,
-    handleSaveHostingRoom,
-    handleRoomImageEdit,
-    handleDeleteImage,
-    setActiveModalIndex,
-  }: RoomItemCardProps) => {
-    const onSelectRoom = React.useCallback(
-      (v: { label: string; value: string }) => {
-        handleSaveHostingRoom(index, {
-          name: cast(v.value),
-          images: [],
-          count: 1,
-        });
-      },
-      [index, handleSaveHostingRoom],
-    );
+	({
+		index,
+		room,
+		colors,
+		hostingRoomSaving,
+		handleSaveHostingRoom,
+		handleRoomImageEdit,
+		handleDeleteImage,
+		setActiveModalIndex,
+	}: RoomItemCardProps) => {
+		const onSelectRoom = React.useCallback(
+			(v: { label: string; value: string }) => {
+				handleSaveHostingRoom(index, {
+					name: cast(v.value),
+					images: [],
+					count: 1,
+				});
+			},
+			[index, handleSaveHostingRoom],
+		);
 
-    const onEditImage = React.useCallback(() => {
-      handleRoomImageEdit(index);
-    }, [index, handleRoomImageEdit]);
+		const onEditImage = React.useCallback(() => {
+			handleRoomImageEdit(index);
+		}, [index, handleRoomImageEdit]);
 
-    const onOpenDetails = React.useCallback(() => {
-      setActiveModalIndex(index);
-    }, [index, setActiveModalIndex]);
+		const onOpenDetails = React.useCallback(() => {
+			setActiveModalIndex(index);
+		}, [index, setActiveModalIndex]);
 
-    return (
-      <View className="gap-2">
-        <View className="flex-row items-center gap-2">
-          <SelectInput
-            focused
-            defaultValue={
-              room
-                ? {
-                  label: Room[room.name],
-                  value: Room[room.name],
-                }
-                : undefined
-            }
-            label="Room"
-            placeholder="Select room or exterior to add image"
-            onSelect={onSelectRoom}
-            options={ROOM_OPTIONS}
-            renderItem={SelectOption}
-          />
-          <Button
-            onPress={onEditImage}
-            disabled={!room || hostingRoomSaving}
-            variant="outline"
-            className="p-6"
-            style={{
-              borderColor: hexToRgba(colors.text, 0.25),
-              borderRadius: 12,
-            }}
-          >
-            <HeroiconsCamera color={colors.text} size={20} />
-          </Button>
-        </View>
-        <View className="flex-row gap-2">
-          {room && !(room.images.length > 0) && (
-            <View
-              className="p-4 items-center justify-center flex-1 rounded-xl"
-              style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
-            >
-              <ThemedText
-                style={{
-                  color: hexToRgba(colors.text, 0.8),
-                  fontSize: 12,
-                }}
-              >
-                No Images Yet
-              </ThemedText>
-            </View>
-          )}
-          {room && room?.images?.length > 0 && (
-            <View className="flex-row flex-1 gap-2">
-              {room.images.slice(0, 4).map((img, id) => (
-                <HostingRoomImage
-                  src={img}
-                  key={id}
-                  imageIndex={id}
-                  roomIndex={index}
-                  onDeleteRoomImage={handleDeleteImage}
-                />
-              ))}
-            </View>
-          )}
-          {room && (
-            <>
-              <Button
-                variant="outline"
-                disabled={hostingRoomSaving}
-                loading={hostingRoomSaving}
-                type="shade"
-                className="py-0.5 pt-2.5 px-3"
-                onPress={onOpenDetails}
-              >
-                <View className="items-center justify-center">
-                  <FluentContentViewGallery28Regular
-                    color={colors.text}
-                    size={14}
-                  />
-                  <ThemedText style={{ fontSize: 10 }}>Details</ThemedText>
-                </View>
-              </Button>
-            </>
-          )}
-        </View>
-      </View>
-    );
-  },
+		return (
+			<View className="gap-2">
+				<View className="flex-row items-center gap-2">
+					<SelectInput
+						focused
+						defaultValue={
+							room
+								? {
+										label: Room[room.name],
+										value: Room[room.name],
+									}
+								: undefined
+						}
+						label="Room"
+						placeholder="Select room or exterior to add image"
+						onSelect={onSelectRoom}
+						options={ROOM_OPTIONS}
+						renderItem={SelectOption}
+					/>
+					<Button
+						onPress={onEditImage}
+						disabled={!room || hostingRoomSaving}
+						variant="outline"
+						className="p-6"
+						style={{
+							borderColor: hexToRgba(colors.text, 0.25),
+							borderRadius: 12,
+						}}
+					>
+						<HeroiconsCamera color={colors.text} size={20} />
+					</Button>
+				</View>
+				<View className="flex-row gap-2">
+					{room && !(room.images.length > 0) && (
+						<View
+							className="p-4 items-center justify-center flex-1 rounded-xl"
+							style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+						>
+							<ThemedText
+								style={{
+									color: hexToRgba(colors.text, 0.8),
+									fontSize: 12,
+								}}
+							>
+								No Images Yet
+							</ThemedText>
+						</View>
+					)}
+					{room && room?.images?.length > 0 && (
+						<View className="flex-row flex-1 gap-2">
+							{room.images.slice(0, 4).map((img, id) => (
+								<HostingRoomImage
+									src={img}
+									key={id}
+									imageIndex={id}
+									roomIndex={index}
+									onDeleteRoomImage={handleDeleteImage}
+								/>
+							))}
+						</View>
+					)}
+					{room && (
+						<>
+							<Button
+								variant="outline"
+								disabled={hostingRoomSaving}
+								loading={hostingRoomSaving}
+								type="shade"
+								className="py-0.5 pt-2.5 px-3"
+								onPress={onOpenDetails}
+							>
+								<View className="items-center justify-center">
+									<FluentContentViewGallery28Regular
+										color={colors.text}
+										size={14}
+									/>
+									<ThemedText style={{ fontSize: 10 }}>Details</ThemedText>
+								</View>
+							</Button>
+						</>
+					)}
+				</View>
+			</View>
+		);
+	},
 );
+
+RoomItemCard.displayName = "RoomItemCard";
 
 export default RoomItemCard;

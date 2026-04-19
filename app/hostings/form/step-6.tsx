@@ -101,7 +101,6 @@ export default function NewHostingStep6() {
 								}}
 								returnKeyType="next"
 								onSubmitEditing={() => landlordAddressRef.current?.focus()}
-								blurOnSubmit={false}
 							/>
 							<FloatingLabelInput
 								ref={landlordAddressRef}
@@ -117,7 +116,7 @@ export default function NewHostingStep6() {
 							<View>
 								<SelectInput
 									focused
-									description="Select your role in managing this property. Are you the legal owner (Landlord), an appointed representative (Agent), or a current tenant with permission to rent it out (Subletter)?"
+									description='Select your role in managing this property. Are you the legal owner (Landlord), an appointed representative (Agent), or a current tenant with permission to rent it out (Subletter)?"'
 									label="Property Relationship"
 									placeholder="Landlord"
 									defaultValue={
