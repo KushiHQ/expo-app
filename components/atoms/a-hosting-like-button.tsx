@@ -30,9 +30,13 @@ const HostingLikeButton: React.FC<Props> = ({
 
   function toggleSaved() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (saved) {
+    const previousSaved = saved;
+    setSaved(!previousSaved);
+
+    if (previousSaved) {
       deleteSaved({ hostingId: id }).then((res) => {
         if (res.error) {
+          setSaved(true);
           handleError(res.error);
         }
         if (res.data) {
@@ -40,12 +44,12 @@ const HostingLikeButton: React.FC<Props> = ({
             type: "success",
             text2: res.data.deleteSavedHosting.message,
           });
-          setSaved(false);
         }
       });
     } else {
       saveHosting({ input: { hostingId: id } }).then((res) => {
         if (res.error) {
+          setSaved(false);
           handleError(res.error);
         }
         if (res.data) {
@@ -53,7 +57,6 @@ const HostingLikeButton: React.FC<Props> = ({
             type: "success",
             text2: res.data.createUpdateSavedHosting.message,
           });
-          setSaved(true);
         }
       });
     }
@@ -62,7 +65,6 @@ const HostingLikeButton: React.FC<Props> = ({
   return (
     <Pressable
       onPress={toggleSaved}
-      disabled={savingHosting || deletingSaved}
       className={className}
     >
       <View className="absolute top-0 right-0">

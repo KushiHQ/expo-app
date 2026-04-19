@@ -10,9 +10,10 @@ import ListDocument from "./m-list-document";
 import ListImage from "../atoms/a-list-image";
 import AudioPlayerBubble from "../atoms/a-audio-player";
 import { AUDIO_EXTENSIONS } from "@/lib/utils/file";
+import { Clock } from "lucide-react-native";
 
 type Props = {
-  message: ChatMessagesQuery["chatMessages"][number];
+  message: ChatMessagesQuery["chatMessages"][number] & { sending?: boolean };
 };
 
 const ChatMessageBubble: React.FC<Props> = ({ message }) => {
@@ -32,6 +33,7 @@ const ChatMessageBubble: React.FC<Props> = ({ message }) => {
       className={twMerge("max-w-[250px] mb-4", message.isSender && "items-end")}
       style={{
         alignSelf: message.isSender ? "flex-end" : "flex-start",
+        opacity: message.sending ? 0.6 : 1,
       }}
     >
       {message.assets.filter((a) => a.id !== audioAsset?.id).length > 0 && (
@@ -94,12 +96,17 @@ const ChatMessageBubble: React.FC<Props> = ({ message }) => {
           </ThemedText>
         )}
       </View>
-      <ThemedText
-        style={{ fontSize: 12, color: hexToRgba(colors.text, 0.7) }}
-        className="px-1"
-      >
-        {formatChatMessageTime(message.lastUpdated)}
-      </ThemedText>
+      <View className="flex-row items-center gap-1">
+        <ThemedText
+          style={{ fontSize: 12, color: hexToRgba(colors.text, 0.7) }}
+          className="px-1"
+        >
+          {formatChatMessageTime(message.lastUpdated)}
+        </ThemedText>
+        {message.sending && (
+          <Clock size={10} color={hexToRgba(colors.text, 0.5)} />
+        )}
+      </View>
     </View>
   );
 };

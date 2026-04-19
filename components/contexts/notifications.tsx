@@ -16,6 +16,7 @@ import { handleIncomingCall, handleNotifeeEvent } from "@/lib/utils/call";
 import { useRouter } from "expo-router";
 import { CALL_TYPE_VALUE } from "@/lib/types/enums/hoting-chat";
 import { AppState, AppStateStatus } from "react-native";
+import { AudioModule } from "expo-audio";
 
 interface NotificationContextType {
 	token: string | null;
@@ -151,6 +152,16 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 					remoteMessage.data?.intent === CALL_TYPE_VALUE[CallType.Video]
 				) {
 					routeToCall(remoteMessage.data);
+				} else {
+					// Play notification sound for regular chat messages in foreground
+					try {
+						const player = AudioModule.createAudioPlayer(
+							require("@/assets/audio/message-notification.mp3"),
+						);
+						player.play();
+					} catch (error) {
+						console.log("Failed to play notification sound", error);
+					}
 				}
 			},
 		);

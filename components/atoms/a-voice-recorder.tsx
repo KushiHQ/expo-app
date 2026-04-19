@@ -97,22 +97,32 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   return (
     <View style={styles.container}>
       <Pressable onPress={handleCancel} style={styles.iconBtn}>
-        <Trash2 size={24} color={colors.error} />
+        <Trash2 size={22} color={colors.error} />
       </Pressable>
 
-      <View style={styles.waveform}>
-        {levels.map((level, i) => (
-          <View
-            key={i}
-            style={[
-              styles.bar,
-              {
-                height: Math.max(4, level * 36),
-                backgroundColor: colors.primary,
-              },
-            ]}
-          />
-        ))}
+      <View className="flex-row items-center gap-2 flex-1 mx-2">
+        <View
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 4,
+            backgroundColor: "#ff4d4d",
+          }}
+        />
+        <View style={styles.waveform}>
+          {levels.map((level, i) => (
+            <View
+              key={i}
+              style={[
+                styles.bar,
+                {
+                  height: Math.max(3, level * 30),
+                  backgroundColor: colors.primary,
+                },
+              ]}
+            />
+          ))}
+        </View>
       </View>
 
       <Text style={[styles.time, { color: colors.text }]}>
@@ -123,7 +133,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         onPress={handleSend}
         style={[styles.sendBtn, { backgroundColor: colors.primary }]}
       >
-        <Send size={20} color={colors["primary-content"]} />
+        <Send size={18} color={colors["primary-content"]} />
       </Pressable>
     </View>
   );
@@ -136,34 +146,33 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     height: 48,
-    paddingHorizontal: 4,
+    paddingHorizontal: 2,
   },
   iconBtn: {
-    padding: 8,
+    padding: 6,
   },
   waveform: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 3,
-    height: 40,
-    marginHorizontal: 12,
+    gap: 2.5,
+    height: 36,
   },
   bar: {
-    width: 3,
-    borderRadius: 2,
+    width: 2.5,
+    borderRadius: 1.5,
   },
   time: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: Fonts.medium,
-    marginRight: 12,
+    marginRight: 8,
     fontVariant: ["tabular-nums"],
   },
   sendBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
   },

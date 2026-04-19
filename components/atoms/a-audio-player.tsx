@@ -53,11 +53,17 @@ const AudioPlayerBubble: React.FC<Props> = ({ url, isSender }) => {
 
   return (
     <View style={styles.container}>
-      <Pressable onPress={handlePlayPause} style={styles.playBtn}>
+      <Pressable
+        onPress={handlePlayPause}
+        style={[
+          styles.playBtn,
+          { backgroundColor: hexToRgba(activeColor, 0.15) },
+        ]}
+      >
         {isPlaying ? (
-          <Pause size={20} color={activeColor} fill={activeColor} />
+          <Pause size={18} color={activeColor} fill={activeColor} />
         ) : (
-          <Play size={20} color={activeColor} fill={activeColor} />
+          <Play size={18} color={activeColor} fill={activeColor} />
         )}
       </Pressable>
 
@@ -70,7 +76,7 @@ const AudioPlayerBubble: React.FC<Props> = ({ url, isSender }) => {
               style={[
                 styles.bar,
                 {
-                  height: amp * 24,
+                  height: Math.max(3, amp * 20),
                   backgroundColor: isActive ? activeColor : inactiveColor,
                 },
               ]}
@@ -90,29 +96,35 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    minWidth: 200,
+    gap: 10,
+    minWidth: 210,
+    paddingVertical: 4,
   },
   playBtn: {
-    padding: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
   },
   waveform: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    height: 30,
+    height: 24,
   },
   bar: {
-    width: 3,
-    borderRadius: 2,
+    width: 2.5,
+    borderRadius: 1.5,
   },
   time: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: Fonts.medium,
     fontVariant: ["tabular-nums"],
     minWidth: 32,
     textAlign: "right",
+    opacity: 0.8,
   },
 });
 

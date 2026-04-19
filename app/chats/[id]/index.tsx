@@ -31,6 +31,7 @@ import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import { FlatList, View, ActivityIndicator } from "react-native";
 import { useInfiniteQuery } from "@/lib/hooks/use-infinite-query";
+import { AudioModule } from "expo-audio";
 
 export default function ChatDetails() {
   const { id } = useLocalSearchParams();
@@ -56,7 +57,7 @@ export default function ChatDetails() {
   });
 
   const [messages, setMessages] = React.useState<
-    ChatMessagesQuery["chatMessages"]
+    (ChatMessagesQuery["chatMessages"][0] & { sending?: boolean })[]
   >([]);
 
   const [, clearUnread] = useClearChatUrnreadMessagesMutation();
@@ -66,7 +67,9 @@ export default function ChatDetails() {
   ) => {
     setMessages((prev) => {
       const items = [...prev];
-      const itemIndex = items.findIndex((v) => v.id === msg.id);
+      const itemIndex = items.findIndex(
+        (v) => v.id === msg.id || (v.sending && v.text === msg.text),
+      );
       if (itemIndex >= 0) {
         items[itemIndex] = msg;
       } else {
@@ -129,6 +132,29 @@ export default function ChatDetails() {
   );
 
   const handleSend = (input: ChatInputData) => {
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMessage = {
+      id: tempId,
+      text: input.text,
+      isSender: true,
+      lastUpdated: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      sending: true,
+      assets: [],
+    } as any;
+
+    setMessages((prev) => [optimisticMessage, ...prev]);
+
+    // Play send sound
+    try {
+      const player = AudioModule.createAudioPlayer(
+        require("@/assets/audio/message-send-sound.mp3"),
+      );
+      player.play();
+    } catch (error) {
+      console.log("Failed to play send sound", error);
+    }
+
     formMutation<
       CreateUpdateMessageMutation,
       CreateUpdateMessageMutationVariables
@@ -145,6 +171,7 @@ export default function ChatDetails() {
     }).then((res) => {
       if (res.error) {
         handleError(res.error);
+        setMessages((prev) => prev.filter((m) => m.id !== tempId));
       }
       if (res.data?.createUpdateMessage.id) {
         handleNewMessage(res.data.createUpdateMessage);

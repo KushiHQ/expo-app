@@ -16,9 +16,7 @@ Here are several actionable recommendations to improve the user experience of th
    refined:
 
 - [x] Skeleton Screens for Listings: In app/guest/home.tsx and components/molecules/m-hosting-card.tsx, ensured skeletons match the exact shape of m-hosting-card.tsx. This prevents "layout shift" when data arrives, making the app feel faster.
-- Optimistic UI: When a user likes a property (a-hosting-like-button.tsx) or sends a chat
-  message, update the UI immediately before the GraphQL mutation completes. TanStack Query is
-  perfect for this.
+- [x] Optimistic UI: Implemented optimistic updates for liking a property (a-hosting-like-button.tsx) and sending chat messages (app/chats/[id]/index.tsx). UI updates immediately, providing instant feedback while the GraphQL mutation completes in the background.
 
 3. Contextual Information & "Empty State" Guidance
    Users often feel lost when there is no data.
@@ -37,9 +35,8 @@ Here are several actionable recommendations to improve the user experience of th
 
 - Call Quality Indicators: During calls (app/chats/[id]/call/), if the network is weak, use a
   small toast or icon to inform the user.
-- Voice Recorder Feedback: In a-voice-recorder.tsx, add a waveform visualization or a simple
-  timer. Users feel anxious when recording if they don't see visual proof that the app is
-  "listening."
+- [x] Voice Recorder Feedback: Improved a-voice-recorder.tsx and a-audio-player.tsx with better waveform visualizations, recording indicators, and more defined play buttons.
+- [x] Sound Effects: Integrated message-send-sound.mp3 on sending and message-notification.mp3 for foreground notifications.
 
 6. Onboarding "Hook"
 
