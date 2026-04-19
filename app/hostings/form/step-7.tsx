@@ -69,7 +69,8 @@ export default function NewHostingStep7() {
 							!input.tenancyAgreementTemplate ||
 							!hostQueryData?.authHost.signature?.publicUrl
 						}
-						step={6}
+						step={7}
+
 					/>
 				}
 			>

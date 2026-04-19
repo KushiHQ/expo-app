@@ -31,7 +31,7 @@ const ProfileScreen = () => {
   const colors = useThemeColors();
   const [logoutConfirm, setLogoutConfirm] = React.useState(false);
 
-  const id = 1;
+  const id = user.user.user?.id;
 
   const NAVIGATION: {
     icon: React.FC<CustomSvgProps>;
@@ -47,6 +47,11 @@ const ProfileScreen = () => {
       icon: SolarCardLinear,
       href: `/bookings`,
       label: "My Bookings",
+    },
+    {
+      icon: SolarCardLinear,
+      href: `/users/booking-applications`,
+      label: "My Applications",
     },
     {
       icon: SolarWalletMoneyOutline,

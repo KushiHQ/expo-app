@@ -4,9 +4,8 @@ import React from "react";
 export default function Layout() {
 	return (
 		<Stack screenOptions={{ animation: "fade" }}>
+			<Stack.Screen name="index" options={{ headerShown: false }} />
 			<Stack.Screen name="[id]" options={{ headerShown: false }} />
-			<Stack.Screen name="booking-applications" options={{ headerShown: false }} />
-			<Stack.Screen name="notifications" options={{ headerShown: false }} />
 		</Stack>
 	);
 }

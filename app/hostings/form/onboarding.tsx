@@ -44,10 +44,6 @@ export default function HostingOnboarding() {
 				disabled: true,
 				link: `/hostings/form/step-${index + 1}?id=${hosting?.id}`,
 			};
-			if (index === ONBOARDING_STEPS.length - 1) {
-				actions[index]["link"] =
-					`/hostings/form/verification?id=${hosting?.id}`;
-			}
 		});
 
 		ONBOARDING_STEPS.forEach((_, index) => {

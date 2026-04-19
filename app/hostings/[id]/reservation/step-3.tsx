@@ -24,11 +24,14 @@ import React from "react";
 import { RefreshControl, View } from "react-native";
 import Toast from "react-native-toast-message";
 
+import SuccessModal from "@/components/organisms/o-success-modal";
+
 export default function BookingApplicationStep2() {
 	const user = useUser();
 	const router = useRouter();
 	const colors = useThemeColors();
 	const [otpOpen, setOtpOpen] = React.useState(false);
+	const [success, setSuccess] = React.useState(false);
 	const { id } = useLocalSearchParams();
 	const [
 		{ fetching: initiatingApplicaiton, data: initiateData },
@@ -95,10 +98,16 @@ export default function BookingApplicationStep2() {
 						text1: "Success",
 						text2: res.data.completeBookingApplicationSubmission.message,
 					});
-					router.replace(`/hostings/${id}/reservation/checkout`);
+					setOtpOpen(false);
+					setSuccess(true);
 				}
 			});
 	}
+
+	const handleClose = () => {
+		setSuccess(false);
+		router.replace("/users/booking-applications");
+	};
 
 	const handleMutate = () => {
 		mutate({
@@ -165,50 +174,44 @@ export default function BookingApplicationStep2() {
 					</ThemedText>
 					<View className="mt-8 gap-4 min-h-[500px]">
 						<View>
-							{(
-								hostingData?.hosting.tenancyAgreementTemplate?.sections ?? []
-							).map((section) => (
-								<Collapsible
-									title={section.title}
-									description={section.description}
-									key={section.id}
-								>
-									<View className="mt-4">
-										{section?.preamble && (
-											<TenancyAgreementVariableText
-												bookingApplicaitonId={
-													initiateData?.initiateBookingApplication.data?.id
-												}
-												hostingId={String(id)}
-												text={section.preamble}
-											/>
-										)}
-									</View>
-									<View className="mt-4">
-										{section?.subClauses.map((clause) => (
-											<Collapsible
-												title={clause.title}
-												description={clause.description}
-												key={clause.id}
-											>
-												<View className="mt-4">
-													{clause.content && (
-														<TenancyAgreementVariableText
-															bookingApplicaitonId={
-																initiateData?.initiateBookingApplication.data
-																	?.id
-															}
-															hostingId={String(id)}
-															providedValues={clause.providedValues}
-															text={clause.content}
-														/>
-													)}
-												</View>
-											</Collapsible>
-										))}
-									</View>
-								</Collapsible>
-							))}
+							{hostingData &&
+								(
+									hostingData?.hosting.tenancyAgreementTemplate?.sections ?? []
+								).map((section) => (
+									<Collapsible
+										title={section.title}
+										description={section.description}
+										key={section.id}
+									>
+										<View className="mt-4">
+											{section?.preamble && (
+												<TenancyAgreementVariableText
+													hosting={hostingData.hosting}
+													text={section.preamble}
+												/>
+											)}
+										</View>
+										<View className="mt-4">
+											{section?.subClauses.map((clause) => (
+												<Collapsible
+													title={clause.title}
+													description={clause.description}
+													key={clause.id}
+												>
+													<View className="mt-4">
+														{clause.content && (
+															<TenancyAgreementVariableText
+																hosting={hostingData.hosting}
+																providedValues={clause.providedValues}
+																text={clause.content}
+															/>
+														)}
+													</View>
+												</Collapsible>
+											))}
+										</View>
+									</Collapsible>
+								))}
 						</View>
 					</View>
 				</View>
@@ -228,6 +231,17 @@ export default function BookingApplicationStep2() {
 				onSubmit={handleCompletion}
 				open={otpOpen}
 				onClose={() => setOtpOpen(false)}
+			/>
+			<SuccessModal
+				open={success}
+				onClose={handleClose}
+				title="Application Submitted"
+				description="Your booking application has been successfully submitted! The landlord will review your application and you will be contacted regarding the next steps within the next 3 business days."
+				action={
+					<Button onPress={handleClose} type="primary" className="w-60">
+						<ThemedText content="primary">View My Applications</ThemedText>
+					</Button>
+				}
 			/>
 		</>
 	);
