@@ -28,6 +28,7 @@ import { UPLOAD_KYC_IMAGE } from "@/lib/services/graphql/requests/mutations/user
 import { generateRNFile } from "@/lib/utils/file";
 import { handleError } from "@/lib/utils/error";
 import Toast from "react-native-toast-message";
+import * as Haptics from "expo-haptics";
 import { useUser } from "@/lib/hooks/user";
 import LoadingModal from "@/components/atoms/a-loading-modal";
 import { useRouter } from "expo-router";
@@ -190,6 +191,7 @@ export default function KycImage() {
 					handleError(res.error);
 				}
 				if (res.data) {
+					Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 					Toast.show({
 						type: "success",
 						text1: "Success",

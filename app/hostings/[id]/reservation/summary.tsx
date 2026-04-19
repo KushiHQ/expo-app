@@ -21,6 +21,7 @@ import { useReservationStore } from "@/lib/stores/reservation";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
+import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
 import React from "react";
@@ -83,6 +84,7 @@ export default function ReservationSummary() {
 						handleError(res.error);
 					}
 					if (res.data) {
+						Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 						Toast.show({
 							type: "success",
 							text1: "Success",

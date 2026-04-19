@@ -3,6 +3,7 @@ import {
   useDeleteSavedHostingMutation,
 } from "@/lib/services/graphql/generated";
 import { handleError } from "@/lib/utils/error";
+import * as Haptics from "expo-haptics";
 import React from "react";
 import { Pressable, View } from "react-native";
 import Toast from "react-native-toast-message";
@@ -28,6 +29,7 @@ const HostingLikeButton: React.FC<Props> = ({
     useDeleteSavedHostingMutation();
 
   function toggleSaved() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (saved) {
       deleteSaved({ hostingId: id }).then((res) => {
         if (res.error) {

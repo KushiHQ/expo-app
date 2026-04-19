@@ -1,5 +1,6 @@
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
+import * as Haptics from "expo-haptics";
 import React, { useRef, useEffect } from "react";
 import { TextInput, TextInputProps, View } from "react-native";
 
@@ -48,11 +49,13 @@ const OTPInput: React.FC<Props> = ({
 
 		updateValue(updated);
 
-		if (text && index < length - 1) {
-			inputRefs.current[index + 1]?.focus();
+		if (text) {
+			Haptics.selectionAsync();
+			if (index < length - 1) {
+				inputRefs.current[index + 1]?.focus();
+			}
 		}
 	};
-
 	const handleKeyPress = (index: number, key: string) => {
 		if (key === "Backspace") {
 			const newValue = value.split("");

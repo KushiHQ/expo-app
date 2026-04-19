@@ -11,9 +11,7 @@ Here are several actionable recommendations to improve the user experience of th
   or m-kyc-step-button to show exactly where the user is.
 - Trust Indicators: Add small "Encrypted & Secure" badges or tooltips (using a-tooltip.tsx) near
   the BVN/NIN inputs to explain why this data is needed and how it's protected.
-- Real-time Validation: Ensure the a-otp-input and identity fields provide immediate haptic
-  feedback (via expo-haptics) on success or error, so users don't have to wait for a server
-  response to know a digit was missed.
+- [x] Real-time Validation: Ensured the a-otp-input provides immediate haptic feedback (via expo-haptics) on success or digit entry, so users don't have to wait for a server response to know a digit was missed.
 
 2. Enhanced Loading & Perceived Performance
    While you have a-skeleton.tsx and a-loading-dots.tsx, their implementation across the app can be
@@ -38,9 +36,7 @@ Here are several actionable recommendations to improve the user experience of th
 
 4. Accessibility & Visual Polish
 
-- Haptic Feedback: Integrate expo-haptics into a-button.tsx. A "light" impact on press and a
-  "success" notification on completed bookings or KYC steps adds a premium, tactile feel to the
-  app.
+- [x] Haptic Feedback: Integrated expo-haptics into a-button.tsx, a-otp-input.tsx, a-hosting-like-button.tsx, and key success flows (KYC, Bookings). Added a "light" impact on press and a "success" notification on completed bookings or KYC steps.
 - Dark Mode Refinement: Ensure your useThemeColor logic handles high-contrast ratios. Check that
   a-themed-text.tsx is easily readable against a-call-background.tsx during video calls.
 - Keyboard Management: Since you are using react-native-keyboard-controller, ensure that in long

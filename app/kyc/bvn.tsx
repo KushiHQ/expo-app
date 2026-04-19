@@ -12,6 +12,7 @@ import { UserType } from "@/lib/types/users";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
+import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -33,6 +34,7 @@ export default function KycBVN() {
 				handleError(res.error);
 			}
 			if (res.data) {
+				Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 				Toast.show({
 					type: "success",
 					text1: "Success",

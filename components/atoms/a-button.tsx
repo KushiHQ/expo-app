@@ -1,8 +1,10 @@
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
+import * as Haptics from "expo-haptics";
 import React from "react";
 import {
 	ActivityIndicator,
+	GestureResponderEvent,
 	Pressable,
 	PressableProps,
 	StyleProp,
@@ -24,9 +26,15 @@ const Button: React.FC<Props> = ({
 	loading,
 	variant,
 	type,
+	onPress,
 	...rest
 }) => {
 	const colors = useThemeColors();
+
+	const handlePress = (event: GestureResponderEvent) => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		onPress?.(event);
+	};
 
 	const color =
 		type === "primary"
@@ -76,13 +84,13 @@ const Button: React.FC<Props> = ({
 				style,
 				rest.disabled && { opacity: 0.6 },
 			]}
+			onPress={handlePress}
 			{...rest}
 		>
 			{loading ? <ActivityIndicator size="small" color={color} /> : children}
 		</Pressable>
 	);
 };
-
 export default Button;
 
 const styles = StyleSheet.create({
