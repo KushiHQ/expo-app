@@ -1,6 +1,11 @@
 import React from "react";
 import { Pressable, View } from "react-native";
-import { Transaction, TransactionStatus, TransactionType } from "@/lib/services/graphql/generated";
+import {
+	Transaction,
+	TransactionsQuery,
+	TransactionStatus,
+	TransactionType,
+} from "@/lib/services/graphql/generated";
 import ThemedText from "./a-themed-text";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { Fonts } from "@/lib/constants/theme";
@@ -9,10 +14,11 @@ import { TablerCurrencyNaira } from "../icons/i-currency";
 import { router } from "expo-router";
 
 type Props = {
-	transaction: Transaction;
+	transaction: Partial<Transaction> | TransactionsQuery["transactions"][number];
 };
 
-const getStatusColor = (status: TransactionStatus) => {
+const getStatusColor = (status?: TransactionStatus) => {
+	if (!status) return "#757575";
 	switch (status) {
 		case TransactionStatus.Success:
 			return "#4CAF50";
@@ -45,11 +51,13 @@ const TransactionCard: React.FC<Props> = ({ transaction }) => {
 		}
 	};
 
-	const date = new Date(transaction.createdAt).toLocaleDateString("en-US", {
-		month: "short",
-		day: "numeric",
-		year: "numeric",
-	});
+	const date = transaction.createdAt
+		? new Date(transaction.createdAt).toLocaleDateString("en-US", {
+				month: "short",
+				day: "numeric",
+				year: "numeric",
+			})
+		: "";
 
 	return (
 		<Pressable
@@ -65,7 +73,12 @@ const TransactionCard: React.FC<Props> = ({ transaction }) => {
 					{transaction.booking?.hosting?.title || "Transaction"}
 				</ThemedText>
 				<ThemedText style={{ fontSize: 12, opacity: 0.6 }}>
-					{transaction.type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())} • {date}
+					{transaction.type
+						? transaction.type
+								.replace(/_/g, " ")
+								.replace(/\b\w/g, (l) => l.toUpperCase())
+						: "Unknown"}{" "}
+					• {date}
 				</ThemedText>
 			</View>
 
@@ -73,12 +86,14 @@ const TransactionCard: React.FC<Props> = ({ transaction }) => {
 				<View className="flex-row items-center">
 					<TablerCurrencyNaira size={16} color={colors.text} />
 					<ThemedText style={{ fontFamily: Fonts.bold, fontSize: 16 }}>
-						{Number(transaction.amount).toLocaleString()}
+						{Number(transaction.amount || 0).toLocaleString()}
 					</ThemedText>
 				</View>
 				<View
 					className="px-2 py-0.5 rounded-full mt-1"
-					style={{ backgroundColor: hexToRgba(getStatusColor(transaction.status), 0.1) }}
+					style={{
+						backgroundColor: hexToRgba(getStatusColor(transaction.status), 0.1),
+					}}
 				>
 					<ThemedText
 						style={{
@@ -87,7 +102,7 @@ const TransactionCard: React.FC<Props> = ({ transaction }) => {
 							color: getStatusColor(transaction.status),
 						}}
 					>
-						{transaction.status}
+						{transaction.status || "UNKNOWN"}
 					</ThemedText>
 				</View>
 			</View>

@@ -13,6 +13,8 @@ import { EventEmitter } from "@/lib/utils/event-emitter";
 import { useUser } from "@/lib/hooks/user";
 import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 
+import * as Haptics from "expo-haptics";
+
 type Props = {
 	children?: React.ReactNode;
 	refreshControl?: React.ReactElement<
@@ -21,8 +23,6 @@ type Props = {
 	>;
 	scrollable?: boolean;
 };
-
-import * as Haptics from "expo-haptics";
 
 const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable = true }) => {
 	const colors = useThemeColors();

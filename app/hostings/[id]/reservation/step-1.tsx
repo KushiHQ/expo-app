@@ -66,7 +66,7 @@ export default function BookingApplicationStep1() {
 		initiateApplication({
 			hostingId: String(id),
 		});
-	}, []);
+	}, [id, initiateApplication]);
 
 	React.useEffect(() => {
 		if (initiateData?.initiateBookingApplication.data) {

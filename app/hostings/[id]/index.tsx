@@ -8,7 +8,6 @@ import { Fonts } from "@/lib/constants/theme";
 import { useFallbackImages } from "@/lib/hooks/images";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useHostingQuery } from "@/lib/services/graphql/generated";
-import { useReservationStore } from "@/lib/stores/reservation";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
@@ -36,7 +35,6 @@ export default function HostingDetails() {
 	});
 	const colors = useThemeColors();
 	const { handleImageError, failedImages } = useFallbackImages();
-	const { updateInput } = useReservationStore();
 
 	const hosting = data?.hosting;
 
@@ -83,7 +81,6 @@ export default function HostingDetails() {
 						<View className="flex-1 items-end">
 							<Button
 								onPress={() => {
-									updateInput({ hostingId: cast(id) });
 									router.push(
 										`/hostings/${hosting?.id}/reservation/checkout-summary/`,
 									);

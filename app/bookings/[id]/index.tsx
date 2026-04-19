@@ -9,7 +9,6 @@ import ItemSummary from "@/components/molecules/m-item-summary";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import {
 	BookingStatus,
-	PaymentStatus,
 	TransactionStatus,
 	useBookingQuery,
 	useFinalizeBookingMutation,
@@ -213,7 +212,7 @@ export default function UserBooking() {
 							</View>
 						)}
 				</View>
-				{booking?.status == BookingStatus.Completed && (
+				{booking?.status === BookingStatus.Completed && (
 					<View>
 						{!localPdfUri ? (
 							<Skeleton

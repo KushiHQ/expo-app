@@ -58,7 +58,7 @@ export default function BookingApplicationStep2() {
 		initiateApplication({
 			hostingId: String(id),
 		});
-	}, []);
+	}, [id, initiateApplication]);
 
 	React.useEffect(() => {
 		if (updateError) {

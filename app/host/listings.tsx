@@ -16,7 +16,7 @@ import { useRouter } from "expo-router";
 import { useInfiniteQuery } from "@/lib/hooks/use-infinite-query";
 import React from "react";
 import { FlatList, Pressable, RefreshControl, View } from "react-native";
-import { SimpleGrid } from "react-native-super-grid";
+import { FlatGrid } from "react-native-super-grid";
 
 export default function HostListings() {
 	const router = useRouter();
@@ -90,10 +90,9 @@ export default function HostListings() {
 							))}
 						</View>
 					) : (
-						<SimpleGrid
+						<FlatGrid
 							itemDimension={user.hostListingsView === "block" ? 350 : 170}
 							spacing={1}
-							listKey={undefined}
 							data={Array.from({ length: 10 }).fill(0)}
 							renderItem={() => (
 								<Skeleton
@@ -139,24 +138,22 @@ export default function HostListings() {
 					}
 				/>
 			) : (
-				<SimpleGrid
+				<FlatGrid
 					itemDimension={user.hostListingsView === "block" ? 350 : 170}
 					spacing={1}
 					data={hostings}
-					additionalFlatListProps={{
-						ListHeaderComponent: renderHeader,
-						contentContainerStyle: { padding: 20, paddingTop: 0 },
-						refreshControl: (
-							<RefreshControl refreshing={fetching} onRefresh={() => refresh()} />
-						),
-						onEndReached: () => hasNextPage && loadMore(),
-						onEndReachedThreshold: 0.5,
-					}}
 					renderItem={({ item }) => (
 						<View className="mr-2 mb-2">
 							<ListingCard hosting={item} />
 						</View>
 					)}
+					ListHeaderComponent={renderHeader}
+					contentContainerStyle={{ padding: 20, paddingTop: 0 }}
+					refreshControl={
+						<RefreshControl refreshing={fetching} onRefresh={() => refresh()} />
+					}
+					onEndReached={() => hasNextPage && loadMore()}
+					onEndReachedThreshold={0.5}
 				/>
 			)}
 		</DetailsLayout>

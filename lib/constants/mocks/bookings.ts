@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { Hosting } from "./hostings";
+import { Hosting } from "@/lib/services/graphql/generated";
 
 export type BookingStatus = "Paid" | "Pending";
 

@@ -1877,7 +1877,7 @@ export type HostingsQueryVariables = Exact<{
 }>;
 
 
-export type HostingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, price?: any | null, totalRatings?: number | null, averageRating?: number | null, country?: string | null, state?: string | null, title?: string | null, city?: string | null, street?: string | null, saved: boolean, publishStatus?: PublishStatus | null, paymentInterval?: PaymentInterval | null, createdAt: string, rooms: Array<{ __typename?: 'HostingRoom', id: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, originalFilename?: string | null } }> }> }> };
+export type HostingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, price?: any | null, totalRatings?: number | null, averageRating?: number | null, country?: string | null, state?: string | null, title?: string | null, city?: string | null, street?: string | null, saved: boolean, publishStatus?: PublishStatus | null, latitude?: string | null, longitude?: string | null, paymentInterval?: PaymentInterval | null, createdAt: string, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', publicUrl: string } } | null, rooms: Array<{ __typename?: 'HostingRoom', id: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, originalFilename?: string | null } }> }> }> };
 
 export type SavedHostingFoldersQueryVariables = Exact<{
   pagination?: InputMaybe<PaginationInput>;
@@ -3428,6 +3428,14 @@ export const HostingsDocument = gql`
     street
     saved
     publishStatus
+    latitude
+    longitude
+    paymentInterval
+    coverImage {
+      asset {
+        publicUrl
+      }
+    }
     rooms(pagination: $roomsPagination2) {
       id
       images {

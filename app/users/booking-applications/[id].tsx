@@ -1,4 +1,3 @@
-import LoadingModal from "@/components/atoms/a-loading-modal";
 import Skeleton from "@/components/atoms/a-skeleton";
 import SummarySection from "@/components/atoms/a-summary-section";
 import ThemedText from "@/components/atoms/a-themed-text";
@@ -15,13 +14,12 @@ import {
 } from "@/lib/services/graphql/generated";
 import { hexToRgba } from "@/lib/utils/colors";
 import { toTitleCase } from "@/lib/utils/text";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
 import React from "react";
 import { View } from "react-native";
 
 export default function BookingApplicationDetails() {
-	const router = useRouter();
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
 	const [{ data, fetching }] = useBookingApplicationQuery({

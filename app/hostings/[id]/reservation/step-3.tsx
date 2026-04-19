@@ -56,7 +56,7 @@ export default function BookingApplicationStep2() {
 		initiateApplication({
 			hostingId: String(id),
 		});
-	}, []);
+	}, [id, initiateApplication]);
 
 	React.useEffect(() => {
 		if (initiateSubmissionError) {
@@ -82,7 +82,7 @@ export default function BookingApplicationStep2() {
 				),
 			});
 		}
-	}, [initiateData]);
+	}, [initiateData, hostingData?.hosting.tenancyAgreementTemplate]);
 
 	function handleCompletion(otp: string) {
 		if (initiateData?.initiateBookingApplication.data?.id)

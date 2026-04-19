@@ -147,7 +147,7 @@ export default function NewHostingStep6() {
 								<ThemedText>
 									I hereby declare that I am the legal owner of this property,
 									or I possess explicit, documented authorization (such as a
-									mandate, power of attorney, or landlord's consent to sublease)
+									mandate, power of attorney, or landlord&apos;s consent to sublease)
 									to rent out this space
 								</ThemedText>
 							</CheckboxInput>

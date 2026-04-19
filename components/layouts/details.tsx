@@ -29,6 +29,8 @@ import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import { useUser } from "@/lib/hooks/user";
 import { buildCallURL } from "@/lib/utils/call";
 
+import * as Haptics from "expo-haptics";
+
 type Props = {
   children?: React.ReactNode;
   title?: string;
@@ -54,8 +56,6 @@ type Props = {
   withVideo?: boolean;
   scrollable?: boolean;
 };
-
-import * as Haptics from "expo-haptics";
 
 const DetailsLayout = React.forwardRef<ScrollView, Props>(
   (

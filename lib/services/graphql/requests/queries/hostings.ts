@@ -217,6 +217,14 @@ export const HOSTINGS_QUERY = gql`
       street
       saved
       publishStatus
+      latitude
+      longitude
+      paymentInterval
+      coverImage {
+        asset {
+          publicUrl
+        }
+      }
       rooms(pagination: $roomsPagination2) {
         id
         images {
