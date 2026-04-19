@@ -20,6 +20,19 @@ export default function KycHome() {
 	const router = useRouter();
 	const colors = useThemeColors();
 
+	const pendingStep = React.useMemo(() => {
+		if (!user.user?.kyc?.image?.publicUrl) {
+			return "Take A Selfie";
+		}
+		if (!user.user?.kyc?.ninVerified) {
+			return "Verify NIN";
+		}
+		if (!user.user?.kyc?.bvnVerified) {
+			return "Verify BVN";
+		}
+		return null;
+	}, [user]);
+
 	return (
 		<DetailsLayout
 			title="KYC Registration"
@@ -32,11 +45,24 @@ export default function KycHome() {
 					}}
 				>
 					<Button
-						onPress={() => router.push("/kyc/image")}
+						onPress={() => {
+							if (pendingStep === "Take A Selfie") router.push("/kyc/image");
+							else if (pendingStep === "Verify NIN") router.push("/kyc/nin");
+							else if (pendingStep === "Verify BVN") router.push("/kyc/bvn");
+							else {
+								if (user.userType === UserType.Host) {
+									router.replace("/host/analytics");
+								} else {
+									router.replace("/guest/home");
+								}
+							}
+						}}
 						type="primary"
 						className="py-[18px]"
 					>
-						<ThemedText content="primary">Start Verification</ThemedText>
+						<ThemedText content="primary">
+							{pendingStep ? "Start Verification" : "Go to Dashboard"}
+						</ThemedText>
 					</Button>
 				</View>
 			}
@@ -44,7 +70,11 @@ export default function KycHome() {
 			<View className="mt-4">
 				<Stepper
 					steps={KYC_ONBOARDING_STEPS.length}
-					currentStep={1}
+					currentStep={
+						pendingStep
+							? KYC_ONBOARDING_STEPS.indexOf(pendingStep) + 1
+							: KYC_ONBOARDING_STEPS.length
+					}
 					titles={cast(KYC_ONBOARDING_STEPS)}
 				/>
 				<View className="mt-8">
@@ -69,33 +99,46 @@ export default function KycHome() {
 							style={{ fontSize: 20 }}
 							className="text-center self-center"
 						>
-							Verify your Identity to{" "}
-							{user.userType === UserType.Host ? "List" : "Book"} Properties
+							{pendingStep
+								? `Verify your Identity to ${user.userType === UserType.Host ? "List" : "Book"} Properties`
+								: "Verification Complete!"}
 						</ThemedText>
 						<ThemedText
 							type="subtitle"
 							className="text-center mt-4"
 							style={{ color: hexToRgba(colors.text, 0.7) }}
 						>
-							This helps us to secure your account and comply with regulations
+							{pendingStep
+								? "This helps us to secure your account and comply with regulations"
+								: "Your identity has been successfully verified. You can now access all features of the platform."}
 						</ThemedText>
 					</View>
 					<View className="items-center mt-8">
 						<Image
 							style={{
 								width: 280,
-								height: 400,
+								height: 320,
 								objectFit: "contain",
 							}}
-							source={require("@/assets/images/kyc-3d.png")}
+							source={
+								pendingStep
+									? require("@/assets/images/kyc-3d.png")
+									: require("@/assets/images/success-check.png")
+							}
 						/>
 					</View>
 					<View className="mt-12">
-						<ThemedText type="semibold">Steps:</ThemedText>
+						<ThemedText type="semibold">
+							{pendingStep ? "Next Step:" : "Steps Completed:"}
+						</ThemedText>
 						<View className="flex-wrap flex-row gap-4 mt-4">
-							{KYC_ONBOARDING_STEPS.map((step) => (
-								<KycStepButton step={step} key={step} />
-							))}
+							{pendingStep ? (
+								<KycStepButton step={pendingStep} />
+							) : (
+								KYC_ONBOARDING_STEPS.map((step) => (
+									<KycStepButton step={step} key={step} />
+								))
+							)}
 						</View>
 					</View>
 				</View>

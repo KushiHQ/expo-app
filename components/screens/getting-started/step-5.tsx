@@ -17,10 +17,11 @@ const GettingStartedStep5: React.FC = () => {
 					className="text-center"
 					type="title"
 				>
-					Let’s Find Your Dream Home
+					Ready to Experience the Future of Living?
 				</ThemedText>
 				<ThemedText style={{ fontSize: 18 }} className="text-center">
-					Sign up and explore thousands of homes today.
+					Join thousands of happy users and find your next home or start hosting
+					today.
 				</ThemedText>
 			</View>
 			<View className="gap-4 mt-24">

@@ -18,10 +18,11 @@ const GettingStartedStep3: React.FC<Props> = ({ onNext }) => {
 					className="text-center"
 					type="title"
 				>
-					Easily List & Sell Your Property
+					Rent Out Your Space with Ease
 				</ThemedText>
 				<ThemedText className="text-center">
-					Upload photos, set your price, and get verified buyers quickly.
+					Maximize your earnings by connecting with verified guests in a few
+					simple steps. We handle the complexity so you can focus on hosting.
 				</ThemedText>
 			</View>
 			<Button onPress={onNext} type="primary" className="mt-24">

@@ -18,10 +18,11 @@ const GettingStartedStep4: React.FC<Props> = ({ onNext }) => {
 					className="text-center"
 					type="title"
 				>
-					Safe & Secure Payments
+					Transact with Absolute Peace of Mind
 				</ThemedText>
 				<ThemedText className="text-center">
-					Verified listings and trusted payments ensure worry-free transactions.
+					Your safety is our priority. With verified listings and end-to-end
+					encrypted payments, every transaction is secure and worry-free.
 				</ThemedText>
 			</View>
 			<Button onPress={onNext} type="primary" className="mt-24">

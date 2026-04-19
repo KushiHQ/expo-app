@@ -18,10 +18,11 @@ const GettingStartedStep2: React.FC<Props> = ({ onNext }) => {
 					className="text-center"
 					type="title"
 				>
-					Find Homes That Match Your Needs
+					Find Your Perfect Home in Minutes
 				</ThemedText>
 				<ThemedText className="text-center">
-					Use smart filters to search by location, budget, and amenities.
+					Tailored searches and smart filters help you discover a space that
+					fits your lifestyle and budget perfectly.
 				</ThemedText>
 			</View>
 			<Button onPress={onNext} type="primary" className="mt-16">

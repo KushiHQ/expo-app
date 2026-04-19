@@ -7,8 +7,7 @@ Here are several actionable recommendations to improve the user experience of th
    The KYC process (BVN, NIN, and Image) is often the highest point of user drop-off in
    fintech/hosting apps.
 
-- Progressive Disclosure: Instead of showing all requirements upfront, use the a-animated-stepper
-  or m-kyc-step-button to show exactly where the user is.
+- [x] Progressive Disclosure: Implemented in KycHome to show only the active/pending step, reducing cognitive load and guiding the user clearly.
 - [x] Trust Indicators: Added "Encrypted & Secure" badges with shield icons to the KYC home and identity input screens to build user trust.
 - [x] Real-time Validation: Ensured the a-otp-input provides immediate haptic feedback (via expo-haptics) on success or digit entry, so users don't have to wait for a server response to know a digit was missed.
 
@@ -44,9 +43,7 @@ Here are several actionable recommendations to improve the user experience of th
 
 6. Onboarding "Hook"
 
-- Value Proposition: In app/onboarding/get-started.tsx, ensure the carousel doesn't just show
-  features, but explains the benefit (e.g., "Find verified homes in minutes" instead of "Browse
-  listings").
+- [x] Value Proposition: In app/onboarding/get-started.tsx and its step components, updated titles and descriptions to focus on benefits (e.g., "Find Your Perfect Home in Minutes") rather than just features.
 
 Next Step Recommendation:
 I can help you implement any of these, starting with adding Haptic Feedback to your base buttons
