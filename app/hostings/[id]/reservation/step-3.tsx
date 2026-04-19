@@ -106,7 +106,7 @@ export default function BookingApplicationStep2() {
 
 	const handleClose = () => {
 		setSuccess(false);
-		router.replace("/users/booking-applications");
+		router.replace("/bookings?tab=applications");
 	};
 
 	const handleMutate = () => {

@@ -49,11 +49,6 @@ const ProfileScreen = () => {
       label: "My Bookings",
     },
     {
-      icon: SolarCardLinear,
-      href: `/users/booking-applications`,
-      label: "My Applications",
-    },
-    {
       icon: SolarWalletMoneyOutline,
       href: `/users/${id}/transactions`,
       label: "Payments",

@@ -4,6 +4,7 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import React from "react";
 import { IconType } from "@/lib/types/enums/hosting-icons";
+import { capitalize } from "@/lib/utils/text";
 
 type Props = {
 	selected?: boolean;
@@ -44,7 +45,7 @@ const TextPill: React.FC<Props> = ({ icon, children, selected, onSelect }) => {
 					),
 				}}
 			>
-				{children}
+				{capitalize(children.replaceAll("_", " "))}
 			</ThemedText>
 		</Pressable>
 	);
