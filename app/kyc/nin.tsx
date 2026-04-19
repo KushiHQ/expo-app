@@ -4,7 +4,9 @@ import LoadingModal from "@/components/atoms/a-loading-modal";
 import Stepper from "@/components/atoms/a-steppter";
 import ThemedText from "@/components/atoms/a-themed-text";
 import DetailsLayout from "@/components/layouts/details";
+import { SolarShieldKeyholeBold } from "@/components/icons/i-shield";
 import { KYC_ONBOARDING_STEPS } from "@/lib/constants/kyc/onboarding";
+import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useUser } from "@/lib/hooks/user";
 import { User, useVerifyKycMutation } from "@/lib/services/graphql/generated";
@@ -100,6 +102,21 @@ export default function KycNIN() {
 							with the photo you captured.
 						</ThemedText>
 						<View className="mt-8">
+							<View
+								className="flex-row items-center gap-1.5 px-3 py-1 rounded-full mb-4 self-center"
+								style={{ backgroundColor: hexToRgba(colors.success, 0.1) }}
+							>
+								<SolarShieldKeyholeBold size={12} color={colors.success} />
+								<ThemedText
+									style={{
+										fontSize: 10,
+										color: colors.success,
+										fontFamily: Fonts.medium,
+									}}
+								>
+									Secure 256-bit Encryption
+								</ThemedText>
+							</View>
 							<FloatingLabelInput
 								label="NIN"
 								focused

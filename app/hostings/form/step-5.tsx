@@ -27,13 +27,15 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
-import React from "react";
-import { View } from "react-native";
+import React, { useRef } from "react";
+import { TextInput, View } from "react-native";
 import Toast from "react-native-toast-message";
 
 export default function NewHostingStep5() {
 	const router = useRouter();
 	const colors = useThemeColors();
+	const serviceChargeRef = useRef<TextInput>(null);
+	const cautionFeeRef = useRef<TextInput>(null);
 	const { data } = useBanksQuery();
 	const { id } = useLocalSearchParams();
 	const {
@@ -205,12 +207,16 @@ export default function NewHostingStep5() {
 										})
 									}
 									placeholder="100,000 (₦)"
+									returnKeyType="next"
+									onSubmitEditing={() => serviceChargeRef.current?.focus()}
+									blurOnSubmit={false}
 								/>
 							</View>
 						</View>
 						<View className="flex-row gap-4">
 							<View className="flex-1">
 								<FloatingLabelInput
+									ref={serviceChargeRef}
 									focused
 									inputMode="numeric"
 									label="Service Charge (Optional)"
@@ -225,10 +231,14 @@ export default function NewHostingStep5() {
 										})
 									}
 									placeholder="100,000 (₦)"
+									returnKeyType="next"
+									onSubmitEditing={() => cautionFeeRef.current?.focus()}
+									blurOnSubmit={false}
 								/>
 							</View>
 							<View className="flex-1">
 								<FloatingLabelInput
+									ref={cautionFeeRef}
 									focused
 									inputMode="numeric"
 									label="Caution Fee (Optional)"
@@ -243,6 +253,7 @@ export default function NewHostingStep5() {
 										})
 									}
 									placeholder="100,000 (₦)"
+									returnKeyType="done"
 								/>
 							</View>
 						</View>

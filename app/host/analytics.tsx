@@ -37,24 +37,28 @@ export default function HostAnalytics() {
 				value: analyticsData?.hostAnalytics.totalListings ?? 0,
 				currency: false,
 				percentage: false,
+				description: "The total number of properties you have created.",
 			},
 			{
 				label: "Occupancy Rate",
 				value: analyticsData?.hostAnalytics.occupancyRate ?? 0,
 				currency: false,
 				percentage: true,
+				description: "The percentage of your total listings that are currently booked.",
 			},
 			{
 				label: "Total Revenue",
 				value: analyticsData?.hostAnalytics.totalRevenue ?? 0,
 				currency: true,
 				percentage: false,
+				description: "The total amount of money earned from all your bookings.",
 			},
 			{
-				label: "Averate Rating",
+				label: "Average Rating",
 				value: analyticsData?.hostAnalytics.averateRating ?? 0,
 				currency: false,
 				percentage: false,
+				description: "The overall average rating given by guests across all your listings.",
 			},
 		];
 	}, [analyticsData]);

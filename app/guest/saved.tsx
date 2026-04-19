@@ -26,8 +26,10 @@ import {
 } from "@/lib/services/graphql/generated";
 import EmptyList from "@/components/molecules/m-empty-list";
 import SavedHostingFolderModal from "@/components/organisms/o-saved-hosting-folder-modal";
+import { useRouter } from "expo-router";
 
 export default function GuestSaved() {
+	const router = useRouter();
 	const colors = useThemeColors();
 	const [createFolderOpen, setCreateFolderOpen] = React.useState(false);
 	const [selectFolderOpen, setSelectFolderOpen] = React.useState(false);
@@ -111,7 +113,11 @@ export default function GuestSaved() {
 						folderData?.savedHostingFolders.length < 1 &&
 						savedData?.savedHostings &&
 						savedData?.savedHostings.length < 1 && (
-							<EmptyList message="No saved hostings yet" />
+							<EmptyList
+								message="No saved hostings yet"
+								buttonTitle="Explore Homes"
+								onButtonPress={() => router.replace("/guest/home")}
+							/>
 						)}
 
 					{folderData?.savedHostingFolders &&

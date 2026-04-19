@@ -129,10 +129,31 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 export default HostingCard;
 
 export const HostingCardSkeleton = () => {
+	const colors = useThemeColors();
+	const borderColor = hexToRgba(colors.text, 0.5);
+
 	return (
 		<View className="gap-2">
+			{/* Image Carousel Area */}
 			<Skeleton style={{ height: 290, borderRadius: 12 }} />
-			<Skeleton style={{ height: 85, borderRadius: 12 }} />
+
+			{/* Info Box Area */}
+			<View style={{ borderColor }} className="p-3 rounded-xl border gap-2">
+				{/* Title and Price Row */}
+				<View className="flex-row justify-between">
+					<Skeleton style={{ height: 16, width: "40%", borderRadius: 4 }} />
+					<Skeleton style={{ height: 16, width: "30%", borderRadius: 4 }} />
+				</View>
+
+				{/* Location */}
+				<Skeleton style={{ height: 14, width: "25%", borderRadius: 4 }} />
+
+				{/* Date and Rating Row */}
+				<View className="flex-row items-center justify-between">
+					<Skeleton style={{ height: 14, width: "20%", borderRadius: 4 }} />
+					<Skeleton style={{ height: 16, width: "15%", borderRadius: 4 }} />
+				</View>
+			</View>
 		</View>
 	);
 };

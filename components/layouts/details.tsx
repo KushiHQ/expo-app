@@ -275,6 +275,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ flexGrow: 1 }}
               refreshControl={refreshControl}
+              bottomOffset={80}
             >
               {Content}
             </KeyboardAwareScrollView>

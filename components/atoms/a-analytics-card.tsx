@@ -7,12 +7,15 @@ import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import { Fonts } from "@/lib/constants/theme";
 import { IcRoundPercent, TablerCurrencyNaira } from "../icons/i-currency";
+import Tooltip from "./a-tooltip";
+import { Info } from "lucide-react-native";
 
 type Props = {
 	label: string;
 	value: number;
 	currency?: boolean;
 	percentage?: boolean;
+	description?: string;
 };
 
 const AnalyticsCard: React.FC<Props> = ({
@@ -20,6 +23,7 @@ const AnalyticsCard: React.FC<Props> = ({
 	value,
 	currency,
 	percentage,
+	description,
 }) => {
 	const colors = useThemeColors();
 	const val = useCountUp({ targetNumber: value, duration: 1000 });
@@ -36,11 +40,18 @@ const AnalyticsCard: React.FC<Props> = ({
 						className="p-4 pt-16 gap-1"
 						style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
 					>
-						<ThemedText
-							style={{ fontSize: 14, color: hexToRgba(colors.text, 0.8) }}
-						>
-							{label}
-						</ThemedText>
+						<View className="flex-row items-center gap-1.5">
+							<ThemedText
+								style={{ fontSize: 14, color: hexToRgba(colors.text, 0.8) }}
+							>
+								{label}
+							</ThemedText>
+							{description && (
+								<Tooltip description={description}>
+									<Info size={14} color={hexToRgba(colors.text, 0.5)} />
+								</Tooltip>
+							)}
+						</View>
 						<View
 							className="flex-row items-center"
 							style={{

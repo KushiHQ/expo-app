@@ -4,12 +4,15 @@ import React from "react";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { Image } from "expo-image";
+import Button from "../atoms/a-button";
 
 type Props = {
 	message: string;
+	buttonTitle?: string;
+	onButtonPress?: () => void;
 };
 
-const EmptyList: React.FC<Props> = ({ message }) => {
+const EmptyList: React.FC<Props> = ({ message, buttonTitle, onButtonPress }) => {
 	const colors = useThemeColors();
 
 	return (
@@ -25,6 +28,15 @@ const EmptyList: React.FC<Props> = ({ message }) => {
 			<ThemedText style={{ color: hexToRgba(colors.text, 0.6) }}>
 				{message}
 			</ThemedText>
+			{buttonTitle && onButtonPress && (
+				<Button
+					onPress={onButtonPress}
+					type="primary"
+					className="mt-2 px-8"
+				>
+					<ThemedText content="primary">{buttonTitle}</ThemedText>
+				</Button>
+			)}
 		</View>
 	);
 };

@@ -14,14 +14,15 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
-import React from "react";
-import { RefreshControl, View } from "react-native";
+import React, { useRef } from "react";
+import { RefreshControl, TextInput, View } from "react-native";
 import Toast from "react-native-toast-message";
 
 export default function NewHostingStep1() {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
+	const descriptionRef = useRef<TextInput>(null);
 	const {
 		mutate,
 		mutating,
@@ -89,6 +90,9 @@ export default function NewHostingStep1() {
 					value={cast(input.title)}
 					placeholder="4 Bedroom Appartment"
 					onChangeText={(v) => updateInput({ title: v })}
+					returnKeyType="next"
+					onSubmitEditing={() => descriptionRef.current?.focus()}
+					blurOnSubmit={false}
 				/>
 				<View className="flex-row gap-4">
 					<SelectInput
@@ -127,6 +131,7 @@ export default function NewHostingStep1() {
 				</View>
 				<View style={{ minHeight: 200 }}>
 					<FloatingLabelInput
+						ref={descriptionRef}
 						focused
 						multiline
 						label="Description"
@@ -135,6 +140,7 @@ export default function NewHostingStep1() {
 						numberOfLines={6}
 						value={cast(input.description)}
 						onChangeText={(v) => updateInput({ description: v })}
+						returnKeyType="done"
 					/>
 				</View>
 			</View>

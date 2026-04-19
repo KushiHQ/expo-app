@@ -3,7 +3,9 @@ import Stepper from "@/components/atoms/a-steppter";
 import ThemedText from "@/components/atoms/a-themed-text";
 import DetailsLayout from "@/components/layouts/details";
 import KycStepButton from "@/components/molecules/m-kyc-step-button";
+import { SolarShieldKeyholeBold } from "@/components/icons/i-shield";
 import { KYC_ONBOARDING_STEPS } from "@/lib/constants/kyc/onboarding";
+import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useUser } from "@/lib/hooks/user";
 import { UserType } from "@/lib/types/users";
@@ -46,7 +48,22 @@ export default function KycHome() {
 					titles={cast(KYC_ONBOARDING_STEPS)}
 				/>
 				<View className="mt-8">
-					<View className="max-w-[400px] self-center">
+					<View className="max-w-[400px] self-center items-center">
+						<View
+							className="flex-row items-center gap-1.5 px-3 py-1 rounded-full mb-4"
+							style={{ backgroundColor: hexToRgba(colors.success, 0.1) }}
+						>
+							<SolarShieldKeyholeBold size={14} color={colors.success} />
+							<ThemedText
+								style={{
+									fontSize: 12,
+									color: colors.success,
+									fontFamily: Fonts.medium,
+								}}
+							>
+								Encrypted & Secure
+							</ThemedText>
+						</View>
 						<ThemedText
 							type="semibold"
 							style={{ fontSize: 20 }}

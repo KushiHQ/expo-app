@@ -9,17 +9,14 @@ Here are several actionable recommendations to improve the user experience of th
 
 - Progressive Disclosure: Instead of showing all requirements upfront, use the a-animated-stepper
   or m-kyc-step-button to show exactly where the user is.
-- Trust Indicators: Add small "Encrypted & Secure" badges or tooltips (using a-tooltip.tsx) near
-  the BVN/NIN inputs to explain why this data is needed and how it's protected.
+- [x] Trust Indicators: Added "Encrypted & Secure" badges with shield icons to the KYC home and identity input screens to build user trust.
 - [x] Real-time Validation: Ensured the a-otp-input provides immediate haptic feedback (via expo-haptics) on success or digit entry, so users don't have to wait for a server response to know a digit was missed.
 
 2. Enhanced Loading & Perceived Performance
    While you have a-skeleton.tsx and a-loading-dots.tsx, their implementation across the app can be
    refined:
 
-- Skeleton Screens for Listings: In app/guest/home.tsx and app/host/listings.tsx, ensure
-  skeletons match the exact shape of m-hosting-card.tsx. This prevents "layout shift" when data
-  arrives, making the app feel faster.
+- [x] Skeleton Screens for Listings: In app/guest/home.tsx and components/molecules/m-hosting-card.tsx, ensured skeletons match the exact shape of m-hosting-card.tsx. This prevents "layout shift" when data arrives, making the app feel faster.
 - Optimistic UI: When a user likes a property (a-hosting-like-button.tsx) or sends a chat
   message, update the UI immediately before the GraphQL mutation completes. TanStack Query is
   perfect for this.
@@ -27,21 +24,15 @@ Here are several actionable recommendations to improve the user experience of th
 3. Contextual Information & "Empty State" Guidance
    Users often feel lost when there is no data.
 
-- Actionable Empty States: Your m-empty-list.tsx should do more than just say "No items found."
-  Add a CTA button. For example, in the "Saved" tab, the empty state should say "You haven't
-  saved any homes yet" with a button that redirects to "Browse Homes."
-- Tooltips for Host Analytics: Host metrics can be confusing. Use a-tooltip.tsx on
-  a-analytics-card.tsx to explain what "Impressions" or "Conversion Rate" actually means for
-  their business.
+- [x] Actionable Empty States: Enhanced m-empty-list.tsx with CTA button support. Implemented "Explore Homes" button in the Saved tab and "Create Listing" button in the Host Listings tab.
+- [x] Tooltips for Host Analytics: Host metrics can be confusing. Implemented a-tooltip.tsx on a-analytics-card.tsx to explain what metrics like "Occupancy Rate" and "Total Revenue" mean.
 
 4. Accessibility & Visual Polish
 
 - [x] Haptic Feedback: Integrated expo-haptics into a-button.tsx, a-otp-input.tsx, a-hosting-like-button.tsx, and key success flows (KYC, Bookings). Added a "light" impact on press and a "success" notification on completed bookings or KYC steps.
 - Dark Mode Refinement: Ensure your useThemeColor logic handles high-contrast ratios. Check that
   a-themed-text.tsx is easily readable against a-call-background.tsx during video calls.
-- Keyboard Management: Since you are using react-native-keyboard-controller, ensure that in long
-  forms (like app/hostings/form/), the "Next" button on the keyboard automatically moves to the
-  next input, and the view smoothly offsets to keep the active input visible.
+- [x] Keyboard Management: Integrated react-native-keyboard-controller with DetailsLayout (added bottomOffset). Implemented smooth focus transitions between FloatingLabelInput fields in the hosting form using refs and onSubmitEditing (Steps 1, 2, 3, 5, 6).
 
 5. Communication & Real-time Feedback
 

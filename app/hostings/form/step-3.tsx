@@ -17,8 +17,8 @@ import { getAddressFromCoords, getLocationAsync } from "@/lib/utils/locations";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
-import React from "react";
-import { Platform, View } from "react-native";
+import React, { useRef } from "react";
+import { Platform, TextInput, View } from "react-native";
 import { RefreshControl } from "react-native-gesture-handler";
 import Toast from "react-native-toast-message";
 
@@ -26,6 +26,7 @@ export default function NewHostingStep3() {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
+	const landmarkRef = useRef<TextInput>(null);
 	const [locationFetching, setLocationFetching] = React.useState(false);
 	const [permission, requestPermission] = Location.useForegroundPermissions();
 	const {
@@ -196,8 +197,12 @@ export default function NewHostingStep3() {
 										backgroundColor: hexToRgba(colors.primary, 0.05),
 									}}
 									placeholder="+2349045698712"
+									returnKeyType="next"
+									onSubmitEditing={() => landmarkRef.current?.focus()}
+									blurOnSubmit={false}
 								/>
 								<FloatingLabelInput
+									ref={landmarkRef}
 									focused
 									multiline
 									label="Landmarks (Optional)"
@@ -208,6 +213,7 @@ export default function NewHostingStep3() {
 										backgroundColor: hexToRgba(colors.primary, 0.05),
 									}}
 									placeholder="Ender landmarks close to the property"
+									returnKeyType="done"
 								/>
 							</View>
 						)}

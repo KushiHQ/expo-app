@@ -12,11 +12,13 @@ import { useDebounce } from "@/lib/hooks/use-debounce";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useUser } from "@/lib/hooks/user";
 import { useHostListingsQuery } from "@/lib/services/graphql/generated";
+import { useRouter } from "expo-router";
 import React from "react";
 import { Pressable, RefreshControl, View } from "react-native";
 import { SimpleGrid } from "react-native-super-grid";
 
 export default function HostListings() {
+	const router = useRouter();
 	const { user, updateUser } = useUser();
 	const [title, setTitle] = React.useState("");
 	const debouncedTitle = useDebounce(title, 500);
@@ -68,7 +70,11 @@ export default function HostListings() {
 						</Pressable>
 					</View>
 					{!fetching && !data?.hostings.length && (
-						<EmptyList message="No listings yet" />
+						<EmptyList
+							message="No listings yet"
+							buttonTitle="Create Listing"
+							onButtonPress={() => router.push("/hostings/form")}
+						/>
 					)}
 					{fetching ? (
 						user.hostListingsView === "list" ? (

@@ -16,13 +16,14 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
-import React from "react";
-import { RefreshControl, View } from "react-native";
+import React, { useRef } from "react";
+import { RefreshControl, TextInput, View } from "react-native";
 
 export default function NewHostingStep2() {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
+	const descriptionRef = useRef<TextInput>(null);
 	const { failedImages, handleImageError } = useFallbackImages();
 
 	const {
@@ -147,6 +148,9 @@ export default function NewHostingStep2() {
 													updateActiveRoom({ count: Number(v) })
 												}
 												placeholder="How many of this room are there"
+												returnKeyType="next"
+												onSubmitEditing={() => descriptionRef.current?.focus()}
+												blurOnSubmit={false}
 											/>
 										</View>
 										<Button
@@ -160,6 +164,7 @@ export default function NewHostingStep2() {
 										</Button>
 									</View>
 									<FloatingLabelInput
+										ref={descriptionRef}
 										focused
 										multiline
 										value={rooms.at(activeIndex)?.description}
@@ -170,6 +175,7 @@ export default function NewHostingStep2() {
 										onChangeText={(description) =>
 											updateActiveRoom({ description })
 										}
+										returnKeyType="done"
 									/>
 								</View>
 								<View className="flex-row gap-2 mt-4">

@@ -16,14 +16,15 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
-import React from "react";
-import { View } from "react-native";
+import React, { useRef } from "react";
+import { TextInput, View } from "react-native";
 import Toast from "react-native-toast-message";
 
 export default function NewHostingStep6() {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
+	const landlordAddressRef = useRef<TextInput>(null);
 	const {
 		verificationMutate,
 		verificationMutating,
@@ -98,8 +99,12 @@ export default function NewHostingStep6() {
 								onChangeText={(v) => {
 									updateVerificationInput({ landlordFullName: v });
 								}}
+								returnKeyType="next"
+								onSubmitEditing={() => landlordAddressRef.current?.focus()}
+								blurOnSubmit={false}
 							/>
 							<FloatingLabelInput
+								ref={landlordAddressRef}
 								focused
 								label="Landlord Address"
 								placeholder="Arley Hall & Gardens, Northwich, Cheshire"
@@ -107,6 +112,7 @@ export default function NewHostingStep6() {
 								onChangeText={(v) => {
 									updateVerificationInput({ landlordAddress: v });
 								}}
+								returnKeyType="done"
 							/>
 							<View>
 								<SelectInput
