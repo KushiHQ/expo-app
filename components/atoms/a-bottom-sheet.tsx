@@ -20,6 +20,7 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useGradualKeyboardAnimation } from "@/lib/hooks/keyboard";
 import { scheduleOnRN } from "react-native-worklets";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const MAX_HEIGHT = SCREEN_HEIGHT * 0.6;
@@ -38,6 +39,7 @@ const BottomSheet: FC<BottomSheetProps> = ({
 	children,
 }) => {
 	const colors = useThemeColors();
+	const insets = useSafeAreaInsets();
 
 	const [isRendered, setIsRendered] = useState(isVisible);
 
@@ -51,7 +53,7 @@ const BottomSheet: FC<BottomSheetProps> = ({
 		} else {
 			toggleSheet(false);
 		}
-	}, [isVisible]);
+	}, [isVisible, toggleSheet]);
 
 	const toggleSheet = useCallback((show: boolean) => {
 		"worklet";
@@ -68,7 +70,7 @@ const BottomSheet: FC<BottomSheetProps> = ({
 				}
 			});
 		}
-	}, []);
+	}, [sheetHeight, translateY]);
 
 	const onLayout = useCallback(
 		(event: any) => {
@@ -81,7 +83,7 @@ const BottomSheet: FC<BottomSheetProps> = ({
 				toggleSheet(true);
 			}
 		},
-		[isVisible],
+		[isVisible, toggleSheet, sheetHeight],
 	);
 
 	const panGesture = Gesture.Pan()
@@ -169,7 +171,7 @@ const BottomSheet: FC<BottomSheetProps> = ({
 						) : (
 							<View style={styles.contentPadding}>{children}</View>
 						)}
-						<View style={{ height: 20 }} />
+						<View style={{ height: Math.max(insets.bottom, 20) }} />
 					</View>
 				</Animated.View>
 			</View>
