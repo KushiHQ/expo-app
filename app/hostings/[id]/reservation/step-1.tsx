@@ -7,7 +7,6 @@ import DateInput from "@/components/molecules/m-date-input";
 import PhoneNumberSelectInput from "@/components/organisms/o-phone-number-select-input";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import {
-	BookingApplicationUpdateInput,
 	PaymentInterval,
 	useHostingQuery,
 	useInitiateBookingApplicationMutation,
@@ -17,6 +16,7 @@ import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
 import { removeTypenames } from "@/lib/utils/graphql/cleanup";
+import { useBookingApplicationStore } from "@/lib/stores/bookings";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
 	ChevronLeftIcon,
@@ -31,6 +31,7 @@ export default function BookingApplicationStep1() {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
+	const { input, setInput, updateInput } = useBookingApplicationStore();
 	const [
 		{
 			fetching: initiatingApplicaiton,
@@ -41,7 +42,6 @@ export default function BookingApplicationStep1() {
 	] = useInitiateBookingApplicationMutation();
 	const [{ fetching: updatingBookingApplication, error }, mutate] =
 		useUpdateBookingApplicationMutation();
-	const [input, setInput] = React.useState({} as BookingApplicationUpdateInput);
 	const [{ data: hostingData }] = useHostingQuery({
 		variables: { hostingId: String(id) },
 	});
@@ -74,7 +74,7 @@ export default function BookingApplicationStep1() {
 				removeTypenames(initiateData.initiateBookingApplication.data);
 			setInput({
 				...cleanedUp,
-				intervalMultiplier: cleanedUp.intervalMultiplier ?? 1,
+				intervalMultiplier: input.intervalMultiplier ?? 1,
 			});
 		}
 	}, [initiateData]);
@@ -156,10 +156,9 @@ export default function BookingApplicationStep1() {
 									className="p-2"
 									disabled={(input.intervalMultiplier ?? 1) <= 1}
 									onPress={() =>
-										setInput((c) => ({
-											...c,
-											intervalMultiplier: (c.intervalMultiplier ?? 1) - 1,
-										}))
+										updateInput({
+											intervalMultiplier: (input.intervalMultiplier ?? 1) - 1,
+										})
 									}
 								>
 									<ChevronLeftIcon color={colors.text} />
@@ -170,10 +169,9 @@ export default function BookingApplicationStep1() {
 								<Pressable
 									className="p-2"
 									onPress={() =>
-										setInput((c) => ({
-											...c,
-											intervalMultiplier: (c.intervalMultiplier ?? 1) + 1,
-										}))
+										updateInput({
+											intervalMultiplier: (input.intervalMultiplier ?? 1) + 1,
+										})
 									}
 								>
 									<ChevronRightIcon color={colors.text} />
@@ -186,7 +184,7 @@ export default function BookingApplicationStep1() {
 							placeholder="Thomas Shelby"
 							autoComplete="name"
 							value={cast(input.fullName)}
-							onChangeText={(v) => setInput((c) => ({ ...c, fullName: v }))}
+							onChangeText={(v) => updateInput({ fullName: v })}
 						/>
 						<FloatingLabelInput
 							focused
@@ -195,12 +193,12 @@ export default function BookingApplicationStep1() {
 							placeholder="thomashhelby@email.com"
 							autoComplete="email"
 							value={cast(input.email)}
-							onChangeText={(v) => setInput((c) => ({ ...c, email: v }))}
+							onChangeText={(v) => updateInput({ email: v })}
 						/>
 						<PhoneNumberSelectInput
 							defaultValue={cast(input.phoneNumber)}
 							onSelect={(v) => {
-								setInput((c) => ({ ...c, phoneNumber: v.label }));
+								updateInput({ phoneNumber: v.label });
 							}}
 						/>
 						<View>
@@ -210,9 +208,7 @@ export default function BookingApplicationStep1() {
 										? new Date(input.checkInDate).toISOString().split("T")[0]
 										: ""
 								}
-								onChangeText={(v) =>
-									setInput((c) => ({ ...c, checkInDate: v }))
-								}
+								onChangeText={(v) => updateInput({ checkInDate: v })}
 								focused
 								label="Check In"
 								placeholder="01/01/2025"
@@ -231,9 +227,7 @@ export default function BookingApplicationStep1() {
 							placeholder="Arley Hall & Gardens, Northwich, Cheshire"
 							autoComplete="address-line1"
 							value={cast(input.correspondenceAddress)}
-							onChangeText={(v) =>
-								setInput((c) => ({ ...c, correspondenceAddress: v }))
-							}
+							onChangeText={(v) => updateInput({ correspondenceAddress: v })}
 						/>
 					</View>
 				</View>

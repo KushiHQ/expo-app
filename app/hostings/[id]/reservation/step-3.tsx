@@ -18,6 +18,7 @@ import {
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
 import { removeTypenames } from "@/lib/utils/graphql/cleanup";
+import { useBookingApplicationStore } from "@/lib/stores/bookings";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
 import React from "react";
@@ -30,6 +31,7 @@ export default function BookingApplicationStep2() {
 	const user = useUser();
 	const router = useRouter();
 	const colors = useThemeColors();
+	const { input, setInput, clear } = useBookingApplicationStore();
 	const [otpOpen, setOtpOpen] = React.useState(false);
 	const [success, setSuccess] = React.useState(false);
 	const { id } = useLocalSearchParams();
@@ -39,7 +41,6 @@ export default function BookingApplicationStep2() {
 	] = useInitiateBookingApplicationMutation();
 	const [{ fetching: updatingBookingApplication, error: updateError }, mutate] =
 		useUpdateBookingApplicationMutation();
-	const [input, setInput] = React.useState({} as BookingApplicationUpdateInput);
 	const [{ data: hostingData }] = useHostingQuery({
 		variables: { hostingId: String(id) },
 	});
@@ -106,6 +107,7 @@ export default function BookingApplicationStep2() {
 
 	const handleClose = () => {
 		setSuccess(false);
+		clear();
 		router.replace("/bookings?tab=applications");
 	};
 

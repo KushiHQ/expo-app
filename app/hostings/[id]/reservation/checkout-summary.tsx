@@ -9,6 +9,7 @@ import {
 	useCalculateHostingFeesQuery,
 	useHostingQuery,
 } from "@/lib/services/graphql/generated";
+import { useBookingApplicationStore } from "@/lib/stores/bookings";
 import { hexToRgba } from "@/lib/utils/colors";
 import { formatNaira } from "@/lib/utils/currency";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -20,14 +21,14 @@ export default function CheckoutSummary() {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
-	const [multiplier, setMultiplier] = React.useState(1);
+	const { input, updateInput } = useBookingApplicationStore();
 	const [{ data: hostingData, fetching: hostingFetching }] = useHostingQuery({
 		variables: { hostingId: String(id) },
 	});
 	const [{ data }] = useCalculateHostingFeesQuery({
 		variables: {
 			hostingId: String(id),
-			multiplier,
+			multiplier: input.intervalMultiplier ?? 1,
 		},
 	});
 
@@ -77,15 +78,25 @@ export default function CheckoutSummary() {
 						<View className="flex-row items-center gap-6">
 							<Pressable
 								className="p-2"
-								disabled={multiplier <= 1}
-								onPress={() => setMultiplier((c) => c - 1)}
+								disabled={(input.intervalMultiplier ?? 1) <= 1}
+								onPress={() =>
+									updateInput({
+										intervalMultiplier: (input.intervalMultiplier ?? 1) - 1,
+									})
+								}
 							>
 								<ChevronLeftIcon color={colors.text} />
 							</Pressable>
-							<ThemedText type="semibold">{multiplier}</ThemedText>
+							<ThemedText type="semibold">
+								{input.intervalMultiplier ?? 1}
+							</ThemedText>
 							<Pressable
 								className="p-2"
-								onPress={() => setMultiplier((c) => c + 1)}
+								onPress={() =>
+									updateInput({
+										intervalMultiplier: (input.intervalMultiplier ?? 1) + 1,
+									})
+								}
 							>
 								<ChevronRightIcon color={colors.text} />
 							</Pressable>

@@ -155,3 +155,11 @@ export const HOST_UPDATE_BOOKING_APPLICATION_STATUS = gql`
     }
   }
 `;
+
+export const CANCEL_BOOKING_APPLICATION = gql`
+  mutation cancelBookingApplication($applicationId: String!) {
+    cancelBookingApplication(applicationId: $applicationId) {
+      message
+    }
+  }
+`;

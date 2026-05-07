@@ -1,5 +1,5 @@
 import DetailsLayout from "@/components/layouts/details";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import NotificationBell from "@/assets/vectors/notification-bell.svg";
 import ThemedText from "@/components/atoms/a-themed-text";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
@@ -7,70 +7,165 @@ import { hexToRgba } from "@/lib/utils/colors";
 import React from "react";
 import NotificationCard from "@/components/molecules/m-notification-card";
 import Button from "@/components/atoms/a-button";
-import { cast } from "@/lib/types/utils";
+import Skeleton from "@/components/atoms/a-skeleton";
+import { InfiniteScrollTrigger } from "@/components/atoms/a-infinite-scroll-trigger";
 import {
-	NotificationsFilterInput,
 	NotificationType,
+	useMarkAllNotificationsAsReadMutation,
 	useNotificationsQuery,
 } from "@/lib/services/graphql/generated";
+import { useInfiniteQuery } from "@/lib/hooks/use-infinite-query";
+
+// Filter tabs: null means "All"
+const FILTER_TABS: { label: string; value: NotificationType | null }[] = [
+	{ label: "All", value: null },
+	{ label: "General", value: NotificationType.General },
+	{ label: "Guest", value: NotificationType.GuestAlert },
+	{ label: "Host", value: NotificationType.HostAlert },
+	{ label: "System", value: NotificationType.System },
+];
+
+function NotificationSkeleton() {
+	const colors = useThemeColors();
+	return (
+		<View className="gap-3">
+			{Array.from({ length: 6 }).map((_, i) => (
+				<View
+					key={i}
+					className="flex-row items-center gap-4 p-4 rounded-xl"
+					style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
+				>
+					{/* Icon circle */}
+					<Skeleton style={{ width: 32, height: 32, borderRadius: 16 }} />
+					{/* Text lines */}
+					<View className="flex-1 gap-2">
+						<Skeleton style={{ height: 13, borderRadius: 6, width: "60%" }} />
+						<Skeleton style={{ height: 11, borderRadius: 6, width: "85%" }} />
+					</View>
+					{/* Button placeholder */}
+					<Skeleton style={{ height: 32, width: 56, borderRadius: 8 }} />
+				</View>
+			))}
+		</View>
+	);
+}
 
 export default function UserNotifications() {
 	const colors = useThemeColors();
-	const [filter, setFilter] = React.useState({} as NotificationsFilterInput);
-	const [{ data: notificationsData }] = useNotificationsQuery({
-		variables: {
-			pagination: { limit: 5 },
-			filter,
-		},
+	const [activeType, setActiveType] = React.useState<NotificationType | null>(
+		null,
+	);
+	const [, markAllAsRead] = useMarkAllNotificationsAsReadMutation();
+
+	const filter = activeType ? { type: activeType } : {};
+
+	const {
+		items: notifications,
+		fetching,
+		loadMore,
+		hasNextPage,
+		refresh,
+		setVariables,
+	} = useInfiniteQuery(useNotificationsQuery, {
+		queryKey: "notifications",
+		initialVariables: { filter },
+		limit: 20,
 	});
+
+	// Propagate filter changes into the infinite query
+	React.useEffect(() => {
+		setVariables({ filter });
+	}, [activeType]); // eslint-disable-line react-hooks/exhaustive-deps
+
+	const hasUnread = notifications.some((n) => !n.isRead);
+
+	const handleMarkAllAsRead = async () => {
+		await markAllAsRead({});
+		refresh();
+	};
+
+	const isFirstLoad = fetching && notifications.length === 0;
 
 	return (
 		<DetailsLayout title="Notifications">
-			{!(notificationsData?.notifications ?? []).length ? (
+			{/* Filter tabs + mark all read */}
+			<View className="flex-row items-center justify-between mb-4">
+				<ScrollView
+					horizontal
+					showsHorizontalScrollIndicator={false}
+					contentContainerStyle={{ gap: 4, paddingRight: 8 }}
+				>
+					{FILTER_TABS.map((tab) => {
+						const isActive = activeType === tab.value;
+						return (
+							<Button
+								key={tab.label}
+								onPress={() => setActiveType(tab.value)}
+								className="px-3 py-1.5 rounded-full"
+								style={{
+									backgroundColor: isActive
+										? colors.primary
+										: hexToRgba(colors.text, 0.08),
+								}}
+							>
+								<ThemedText
+									style={{
+										fontSize: 12,
+										color: isActive ? "#fff" : hexToRgba(colors.text, 0.7),
+									}}
+								>
+									{tab.label}
+								</ThemedText>
+							</Button>
+						);
+					})}
+				</ScrollView>
+				{hasUnread && (
+					<Button
+						variant="outline"
+						type="shade"
+						className="py-1 px-3 ml-2 shrink-0"
+						onPress={handleMarkAllAsRead}
+					>
+						<ThemedText style={{ fontSize: 11 }}>Mark all read</ThemedText>
+					</Button>
+				)}
+			</View>
+
+			{/* Skeleton */}
+			{isFirstLoad && <NotificationSkeleton />}
+
+			{/* Empty state */}
+			{!isFirstLoad && notifications.length === 0 && (
 				<View className="flex-1 items-center justify-center">
 					<View
 						className="items-center justify-center gap-4 border rounded-xl p-10"
 						style={{ borderColor: hexToRgba(colors.text, 0.2) }}
 					>
 						<NotificationBell />
-						<ThemedText style={{ color: colors["primary-04"] }}>
+						<ThemedText style={{ color: hexToRgba(colors.text, 0.5) }}>
 							No Notifications Yet
 						</ThemedText>
 					</View>
 				</View>
-			) : (
-				<View className="gap-8">
-					<View className="gap-2">
-						<View className="flex-row items-baseline">
-							{["All", ...Object.keys(NotificationType)].map((v, index) => (
-								<Button
-									key={index}
-									onPress={() => setFilter(cast(v))}
-									className="border-b"
-									style={{
-										borderColor: v === filter ? colors.text : colors.background,
-										borderRadius: 0,
-									}}
-								>
-									<ThemedText
-										style={{
-											color:
-												v === filter
-													? colors.text
-													: hexToRgba(colors.text, 0.6),
-										}}
-									>
-										{v}
-									</ThemedText>
-								</Button>
-							))}
-						</View>
-					</View>
-					<View className="gap-2">
-						{notificationsData?.notifications.map((notification, index) => (
-							<NotificationCard notification={notification} key={index} />
-						))}
-					</View>
+			)}
+
+			{/* List */}
+			{!isFirstLoad && notifications.length > 0 && (
+				<View className="gap-3">
+					{notifications.map((notification) => (
+						<NotificationCard
+							key={notification.id}
+							notification={notification}
+							onRead={refresh}
+						/>
+					))}
+
+					<InfiniteScrollTrigger
+						onInView={loadMore}
+						isLoading={fetching && notifications.length > 0}
+						active={hasNextPage}
+					/>
 				</View>
 			)}
 		</DetailsLayout>

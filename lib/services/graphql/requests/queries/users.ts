@@ -30,6 +30,11 @@ export const ME_QUERY = gql`
           publicUrl
         }
       }
+      phoneNumbers {
+        id
+        number
+        verificationStatus
+      }
     }
   }
 `;
@@ -50,7 +55,7 @@ export const HOST_ANALYTICS = gql`
       totalListings
       occupancyRate
       totalRevenue
-      averateRating
+      averageRating
       topListing {
         id
         coverImage {

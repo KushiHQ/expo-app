@@ -55,7 +55,7 @@ export default function HostAnalytics() {
 			},
 			{
 				label: "Average Rating",
-				value: analyticsData?.hostAnalytics.averateRating ?? 0,
+				value: analyticsData?.hostAnalytics.averageRating ?? 0,
 				currency: false,
 				percentage: false,
 				description: "The overall average rating given by guests across all your listings.",

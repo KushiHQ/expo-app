@@ -162,4 +162,5 @@ export const BOOKING_APPLICATION_STATUS_COLORS: Record<
 	[BookingApplicationStatus.AdminVerified]: "#2563EB",
 	[BookingApplicationStatus.Accepted]: "#10B981",
 	[BookingApplicationStatus.Rejected]: "#EF4444",
+	[BookingApplicationStatus.Cancelled]: "#94A3B8",
 };

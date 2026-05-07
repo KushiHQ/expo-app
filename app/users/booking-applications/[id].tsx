@@ -9,30 +9,95 @@ import {
 } from "@/lib/constants/booking/application";
 import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import Button from "@/components/atoms/a-button";
+import LoadingModal from "@/components/atoms/a-loading-modal";
+import ConfirmationSheet from "@/components/molecules/m-confirmation-sheet";
+import Toast from "react-native-toast-message";
 import {
 	useBookingApplicationQuery,
+	useCancelBookingApplicationMutation,
+	BookingApplicationStatus,
 } from "@/lib/services/graphql/generated";
+import { useRouter , useLocalSearchParams } from "expo-router";
 import { hexToRgba } from "@/lib/utils/colors";
 import { toTitleCase } from "@/lib/utils/text";
-import { useLocalSearchParams } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
 import React from "react";
 import { View } from "react-native";
 
 export default function BookingApplicationDetails() {
+	const router = useRouter();
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
+	const [cancelOpen, setCancelOpen] = React.useState(false);
 	const [{ data, fetching }] = useBookingApplicationQuery({
 		variables: {
 			bookingApplicationId: String(id),
 		},
 	});
 
+	const [{ fetching: cancelling }, cancelApplication] =
+		useCancelBookingApplicationMutation();
+
 	const app = data?.bookingApplication;
+
+	const canCancel = React.useMemo(() => {
+		if (!app) return false;
+		return (
+			app.status !== BookingApplicationStatus.Accepted &&
+			app.status !== BookingApplicationStatus.Cancelled &&
+			app.status !== BookingApplicationStatus.HostVerified &&
+			app.status !== BookingApplicationStatus.AdminVerified
+		);
+	}, [app]);
+
+	const handleCancel = () => {
+		cancelApplication({ applicationId: String(id) }).then((res) => {
+			if (res.data?.cancelBookingApplication) {
+				Toast.show({
+					type: "success",
+					text1: "Success",
+					text2: res.data.cancelBookingApplication.message,
+				});
+				setCancelOpen(false);
+			}
+		});
+	};
 
 	return (
 		<>
-			<DetailsLayout title="Application Details">
+			<DetailsLayout
+				title="Application Details"
+				footer={
+					<View
+						className="flex-row gap-4 p-4 pb-8"
+						style={{ backgroundColor: colors.background }}
+					>
+						{app?.booking?.id && (
+							<Button
+								type="primary"
+								className="flex-1"
+								onPress={() => router.push(`/bookings/${app.booking?.id}`)}
+							>
+								<ThemedText>View Booking</ThemedText>
+							</Button>
+						)}
+						{canCancel && (
+							<Button
+								className="flex-1"
+								variant="outline"
+								type="error"
+								style={{ borderColor: hexToRgba(colors.error, 0.6) }}
+								onPress={() => setCancelOpen(true)}
+							>
+								<ThemedText style={{ color: hexToRgba(colors.error, 0.9) }}>
+									Cancel Application
+								</ThemedText>
+							</Button>
+						)}
+					</View>
+				}
+			>
 				<View>
 					<ThemedText
 						className="mb-4"
@@ -148,6 +213,16 @@ export default function BookingApplicationDetails() {
 					</View>
 				</View>
 			</DetailsLayout>
+			<ConfirmationSheet
+				prompt="Cancel Application"
+				description="Are you sure you want to cancel this booking application?"
+				confirmPrompt="Yes, Cancel"
+				confirmMode="error"
+				open={cancelOpen}
+				onClose={() => setCancelOpen(false)}
+				onConfirm={handleCancel}
+			/>
+			<LoadingModal visible={cancelling} />
 		</>
 	);
 }

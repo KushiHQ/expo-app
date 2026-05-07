@@ -44,6 +44,11 @@ export const GOOGLE_SIGN_UP = gql`
               publicUrl
             }
           }
+          phoneNumbers {
+            id
+            number
+            verificationStatus
+          }
         }
       }
     }
@@ -85,6 +90,11 @@ export const REFRESH_TOKEN_MUTATION = gql`
               id
               publicUrl
             }
+          }
+          phoneNumbers {
+            id
+            number
+            verificationStatus
           }
         }
       }
@@ -144,6 +154,11 @@ export const GOOGLE_LOGIN = gql`
               publicUrl
             }
           }
+          phoneNumbers {
+            id
+            number
+            verificationStatus
+          }
         }
       }
     }
@@ -185,6 +200,11 @@ export const LOGIN_MUTATION = gql`
               id
               publicUrl
             }
+          }
+          phoneNumbers {
+            id
+            number
+            verificationStatus
           }
         }
       }

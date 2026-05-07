@@ -25,6 +25,7 @@ import {
 
 import { useColorScheme } from "@/lib/hooks/use-color-scheme";
 import { Fonts } from "@/lib/constants/theme";
+import { useLockScreen } from "@/lib/hooks/use-lock-screen";
 import React from "react";
 import "../global.css";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -56,6 +57,7 @@ initializeNotifications();
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme();
+	useLockScreen();
 	const [loaded, error] = useFonts({
 		[Fonts.thin]: Inter_100Thin,
 		[Fonts.extralight]: Inter_200ExtraLight,

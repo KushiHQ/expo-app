@@ -11,7 +11,12 @@ import { Fonts } from "@/lib/constants/theme";
 import Button from "../atoms/a-button";
 import { useRouter } from "expo-router";
 import ThemedModal from "./m-modal";
-import { HostListingsQuery } from "@/lib/services/graphql/generated";
+import {
+	useDeleteHostingMutation,
+	HostListingsQuery,
+} from "@/lib/services/graphql/generated";
+import LoadingModal from "../atoms/a-loading-modal";
+import Toast from "react-native-toast-message";
 
 type Props = {
 	open: boolean;
@@ -24,6 +29,21 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting }) => {
 	const colors = useThemeColors();
 	const [deleteOpen, setDeleteOpen] = React.useState(false);
 	const { failedImages, handleImageError } = useFallbackImages();
+	const [{ fetching: deleting }, deleteHosting] = useDeleteHostingMutation();
+
+	const handleDelete = () => {
+		deleteHosting({ hostingId: hosting.id }).then((res) => {
+			if (res.data?.deleteHosting) {
+				Toast.show({
+					type: "success",
+					text1: "Success",
+					text2: res.data.deleteHosting.message,
+				});
+				setDeleteOpen(false);
+				onClose();
+			}
+		});
+	};
 
 	return (
 		<>
@@ -108,16 +128,14 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting }) => {
 						<Button
 							type="error"
 							className="flex-1"
-							onPress={() => {
-								setDeleteOpen(false);
-								onClose();
-							}}
+							onPress={handleDelete}
 						>
 							<ThemedText content="error">Delete</ThemedText>
 						</Button>
 					</View>
 				</View>
 			</ThemedModal>
+			<LoadingModal visible={deleting} />
 		</>
 	);
 };

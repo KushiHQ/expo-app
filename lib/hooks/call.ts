@@ -15,6 +15,7 @@ import Daily, {
 import notifee from "@notifee/react-native";
 import { stopRingtone } from "../utils/call";
 import { BackHandler, Platform } from "react-native";
+import { useLockScreen } from "./use-lock-screen";
 
 const callerRingtone = require("@/assets/audio/caller-ringtone.mp3");
 const receiverRingtone = require("@/assets/audio/ringtone.mp3");
@@ -24,6 +25,7 @@ export const useActiveCall = () => {
 	const pathname = usePathname();
 	const isVideoCall = pathname.endsWith("video");
 	const { id, initiate, accept, callId } = useLocalSearchParams();
+	const { isLockScreenLaunch } = useLockScreen();
 
 	const [call, setCall] = useState<DailyCall | null>(null);
 	const [localParticipant, setLocalParticipant] =
@@ -35,22 +37,11 @@ export const useActiveCall = () => {
 
 	const [isRinging, setIsRinging] = useState(true);
 	const [isSpeakerOn, setIsSpeakerOn] = useState(isVideoCall);
-	const [isLockScreenLaunch, setIsLockScreenLaunch] = useState(false);
 	const [, sendNotification] = useSendChatCallNotificationMutation();
 
 	const [{ data: chatData }] = useHostingChatQuery({
 		variables: { chatId: cast(id) },
 	});
-
-	useEffect(() => {
-		if (Platform.OS === "android") {
-			notifee.getInitialNotification().then((initial) => {
-				if (initial?.pressAction?.id === "full_screen") {
-					setIsLockScreenLaunch(true);
-				}
-			});
-		}
-	}, []);
 
 	useEffect(() => {
 		const cleanupNotification = async () => {

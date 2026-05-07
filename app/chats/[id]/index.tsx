@@ -32,16 +32,25 @@ import React from "react";
 import { FlatList, View, ActivityIndicator } from "react-native";
 import { useInfiniteQuery } from "@/lib/hooks/use-infinite-query";
 import { useAudioPlayer } from "expo-audio";
+import { useNotifications } from "@/components/contexts/notifications";
 
 export default function ChatDetails() {
   const { id } = useLocalSearchParams();
   const colors = useThemeColors();
   const flatListRef = React.useRef<FlatList>(null);
+  const { setActiveChatId } = useNotifications();
   const sendSoundPlayer = useAudioPlayer(
     require("@/assets/audio/message-send-sound.mp3"),
   );
   const [onlineRecipient, setOnlineRecipeint] =
     React.useState<OnlineUserSubscription["onlineUser"]>();
+
+  // Register this chat as active so the notification provider doesn't show
+  // a banner when a message arrives while the user is already viewing it
+  React.useEffect(() => {
+    setActiveChatId(String(id));
+    return () => setActiveChatId(null);
+  }, [id, setActiveChatId]);
 
   const {
     items: pagedMessages,

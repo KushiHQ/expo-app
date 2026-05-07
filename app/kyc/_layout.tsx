@@ -7,6 +7,7 @@ export default function Layout() {
 			<Stack.Screen name="index" options={{ headerShown: false }} />
 			<Stack.Screen name="image" options={{ headerShown: false }} />
 			<Stack.Screen name="nin" options={{ headerShown: false }} />
+			<Stack.Screen name="phone" options={{ headerShown: false }} />
 			<Stack.Screen name="bvn" options={{ headerShown: false }} />
 		</Stack>
 	);

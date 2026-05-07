@@ -22,6 +22,12 @@ export default function KycHome() {
 	const colors = useThemeColors();
 
 	const pendingStep = React.useMemo(() => {
+		const isPhoneVerified = user.user?.phoneNumbers?.some(
+			(p) => p.verificationStatus === "VERIFIED",
+		);
+		if (!isPhoneVerified) {
+			return "Verify Phone Number";
+		}
 		if (!user.user?.kyc?.image?.publicUrl) {
 			return "Take A Selfie";
 		}
@@ -47,7 +53,8 @@ export default function KycHome() {
 				>
 					<Button
 						onPress={() => {
-							if (pendingStep === "Take A Selfie") router.push("/kyc/image");
+							if (pendingStep === "Verify Phone Number") router.push("/kyc/phone");
+							else if (pendingStep === "Take A Selfie") router.push("/kyc/image");
 							else if (pendingStep === "Verify NIN") router.push("/kyc/nin");
 							else if (pendingStep === "Verify BVN") router.push("/kyc/bvn");
 							else {

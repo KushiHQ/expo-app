@@ -43,6 +43,7 @@ export const CREATE_UPDATE_HOSTING_MUTATION = gql`
         rooms {
           id
           name
+          count
           description
           createdAt
           lastUpdated
@@ -51,10 +52,70 @@ export const CREATE_UPDATE_HOSTING_MUTATION = gql`
             createdAt
             lastUpdated
             asset {
+              id
               publicUrl
+            }
+          }
+        }
+        host {
+          id
+          user {
+            id
+            email
+            profile {
+              fullName
+              gender
               id
             }
           }
+          createdAt
+        }
+        coverImage {
+          id
+          createdAt
+          lastUpdated
+          asset {
+            id
+            publicUrl
+          }
+        }
+        paymentDetails {
+          id
+          accountNumber
+          accountName
+          bankCode
+          createdAt
+          lastUpdated
+          bankDetails {
+            name
+            slug
+            code
+            active
+            currency
+            image
+          }
+        }
+        reviews {
+          averageRating
+          description
+          lastUpdated
+          id
+          user {
+            id
+            profile {
+              fullName
+              id
+              gender
+            }
+          }
+        }
+        reviewAverage {
+          cleanliness
+          accuracy
+          communication
+          location
+          checkIn
+          value
         }
         tenancyAgreementTemplate {
           sections {
@@ -70,6 +131,7 @@ export const CREATE_UPDATE_HOSTING_MUTATION = gql`
               content
               isMandatory
               isActive
+              priority
               isCustom
               requiredVariables {
                 name
@@ -94,6 +156,9 @@ export const CREATE_UPDATE_HOSTING_MUTATION = gql`
           createdAt
           lastUpdated
         }
+        cautionFee
+        serviceCharge
+        bookingApplicationsCount
       }
     }
   }
@@ -183,6 +248,14 @@ export const CREATE_UPDATE_HOSTING_REVIEW = gql`
 export const INITIATE_HOSTING_VERFICATION = gql`
   mutation InitiateHostingVerification($input: HostingVerificationInput!) {
     initiateHostingVerification(input: $input) {
+      message
+    }
+  }
+`;
+
+export const DELETE_HOSTING = gql`
+  mutation deleteHosting($hostingId: String!) {
+    deleteHosting(hostingId: $hostingId) {
       message
     }
   }

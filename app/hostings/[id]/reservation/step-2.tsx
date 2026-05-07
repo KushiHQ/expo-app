@@ -25,6 +25,7 @@ import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
 import { removeTypenames } from "@/lib/utils/graphql/cleanup";
+import { useBookingApplicationStore } from "@/lib/stores/bookings";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
 import React from "react";
@@ -35,24 +36,14 @@ export default function BookingApplicationStep2() {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const { id } = useLocalSearchParams();
+	const { input, setInput, updateGuestFormData } = useBookingApplicationStore();
 	const [
 		{ fetching: initiatingApplicaiton, data: initiateData },
 		initiateApplication,
 	] = useInitiateBookingApplicationMutation();
 	const [{ fetching: updatingBookingApplication, error: updateError }, mutate] =
 		useUpdateBookingApplicationMutation();
-	const [input, setInput] = React.useState({} as BookingApplicationUpdateInput);
 	const [hasGurantor, setHasGuarantor] = React.useState(false);
-
-	function updateGuestFormData(input: Partial<GuestFormDataInput>) {
-		setInput((c) => {
-			const { guestFormData } = c;
-			const data = guestFormData ?? ({} as GuestFormDataInput);
-			const updated = { ...data, ...input };
-
-			return { ...c, guestFormData: updated };
-		});
-	}
 
 	React.useEffect(() => {
 		initiateApplication({

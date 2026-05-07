@@ -152,6 +152,8 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>(
 			const {
 				__typename: __vTypeName,
 				verificationTier,
+				createdAt: createdAt2,
+				lastUpdated: lastUpdated2,
 				...vRest
 			} = verification ?? {};
 

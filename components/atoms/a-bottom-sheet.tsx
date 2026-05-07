@@ -47,14 +47,6 @@ const BottomSheet: FC<BottomSheetProps> = ({
 	const translateY = useSharedValue(SCREEN_HEIGHT);
 	const { height: keyboardHeight } = useGradualKeyboardAnimation();
 
-	useEffect(() => {
-		if (isVisible) {
-			setIsRendered(true);
-		} else {
-			toggleSheet(false);
-		}
-	}, [isVisible, toggleSheet]);
-
 	const toggleSheet = useCallback((show: boolean) => {
 		"worklet";
 		if (show) {
@@ -71,6 +63,14 @@ const BottomSheet: FC<BottomSheetProps> = ({
 			});
 		}
 	}, [sheetHeight, translateY]);
+
+	useEffect(() => {
+		if (isVisible) {
+			setIsRendered(true);
+		} else {
+			toggleSheet(false);
+		}
+	}, [isVisible, toggleSheet]);
 
 	const onLayout = useCallback(
 		(event: any) => {

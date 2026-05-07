@@ -51,6 +51,13 @@ export const TRANSACTION_BY_REFERENCE = gql`
       flutterwaveChargeId
       reference
       status
+      booking {
+        id
+        hosting {
+          id
+          title
+        }
+      }
     }
   }
 `;

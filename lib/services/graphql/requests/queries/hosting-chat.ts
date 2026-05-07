@@ -30,6 +30,35 @@ export const USER_CHATS_QUERY = gql`
           online
         }
       }
+      hosting {
+        id
+        title
+        coverImage {
+          id
+          asset {
+            id
+            publicUrl
+          }
+        }
+      }
+      host {
+        id
+        user {
+          id
+          profile {
+            fullName
+          }
+        }
+      }
+      guest {
+        id
+        user {
+          id
+          profile {
+            fullName
+          }
+        }
+      }
     }
   }
 `;

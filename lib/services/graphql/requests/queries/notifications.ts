@@ -12,6 +12,7 @@ export const NOTIFICATIONS_QUERY = gql`
       type
       createdAt
       lastUpdated
+      isRead
       data {
         intent
         subject
@@ -20,3 +21,4 @@ export const NOTIFICATIONS_QUERY = gql`
     }
   }
 `;
+

@@ -13,14 +13,18 @@ import {
 } from "@react-native-firebase/messaging";
 import notifee, { EventType } from "@notifee/react-native";
 import { handleIncomingCall, handleNotifeeEvent } from "@/lib/utils/call";
+import { handleIncomingChatMessage } from "@/lib/utils/notifications";
 import { useRouter } from "expo-router";
 import { CALL_TYPE_VALUE } from "@/lib/types/enums/hoting-chat";
 import { AppState, AppStateStatus } from "react-native";
 import { useAudioPlayer } from "expo-audio";
+import messaging from "@react-native-firebase/messaging";
 
 interface NotificationContextType {
 	token: string | null;
 	error: Error | null;
+	/** Call from the chat screen to register/deregister itself as active */
+	setActiveChatId: (chatId: string | null) => void;
 }
 
 const NotificationContext = React.createContext<
@@ -50,6 +54,12 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 	);
 
 	const handledCallId = React.useRef<string | null>(null);
+	// Tracks which chat the user is currently viewing (set by the chat screen)
+	const currentChatId = React.useRef<string | null>(null);
+
+	const setActiveChatId = React.useCallback((chatId: string | null) => {
+		currentChatId.current = chatId;
+	}, []);
 
 	const routeToCall = React.useCallback(
 		(data: any) => {
@@ -131,6 +141,7 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 
 		handleAppStateChange(AppState.currentState);
 
+		// Handle Notifee notification from a cold start
 		notifee.getInitialNotification().then(async (initialNotification) => {
 			if (initialNotification) {
 				const isAction = initialNotification.pressAction?.id !== "default";
@@ -141,6 +152,30 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 				});
 			}
 		});
+
+		// Handle tapping an FCM system-tray chat notification from a cold start
+		messaging()
+			.getInitialNotification()
+			.then((remoteMessage) => {
+				if (
+					remoteMessage?.data?.intent === "notification" &&
+					remoteMessage.data?.id
+				) {
+					router.push(`/chats/${remoteMessage.data.id}` as any);
+				}
+			});
+
+		// Handle tapping an FCM system-tray chat notification while app is backgrounded
+		const unsubscribeOpenedApp = messaging().onNotificationOpenedApp(
+			(remoteMessage) => {
+				if (
+					remoteMessage?.data?.intent === "notification" &&
+					remoteMessage.data?.id
+				) {
+					router.push(`/chats/${remoteMessage.data.id}` as any);
+				}
+			},
+		);
 
 		const unsubscribeForeground = onMessage(
 			messagingInstance,
@@ -155,12 +190,26 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 					remoteMessage.data?.intent === CALL_TYPE_VALUE[CallType.Video]
 				) {
 					routeToCall(remoteMessage.data);
-				} else {
-					// Play notification sound for regular chat messages in foreground
+					return;
+				}
+
+				// Chat message: show a Notifee banner unless the user is already in this chat
+				const chatId = remoteMessage.data?.id as string | undefined;
+				const isViewingThisChat = chatId && currentChatId.current === chatId;
+
+				if (isViewingThisChat) {
+					// User is already looking at this chat — play in-chat ping only
 					try {
 						notificationPlayer.play();
-					} catch (error) {
-						console.log("Failed to play notification sound", error);
+					} catch (err) {
+						console.log("Failed to play notification sound", err);
+					}
+				} else {
+					// Show a visible Notifee banner
+					try {
+						await handleIncomingChatMessage(remoteMessage);
+					} catch (err) {
+						console.log("Failed to show chat notification banner", err);
 					}
 				}
 			},
@@ -174,11 +223,12 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 			appStateSub.remove();
 			unsubscribeForeground();
 			unsubscribeNotifee();
+			unsubscribeOpenedApp();
 		};
 	}, [user.user?.id]);
 
 	return (
-		<NotificationContext.Provider value={{ error, token }}>
+		<NotificationContext.Provider value={{ error, token, setActiveChatId }}>
 			{children}
 		</NotificationContext.Provider>
 	);

@@ -18,6 +18,16 @@ export const BOOKING_APPLICATIONS = gql`
       status
       id
       intervalMultiplier
+      booking {
+        id
+      }
+      hosting {
+        id
+        title
+        city
+        country
+        state
+      }
     }
   }
 `;
@@ -80,6 +90,23 @@ export const BOOKING_APPLICATION = gql`
               key
               value
             }
+          }
+        }
+      }
+      booking {
+        id
+      }
+      hosting {
+        id
+        title
+        city
+        country
+        state
+        coverImage {
+          id
+          asset {
+            id
+            publicUrl
           }
         }
       }

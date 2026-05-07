@@ -39,16 +39,13 @@ const TransactionCard: React.FC<Props> = ({ transaction }) => {
 	const colors = useThemeColors();
 
 	const handlePress = () => {
-		switch (transaction.type) {
-			case TransactionType.BookingPayment:
-			case TransactionType.HostBookingPayment:
-				if (transaction.booking?.id) {
-					router.push(`/bookings/${transaction.booking.id}`);
-				}
-				break;
-			default:
-				break;
-		}
+		router.push({
+			pathname: "/users/[id]/transactions/[transactionId]" as any,
+			params: {
+				id: "0", // We don't strictly need the user id if we use the transaction id
+				transactionId: transaction.reference || transaction.id,
+			},
+		});
 	};
 
 	const date = transaction.createdAt

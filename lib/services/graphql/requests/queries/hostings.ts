@@ -195,6 +195,7 @@ export const HOSTING_QUERY = gql`
       }
       cautionFee
       serviceCharge
+      bookingApplicationsCount
     }
   }
 `;
@@ -215,6 +216,7 @@ export const HOSTINGS_QUERY = gql`
       title
       city
       street
+      landmarks
       saved
       publishStatus
       latitude
@@ -310,6 +312,7 @@ export const HOST_LISTINGS_QUERY = gql`
       state
       city
       publishStatus
+      bookingApplicationsCount
       createdAt
       lastUpdated
     }

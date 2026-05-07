@@ -71,7 +71,7 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
 				);
 				newText = newText.replaceAll(
 					"{{LANDLORD_ADDRESS}}",
-					`{{<<${capitalize(hosting.verification.landlordFullName, true)}>>}}`,
+					`{{<<${capitalize(hosting.verification.landlordAddress, true)}>>}}`,
 				); // Note: you might want to change this to landlordAddress!
 			}
 

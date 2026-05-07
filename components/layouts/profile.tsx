@@ -12,7 +12,7 @@ import { usePathname, useRouter } from "expo-router";
 import { EventEmitter } from "@/lib/utils/event-emitter";
 import { useUser } from "@/lib/hooks/user";
 import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
-
+import { useNotificationsQuery } from "@/lib/services/graphql/generated";
 import * as Haptics from "expo-haptics";
 
 type Props = {
@@ -30,6 +30,11 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
 	const scrollViewRef = useRef<ScrollView>(null);
 	const path = usePathname();
 	const { user } = useUser();
+
+	const [{ data: notifData }] = useNotificationsQuery({
+		variables: { pagination: { limit: 20 } },
+	});
+	const unreadCount = (notifData?.notifications ?? []).filter((n) => !n.isRead).length;
 
 	useEffect(() => {
 		const handleScrollToTop = () => {
@@ -87,8 +92,19 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
 								Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 								router.push("/users/notifications");
 							}}
+							className="relative"
 						>
 							<IonNotificationsOutline color={hexToRgba(colors["text"], 0.7)} />
+							{unreadCount > 0 && (
+								<View
+									className="absolute -top-1 -right-1 rounded-full items-center justify-center"
+									style={{
+										width: 14,
+										height: 14,
+										backgroundColor: colors.primary,
+									}}
+								/>
+							)}
 						</Pressable>
 						<Pressable
 							onPress={() => {

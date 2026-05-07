@@ -103,6 +103,12 @@ export const handleNotifeeEvent = async ({ type, detail }: Event) => {
 		const { pressAction, notification } = detail;
 		const data = notification?.data as any;
 
+		// Chat message notification tap — route to the chat
+		if (data?.intent === "notification" && data?.chatId) {
+			await Linking.openURL(`kushi://chats/${data.chatId}`);
+			return;
+		}
+
 		if (pressAction?.id === "full_screen") {
 			if (data?.intent === CALL_TYPE_VALUE[CallType.Voice]) {
 				await Linking.openURL(
