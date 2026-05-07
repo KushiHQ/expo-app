@@ -26,7 +26,7 @@ export default function GuestHome() {
 	} = useInfiniteQuery(useHostingsQuery, {
 		queryKey: "hostings",
 		initialVariables: {
-			filters: { ...filter, publishStatus: PublishStatus.Live },
+			filters: { ...filter, publishStatus: PublishStatus.Live, onSale: true },
 		},
 	});
 

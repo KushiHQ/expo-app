@@ -15,6 +15,10 @@ module.exports = (() => {
 		...resolver,
 		assetExts: resolver.assetExts.filter((ext) => ext !== "svg"),
 		sourceExts: [...resolver.sourceExts, "svg"],
+		extraNodeModules: {
+			"react-native-svg": require("path").resolve(__dirname, "node_modules/react-native-svg"),
+			"react-native-webview": require("path").resolve(__dirname, "node_modules/react-native-webview"),
+		},
 	};
 	config.resolver.assetExts.push("woff2");
 
