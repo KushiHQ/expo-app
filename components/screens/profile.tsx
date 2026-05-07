@@ -17,7 +17,6 @@ import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useUser } from "@/lib/hooks/user";
 import { CustomSvgProps } from "@/lib/types/svgType";
-import { UserType } from "@/lib/types/users";
 import { hexToRgba } from "@/lib/utils/colors";
 import { Image } from "expo-image";
 import { Href, useRouter } from "expo-router";
@@ -38,37 +37,37 @@ const ProfileScreen = () => {
     href: Href;
     label: string;
   }[] = [
-    {
-      icon: UilUser,
-      href: `/users/${id}/profile/edit`,
-      label: "Profile",
-    },
-    {
-      icon: SolarCardLinear,
-      href: `/bookings`,
-      label: "My Bookings",
-    },
-    {
-      icon: SolarWalletMoneyOutline,
-      href: `/users/${id}/transactions`,
-      label: "Payments",
-    },
-    {
-      icon: IonNotificationsOutline,
-      href: `/users/${id}/notification-settings`,
-      label: "Notifications",
-    },
-    {
-      icon: HugeiconsShieldUser,
-      href: "/kyc",
-      label: "KYC",
-    },
-    {
-      icon: LinkIcon,
-      href: "/host/listings",
-      label: "Hostings",
-    },
-  ];
+      {
+        icon: UilUser,
+        href: `/users/${id}/profile/edit`,
+        label: "Profile",
+      },
+      {
+        icon: SolarCardLinear,
+        href: `/bookings`,
+        label: "My Bookings",
+      },
+      {
+        icon: SolarWalletMoneyOutline,
+        href: `/users/${id}/transactions`,
+        label: "Payments",
+      },
+      {
+        icon: IonNotificationsOutline,
+        href: `/users/${id}/notification-settings`,
+        label: "Notifications",
+      },
+      {
+        icon: HugeiconsShieldUser,
+        href: "/kyc",
+        label: "KYC",
+      },
+      {
+        icon: LinkIcon,
+        href: "/host/listings",
+        label: "Hostings",
+      },
+    ];
 
   return (
     <>
@@ -115,11 +114,7 @@ const ProfileScreen = () => {
             </View>
           </View>
           <View className="mt-8 gap-2">
-            {NAVIGATION.filter((n) =>
-              user.user.userType === UserType.Guest
-                ? n.label !== "Hostings"
-                : !n.label.includes("Bookings"),
-            ).map((nav, index) => {
+            {NAVIGATION.map((nav, index) => {
               const Icon = nav.icon;
               return (
                 <Pressable

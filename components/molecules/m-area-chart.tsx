@@ -108,75 +108,7 @@ const AreaChart: React.FC<Props> = ({ data = [], title, color }) => {
 						fontSize: 10,
 						fontFamily: Fonts.medium,
 					}}
-					xAxisLabelTextStyle={{
-						color: hexToRgba(colors.text, 0.4),
-						fontSize: 10,
-						fontFamily: Fonts.medium,
-						textAlign: "center",
-					}}
-					yAxisLabelPrefix="₦"
-					formatYLabel={(label: string) => {
-						const val = parseFloat(label);
-						if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
-						if (val >= 1000) return `${(val / 1000).toFixed(1)}K`;
-						return label;
-					}}
 					hideDataPoints
-					pointerConfig={{
-						pointerStripUptoDataPoint: true,
-						pointerStripColor: chartColor,
-						pointerStripWidth: 2,
-						strokeDashArray: [2, 5],
-						radius: 4,
-						pointerColor: chartColor,
-						pointerComponent: () => (
-							<View
-								style={{
-									height: 10,
-									width: 10,
-									borderRadius: 5,
-									backgroundColor: chartColor,
-									borderWidth: 2,
-									borderColor: colors.background,
-								}}
-							/>
-						),
-						showPointerStrip: true,
-						pointerLabelComponent: (items: any) => {
-							return (
-								<View
-									style={{
-										height: 45,
-										width: 100,
-										backgroundColor: colors.text,
-										borderRadius: 12,
-										justifyContent: "center",
-										alignItems: "center",
-										bottom: 50,
-										left: -40,
-									}}
-								>
-									<ThemedText
-										style={{
-											color: colors.background,
-											fontFamily: Fonts.bold,
-											fontSize: 12,
-										}}
-									>
-										₦{items[0].value.toLocaleString()}
-									</ThemedText>
-									<ThemedText
-										style={{
-											color: hexToRgba(colors.background, 0.6),
-											fontSize: 10,
-										}}
-									>
-										{items[0].label}
-									</ThemedText>
-								</View>
-							);
-						},
-					}}
 				/>
 			</View>
 		</View>
