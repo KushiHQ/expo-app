@@ -36,15 +36,15 @@ export default function GuestHome() {
 				showsVerticalScrollIndicator={false}
 				data={hostings}
 				keyExtractor={(item) => item.id}
-				contentContainerStyle={{ padding: 20, paddingTop: 0 }}
+				contentContainerStyle={{ padding: 24, paddingTop: 12 }}
 				renderItem={({ item, index }) => (
-					<View className="mb-8">
+					<View className="mb-10">
 						<HostingCard index={index} hosting={item} />
 					</View>
 				)}
 				ListHeaderComponent={
-					<View className="mb-8">
-						<View className="gap-4">
+					<View className="mb-10">
+						<View className="gap-6">
 							<HostingFilterManager />
 							<HotingVariantFilter
 								value={filter.category?.valueOf()}
@@ -54,7 +54,7 @@ export default function GuestHome() {
 							/>
 						</View>
 						{fetching && !hostings.length && (
-							<View className="gap-4 mt-8">
+							<View className="gap-6 mt-10">
 								{Array.from({ length: 5 }).map((_, index) => (
 									<HostingCardSkeleton key={index} />
 								))}

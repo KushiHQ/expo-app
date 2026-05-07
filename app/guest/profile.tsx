@@ -1,5 +1,10 @@
 import ProfileScreen from "@/components/screens/profile";
+import AuthGuard from "@/components/guards/auth-guard";
 
 export default function GuestProfile() {
-	return <ProfileScreen />;
+	return (
+		<AuthGuard>
+			<ProfileScreen />
+		</AuthGuard>
+	);
 }

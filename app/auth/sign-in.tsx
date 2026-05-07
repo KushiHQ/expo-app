@@ -37,10 +37,22 @@ export default function Login() {
 	const [inputs, setInputs] = React.useState<Partial<LoginInput>>({
 		email: cast(email),
 	});
-	const { user, updateUser } = useUser();
+	const { user, updateUser, returnUrl, setReturnUrl } = useUser();
 	const [savePassword, setSavePassword] = React.useState(!!user.password);
 	const [res, mutate] = useLoginMutation();
 	const [, googleLogin] = useGoogleLoginMutation();
+
+	const handlePostLogin = (userType?: UserType) => {
+		if (returnUrl) {
+			const destination = returnUrl;
+			setReturnUrl(null);
+			router.replace(destination as any);
+		} else if (userType === UserType.Host) {
+			router.replace("/host/analytics");
+		} else {
+			router.replace("/guest/home");
+		}
+	};
 
 	const signInWithGoogle = async () => {
 		try {
@@ -69,11 +81,7 @@ export default function Login() {
 							user: res.data?.googleLogin.data?.user,
 							email: res.data.googleLogin.data.user.email,
 						});
-						if (user.userType === UserType.Host) {
-							router.replace("/host/analytics");
-						} else {
-							router.replace("/guest/home");
-						}
+						handlePostLogin(user.userType);
 					}
 				});
 		} catch (error: any) {
@@ -116,11 +124,7 @@ export default function Login() {
 					user: res.data?.login.data?.user,
 					email: inputs.email,
 				});
-				if (user.userType === UserType.Host) {
-					router.replace("/host/analytics");
-				} else {
-					router.replace("/guest/home");
-				}
+				handlePostLogin(user.userType);
 			}
 		});
 	};

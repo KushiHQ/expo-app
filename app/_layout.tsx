@@ -3,7 +3,7 @@ import {
 	DefaultTheme,
 	ThemeProvider,
 } from "@react-navigation/native";
-import { Stack } from "expo-router";
+import { Stack, usePathname, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import {
 	configureReanimatedLogger,
@@ -38,7 +38,7 @@ import Toast from "react-native-toast-message";
 import toastConfig from "@/components/atoms/a-toast";
 import { NotificationProvider } from "@/components/contexts/notifications";
 import { initializeNotifications } from "@/lib/utils/notifications";
-import { LogBox } from "react-native";
+import { LogBox, Platform, Linking } from "react-native";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -57,7 +57,46 @@ initializeNotifications();
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme();
+	const pathname = usePathname();
+	const params = useLocalSearchParams();
+
 	useLockScreen();
+
+	React.useEffect(() => {
+		if (Platform.OS === "web") {
+			const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+			const isShared = params.shared === "true";
+			
+			if (isMobile && isShared) {
+				// Detect slugified hosting or reservation routes
+				const isHosting = pathname.startsWith("/guest/") && pathname.includes("___");
+				const isReservation = pathname.includes("/reservation/");
+				
+				if (isHosting || isReservation) {
+					// For slugified hosting, we need to extract the ID from the end (___ID)
+					let deepLink = `kushi://${pathname.substring(1)}`;
+					
+					if (isHosting && !isReservation) {
+						const id = pathname.split("___").pop();
+						deepLink = `kushi://hostings/${id}`;
+					}
+					
+					const queryParams = { ...params };
+					delete queryParams.shared; // Remove shared from deep link
+					
+					const finalDeepLink = `${deepLink}${
+						Object.keys(queryParams).length
+							? `?${new URLSearchParams(queryParams as any).toString()}`
+							: ""
+					}`;
+					
+					setTimeout(() => {
+						Linking.openURL(finalDeepLink).catch(() => {});
+					}, 1000);
+				}
+			}
+		}
+	}, [pathname, params]);
 	const [loaded, error] = useFonts({
 		[Fonts.thin]: Inter_100Thin,
 		[Fonts.extralight]: Inter_200ExtraLight,
@@ -95,7 +134,7 @@ export default function RootLayout() {
 												colorScheme === "dark" ? DarkTheme : DefaultTheme
 											}
 										>
-											<Stack screenOptions={{ animation: "fade" }}>
+											<Stack screenOptions={{ animation: "default" }}>
 												<Stack.Screen
 													name="index"
 													options={{ headerShown: false }}

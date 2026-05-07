@@ -15,12 +15,14 @@ const SearchInput: React.FC<Props> = ({ value, onChangeText, placeholder }) => {
 
 	return (
 		<View
-			className="flex-row items-center gap-2 px-3 rounded-full"
+			className="flex-row items-center gap-2.5 px-4 rounded-2xl h-12"
 			style={{
-				backgroundColor: hexToRgba(colors.text, 0.1),
+				backgroundColor: colors["surface-01"],
+				borderWidth: 1,
+				borderColor: hexToRgba(colors.text, 0.05),
 			}}
 		>
-			<LineiconsSearch1 color={hexToRgba(colors.text, 0.2)} />
+			<LineiconsSearch1 size={18} color={hexToRgba(colors.text, 0.4)} />
 			<TextInput
 				value={value}
 				cursorColor={colors.primary}

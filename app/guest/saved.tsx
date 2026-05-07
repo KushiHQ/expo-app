@@ -27,8 +27,17 @@ import {
 import EmptyList from "@/components/molecules/m-empty-list";
 import SavedHostingFolderModal from "@/components/organisms/o-saved-hosting-folder-modal";
 import { useRouter } from "expo-router";
+import AuthGuard from "@/components/guards/auth-guard";
 
 export default function GuestSaved() {
+	return (
+		<AuthGuard>
+			<SavedContent />
+		</AuthGuard>
+	);
+}
+
+function SavedContent() {
 	const router = useRouter();
 	const colors = useThemeColors();
 	const [createFolderOpen, setCreateFolderOpen] = React.useState(false);

@@ -15,6 +15,8 @@ import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import { useNotificationsQuery } from "@/lib/services/graphql/generated";
 import * as Haptics from "expo-haptics";
 
+import { Fonts } from "@/lib/constants/theme";
+
 type Props = {
 	children?: React.ReactNode;
 	refreshControl?: React.ReactElement<
@@ -62,46 +64,51 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
 		<ThemedView className="flex-1">
 			<SafeAreaView className="flex-1">
 				<View className="p-5 flex-row items-center justify-between">
-					<View className="flex-row items-center gap-2">
+					<View className="flex-row items-center gap-3">
 						<Pressable
 							onPress={() => {
 								Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 								router.back();
 							}}
 							aria-label="Go Back"
-							className="w-10 items-center justify-center rounded-xl h-10"
-							style={{ backgroundColor: hexToRgba(colors["text"], 0.2) }}
+							className="w-11 items-center justify-center rounded-2xl h-11"
+							style={{ backgroundColor: colors["surface-01"] }}
 						>
-							<ChevronLeft color={colors["text"]} />
+							<ChevronLeft size={22} color={colors["text"]} />
 						</Pressable>
-						<View>
-							<ThemedText>{user.user?.profile.fullName}</ThemedText>
+						<View className="gap-0.5">
+							<ThemedText style={{ fontSize: 16, fontFamily: Fonts.semibold }}>
+								{user.user?.profile.fullName}
+							</ThemedText>
 							<ThemedText
 								style={{
-									fontSize: 12,
-									color: hexToRgba(colors["text"], 0.7),
+									fontSize: 11,
+									fontFamily: Fonts.medium,
+									color: hexToRgba(colors["text"], 0.5),
 								}}
 							>
 								Find your perfect home
 							</ThemedText>
 						</View>
 					</View>
-					<View className="flex-row items-center gap-3">
+					<View className="flex-row items-center gap-4">
 						<Pressable
 							onPress={() => {
 								Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 								router.push("/users/notifications");
 							}}
-							className="relative"
+							className="w-11 h-11 rounded-2xl items-center justify-center"
+							style={{ backgroundColor: colors["surface-01"] }}
 						>
-							<IonNotificationsOutline color={hexToRgba(colors["text"], 0.7)} />
+							<IonNotificationsOutline size={20} color={hexToRgba(colors["text"], 0.8)} />
 							{unreadCount > 0 && (
 								<View
-									className="absolute -top-1 -right-1 rounded-full items-center justify-center"
+									className="absolute top-2.5 right-2.5 rounded-full items-center justify-center border-2"
 									style={{
-										width: 14,
-										height: 14,
+										width: 10,
+										height: 10,
 										backgroundColor: colors.primary,
+										borderColor: colors["surface-01"],
 									}}
 								/>
 							)}
@@ -111,10 +118,9 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
 								Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 								router.push("/guest/profile");
 							}}
-							className="w-8 h-8 rounded-full border overflow-hidden"
+							className="w-11 h-11 rounded-2xl border-2 overflow-hidden"
 							style={{
-								borderColor: hexToRgba(colors["text"], 0.6),
-								borderWidth: 2,
+								borderColor: hexToRgba(colors["text"], 0.1),
 							}}
 						>
 							<Image

@@ -114,22 +114,22 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
 		<View style={{ zIndex: 50 }}>
 			<Animated.View
 				layout={LinearTransition.springify().damping(25).stiffness(300)}
-				className={`flex-row gap-2 px-4 rounded-[24px] ${
+				className={`flex-row gap-3 px-4 rounded-2xl ${
 					isInputFocused
 						? "items-start py-4 min-h-[120px]"
-						: "items-center py-2 min-h-[50px]"
+						: "items-center py-2.5 min-h-[56px]"
 				}`}
 				style={{
 					backgroundColor: isMapView
 						? colors.background
-						: hexToRgba(colors["text"], 0.1),
-					borderWidth: isMapView ? 1 : 0,
-					borderColor: hexToRgba(colors.text, 0.1),
-					shadowColor: isMapView ? "#000" : "transparent",
-					shadowOffset: { width: 0, height: 2 },
-					shadowOpacity: isMapView ? 0.1 : 0,
-					shadowRadius: 4,
-					elevation: isMapView ? 3 : 0,
+						: colors["surface-01"],
+					borderWidth: 1,
+					borderColor: hexToRgba(colors.text, 0.05),
+					shadowColor: "#000",
+					shadowOffset: { width: 0, height: 4 },
+					shadowOpacity: 0.04,
+					shadowRadius: 12,
+					elevation: 2,
 				}}
 			>
 				<View
@@ -183,14 +183,14 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
 					</Pressable>
 					<TouchableOpacity
 						onPress={handleToggleView}
-						style={{ backgroundColor: colors["text"], height: 32, width: 32 }}
-						className="items-center justify-center rounded-full"
+						style={{ backgroundColor: colors.secondary, height: 36, width: 36 }}
+						className="items-center justify-center rounded-xl shadow-sm"
 					>
 						{isMapView ? (
-							<LayoutList color={colors.background} size={18} />
+							<LayoutList color="#fff" size={18} />
 						) : (
 							<MaterialSymbolsLightMapOutlineRounded
-								color={colors["background"]}
+								color="#fff"
 								size={20}
 							/>
 						)}

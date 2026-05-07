@@ -1,8 +1,6 @@
 import Button from "@/components/atoms/a-button";
 import Carousel from "@/components/atoms/a-carousel";
-import {
-	HostingDetailsSkeleton,
-} from "@/components/molecules/m-hosting-card";
+import { HostingDetailsSkeleton } from "@/components/molecules/m-hosting-card";
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
 import { useFallbackImages } from "@/lib/hooks/images";
@@ -11,11 +9,11 @@ import { useHostingQuery } from "@/lib/services/graphql/generated";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
-import { capitalize } from "@/lib/utils/text";
+import { capitalize, slugify } from "@/lib/utils/text";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
-import { View } from "react-native";
+import { Share, View } from "react-native";
 import Skeleton from "@/components/atoms/a-skeleton";
 import DetailsLayout from "@/components/layouts/details";
 import HostingLikeButton from "@/components/atoms/a-hosting-like-button";
@@ -38,6 +36,23 @@ export default function HostingDetails() {
 
 	const hosting = data?.hosting;
 
+	const handleShare = async () => {
+		const slug = `${slugify(hosting?.title ?? "")}___${id}`;
+		const shareUrl = (process.env.EXPO_PUBLIC_SHARE_PROPERTY_URL ?? "").replace(
+			"<slug>",
+			slug,
+		);
+		try {
+			await Share.share({
+				title: hosting?.title ?? undefined,
+				message: `Check out this amazing property on Kushi: ${hosting?.title}\n\n${shareUrl}`,
+				url: shareUrl, // Keep for iOS support
+			});
+		} catch (error: any) {
+			handleError(error);
+		}
+	};
+
 	React.useEffect(() => {
 		if (error) handleError(error);
 	}, [error]);
@@ -46,6 +61,7 @@ export default function HostingDetails() {
 		<DetailsLayout
 			title="Property Details"
 			withShare
+			onShare={handleShare}
 			footer={
 				fetching ? (
 					<View
@@ -99,7 +115,10 @@ export default function HostingDetails() {
 					<HostingDetailsSkeleton />
 				) : (
 					<>
-						<View style={{ height: 290 }} className="overflow-hidden rounded-xl">
+						<View
+							style={{ height: 290 }}
+							className="overflow-hidden rounded-xl"
+						>
 							<Carousel autoplay style={{ height: "100%", width: "100%" }}>
 								{(hosting?.rooms.map((r) => r.images).flat() ?? []).map(
 									(img, index) => (

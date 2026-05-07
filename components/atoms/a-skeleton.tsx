@@ -20,9 +20,9 @@ interface SkeletonProps {
 
 const Skeleton: FC<SkeletonProps> = ({
   children,
-  duration = 1000,
-  minOpacity = 0.3,
-  maxOpacity = 0.7,
+  duration = 1500,
+  minOpacity = 0.4,
+  maxOpacity = 0.8,
   style,
 }) => {
   const colors = useThemeColors();
@@ -32,7 +32,7 @@ const Skeleton: FC<SkeletonProps> = ({
     animatedOpacity.value = withRepeat(
       withTiming(maxOpacity, {
         duration: duration / 2,
-        easing: Easing.inOut(Easing.ease),
+        easing: Easing.bezier(0.4, 0, 0.6, 1),
       }),
       -1,
       true,
@@ -48,7 +48,7 @@ const Skeleton: FC<SkeletonProps> = ({
   return (
     <Animated.View
       style={[
-        { backgroundColor: hexToRgba(colors.text, 0.4), borderRadius: 4 },
+        { backgroundColor: hexToRgba(colors.text, 0.08), borderRadius: 8 },
         style,
         rStyle,
       ]}

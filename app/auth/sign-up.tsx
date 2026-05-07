@@ -27,8 +27,20 @@ export default function SignUp() {
 	const [inputs, setInputs] = React.useState<Partial<SignUpInput>>({});
 	const [res, mutate] = useSignUpMutation();
 	const router = useRouter();
-	const { updateUser, user } = useUser();
+	const { updateUser, user, returnUrl, setReturnUrl } = useUser();
 	const [, googleSignUp] = useGoogleSignUpMutation();
+
+	const handlePostLogin = (userType?: UserType) => {
+		if (returnUrl) {
+			const destination = returnUrl;
+			setReturnUrl(null);
+			router.replace(destination as any);
+		} else if (userType === UserType.Host) {
+			router.replace("/host/analytics");
+		} else {
+			router.replace("/guest/home");
+		}
+	};
 
 	const signUpWithGoogle = async () => {
 		try {
@@ -56,11 +68,7 @@ export default function SignUp() {
 							user: res.data?.googleSignUp.data?.user,
 							email: res.data?.googleSignUp.data?.user.email,
 						});
-						if (user.userType === UserType.Host) {
-							router.replace("/host/analytics");
-						} else {
-							router.replace("/guest/home");
-						}
+						handlePostLogin(user.userType);
 					}
 				});
 		} catch (error: any) {

@@ -3,6 +3,12 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { Image } from "expo-image";
 import React from "react";
 import { Pressable, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 import ThemedText from "../atoms/a-themed-text";
 import { CuidaBuildingOutline } from "../icons/i-home";
 import { TablerMessage2 } from "../icons/i-message";
@@ -18,6 +24,7 @@ import LoadingModal from "../atoms/a-loading-modal";
 import { handleError } from "@/lib/utils/error";
 import { useRouter } from "expo-router";
 import { buildCallURL } from "@/lib/utils/call";
+import * as Haptics from "expo-haptics";
 
 type Props = {
   hosting?: HostingQuery["hosting"];
@@ -54,6 +61,17 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
         }
       });
   };
+
+  const messageScale = useSharedValue(1);
+  const callScale = useSharedValue(1);
+
+  const messageAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: messageScale.value }],
+  }));
+
+  const callAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: callScale.value }],
+  }));
 
   return (
     <>
@@ -106,25 +124,63 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
               </ThemedText>
             </View>
           </View>
-          <View className="flex-row gap-4 items-center">
-            <Pressable
-              onPress={handleInitiateChat}
+          <View className="flex-row mt-4 gap-4 items-center">
+            <AnimatedPressable
+              onPressIn={() => (messageScale.value = withSpring(0.96))}
+              onPressOut={() => (messageScale.value = withSpring(1))}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                handleInitiateChat();
+              }}
               accessibilityLabel="Initiate chat with host"
-              className="flex-1 rounded items-center p-1 justify-center"
-              aria-label="Message"
-              style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+              className="flex-1 flex-row gap-2 rounded-2xl items-center py-4 justify-center"
+              style={[
+                {
+                  backgroundColor: colors.primary,
+                  shadowColor: colors.primary,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 8,
+                  elevation: 4,
+                },
+                messageAnimatedStyle,
+              ]}
             >
-              <TablerMessage2 color={colors.accent} />
-            </Pressable>
-            <Pressable
-              onPress={handleInitiateCall}
+              <TablerMessage2 size={22} color="#fff" strokeWidth={2} />
+              <ThemedText
+                style={{ color: "#fff", fontFamily: Fonts.semibold, fontSize: 16 }}
+              >
+                Message
+              </ThemedText>
+            </AnimatedPressable>
+            <AnimatedPressable
+              onPressIn={() => (callScale.value = withSpring(0.96))}
+              onPressOut={() => (callScale.value = withSpring(1))}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                handleInitiateCall();
+              }}
               accessibilityLabel="Initiate call with host"
-              className="flex-1 rounded items-center p-1 justify-center"
-              aria-label="Call"
-              style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+              className="flex-1 flex-row gap-2 rounded-2xl items-center py-4 justify-center border"
+              style={[
+                {
+                  borderColor: hexToRgba(colors.text, 0.15),
+                  backgroundColor: colors["surface-01"],
+                },
+                callAnimatedStyle,
+              ]}
             >
-              <SolarPhoneOutline color={colors.accent} />
-            </Pressable>
+              <SolarPhoneOutline size={22} color={colors.text} strokeWidth={2} />
+              <ThemedText
+                style={{
+                  color: colors.text,
+                  fontFamily: Fonts.semibold,
+                  fontSize: 16,
+                }}
+              >
+                Call
+              </ThemedText>
+            </AnimatedPressable>
           </View>
         </View>
       </View>

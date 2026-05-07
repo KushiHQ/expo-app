@@ -20,6 +20,13 @@ import { useGalleryStore } from "@/lib/stores/gallery";
 import ListImage from "../atoms/a-list-image";
 import ListDocument from "../molecules/m-list-document";
 import { VoiceRecorder } from "../atoms/a-voice-recorder";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export type ChatInputData = {
   text: string;
@@ -50,6 +57,11 @@ const ChatInput: React.FC<Props> = ({
   >([]);
   const { gallery, clearGallery } = useGalleryStore();
   const { redirect } = useCameraScreen();
+
+  const sendScale = useSharedValue(1);
+  const sendAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: sendScale.value }],
+  }));
 
   const minHeight = 40;
   const maxHeight = minHeight * maxLines;
@@ -194,7 +206,9 @@ const ChatInput: React.FC<Props> = ({
               </View>
             </View>
 
-            <TouchableOpacity
+            <AnimatedPressable
+              onPressIn={() => (sendScale.value = withSpring(0.9))}
+              onPressOut={() => (sendScale.value = withSpring(1))}
               onPress={hasMessage ? handleSend : handleVoicePress}
               style={[
                 styles.sendButton,
@@ -203,14 +217,15 @@ const ChatInput: React.FC<Props> = ({
                     ? colors.primary
                     : hexToRgba(colors.text, 0.1),
                 },
+                sendAnimatedStyle,
               ]}
             >
               {hasMessage ? (
-                <Send size={26} color={colors["primary-content"]} />
+                <Send size={24} color="#fff" />
               ) : (
-                <Mic size={26} color={colors.text} />
+                <Mic size={24} color={colors.text} />
               )}
-            </TouchableOpacity>
+            </AnimatedPressable>
           </>
         )}
       </View>

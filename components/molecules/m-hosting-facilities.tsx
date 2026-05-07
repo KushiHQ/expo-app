@@ -18,7 +18,10 @@ const HostingFacilities: React.FC<Props> = ({ hosting }) => {
 
   return (
     <View className="mt-8">
-      <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
+      <ThemedText
+        className="mb-2"
+        style={{ fontFamily: Fonts.medium, fontSize: 18 }}
+      >
         Facilities
       </ThemedText>
       <SimpleGrid

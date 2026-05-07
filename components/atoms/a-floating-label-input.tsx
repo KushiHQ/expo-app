@@ -118,9 +118,9 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 						className="relative flex-1 border px-2.5 pt-[18px] rounded-xl"
 						style={[
 							{
-								borderColor: hexToRgba(colors["text"], 0.15),
+								borderColor: hexToRgba(colors.text, 0.08),
 								borderWidth: 1.5,
-								backgroundColor: hexToRgba(colors["text"], 0.055),
+								backgroundColor: colors["surface-01"],
 							},
 							containerStyle,
 						]}

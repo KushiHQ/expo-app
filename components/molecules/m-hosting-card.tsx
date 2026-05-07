@@ -15,6 +15,12 @@ import { useFallbackImages } from "@/lib/hooks/images";
 import { HostingQuery, HostingsQuery } from "@/lib/services/graphql/generated";
 import { capitalize } from "@/lib/utils/text";
 import HostingLikeButton from "../atoms/a-hosting-like-button";
+import Animated, {
+	useAnimatedStyle,
+	useSharedValue,
+	withSpring,
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 
 type Props = {
 	hosting: HostingsQuery["hostings"][number] | HostingQuery["hosting"];
@@ -27,14 +33,34 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 	const router = useRouter();
 	const { failedImages, handleImageError } = useFallbackImages();
 
-	const borderColor = hexToRgba(colors.text, 0.5);
+	const scale = useSharedValue(1);
 	const images = hosting.rooms.map((r) => r.images).flat();
 
+	const animatedStyle = useAnimatedStyle(() => ({
+		transform: [{ scale: scale.value }],
+	}));
+
+	const handlePressIn = () => {
+		scale.value = withSpring(0.98, { damping: 10, stiffness: 100 });
+	};
+
+	const handlePressOut = () => {
+		scale.value = withSpring(1);
+	};
+
+	const handlePress = () => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		router.push(`/hostings/${hosting.id}`);
+	};
+
 	return (
-		<View className="gap-2">
+		<Animated.View style={[animatedStyle, { gap: 12 }]}>
 			<View
-				style={{ height: 290, borderColor }}
-				className="relative border overflow-hidden rounded-xl"
+				style={{
+					height: 290,
+					backgroundColor: colors["surface-01"],
+				}}
+				className="relative overflow-hidden rounded-2xl"
 			>
 				<Carousel
 					autoplay
@@ -50,7 +76,7 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 							}}
 							style={{ height: "100%", width: "100%" }}
 							contentFit="cover"
-							transition={300}
+							transition={400}
 							placeholder={{ blurhash: PROPERTY_BLURHASH }}
 							placeholderContentFit="cover"
 							cachePolicy="memory-disk"
@@ -68,51 +94,69 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 			</View>
 			<Pressable
 				disabled={disabled}
-				onPress={() => router.push(`/hostings/${hosting.id}`)}
+				onPress={handlePress}
+				onPressIn={handlePressIn}
+				onPressOut={handlePressOut}
 			>
-				<View style={{ borderColor }} className="p-3 rounded-xl border gap-0.5">
-					<View className="flex-row justify-between">
+				<View
+					style={{
+						backgroundColor: hexToRgba(colors.text, 0.03),
+					}}
+					className="p-4 rounded-2xl gap-1"
+				>
+					<View className="flex-row justify-between items-start">
 						<ThemedText
 							numberOfLines={1}
 							ellipsizeMode="tail"
-							style={{ fontFamily: Fonts.bold, fontSize: 14 }}
-							className="max-w-[50%]"
+							style={{ fontFamily: Fonts.semibold, fontSize: 16 }}
+							className="max-w-[60%]"
 						>
 							{hosting.title}
 						</ThemedText>
-						<ThemedText style={{ fontFamily: Fonts.bold, fontSize: 14 }}>
-							₦{Number(hosting.price)?.toLocaleString()}{" "}
-							{capitalize(hosting.paymentInterval ?? "")}
+						<ThemedText
+							style={{
+								fontFamily: Fonts.bold,
+								fontSize: 16,
+								color: colors.primary,
+							}}
+						>
+							₦{Number(hosting.price)?.toLocaleString()}
 						</ThemedText>
 					</View>
+
 					<ThemedText
-						style={{ fontSize: 14, color: hexToRgba(colors.text, 0.8) }}
+						style={{
+							fontSize: 13,
+							color: hexToRgba(colors.text, 0.6),
+							fontFamily: Fonts.medium,
+						}}
 					>
-						{hosting.state}, {hosting.country}
+						{hosting.state}, {hosting.country} • {capitalize(hosting.paymentInterval ?? "")}
 					</ThemedText>
-					<View className="flex-row items-center justify-between">
+
+					<View className="flex-row items-center justify-between mt-1">
 						<ThemedText
-							style={{ fontSize: 14, color: hexToRgba(colors.text, 0.8) }}
+							style={{ fontSize: 12, color: hexToRgba(colors.text, 0.4) }}
 						>
 							{formatDate(hosting.createdAt)}
 						</ThemedText>
-						<View className="flex-row items-center gap-1">
-							<MynauiStarSolid color={colors.accent} size={16} />
+						<View className="flex-row items-center gap-1.5">
+							<MynauiStarSolid color={colors.primary} size={14} />
 							<View className="flex-row gap-1 items-center">
 								<ThemedText
 									style={{
-										fontFamily: Fonts.medium,
-										fontSize: 14,
-										color: hexToRgba(colors.text, 0.9),
+										fontFamily: Fonts.semibold,
+										fontSize: 13,
+										color: colors.text,
 									}}
 								>
-									{hosting.averageRating?.toFixed(2) ?? "0.00"}
+									{hosting.averageRating?.toFixed(1) ?? "0.0"}
 								</ThemedText>
 								<ThemedText
 									style={{
-										fontFamily: Fonts.light,
-										fontSize: 14,
-										color: hexToRgba(colors.text, 0.8),
+										fontFamily: Fonts.regular,
+										fontSize: 12,
+										color: hexToRgba(colors.text, 0.5),
 									}}
 								>
 									({hosting.totalRatings ?? "0"})
@@ -122,7 +166,7 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 					</View>
 				</View>
 			</Pressable>
-		</View>
+		</Animated.View>
 	);
 };
 

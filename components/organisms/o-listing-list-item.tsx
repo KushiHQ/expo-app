@@ -15,6 +15,12 @@ import {
 	HostListingsQuery,
 	PublishStatus,
 } from "@/lib/services/graphql/generated";
+import Animated, {
+	useAnimatedStyle,
+	useSharedValue,
+	withSpring,
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 
 type Props = {
 	hosting: HostListingsQuery["hostings"][number];
@@ -26,24 +32,44 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
 	const [optionsOpen, setOptionsOpen] = React.useState(false);
 	const { failedImages, handleImageError } = useFallbackImages();
 
+	const scale = useSharedValue(1);
+
+	const animatedStyle = useAnimatedStyle(() => ({
+		transform: [{ scale: scale.value }],
+	}));
+
+	const handlePressIn = () => {
+		scale.value = withSpring(0.98, { damping: 10, stiffness: 100 });
+	};
+
+	const handlePressOut = () => {
+		scale.value = withSpring(1);
+	};
+
+	const handlePress = () => {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+		router.push(`/hostings/form/onboarding?id=${hosting.id}`);
+	};
+
 	const statusColor =
 		hosting.publishStatus === PublishStatus.Live
 			? colors.success
 			: hosting.publishStatus === PublishStatus.Draft
-				? colors.accent
+				? colors.primary
 				: hosting.publishStatus === PublishStatus.Inreview
-					? colors.primary
+					? colors.secondary
 					: colors.error;
 
 	return (
-		<>
+		<Animated.View style={animatedStyle}>
 			<Pressable
-				className="flex-row items-center gap-4"
-				onPress={() =>
-					router.push(`/hostings/form/onboarding?id=${hosting.id}`)
-				}
+				onPress={handlePress}
+				onPressIn={handlePressIn}
+				onPressOut={handlePressOut}
+				className="flex-row items-center gap-4 p-3 rounded-2xl"
+				style={{ backgroundColor: colors["surface-01"] }}
 			>
-				<View className="h-[80px] w-[100px]">
+				<View className="h-[80px] w-[100px] overflow-hidden rounded-xl">
 					<Image
 						source={{
 							uri: failedImages.has(0)
@@ -53,10 +79,9 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
 						style={{
 							height: "100%",
 							width: "100%",
-							borderRadius: 12,
 						}}
 						contentFit="cover"
-						transition={300}
+						transition={400}
 						placeholder={{ blurhash: PROPERTY_BLURHASH }}
 						placeholderContentFit="cover"
 						cachePolicy="memory-disk"
@@ -64,45 +89,61 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
 						onError={() => handleImageError(0)}
 					/>
 				</View>
-				<View className="flex-1 gap-2">
+				<View className="flex-1 gap-1">
 					<View className="flex-row items-start justify-between">
 						<ThemedText
 							className="flex-1"
 							numberOfLines={2}
 							ellipsizeMode="tail"
-							style={{ fontSize: 14, fontFamily: Fonts.medium }}
+							style={{ fontSize: 15, fontFamily: Fonts.semibold }}
 						>
 							{hosting.title}
 						</ThemedText>
-						<Pressable onPress={() => setOptionsOpen(true)}>
-							<EllipsisVertical color={colors.text} size={18} />
+						<Pressable
+							onPress={() => {
+								Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+								setOptionsOpen(true);
+							}}
+							className="p-1 rounded-lg"
+							style={{ backgroundColor: hexToRgba(colors.text, 0.05) }}
+						>
+							<EllipsisVertical color={colors.text} size={16} />
 						</Pressable>
 					</View>
 					<ThemedText
 						numberOfLines={1}
 						ellipsizeMode="tail"
-						style={{ fontSize: 14, color: hexToRgba(colors.text, 0.7) }}
+						style={{
+							fontSize: 13,
+							color: hexToRgba(colors.text, 0.6),
+							fontFamily: Fonts.medium,
+						}}
 					>
 						{hosting.city}, {hosting.state}
 					</ThemedText>
-					<View className="flex-row items-center gap-8">
-						<ThemedText
-							style={{ fontSize: 10, color: hexToRgba(colors.text, 0.6) }}
-						>
-							{new Date(hosting.createdAt).toLocaleDateString()}
-						</ThemedText>
-						<View className="flex-row items-center">
+					<View className="flex-row items-center justify-between mt-1">
+						<View className="flex-row items-center gap-1.5">
 							<IconParkOutlineDot color={statusColor} size={10} />
 							<Text
 								style={{
-									fontSize: 10,
+									fontSize: 11,
 									color: statusColor,
+									fontFamily: Fonts.semibold,
 									textTransform: "capitalize",
 								}}
 							>
 								{hosting.publishStatus}
 							</Text>
 						</View>
+						<ThemedText
+							style={{
+								fontSize: 11,
+								color: colors.primary,
+								fontFamily: Fonts.semibold,
+							}}
+						>
+							Manage
+						</ThemedText>
 					</View>
 				</View>
 			</Pressable>
@@ -111,7 +152,7 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
 				onClose={() => setOptionsOpen(false)}
 				hosting={hosting}
 			/>
-		</>
+		</Animated.View>
 	);
 };
 

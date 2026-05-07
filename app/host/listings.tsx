@@ -139,8 +139,8 @@ export default function HostListings() {
 				/>
 			) : (
 				<FlatGrid
-					itemDimension={user.hostListingsView === "block" ? 350 : 170}
-					spacing={1}
+					itemDimension={user.hostListingsView === "block" ? 350 : 160}
+					spacing={16}
 					data={hostings}
 					renderItem={({ item }) => (
 						<View className="mr-2 mb-2">

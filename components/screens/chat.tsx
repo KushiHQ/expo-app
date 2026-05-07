@@ -3,12 +3,17 @@ import { LineiconsSearch1 } from "@/components/icons/i-search";
 import DetailsLayout from "@/components/layouts/details";
 import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
+import { useDebounce } from "@/lib/hooks/use-debounce";
+import { useInfiniteQuery } from "@/lib/hooks/use-infinite-query";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useUserChatsQuery } from "@/lib/services/graphql/generated";
 import { hexToRgba } from "@/lib/utils/colors";
+import { AUDIO_EXTENSIONS } from "@/lib/utils/file";
+import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useInfiniteQuery } from "@/lib/hooks/use-infinite-query";
+import { Mic } from "lucide-react-native";
+import moment from "moment";
 import React from "react";
 import {
 	FlatList,
@@ -17,11 +22,15 @@ import {
 	TextInput,
 	View,
 } from "react-native";
+import Animated, {
+	useAnimatedStyle,
+	useSharedValue,
+	withSpring,
+} from "react-native-reanimated";
 import Skeleton from "../atoms/a-skeleton";
-import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import EmptyList from "../molecules/m-empty-list";
-import { Mic } from "lucide-react-native";
-import { AUDIO_EXTENSIONS } from "@/lib/utils/file";
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 type Props = {
 	variant?: "guest" | "host";
@@ -43,23 +52,175 @@ const ChatSkeleton = () => {
 	);
 };
 
+const ChatListItem = ({
+	chat,
+	router,
+	colors,
+}: {
+	chat: any;
+	router: any;
+	colors: any;
+}) => {
+	const pressScale = useSharedValue(1);
+	const animatedStyle = useAnimatedStyle(() => ({
+		transform: [{ scale: pressScale.value }],
+	}));
+
+	return (
+		<AnimatedPressable
+			onPressIn={() => (pressScale.value = withSpring(0.97))}
+			onPressOut={() => (pressScale.value = withSpring(1))}
+			onPress={() => router.push(`/chats/${chat.id}/`)}
+			style={[
+				{
+					backgroundColor: colors["surface-01"],
+					borderRadius: 20,
+					marginBottom: 12,
+					padding: 12,
+					flexDirection: "row",
+					gap: 12,
+					alignItems: "center",
+					shadowColor: colors.text,
+					shadowOffset: { width: 0, height: 2 },
+					shadowOpacity: 0.03,
+					shadowRadius: 8,
+					elevation: 2,
+				},
+				animatedStyle,
+			]}
+		>
+			<View className="h-14 w-14 relative">
+				<Image
+					source={{
+						uri: getDefaultProfileImageUrl(
+							chat.recipientUser.profile.fullName ?? "",
+						),
+					}}
+					style={{
+						height: "100%",
+						width: "100%",
+						borderRadius: 28,
+					}}
+					contentFit="cover"
+					transition={300}
+					placeholder={{ blurhash: PROPERTY_BLURHASH }}
+					placeholderContentFit="cover"
+				/>
+				{chat.recipientUser.onlineUser.online && (
+					<View
+						className="absolute right-0 bottom-0 w-3.5 h-3.5 border-2 rounded-full"
+						style={{
+							backgroundColor: colors.success,
+							borderColor: colors["surface-01"],
+						}}
+					/>
+				)}
+			</View>
+			<View className="flex-1 justify-center gap-1">
+				<View className="flex-row items-center justify-between">
+					<ThemedText
+						numberOfLines={1}
+						style={{ fontFamily: Fonts.semibold, fontSize: 16 }}
+					>
+						{chat.recipientUser.profile.fullName}
+					</ThemedText>
+					<ThemedText
+						style={{
+							fontSize: 11,
+							fontFamily: Fonts.medium,
+							color: hexToRgba(colors.text, 0.4),
+						}}
+					>
+						{moment(chat.lastUpdated).fromNow()}
+					</ThemedText>
+				</View>
+				<View className="flex-row items-center justify-between gap-2">
+					{(() => {
+						const lastMessage = chat.lastMessage;
+						if (!lastMessage) return <View className="flex-1" />;
+						const audioAsset = lastMessage.assets.find((a: any) => {
+							const url = a.asset.publicUrl.toLowerCase();
+							return (
+								a.asset.contentType?.includes("audio") ||
+								AUDIO_EXTENSIONS.some((ext) => url.endsWith(`.${ext}`))
+							);
+						});
+
+						const isAudioOnly =
+							audioAsset &&
+							(!lastMessage.text || lastMessage.text.trim().length === 0);
+
+						return (
+							<View className="flex-row items-center gap-1 flex-1">
+								{isAudioOnly && (
+									<Mic size={14} color={hexToRgba(colors.text, 0.5)} />
+								)}
+								<ThemedText
+									numberOfLines={1}
+									style={{
+										fontSize: 13,
+										color: hexToRgba(colors.text, 0.5),
+										flex: 1,
+									}}
+								>
+									{isAudioOnly ? "Voice message" : lastMessage.text}
+								</ThemedText>
+							</View>
+						);
+					})()}
+					{chat.unreadMessageCount > 0 && (
+						<View
+							style={{ backgroundColor: colors.primary }}
+							className="px-2 py-0.5 min-w-[20px] items-center justify-center rounded-full"
+						>
+							<ThemedText
+								style={{
+									fontSize: 10,
+									fontFamily: Fonts.bold,
+									color: "#fff",
+								}}
+							>
+								{chat.unreadMessageCount}
+							</ThemedText>
+						</View>
+					)}
+				</View>
+			</View>
+		</AnimatedPressable>
+	);
+};
+
 const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 	const router = useRouter();
 	const colors = useThemeColors();
+	const [searchText, setSearchText] = React.useState("");
+	const debouncedSearchText = useDebounce(searchText, 500);
+
+	const initialVariables = React.useMemo(() => ({}), []);
+
 	const {
 		items: userChats,
 		fetching: chatsFetching,
 		loadMore,
 		hasNextPage,
 		refresh,
+		setVariables,
 	} = useInfiniteQuery(useUserChatsQuery, {
 		queryKey: "userChats",
-		initialVariables: {},
+		initialVariables,
 	});
+
+	React.useEffect(() => {
+		if (debouncedSearchText) {
+			setVariables({ filter: { text: debouncedSearchText } });
+		} else {
+			setVariables({});
+		}
+	}, [debouncedSearchText]);
 
 	return (
 		<DetailsLayout
-			title="Message"
+			title="Messages"
 			withProfile
 			variant={variant}
 			scrollable={false}
@@ -67,134 +228,41 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 			<FlatList
 				data={userChats}
 				keyExtractor={(item) => item.id}
-				contentContainerStyle={{ padding: 20, paddingTop: 0 }}
+				contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
 				renderItem={({ item: chat }) => (
-					<Pressable
-						onPress={() => router.push(`/chats/${chat.id}/`)}
-						className="flex-row gap-4 py-2 items-center p-2"
-					>
-						<View className="h-[50px] relative w-[50px]">
-							<Image
-								source={{
-									uri: getDefaultProfileImageUrl(
-										chat.recipientUser.profile.fullName ?? "",
-									),
-								}}
-								style={{
-									height: "100%",
-									width: "100%",
-									borderRadius: 999,
-								}}
-								contentFit="cover"
-								transition={300}
-								placeholder={{ blurhash: PROPERTY_BLURHASH }}
-								placeholderContentFit="cover"
-								cachePolicy="memory-disk"
-								priority="high"
-							/>
-							{chat.recipientUser.onlineUser.online && (
-								<View
-									className="absolute right-0 bottom-0 w-4 h-4 border rounded-full"
-									style={{
-										backgroundColor: colors.success,
-										borderColor: colors.text,
-									}}
-								></View>
-							)}
-						</View>
-						<View className="flex-row gap-4 items-center justify-between flex-1">
-							<View className="gap-1.5 flex-1">
-								<ThemedText
-									ellipsizeMode="tail"
-									numberOfLines={1}
-									style={{ fontFamily: Fonts.medium }}
-								>
-									{chat.recipientUser.profile.fullName}
-								</ThemedText>
-								<View className="flex-row items-center gap-1">
-									{(() => {
-										const lastMessage = chat.lastMessage;
-										if (!lastMessage) return null;
-										const audioAsset = lastMessage.assets.find((a) => {
-											const url = a.asset.publicUrl.toLowerCase();
-											const hasAudioMime =
-												a.asset.contentType?.includes("audio");
-											const hasAudioExt = AUDIO_EXTENSIONS.some((ext) =>
-												url.endsWith(`.${ext}`),
-											);
-
-											return hasAudioMime || hasAudioExt;
-										});
-
-										const isAudioOnly =
-											audioAsset &&
-											(!lastMessage.text ||
-												lastMessage.text.trim().length === 0);
-
-										return (
-											<>
-												{isAudioOnly && (
-													<Mic size={14} color={hexToRgba(colors.text, 0.6)} />
-												)}
-												<ThemedText
-													ellipsizeMode="tail"
-													numberOfLines={1}
-													style={{
-														fontSize: 14,
-														color: hexToRgba(colors.text, 0.6),
-														flex: 1,
-													}}
-												>
-													{isAudioOnly ? "Audio recording" : lastMessage.text}
-												</ThemedText>
-											</>
-										);
-									})()}
-								</View>
-							</View>
-							<View className="min-w-[50px] gap-[8px] items-end">
-								{chat.unreadMessageCount > 0 ? (
-									<View
-										style={{ backgroundColor: colors.primary }}
-										className="w-4 h-4 items-center justify-center rounded-full"
-									>
-										<ThemedText
-											content="primary"
-											style={{ fontSize: 12 }}
-											className="absolute"
-										>
-											{chat.unreadMessageCount}
-										</ThemedText>
-									</View>
-								) : (
-									<View className="h-4"></View>
-								)}
-								<ThemedText style={{ fontSize: 12, fontFamily: Fonts.medium }}>
-									{new Date(chat.lastUpdated).toLocaleDateString()}
-								</ThemedText>
-							</View>
-						</View>
-					</Pressable>
+					<ChatListItem chat={chat} router={router} colors={colors} />
 				)}
 				ListHeaderComponent={
 					<View className="mb-4">
 						<View
-							className="flex-row items-center gap-2 p-4 py-2 rounded-xl"
-							style={{ backgroundColor: hexToRgba(colors["text"], 0.1) }}
+							className="flex-row items-center gap-2 p-4 py-3 rounded-2xl border"
+							style={{
+								backgroundColor: colors["surface-01"],
+								borderColor: hexToRgba(colors.text, 0.08),
+							}}
 						>
-							<View className="flex-row items-center flex-1 gap-1">
-								<LineiconsSearch1 color={hexToRgba(colors["text"], 0.5)} />
-								<TextInput
-									className="flex-1"
-									style={{ color: colors["text"], fontSize: 18, height: 40 }}
-									placeholderTextColor={hexToRgba(colors["text"], 0.5)}
-									placeholder="Search messages..."
-								/>
-							</View>
+							<LineiconsSearch1
+								color={hexToRgba(colors["text"], 0.4)}
+								size={20}
+							/>
+							<TextInput
+								value={searchText}
+								onChangeText={setSearchText}
+								className="flex-1"
+								style={{
+									color: colors["text"],
+									fontSize: 16,
+									fontFamily: Fonts.regular,
+									height: 24,
+									padding: 0,
+								}}
+								placeholderTextColor={hexToRgba(colors["text"], 0.4)}
+								placeholder="Search messages..."
+							/>
 						</View>
 						{chatsFetching && !userChats.length && (
-							<View className="gap-2 mt-4">
-								{Array.from({ length: 10 }).map((_, index) => (
+							<View className="gap-3 mt-4">
+								{Array.from({ length: 6 }).map((_, index) => (
 									<ChatSkeleton key={index} />
 								))}
 							</View>

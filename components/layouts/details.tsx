@@ -28,6 +28,7 @@ import { IonNotificationsOutline } from "../icons/i-notifications";
 import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import { useUser } from "@/lib/hooks/user";
 import { buildCallURL } from "@/lib/utils/call";
+import { Fonts } from "@/lib/constants/theme";
 
 import * as Haptics from "expo-haptics";
 
@@ -55,6 +56,7 @@ type Props = {
   withPhone?: boolean;
   withVideo?: boolean;
   scrollable?: boolean;
+  onShare?: () => void;
 };
 
 const DetailsLayout = React.forwardRef<ScrollView, Props>(
@@ -76,6 +78,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
       withPhone,
       withVideo,
       scrollable = true,
+      onShare,
     },
     ref,
   ) => {
@@ -138,20 +141,21 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                   router.back();
                 }}
                 aria-label="Go Back"
-                className="w-10 items-center justify-center rounded-xl h-10"
+                className="w-11 items-center justify-center rounded-2xl h-11"
                 style={{
                   backgroundColor:
                     backButton === "translucent"
-                      ? hexToRgba(colors["text"], 0.15)
+                      ? colors["surface-01"]
                       : backButton === "light"
-                        ? hexToRgba("#fff", 0.2)
-                        : colors.text,
+                        ? hexToRgba("#fff", 0.15)
+                        : colors.secondary,
                 }}
               >
                 <ChevronLeft
+                  size={22}
                   color={
                     backButton === "translucent"
-                      ? colors["text"]
+                      ? colors.text
                       : backButton === "light"
                         ? "#fff"
                         : colors.background
@@ -176,12 +180,12 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                     />
                   </View>
                 )}
-                <View>
+                <View className="gap-0.5">
                   <ThemedText
                     className="py-0"
                     style={{
-                      fontSize: avatar ? 10 : 16,
-                      height: 20,
+                      fontSize: avatar ? 12 : 16,
+                      fontFamily: avatar ? Fonts.medium : Fonts.semibold,
                       color: backButton === "light" ? "#fff" : colors.text,
                     }}
                   >
@@ -192,9 +196,8 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                       className="py-0"
                       style={{
                         fontSize: 10,
-                        height: 20,
-                        paddingBlock: 0,
-                        paddingInline: 0,
+                        fontFamily: Fonts.regular,
+                        color: hexToRgba(backButton === "light" ? "#fff" : colors.text, 0.5),
                       }}
                     >
                       {avatar?.online
@@ -208,10 +211,17 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
             <View className="flex-row items-center gap-3">
               {withShare && (
                 <Pressable
-                  className="h-10 w-10 rounded-xl justify-center items-center"
-                  style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    onShare?.();
+                  }}
+                  className="h-11 w-11 rounded-2xl justify-center items-center border"
+                  style={{ 
+                    backgroundColor: colors["surface-01"],
+                    borderColor: hexToRgba(colors.text, 0.08),
+                  }}
                 >
-                  <Share2Icon size={20} color={colors.text} />
+                  <Share2Icon size={20} color={colors.primary} />
                 </Pressable>
               )}
               {withPhone && (
@@ -220,10 +230,13 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     router.push(buildCallURL(String(id), "voice", true));
                   }}
-                  className="h-10 w-10 rounded-xl justify-center items-center"
-                  style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+                  className="h-11 w-11 rounded-2xl justify-center items-center border"
+                  style={{ 
+                    backgroundColor: colors["surface-01"],
+                    borderColor: hexToRgba(colors.text, 0.08),
+                  }}
                 >
-                  <SolarPhoneOutline size={20} color={colors.text} />
+                  <SolarPhoneOutline size={20} color={colors.primary} />
                 </Pressable>
               )}
               {withVideo && (
@@ -232,10 +245,13 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     router.push(buildCallURL(String(id), "video", true));
                   }}
-                  className="h-10 w-10 rounded-xl justify-center items-center"
-                  style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+                  className="h-11 w-11 rounded-2xl justify-center items-center border"
+                  style={{ 
+                    backgroundColor: colors["surface-01"],
+                    borderColor: hexToRgba(colors.text, 0.08),
+                  }}
                 >
-                  <HugeiconsVideo01 size={20} color={colors.text} />
+                  <HugeiconsVideo01 size={20} color={colors.primary} />
                 </Pressable>
               )}
               {withNotifications && (
