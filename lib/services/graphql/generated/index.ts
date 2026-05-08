@@ -206,6 +206,12 @@ export enum BookingStatus {
   Paid = 'PAID'
 }
 
+export type BoolResponse = {
+  __typename?: 'BoolResponse';
+  data?: Maybe<Scalars['Boolean']['output']>;
+  message: Scalars['String']['output'];
+};
+
 export enum CallType {
   Cancel = 'CANCEL',
   Video = 'VIDEO',
@@ -442,6 +448,7 @@ export type HostingChatAsset = {
 };
 
 export type HostingChatFilter = {
+  isArchived?: InputMaybe<Scalars['Boolean']['input']>;
   text?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -490,6 +497,7 @@ export type HostingFilterInput = {
   country?: InputMaybe<Scalars['String']['input']>;
   creatorId?: InputMaybe<Scalars['String']['input']>;
   facilities?: InputMaybe<Array<Scalars['String']['input']>>;
+  isDraft?: InputMaybe<Scalars['Boolean']['input']>;
   maxPrice?: InputMaybe<Scalars['Decimal']['input']>;
   minPrice?: InputMaybe<Scalars['Decimal']['input']>;
   minRating?: InputMaybe<Scalars['Int']['input']>;
@@ -761,6 +769,7 @@ export type Mutations = {
   createUpdateMessage: HostingChatMessage;
   createUpdateSavedHosting: SavedHostingResponse;
   createUpdateSavedHostingFolder: SavedHostingFolderResponse;
+  deleteAccount: BoolResponse;
   deleteHostPaymentDetails: MessageResponse;
   deleteHosting: MessageResponse;
   deleteHostingRoom: MessageResponse;
