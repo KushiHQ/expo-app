@@ -56,6 +56,8 @@ export const HOST_ANALYTICS = gql`
       occupancyRate
       totalRevenue
       averageRating
+      fundsInEscrow
+      pendingApplications
       topListing {
         id
         coverImage {
@@ -73,6 +75,24 @@ export const HOST_ANALYTICS = gql`
         totalRatings
         title
         averageRating
+      }
+    }
+  }
+`;
+
+export const REVENUE_GROWTH = gql`
+  query RevenueGrowth($year: Int, $month: Int, $lastNYears: Int, $lastNMonths: Int) {
+    hostAnalytics {
+      revenueGrowth(
+        year: $year
+        month: $month
+        lastNYears: $lastNYears
+        lastNMonths: $lastNMonths
+      ) {
+        dataPoints {
+          amount
+          label
+        }
       }
     }
   }

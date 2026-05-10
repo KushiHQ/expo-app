@@ -1,74 +1,108 @@
 import { useCountUp } from "@/lib/utils/animations";
-import { ImageBackground } from "expo-image";
 import React from "react";
 import { View } from "react-native";
 import ThemedText from "./a-themed-text";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import { Fonts } from "@/lib/constants/theme";
-import { IcRoundPercent, TablerCurrencyNaira } from "../icons/i-currency";
+import { TablerCurrencyNaira } from "../icons/i-currency";
+import { LucideIcon, Info } from "lucide-react-native";
 import Tooltip from "./a-tooltip";
-import { Info } from "lucide-react-native";
+import { twMerge } from "tailwind-merge";
 
 type Props = {
 	label: string;
 	value: number;
+	index: number;
 	currency?: boolean;
 	percentage?: boolean;
 	description?: string;
+	icon?: LucideIcon;
 };
 
 const AnalyticsCard: React.FC<Props> = ({
 	label,
 	value,
+	index,
 	currency,
 	percentage,
 	description,
+	icon: Icon,
 }) => {
 	const colors = useThemeColors();
-	const val = useCountUp({ targetNumber: value, duration: 1000 });
+	const val = useCountUp({ targetNumber: value, duration: 1500 });
 
 	return (
-		<View style={{ borderRadius: 12, overflow: "hidden" }} className="flex-1">
-			<ImageBackground
-				blurRadius={0.5}
-				contentFit="cover"
-				source={require("@/assets/images/logo.png")}
-			>
-				<View style={{ backgroundColor: hexToRgba(colors.background, 0.96) }}>
-					<View
-						className="p-4 pt-16 gap-1"
-						style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+		<View
+			style={{
+				borderRadius: 24,
+				backgroundColor: colors.surface,
+				borderWidth: 1,
+				borderColor: hexToRgba(colors.text, 0.05),
+				shadowColor: colors.text,
+				shadowOffset: { width: 0, height: 2 },
+				shadowOpacity: 0.03,
+				shadowRadius: 15,
+				elevation: 1,
+			}}
+			className={twMerge(
+				"flex-1 p-5 mb-2 gap-4",
+				(index + 1) % 2 !== 0 && "mr-2",
+			)}
+		>
+			<View className="flex-row items-center justify-between">
+				<View className="flex-row items-center gap-1.5">
+					<ThemedText
+						numberOfLines={1}
+						style={{
+							fontFamily: Fonts.semibold,
+							fontSize: 14,
+							maxWidth: "80%",
+							color: hexToRgba(colors.text, 0.5),
+						}}
 					>
-						<View className="flex-row items-center gap-1.5">
-							<ThemedText
-								style={{ fontSize: 14, color: hexToRgba(colors.text, 0.8) }}
-							>
-								{label}
-							</ThemedText>
-							{description && (
-								<Tooltip description={description}>
-									<Info size={14} color={hexToRgba(colors.text, 0.5)} />
-								</Tooltip>
-							)}
-						</View>
-						<View
-							className="flex-row items-center"
-							style={{
-								transform: [{ translateX: currency || percentage ? -4 : 0 }],
-							}}
-						>
-							{currency && (
-								<TablerCurrencyNaira color={colors.text} size={24} />
-							)}
-							{percentage && <IcRoundPercent color={colors.text} size={24} />}
-							<ThemedText style={{ fontFamily: Fonts.extrabold, fontSize: 20 }}>
-								{val.toLocaleString()}
-							</ThemedText>
-						</View>
-					</View>
+						{label}
+					</ThemedText>
+					{description && (
+						<Tooltip description={description}>
+							<Info size={14} color={hexToRgba(colors.text, 0.3)} />
+						</Tooltip>
+					)}
 				</View>
-			</ImageBackground>
+				{Icon && (
+					<View
+						style={{
+							backgroundColor: hexToRgba(colors.primary, 0.1),
+							padding: 8,
+							borderRadius: 12,
+						}}
+					>
+						<Icon size={18} color={colors.primary} />
+					</View>
+				)}
+			</View>
+
+			<View className="gap-1">
+				<View className="flex-row items-center">
+					{currency && (
+						<TablerCurrencyNaira
+							color={colors.text}
+							size={28}
+							style={{ marginRight: -4 }}
+						/>
+					)}
+					<ThemedText
+						style={{
+							fontFamily: Fonts.black,
+							fontSize: 28,
+							letterSpacing: -1,
+						}}
+					>
+						{val.toLocaleString()}
+						{percentage && "%"}
+					</ThemedText>
+				</View>
+			</View>
 		</View>
 	);
 };

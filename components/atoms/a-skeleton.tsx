@@ -13,6 +13,7 @@ import Animated, {
 interface SkeletonProps {
   children?: ReactNode;
   duration?: number;
+  className?: string;
   minOpacity?: number;
   maxOpacity?: number;
   style?: StyleProp<ViewStyle>;
@@ -20,6 +21,7 @@ interface SkeletonProps {
 
 const Skeleton: FC<SkeletonProps> = ({
   children,
+  className,
   duration = 1500,
   minOpacity = 0.4,
   maxOpacity = 0.8,
@@ -47,6 +49,7 @@ const Skeleton: FC<SkeletonProps> = ({
 
   return (
     <Animated.View
+      className={className}
       style={[
         { backgroundColor: hexToRgba(colors.text, 0.08), borderRadius: 8 },
         style,

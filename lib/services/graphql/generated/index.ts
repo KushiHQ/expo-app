@@ -206,6 +206,12 @@ export enum BookingStatus {
   Paid = 'PAID'
 }
 
+export type BoolResponse = {
+  __typename?: 'BoolResponse';
+  data?: Maybe<Scalars['Boolean']['output']>;
+  message: Scalars['String']['output'];
+};
+
 export enum CallType {
   Cancel = 'CANCEL',
   Video = 'VIDEO',
@@ -442,6 +448,7 @@ export type HostingChatAsset = {
 };
 
 export type HostingChatFilter = {
+  isArchived?: InputMaybe<Scalars['Boolean']['input']>;
   text?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -465,6 +472,14 @@ export type HostingChatMessageInput = {
   text: Scalars['String']['input'];
 };
 
+export type HostingCounts = {
+  __typename?: 'HostingCounts';
+  active: Scalars['Int']['output'];
+  drafts: Scalars['Int']['output'];
+  pending: Scalars['Int']['output'];
+  total: Scalars['Int']['output'];
+};
+
 export type HostingFees = {
   __typename?: 'HostingFees';
   baseRent: Scalars['Decimal']['output'];
@@ -482,6 +497,7 @@ export type HostingFilterInput = {
   country?: InputMaybe<Scalars['String']['input']>;
   creatorId?: InputMaybe<Scalars['String']['input']>;
   facilities?: InputMaybe<Array<Scalars['String']['input']>>;
+  isDraft?: InputMaybe<Scalars['Boolean']['input']>;
   maxPrice?: InputMaybe<Scalars['Decimal']['input']>;
   minPrice?: InputMaybe<Scalars['Decimal']['input']>;
   minRating?: InputMaybe<Scalars['Int']['input']>;
@@ -753,6 +769,7 @@ export type Mutations = {
   createUpdateMessage: HostingChatMessage;
   createUpdateSavedHosting: SavedHostingResponse;
   createUpdateSavedHostingFolder: SavedHostingFolderResponse;
+  deleteAccount: BoolResponse;
   deleteHostPaymentDetails: MessageResponse;
   deleteHosting: MessageResponse;
   deleteHostingRoom: MessageResponse;
@@ -769,6 +786,8 @@ export type Mutations = {
   initiatePhoneNumberVerification: MessageResponse;
   login: AuthTokenResponse;
   logout: MessageResponse;
+  markAllNotificationsAsRead: MessageResponse;
+  markNotificationAsRead: MessageResponse;
   refreshToken: AuthTokenResponse;
   requestHostingVerificationTier: HostingVerificationResponse;
   requestPasswordChange: MessageResponse;
@@ -939,6 +958,11 @@ export type MutationsInitiatePhoneNumberVerificationArgs = {
 
 export type MutationsLoginArgs = {
   input: LoginInput;
+};
+
+
+export type MutationsMarkNotificationAsReadArgs = {
+  notificationId: Scalars['String']['input'];
 };
 
 
@@ -1218,6 +1242,7 @@ export type Query = {
   hostPaymentDetails: Array<HostAccountDetails>;
   hosting: Hosting;
   hostingChat: HostingChat;
+  hostingCounts: HostingCounts;
   hostings: Array<Hosting>;
   landlordMandateOptions: LandlordMandateConfig;
   me: User;
@@ -1592,6 +1617,8 @@ export type User = {
   lastUpdated: Scalars['String']['output'];
   notificationSettings: NotificationSettings;
   onlineUser: OnlineUser;
+  phoneNumber?: Maybe<Scalars['String']['output']>;
+  phoneNumberVerified: Scalars['Boolean']['output'];
   phoneNumbers: Array<PhoneNumber>;
   profile: Profile;
 };
@@ -1855,6 +1882,18 @@ export type DeleteHostingMutationVariables = Exact<{
 
 export type DeleteHostingMutation = { __typename?: 'Mutations', deleteHosting: { __typename?: 'MessageResponse', message: string } };
 
+export type MarkNotificationAsReadMutationVariables = Exact<{
+  notificationId: Scalars['String']['input'];
+}>;
+
+
+export type MarkNotificationAsReadMutation = { __typename?: 'Mutations', markNotificationAsRead: { __typename?: 'MessageResponse', message: string } };
+
+export type MarkAllNotificationsAsReadMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MarkAllNotificationsAsReadMutation = { __typename?: 'Mutations', markAllNotificationsAsRead: { __typename?: 'MessageResponse', message: string } };
+
 export type CreateUpdateHostPaymentDetailsMutationVariables = Exact<{
   input: HostAccountDetailsInput;
 }>;
@@ -2074,18 +2113,6 @@ export type NotificationsQueryVariables = Exact<{
 
 export type NotificationsQuery = { __typename?: 'Query', notifications: Array<{ __typename?: 'Notification', id: string, title: string, message: string, type?: NotificationType | null, createdAt: string, lastUpdated: string, isRead: boolean, data?: { __typename?: 'NotificationData', intent?: NotificationIntent | null, subject?: NotificationSubject | null, id?: string | null } | null }> };
 
-export type MarkNotificationAsReadMutationVariables = Exact<{
-  notificationId: Scalars['String']['input'];
-}>;
-
-
-export type MarkNotificationAsReadMutation = { __typename?: 'Mutations', markNotificationAsRead: { __typename?: 'MessageResponse', message: string } };
-
-export type MarkAllNotificationsAsReadMutationVariables = Exact<{ [key: string]: never; }>;
-
-
-export type MarkAllNotificationsAsReadMutation = { __typename?: 'Mutations', markAllNotificationsAsRead: { __typename?: 'MessageResponse', message: string } };
-
 export type BanksQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2126,7 +2153,17 @@ export type MeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: str
 export type HostAnalyticsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type HostAnalyticsQuery = { __typename?: 'Query', hostAnalytics: { __typename?: 'HostAnalytics', totalListings: number, occupancyRate: number, totalRevenue: any, averageRating: number, host: { __typename?: 'Host', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string } } }, topListing?: { __typename?: 'Hosting', id: string, city?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, totalRatings?: number | null, title?: string | null, averageRating?: number | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', publicUrl: string, originalFilename?: string | null, id: string } } | null } | null } };
+export type HostAnalyticsQuery = { __typename?: 'Query', hostAnalytics: { __typename?: 'HostAnalytics', totalListings: number, occupancyRate: number, totalRevenue: any, averageRating: number, fundsInEscrow: any, pendingApplications: number, host: { __typename?: 'Host', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string } } }, topListing?: { __typename?: 'Hosting', id: string, city?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, totalRatings?: number | null, title?: string | null, averageRating?: number | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', publicUrl: string, originalFilename?: string | null, id: string } } | null } | null } };
+
+export type RevenueGrowthQueryVariables = Exact<{
+  year?: InputMaybe<Scalars['Int']['input']>;
+  month?: InputMaybe<Scalars['Int']['input']>;
+  lastNYears?: InputMaybe<Scalars['Int']['input']>;
+  lastNMonths?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type RevenueGrowthQuery = { __typename?: 'Query', hostAnalytics: { __typename?: 'HostAnalytics', revenueGrowth: { __typename?: 'TimeSeriesData', dataPoints: Array<{ __typename?: 'AnalyticsDataPoint', amount: any, label: string }> } } };
 
 export type AuthHostQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2980,6 +3017,28 @@ export const DeleteHostingDocument = gql`
 
 export function useDeleteHostingMutation() {
   return Urql.useMutation<DeleteHostingMutation, DeleteHostingMutationVariables>(DeleteHostingDocument);
+};
+export const MarkNotificationAsReadDocument = gql`
+    mutation MarkNotificationAsRead($notificationId: String!) {
+  markNotificationAsRead(notificationId: $notificationId) {
+    message
+  }
+}
+    `;
+
+export function useMarkNotificationAsReadMutation() {
+  return Urql.useMutation<MarkNotificationAsReadMutation, MarkNotificationAsReadMutationVariables>(MarkNotificationAsReadDocument);
+};
+export const MarkAllNotificationsAsReadDocument = gql`
+    mutation MarkAllNotificationsAsRead {
+  markAllNotificationsAsRead {
+    message
+  }
+}
+    `;
+
+export function useMarkAllNotificationsAsReadMutation() {
+  return Urql.useMutation<MarkAllNotificationsAsReadMutation, MarkAllNotificationsAsReadMutationVariables>(MarkAllNotificationsAsReadDocument);
 };
 export const CreateUpdateHostPaymentDetailsDocument = gql`
     mutation CreateUpdateHostPaymentDetails($input: HostAccountDetailsInput!) {
@@ -3906,28 +3965,6 @@ export const NotificationsDocument = gql`
 export function useNotificationsQuery(options?: Omit<Urql.UseQueryArgs<NotificationsQueryVariables>, 'query'>) {
   return Urql.useQuery<NotificationsQuery, NotificationsQueryVariables>({ query: NotificationsDocument, ...options });
 };
-export const MarkNotificationAsReadDocument = gql`
-    mutation MarkNotificationAsRead($notificationId: String!) {
-  markNotificationAsRead(notificationId: $notificationId) {
-    message
-  }
-}
-    `;
-
-export function useMarkNotificationAsReadMutation() {
-  return Urql.useMutation<MarkNotificationAsReadMutation, MarkNotificationAsReadMutationVariables>(MarkNotificationAsReadDocument);
-};
-export const MarkAllNotificationsAsReadDocument = gql`
-    mutation MarkAllNotificationsAsRead {
-  markAllNotificationsAsRead {
-    message
-  }
-}
-    `;
-
-export function useMarkAllNotificationsAsReadMutation() {
-  return Urql.useMutation<MarkAllNotificationsAsReadMutation, MarkAllNotificationsAsReadMutationVariables>(MarkAllNotificationsAsReadDocument);
-};
 export const BanksDocument = gql`
     query Banks {
   banks {
@@ -4085,6 +4122,8 @@ export const HostAnalyticsDocument = gql`
     occupancyRate
     totalRevenue
     averageRating
+    fundsInEscrow
+    pendingApplications
     topListing {
       id
       coverImage {
@@ -4109,6 +4148,27 @@ export const HostAnalyticsDocument = gql`
 
 export function useHostAnalyticsQuery(options?: Omit<Urql.UseQueryArgs<HostAnalyticsQueryVariables>, 'query'>) {
   return Urql.useQuery<HostAnalyticsQuery, HostAnalyticsQueryVariables>({ query: HostAnalyticsDocument, ...options });
+};
+export const RevenueGrowthDocument = gql`
+    query RevenueGrowth($year: Int, $month: Int, $lastNYears: Int, $lastNMonths: Int) {
+  hostAnalytics {
+    revenueGrowth(
+      year: $year
+      month: $month
+      lastNYears: $lastNYears
+      lastNMonths: $lastNMonths
+    ) {
+      dataPoints {
+        amount
+        label
+      }
+    }
+  }
+}
+    `;
+
+export function useRevenueGrowthQuery(options?: Omit<Urql.UseQueryArgs<RevenueGrowthQueryVariables>, 'query'>) {
+  return Urql.useQuery<RevenueGrowthQuery, RevenueGrowthQueryVariables>({ query: RevenueGrowthDocument, ...options });
 };
 export const AuthHostDocument = gql`
     query AuthHost {
