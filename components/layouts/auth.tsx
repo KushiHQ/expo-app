@@ -2,6 +2,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ThemedView from "../atoms/a-themed-view";
 import React from "react";
 import { View } from "react-native";
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint";
 import Logo from "../icons/i-logo";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
@@ -20,10 +21,12 @@ type Props = {
 const AuthLayout: React.FC<Props> = ({ title, description, children }) => {
 	const router = useRouter();
 	const colors = useThemeColors();
+	const { isTablet } = useBreakpoint();
 
 	return (
 		<ThemedView className="flex-1">
 			<SafeAreaView className="flex-1">
+			<View style={{ flex: 1, width: "100%", maxWidth: isTablet ? 480 : undefined, alignSelf: "center" }}>
 				<KeyboardAwareScrollView
 					className="flex-1"
 					showsVerticalScrollIndicator={false}
@@ -57,6 +60,7 @@ const AuthLayout: React.FC<Props> = ({ title, description, children }) => {
 						<View className="flex-1">{children}</View>
 					</View>
 				</KeyboardAwareScrollView>
+			</View>
 			</SafeAreaView>
 		</ThemedView>
 	);

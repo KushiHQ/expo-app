@@ -2,6 +2,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ThemedView from "../atoms/a-themed-view";
 import React, { useRef, useEffect } from "react";
 import { Pressable, RefreshControlProps, ScrollView, View } from "react-native";
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import ThemedText from "../atoms/a-themed-text";
@@ -32,6 +33,7 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
 	const scrollViewRef = useRef<ScrollView>(null);
 	const path = usePathname();
 	const { user } = useUser();
+	const { isTablet } = useBreakpoint();
 
 	const [{ data: notifData }] = useNotificationsQuery({
 		variables: { pagination: { limit: 20 } },
@@ -63,6 +65,7 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
 	return (
 		<ThemedView className="flex-1">
 			<SafeAreaView className="flex-1">
+			<View style={{ flex: 1, width: "100%", maxWidth: isTablet ? 900 : undefined, alignSelf: "center" }}>
 				<View className="p-5 flex-row items-center justify-between">
 					<View className="flex-row items-center gap-3">
 						<Pressable
@@ -151,6 +154,7 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
 				) : (
 					<View className="flex-1">{Content}</View>
 				)}
+			</View>
 			</SafeAreaView>
 		</ThemedView>
 	);

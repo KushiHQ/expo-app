@@ -12,6 +12,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import ThemedText from "../atoms/a-themed-text";
@@ -86,6 +87,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
     const colors = useThemeColors();
     const insets = useSafeAreaInsets();
     const scrollViewRef = useRef<ScrollView>(null);
+    const { isTablet } = useBreakpoint();
     const path = usePathname();
     const { height: keyboardHeight } = useGradualKeyboardAnimation();
     const { id } = useLocalSearchParams();
@@ -133,6 +135,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
     return (
       <Wrapper className="flex-1" style={backgroundStyles}>
         <SafeAreaView className="flex-1">
+        <View style={{ flex: 1, width: "100%", maxWidth: isTablet ? 840 : undefined, alignSelf: "center" }}>
           <View className="p-5 flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
               <Pressable
@@ -326,6 +329,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
               {footer}
             </Animated.View>
           )}
+        </View>
         </SafeAreaView>
       </Wrapper>
     );

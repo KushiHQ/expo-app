@@ -14,6 +14,7 @@ import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Share, View } from "react-native";
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint";
 import Skeleton from "@/components/atoms/a-skeleton";
 import DetailsLayout from "@/components/layouts/details";
 import HostingLikeButton from "@/components/atoms/a-hosting-like-button";
@@ -33,6 +34,7 @@ export default function HostingDetails() {
 	});
 	const colors = useThemeColors();
 	const { handleImageError, failedImages } = useFallbackImages();
+	const { isTablet } = useBreakpoint();
 
 	const hosting = data?.hosting;
 
@@ -116,7 +118,7 @@ export default function HostingDetails() {
 				) : (
 					<>
 						<View
-							style={{ height: 290 }}
+							style={{ height: isTablet ? 420 : 290 }}
 							className="overflow-hidden rounded-xl"
 						>
 							<Carousel autoplay style={{ height: "100%", width: "100%" }}>

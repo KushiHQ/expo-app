@@ -13,9 +13,12 @@ import { useHostingFilterStore } from "@/lib/stores/hostings";
 import { useInfiniteQuery } from "@/lib/hooks/use-infinite-query";
 import { View, FlatList } from "react-native";
 import { RefreshControl } from "react-native-gesture-handler";
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint";
 
 export default function GuestHome() {
 	const { filter, updateFilter } = useHostingFilterStore();
+	const { isTablet } = useBreakpoint();
+	const numColumns = isTablet ? 2 : 1;
 
 	const {
 		items: hostings,
@@ -26,19 +29,22 @@ export default function GuestHome() {
 	} = useInfiniteQuery(useHostingsQuery, {
 		queryKey: "hostings",
 		initialVariables: {
-			filters: { ...filter, publishStatus: PublishStatus.Live },
+			filters: { ...filter, publishStatus: PublishStatus.Live, onSale: true },
 		},
 	});
 
 	return (
 		<ProfileLayout scrollable={false}>
 			<FlatList
+				key={numColumns}
 				showsVerticalScrollIndicator={false}
 				data={hostings}
 				keyExtractor={(item) => item.id}
+				numColumns={numColumns}
 				contentContainerStyle={{ padding: 24, paddingTop: 12 }}
+				columnWrapperStyle={numColumns > 1 ? { gap: 16 } : undefined}
 				renderItem={({ item, index }) => (
-					<View className="mb-10">
+					<View style={{ flex: 1, marginBottom: 32 }}>
 						<HostingCard index={index} hosting={item} />
 					</View>
 				)}
@@ -54,9 +60,11 @@ export default function GuestHome() {
 							/>
 						</View>
 						{fetching && !hostings.length && (
-							<View className="gap-6 mt-10">
-								{Array.from({ length: 5 }).map((_, index) => (
-									<HostingCardSkeleton key={index} />
+							<View style={{ flexDirection: numColumns > 1 ? "row" : "column", flexWrap: "wrap", gap: 16, marginTop: 40 }}>
+								{Array.from({ length: 6 }).map((_, index) => (
+									<View key={index} style={{ flex: 1, minWidth: numColumns > 1 ? "45%" : undefined }}>
+										<HostingCardSkeleton />
+									</View>
 								))}
 							</View>
 						)}
