@@ -30,9 +30,11 @@ const CallParticipantProfile: React.FC<Props> = ({
 				}}
 			>
 				<Image
-					source={getDefaultProfileImageUrl(
-						callData?.recipient?.profile.fullName ?? "",
-					)}
+					source={{
+						uri: callData?.recipient?.profile?.image?.publicUrl ?? getDefaultProfileImageUrl(
+							callData?.recipient?.profile.fullName ?? "",
+						),
+					}}
 					style={{
 						height: "100%",
 						width: "100%",

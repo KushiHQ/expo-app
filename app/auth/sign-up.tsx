@@ -21,6 +21,7 @@ import Toast from "react-native-toast-message";
 import { saveAuthTokens } from "@/lib/utils/auth";
 import { useUser } from "@/lib/hooks/user";
 import { UserType } from "@/lib/types/users";
+import { Fonts } from "@/lib/constants/theme";
 
 export default function SignUp() {
 	const colors = useThemeColors();
@@ -139,22 +140,35 @@ export default function SignUp() {
 						<ThemedText content="primary">Sign Up</ThemedText>
 					</Button>
 					<Centered className="mt-1">
-						<ThemedText>or</ThemedText>
+						<ThemedText>or continue with</ThemedText>
 					</Centered>
-					<View className="items-center flex-row justify-center gap-8">
+					<View className="flex-row items-center justify-center gap-3">
 						<Pressable
 							onPress={signUpWithGoogle}
-							style={{ backgroundColor: hexToRgba(colors["text"], 0.2) }}
-							className="w-9 h-9 items-center justify-center rounded-full p-1"
+							style={{
+								backgroundColor: hexToRgba(colors["text"], 0.1),
+								borderColor: hexToRgba(colors["text"], 0.2),
+							}}
+							className="flex-row items-center justify-center w-full max-w-36 gap-3 rounded-full h-12 border"
 						>
 							<LogosGoogle />
+							<ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
+								Google
+							</ThemedText>
 						</Pressable>
-						<View
-							style={{ backgroundColor: hexToRgba(colors["text"], 0.2) }}
-							className="w-9 h-9 items-center justify-center rounded-full p-1"
+						<Pressable
+							aria-label="Sign Up with Apple"
+							style={{
+								backgroundColor: hexToRgba(colors["text"], 0.1),
+								borderColor: hexToRgba(colors["text"], 0.2),
+							}}
+							className="flex-row items-center justify-center w-full max-w-36 gap-3 rounded-full h-12 border"
 						>
 							<LogosApple />
-						</View>
+							<ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
+								Apple
+							</ThemedText>
+						</Pressable>
 					</View>
 				</View>
 				<View className="flex-row items-center justify-center mt-20 gap-1">

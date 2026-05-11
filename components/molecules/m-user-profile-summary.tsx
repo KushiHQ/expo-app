@@ -14,24 +14,28 @@ import { UserType } from "@/lib/types/users";
 
 type Props = {
 	edit?: boolean;
+	onPressAvatar?: () => void;
+	avatarUri?: string;
 };
 
-const UserProfileSummary: React.FC<Props> = ({ edit }) => {
+const UserProfileSummary: React.FC<Props> = ({ edit, onPressAvatar, avatarUri }) => {
 	const colors = useThemeColors();
 	const { user } = useUser();
 
 	return (
 		<View className="items-center gap-3 flex-1 min-w-[40px]">
-			<View
+			<Pressable
 				className="h-[78px] relative w-[78px] border-[2px]"
 				style={{
 					borderRadius: 999,
 					borderColor: hexToRgba(colors.text, 0.7),
 				}}
+				onPress={edit ? onPressAvatar : undefined}
+				disabled={!edit}
 			>
 				<Image
 					source={{
-						uri: getDefaultProfileImageUrl(user.user?.profile.fullName ?? ""),
+						uri: avatarUri ?? user.user?.profile?.image?.publicUrl ?? getDefaultProfileImageUrl(user.user?.profile.fullName ?? ""),
 					}}
 					style={{
 						height: "100%",
@@ -46,7 +50,7 @@ const UserProfileSummary: React.FC<Props> = ({ edit }) => {
 					priority="high"
 				/>
 				{edit && (
-					<Pressable
+					<View
 						className="w-[18px] h-[18px] items-center justify-center rounded-full absolute -bottom-2.5 right-1/2"
 						style={{
 							backgroundColor: colors.shade,
@@ -58,9 +62,9 @@ const UserProfileSummary: React.FC<Props> = ({ edit }) => {
 						}}
 					>
 						<VaadinPaintbrush color={colors["shade-content"]} size={9} />
-					</Pressable>
+					</View>
 				)}
-			</View>
+			</Pressable>
 			<View className="items-center gap-1">
 				<View className="flex-row items-center gap-2">
 					<ThemedText style={{ fontFamily: Fonts.medium, fontSize: 12 }}>

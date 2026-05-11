@@ -61,6 +61,7 @@ export const handleIncomingChatMessage = async (remoteMessage: any) => {
 			importance: AndroidImportance.HIGH,
 			pressAction: { id: "default", launchActivity: "default" },
 			color: "#266DD3",
+			largeIcon: notification?.image, // Use the image from FCM notification if available
 		},
 		ios: {
 			sound: "message-notification.mp3",

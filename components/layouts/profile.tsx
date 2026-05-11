@@ -133,7 +133,7 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
 									objectFit: "cover",
 								}}
 								source={{
-									uri: getDefaultProfileImageUrl(
+									uri: user.user?.profile?.image?.publicUrl ?? getDefaultProfileImageUrl(
 										user.user?.profile.fullName ?? "",
 									),
 								}}

@@ -22,3 +22,13 @@ export const openGoogleMaps = async (coordinates: Coordinates) => {
 export const getDefaultProfileImageUrl = (name: string) => {
 	return `https://ui-avatars.com/api/?name=${name.toUpperCase().split(" ").join("+")}=random`;
 };
+
+export const getAssetResizeUrl = (
+	assetId: string,
+	width: number,
+	height: number,
+	quality = 85,
+) => {
+	const serverUrl = (process.env.EXPO_PUBLIC_GRAPHQL_URL ?? "").replace("/graphql", "");
+	return `${serverUrl}/assets/proxy/${assetId}?w=${width}&h=${height}&q=${quality}`;
+};

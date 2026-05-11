@@ -23,6 +23,7 @@ import { Pressable, View } from "react-native";
 import Toast from "react-native-toast-message";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import * as AppleAuthentication from "expo-apple-authentication";
+import { Fonts } from "@/lib/constants/theme";
 
 GoogleSignin.configure({
 	webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_OAUTH_CLIENT_ID,
@@ -179,23 +180,36 @@ export default function Login() {
 						<ThemedText content="primary">Sign In</ThemedText>
 					</Button>
 					<Centered className="mt-1">
-						<ThemedText>or</ThemedText>
+						<ThemedText>or continue with</ThemedText>
 					</Centered>
-					<View className="items-center flex-row justify-center gap-8">
+					<View className="flex-row items-center justify-center gap-3">
 						<Pressable
 							aria-label="Sign In with Google"
 							onPress={signInWithGoogle}
-							style={{ backgroundColor: hexToRgba(colors["text"], 0.2) }}
-							className="w-9 h-9 items-center justify-center rounded-full p-1"
+							style={{
+								backgroundColor: hexToRgba(colors["text"], 0.1),
+								borderColor: hexToRgba(colors["text"], 0.2),
+							}}
+							className="flex-row items-center justify-center w-full max-w-36 gap-3 rounded-full h-12 border"
 						>
 							<LogosGoogle />
+							<ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
+								Google
+							</ThemedText>
 						</Pressable>
-						<View
-							style={{ backgroundColor: hexToRgba(colors["text"], 0.2) }}
-							className="w-9 h-9 items-center justify-center rounded-full p-1"
+						<Pressable
+							aria-label="Sign In with Apple"
+							style={{
+								backgroundColor: hexToRgba(colors["text"], 0.1),
+								borderColor: hexToRgba(colors["text"], 0.2),
+							}}
+							className="flex-row items-center justify-center w-full max-w-36 gap-3 rounded-full h-12 border"
 						>
 							<LogosApple />
-						</View>
+							<ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
+								Apple
+							</ThemedText>
+						</Pressable>
 					</View>
 				</View>
 				<View className="flex-row items-center justify-center mt-20 gap-1">

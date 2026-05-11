@@ -29,7 +29,7 @@ const HostingReviewCard: React.FC<Props> = ({ review }) => {
 							borderRadius: 999,
 						}}
 						source={{
-							uri: getDefaultProfileImageUrl(
+							uri: review.user.profile?.image?.publicUrl ?? getDefaultProfileImageUrl(
 								review.user.profile.fullName ?? "",
 							),
 						}}

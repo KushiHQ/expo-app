@@ -24,6 +24,9 @@ export const USER_CHATS_QUERY = gql`
           fullName
           id
           gender
+          image {
+            publicUrl
+          }
         }
         onlineUser {
           id
@@ -75,6 +78,9 @@ export const CHAT_MESSAGES_QUERY = gql`
           id
           gender
           fullName
+          image {
+            publicUrl
+          }
         }
       }
       edited
@@ -121,6 +127,9 @@ export const HOSTING_CHAT_QUERY = gql`
           gender
           id
           fullName
+          image {
+            publicUrl
+          }
         }
       }
     }

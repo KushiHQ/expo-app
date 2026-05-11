@@ -61,6 +61,9 @@ export const UPDATE_USER_PROFILE = gql`
         gender
         createdAt
         lastUpdated
+        image {
+          publicUrl
+        }
       }
     }
   }

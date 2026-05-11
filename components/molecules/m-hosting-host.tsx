@@ -109,7 +109,7 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
                     objectFit: "cover",
                   }}
                   source={{
-                    uri: getDefaultProfileImageUrl(
+                    uri: hosting?.host.user.profile?.image?.publicUrl ?? getDefaultProfileImageUrl(
                       hosting?.host.user.profile.fullName ?? "",
                     ),
                   }}

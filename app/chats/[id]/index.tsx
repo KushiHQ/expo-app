@@ -1,4 +1,3 @@
-import LoadingModal from "@/components/atoms/a-loading-modal";
 import ThemedText from "@/components/atoms/a-themed-text";
 import { IconParkOutlineDot } from "@/components/icons/i-circle";
 import Logo from "@/components/icons/i-logo";
@@ -62,6 +61,7 @@ export default function ChatDetails() {
     queryKey: "chatMessages",
     initialVariables: { chatId: cast(id) },
     limit: 20,
+    requestPolicy: "network-only",
   });
 
   const [{ fetching: chatFetching, data: chatData }] = useHostingChatQuery({
@@ -195,11 +195,10 @@ export default function ChatDetails() {
   }) => <ChatMessageBubble message={item} />;
 
   return (
-    <>
-      <DetailsLayout
+    <DetailsLayout
         scrollable={false}
         avatar={{
-          image: getDefaultProfileImageUrl(
+          image: chatData?.hostingChat.recipientUser?.profile?.image?.publicUrl ?? getDefaultProfileImageUrl(
             chatData?.hostingChat.recipientUser?.profile.fullName ?? "",
           ),
           online: onlineRecipient?.online,
@@ -276,10 +275,6 @@ export default function ChatDetails() {
           }
           showsVerticalScrollIndicator={false}
         />
-      </DetailsLayout>
-      <LoadingModal
-        visible={chatFetching || (messagesFetching && !messages.length)}
-      />
-    </>
+    </DetailsLayout>
   );
 }

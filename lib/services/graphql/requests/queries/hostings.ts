@@ -102,6 +102,9 @@ export const HOSTING_QUERY = gql`
             fullName
             gender
             id
+            image {
+              publicUrl
+            }
           }
         }
         createdAt
@@ -143,6 +146,9 @@ export const HOSTING_QUERY = gql`
             fullName
             id
             gender
+            image {
+              publicUrl
+            }
           }
         }
       }

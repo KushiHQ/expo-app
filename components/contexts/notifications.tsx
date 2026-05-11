@@ -216,6 +216,13 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 		);
 
 		const unsubscribeNotifee = notifee.onForegroundEvent(async (event) => {
+			if (event.type === EventType.PRESS || event.type === EventType.ACTION_PRESS) {
+				const data = event.detail.notification?.data as any;
+				if (data?.intent === "notification" && data?.chatId) {
+					router.push(`/chats/${data.chatId}` as any);
+					return;
+				}
+			}
 			await handleNotifeeEvent(event);
 		});
 

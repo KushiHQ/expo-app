@@ -12,6 +12,7 @@ import { AUDIO_EXTENSIONS } from "@/lib/utils/file";
 import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { Mic } from "lucide-react-native";
 import moment from "moment";
 import React from "react";
@@ -92,7 +93,7 @@ const ChatListItem = ({
 			<View className="h-14 w-14 relative">
 				<Image
 					source={{
-						uri: getDefaultProfileImageUrl(
+						uri: chat.recipientUser.profile?.image?.publicUrl ?? getDefaultProfileImageUrl(
 							chat.recipientUser.profile.fullName ?? "",
 						),
 					}}
@@ -209,6 +210,12 @@ const ChatScreen: React.FC<Props> = ({ variant = "guest" }) => {
 		queryKey: "userChats",
 		initialVariables,
 	});
+
+	useFocusEffect(
+		React.useCallback(() => {
+			refresh();
+		}, [refresh]),
+	);
 
 	React.useEffect(() => {
 		if (debouncedSearchText) {

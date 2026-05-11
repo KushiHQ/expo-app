@@ -27,9 +27,10 @@ export function useInfiniteQuery<
 		queryKey: TKey;
 		initialVariables: Omit<TVariables, "pagination">;
 		limit?: number;
+		requestPolicy?: "cache-first" | "cache-only" | "network-only" | "cache-and-network";
 	},
 ) {
-	const { queryKey, initialVariables, limit = 20 } = options;
+	const { queryKey, initialVariables, limit = 20, requestPolicy } = options;
 	type Val = TData[TKey][number];
 
 	const [state, setState] = useState<State<Val, TVariables>>({
@@ -90,6 +91,7 @@ export function useInfiniteQuery<
 
 	const [{ data, fetching, error }, reexecute] = useQueryHook({
 		variables: queryVariables,
+		...(requestPolicy && { requestPolicy }),
 	});
 
 	// Sync data

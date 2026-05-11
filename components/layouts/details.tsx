@@ -290,7 +290,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                       objectFit: "cover",
                     }}
                     source={{
-                      uri: getDefaultProfileImageUrl(
+                      uri: user.user?.profile?.image?.publicUrl ?? getDefaultProfileImageUrl(
                         user.user?.profile.fullName ?? "",
                       ),
                     }}

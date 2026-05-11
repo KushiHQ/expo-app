@@ -27,6 +27,9 @@ export const GOOGLE_SIGN_UP = gql`
             gender
             createdAt
             lastUpdated
+            image {
+              publicUrl
+            }
           }
           notificationSettings {
             id
@@ -74,6 +77,9 @@ export const REFRESH_TOKEN_MUTATION = gql`
             gender
             createdAt
             lastUpdated
+            image {
+              publicUrl
+            }
           }
           notificationSettings {
             id
@@ -137,6 +143,9 @@ export const GOOGLE_LOGIN = gql`
             gender
             createdAt
             lastUpdated
+            image {
+              publicUrl
+            }
           }
           notificationSettings {
             id
@@ -184,6 +193,9 @@ export const LOGIN_MUTATION = gql`
             gender
             createdAt
             lastUpdated
+            image {
+              publicUrl
+            }
           }
           notificationSettings {
             id
