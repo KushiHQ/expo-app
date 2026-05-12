@@ -84,8 +84,3 @@ export const getAddressFromCoords = async (
     return [];
   }
 };
-   console.error("Error fetching address:", error);
-    Alert.alert("Error", "Could not fetch address");
-    return [];
-  }
-};
