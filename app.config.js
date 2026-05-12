@@ -20,11 +20,6 @@ export default ({ config }) => ({
 		bundleIdentifier: "com.kushicorp.kushi",
 		googleServicesFile: "./GoogleService-Info.plist",
 		useNextNotificationsApi: true,
-		entitlements: {
-			"com.apple.developer.usernotifications.communication": true,
-			"aps-environment": "production",
-			"com.apple.developer.pushkit.voip": true,
-		},
 		infoPlist: {
 			NSLocationWhenInUseUsageDescription:
 				"This app needs access to your location to determine the address of properties.",
@@ -95,6 +90,49 @@ export default ({ config }) => ({
 	owner: "kushi-digital-innovations-ltd",
 
 	plugins: [
+		[
+			"expo-build-properties",
+			{
+				android: {
+					minSdkVersion: 26,
+					extraMavenRepos: [
+						"../../node_modules/@notifee/react-native/android/libs",
+					],
+				},
+				ios: {
+					useFrameworks: "static",
+					forceStaticLinking: [
+						"RNFBApp",
+						"RNFBMessaging",
+						"VisionCamera",
+						"VisionCameraFaceDetector",
+					],
+					deploymentTarget: "15.5",
+					clangAllowNonModularInFrameworkModules: true,
+				},
+			},
+		],
+		(config) => {
+			const { withXcodeProject } = require("@expo/config-plugins");
+			return withXcodeProject(config, (config) => {
+				const project = config.modResults;
+				const buildConfigurations = project.pbxXCBuildConfigurationSection();
+				for (const key in buildConfigurations) {
+					const cfg = buildConfigurations[key];
+					if (typeof cfg === "object" && cfg.buildSettings) {
+						cfg.buildSettings["CLANG_ALLOW_NON_MODULAR_IN_FRAMEWORK_MODULES"] = "YES";
+						cfg.buildSettings["BITCODE_ENABLED"] = "NO";
+					}
+				}
+				return config;
+			});
+		},
+		(config) => {
+			if (!config.ios) config.ios = {};
+			if (!config.ios.entitlements) config.ios.entitlements = {};
+			config.ios.entitlements["com.apple.developer.usernotifications.communication"] = true;
+			return config;
+		},
 		"./lib/plugins/withNotifeeForeground.js",
 		"./lib/plugins/withAndroidSigning.js",
 		"./lib/plugins/withLockScreen.js",
@@ -119,22 +157,6 @@ export default ({ config }) => ({
 			},
 		],
 		"expo-router",
-		[
-			"expo-build-properties",
-			{
-				android: {
-					minSdkVersion: 26,
-					extraMavenRepos: [
-						"../../node_modules/@notifee/react-native/android/libs",
-					],
-				},
-				ios: {
-					useFrameworks: "static",
-					forceStaticLinking: ["RNFBApp", "RNFBMessaging"],
-					deploymentTarget: "15.5",
-				},
-			},
-		],
 		[
 			"expo-splash-screen",
 			{
