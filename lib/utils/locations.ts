@@ -1,5 +1,5 @@
 import * as Location from "expo-location";
-import { Alert } from "react-native";
+import { Alert, Platform } from "react-native";
 
 export type LocationObject = {
   name: any;
@@ -80,6 +80,11 @@ export const getAddressFromCoords = async (
     return [parsedAddress];
   } catch (error) {
     console.error("Error fetching address:", error);
+    Alert.alert("Error", "Could not fetch address");
+    return [];
+  }
+};
+   console.error("Error fetching address:", error);
     Alert.alert("Error", "Could not fetch address");
     return [];
   }

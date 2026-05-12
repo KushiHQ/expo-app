@@ -73,7 +73,7 @@ export default ({ config }) => ({
 		],
 		config: {
 			googleMaps: {
-				apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+				apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_ANDROID,
 			},
 		},
 		edgeToEdgeEnabled: true,
@@ -183,6 +183,13 @@ export default ({ config }) => ({
 		"@react-native-firebase/messaging",
 		"@react-native-google-signin/google-signin",
 		"expo-apple-authentication",
+	],
+	experiments: {
+		typedRoutes: true,
+		reactCompiler: true,
+	},
+});
+ple-authentication",
 	],
 	experiments: {
 		typedRoutes: true,

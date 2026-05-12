@@ -69,7 +69,7 @@ const ExpoMap: React.FC<Props> = ({
 		<MapView
 			ref={mapRef}
 			style={styles.map}
-			provider={Platform.OS === "android" ? PROVIDER_GOOGLE : PROVIDER_DEFAULT}
+			provider={PROVIDER_GOOGLE}
 			initialRegion={initialRegion}
 			showsUserLocation={false}
 		>
