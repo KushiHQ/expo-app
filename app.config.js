@@ -131,6 +131,7 @@ export default ({ config }) => ({
 				ios: {
 					useFrameworks: "static",
 					forceStaticLinking: ["RNFBApp", "RNFBMessaging"],
+					deploymentTarget: "15.5",
 				},
 			},
 		],
@@ -183,13 +184,6 @@ export default ({ config }) => ({
 		"@react-native-firebase/messaging",
 		"@react-native-google-signin/google-signin",
 		"expo-apple-authentication",
-	],
-	experiments: {
-		typedRoutes: true,
-		reactCompiler: true,
-	},
-});
-ple-authentication",
 	],
 	experiments: {
 		typedRoutes: true,
