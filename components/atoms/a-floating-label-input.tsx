@@ -9,6 +9,7 @@ import {
 	GestureResponderEvent,
 	StyleProp,
 	ViewStyle,
+	Platform,
 } from "react-native";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
@@ -22,7 +23,7 @@ import Animated, {
 import { MageEye, MageEyeOff } from "../icons/i-eye";
 import Tooltip from "./a-tooltip";
 import { CircleQuestionMark } from "lucide-react-native";
-import ThemedText from "./a-themed-text";
+import { Fonts } from "@/lib/constants/theme";
 
 export type FloatingLabelInputProps = TextInputProps & {
 	focused?: boolean;
@@ -75,7 +76,7 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 		const focusedColor = hexToRgba(colors["text"], 0.6);
 
 		const animatedLabelStyle = useAnimatedStyle(() => {
-			const top = interpolate(animatedValue.value, [0, 1], [18, 8]);
+			const top = interpolate(animatedValue.value, [0, 1], [18, 6]);
 			const fontSize = interpolate(animatedValue.value, [0, 1], [16, 12]);
 			const color = interpolateColor(
 				animatedValue.value,
@@ -115,27 +116,32 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 				<View className="relative">
 					<Pressable
 						onPress={handleConntainerPress}
-						className="relative flex-1 border px-2.5 pt-[18px] rounded-xl"
+						className="relative flex-1 border px-3 rounded-xl"
 						style={[
 							{
 								borderColor: hexToRgba(colors.text, 0.08),
 								borderWidth: 1.5,
 								backgroundColor: colors["surface-01"],
+								paddingTop: 22,
+								paddingBottom: Platform.OS === "ios" ? 10 : 6,
 							},
 							containerStyle,
 						]}
 					>
 						<Animated.Text
-							className="flex-row items-center gap-2"
 							style={[
-								{ color: colors["text"], left: 12, position: "absolute" },
+								{
+									color: colors["text"],
+									left: 12,
+									position: "absolute",
+									zIndex: 1,
+									fontFamily: Fonts.regular,
+								},
 								animatedLabelStyle,
 							]}
 						>
-							<ThemedText>
-								{label}
-								{"  "}
-							</ThemedText>
+							{label}
+							{"  "}
 							{description && (
 								<Tooltip title={label} description={description}>
 									<CircleQuestionMark
@@ -153,11 +159,12 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 								style={{
 									position: "absolute",
 									left: 13,
-									top: 26,
+									top: 24,
 									fontSize: 16,
 									color: hexToRgba(colors["text"], 0.5),
 									pointerEvents: "none",
 									right: suffix || defaultSecureText ? 46 : 10,
+									fontFamily: Fonts.regular,
 								}}
 							>
 								{placeholder}
@@ -172,6 +179,11 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 									color: colors["text"],
 									fontSize: 16,
 									paddingRight: suffix || defaultSecureText ? 36 : 0,
+									minHeight: 24,
+									textAlignVertical: "center",
+									fontFamily: Fonts.regular,
+									paddingTop: 0,
+									paddingBottom: 0,
 								},
 								style,
 							]}
@@ -190,7 +202,7 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
 					{defaultSecureText && (
 						<Pressable
 							onPress={() => setSecureTextEntry((c) => !c)}
-							className="absolute right-4 top-5"
+							className="absolute right-4 top-[22px]"
 						>
 							{secureTextEntry ? (
 								<MageEye color={colors["text"]} />

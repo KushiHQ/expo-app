@@ -17,8 +17,10 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
 import { Link, useRouter } from "expo-router";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, View, Platform } from "react-native";
 import Toast from "react-native-toast-message";
+import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
 import { saveAuthTokens } from "@/lib/utils/auth";
 import { useUser } from "@/lib/hooks/user";
 import { UserType } from "@/lib/types/users";
@@ -47,7 +49,9 @@ export default function SignUp() {
 
 	const signUpWithGoogle = async () => {
 		try {
-			await GoogleSignin.hasPlayServices();
+			if (Platform.OS === "android") {
+				await GoogleSignin.hasPlayServices();
+			}
 			const userInfo = await GoogleSignin.signIn();
 			if (userInfo.data?.idToken)
 				googleSignUp({
@@ -79,6 +83,58 @@ export default function SignUp() {
 		}
 	};
 	const signUpWithApple = async () => {
+		if (Platform.OS === "android") {
+			try {
+				const redirectUri = Linking.createURL("/auth/sign-up");
+				const authUrl = `https://kushicorp.com/auth/signup?redirect_uri=${encodeURIComponent(redirectUri)}`;
+
+				const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri, {
+					preferEphemeralSession: true,
+					browserPackage: "com.android.chrome",
+				});
+
+				if (result.type === "success") {
+					const { url } = result;
+					const params = new URL(url).searchParams;
+					const identityToken = params.get("identityToken");
+					const fullName = params.get("fullName");
+
+					if (identityToken) {
+						appleSignUp({
+							input: {
+								identityToken,
+								fullName: fullName ?? undefined,
+							},
+						}).then((res) => {
+							if (res.error) {
+								handleError(res.error);
+							}
+							if (res.data?.appleSignUp.data) {
+								Toast.show({
+									type: "success",
+									text1: "Success",
+									text2: res.data.appleSignUp.message,
+								});
+								saveAuthTokens({
+									access: res.data.appleSignUp.data.token,
+									refresh: res.data.appleSignUp.data.refreshToken,
+								});
+								updateUser({
+									tokenData: { expiresAt: res.data.appleSignUp.data.expiresAt },
+									user: res.data?.appleSignUp.data?.user,
+									email: res.data?.appleSignUp.data?.user.email,
+								});
+								handlePostLogin(user.userType);
+							}
+						});
+					}
+				}
+			} catch (error) {
+				console.error("Apple Sign-Up Error:", error);
+			}
+			return;
+		}
+
 		try {
 			const credential = await AppleAuthentication.signInAsync({
 				requestedScopes: [
@@ -193,7 +249,7 @@ export default function SignUp() {
 								backgroundColor: hexToRgba(colors["text"], 0.1),
 								borderColor: hexToRgba(colors["text"], 0.2),
 							}}
-							className="flex-row items-center justify-center w-full max-w-36 gap-3 rounded-full h-12 border"
+							className="flex-row items-center justify-center w-full max-w-[144px] gap-3 rounded-full h-12 border"
 						>
 							<LogosGoogle />
 							<ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
@@ -207,7 +263,7 @@ export default function SignUp() {
 								backgroundColor: hexToRgba(colors["text"], 0.1),
 								borderColor: hexToRgba(colors["text"], 0.2),
 							}}
-							className="flex-row items-center justify-center w-full max-w-36 gap-3 rounded-full h-12 border"
+							className="flex-row items-center justify-center w-full max-w-[144px] gap-3 rounded-full h-12 border"
 						>
 							<LogosApple />
 							<ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>

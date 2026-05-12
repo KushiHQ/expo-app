@@ -20,17 +20,13 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, View, Platform } from "react-native";
 import Toast from "react-native-toast-message";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import * as AppleAuthentication from "expo-apple-authentication";
+import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
 import { Fonts } from "@/lib/constants/theme";
-
-GoogleSignin.configure({
-	webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_OAUTH_CLIENT_ID,
-	iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_OAUTH_CLIENT_ID,
-	offlineAccess: true,
-});
 
 export default function Login() {
 	const router = useRouter();
@@ -59,7 +55,9 @@ export default function Login() {
 
 	const signInWithGoogle = async () => {
 		try {
-			await GoogleSignin.hasPlayServices();
+			if (Platform.OS === "android") {
+				await GoogleSignin.hasPlayServices();
+			}
 			const userInfo = await GoogleSignin.signIn();
 			if (userInfo.data?.idToken)
 				googleLogin({
@@ -93,6 +91,58 @@ export default function Login() {
 	};
 
 	const signInWithApple = async () => {
+		if (Platform.OS === "android") {
+			try {
+				const redirectUri = Linking.createURL("/auth/sign-in");
+				const authUrl = `https://kushicorp.com/auth/signin?redirect_uri=${encodeURIComponent(redirectUri)}`;
+
+				const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri, {
+					preferEphemeralSession: true,
+					browserPackage: "com.android.chrome",
+				});
+
+				if (result.type === "success") {
+					const { url } = result;
+					const params = new URL(url).searchParams;
+					const identityToken = params.get("identityToken");
+					const fullName = params.get("fullName");
+
+					if (identityToken) {
+						appleLogin({
+							input: {
+								identityToken,
+								fullName: fullName ?? undefined,
+							},
+						}).then((res) => {
+							if (res.error) {
+								handleError(res.error);
+							}
+							if (res.data?.appleLogin.data) {
+								Toast.show({
+									type: "success",
+									text1: "Success",
+									text2: res.data.appleLogin.message,
+								});
+								saveAuthTokens({
+									access: res.data.appleLogin.data.token,
+									refresh: res.data.appleLogin.data.refreshToken,
+								});
+								updateUser({
+									tokenData: { expiresAt: res.data.appleLogin.data.expiresAt },
+									user: res.data?.appleLogin.data?.user,
+									email: res.data.appleLogin.data.user.email,
+								});
+								handlePostLogin(user.userType);
+							}
+						});
+					}
+				}
+			} catch (error) {
+				console.error("Apple Sign-In Error:", error);
+			}
+			return;
+		}
+
 		try {
 			const credential = await AppleAuthentication.signInAsync({
 				requestedScopes: [
@@ -222,7 +272,7 @@ export default function Login() {
 								backgroundColor: hexToRgba(colors["text"], 0.1),
 								borderColor: hexToRgba(colors["text"], 0.2),
 							}}
-							className="flex-row items-center justify-center w-full max-w-36 gap-3 rounded-full h-12 border"
+							className="flex-row items-center justify-center w-full max-w-[144px] gap-3 rounded-full h-12 border"
 						>
 							<LogosGoogle />
 							<ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
@@ -236,7 +286,7 @@ export default function Login() {
 								backgroundColor: hexToRgba(colors["text"], 0.1),
 								borderColor: hexToRgba(colors["text"], 0.2),
 							}}
-							className="flex-row items-center justify-center w-full max-w-36 gap-3 rounded-full h-12 border"
+							className="flex-row items-center justify-center w-full max-w-[144px] gap-3 rounded-full h-12 border"
 						>
 							<LogosApple />
 							<ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
