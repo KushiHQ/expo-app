@@ -48,6 +48,12 @@ export type AnalyticsDataPoint = {
   label: Scalars['String']['output'];
 };
 
+export type AppleAuthInput = {
+  /** Only present on the user's very first Apple Sign In */
+  fullName?: InputMaybe<Scalars['String']['input']>;
+  identityToken: Scalars['String']['input'];
+};
+
 export type Asset = {
   __typename?: 'Asset';
   contentType?: Maybe<Scalars['String']['output']>;
@@ -756,6 +762,8 @@ export type Mutations = {
   __typename?: 'Mutations';
   adminReviewHostingVerificationRequest: HostingVerificationRequestResponse;
   adminUpdateBookingApplicationStatus: BookingApplicationResponse;
+  appleLogin: AuthTokenResponse;
+  appleSignUp: AuthTokenResponse;
   cancelBookingApplication: MessageResponse;
   clearChatUrnreadMessages: MessageResponse;
   completeBookingApplicationSubmission: BookingApplicationResponse;
@@ -816,6 +824,16 @@ export type MutationsAdminReviewHostingVerificationRequestArgs = {
 
 export type MutationsAdminUpdateBookingApplicationStatusArgs = {
   input: BookingApplicationStatusUpdateInput;
+};
+
+
+export type MutationsAppleLoginArgs = {
+  input: AppleAuthInput;
+};
+
+
+export type MutationsAppleSignUpArgs = {
+  input: AppleAuthInput;
 };
 
 
@@ -1688,6 +1706,20 @@ export type GoogleLoginMutationVariables = Exact<{
 
 export type GoogleLoginMutation = { __typename?: 'Mutations', googleLogin: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
 
+export type AppleLoginMutationVariables = Exact<{
+  input: AppleAuthInput;
+}>;
+
+
+export type AppleLoginMutation = { __typename?: 'Mutations', appleLogin: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
+
+export type AppleSignUpMutationVariables = Exact<{
+  input: AppleAuthInput;
+}>;
+
+
+export type AppleSignUpMutation = { __typename?: 'Mutations', appleSignUp: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
+
 export type LoginMutationVariables = Exact<{
   input: LoginInput;
 }>;
@@ -2390,6 +2422,112 @@ export const GoogleLoginDocument = gql`
 
 export function useGoogleLoginMutation() {
   return Urql.useMutation<GoogleLoginMutation, GoogleLoginMutationVariables>(GoogleLoginDocument);
+};
+export const AppleLoginDocument = gql`
+    mutation AppleLogin($input: AppleAuthInput!) {
+  appleLogin(input: $input) {
+    message
+    data {
+      token
+      refreshToken
+      expiresAt
+      user {
+        id
+        email
+        createdAt
+        lastUpdated
+        profile {
+          id
+          fullName
+          gender
+          createdAt
+          lastUpdated
+          image {
+            publicUrl
+          }
+        }
+        notificationSettings {
+          id
+          email
+          appUpdates
+          pushNotifications
+          specialOffers
+        }
+        kyc {
+          id
+          bvnVerified
+          ninVerified
+          image {
+            id
+            publicUrl
+          }
+        }
+        phoneNumbers {
+          id
+          number
+          verificationStatus
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useAppleLoginMutation() {
+  return Urql.useMutation<AppleLoginMutation, AppleLoginMutationVariables>(AppleLoginDocument);
+};
+export const AppleSignUpDocument = gql`
+    mutation AppleSignUp($input: AppleAuthInput!) {
+  appleSignUp(input: $input) {
+    message
+    data {
+      token
+      refreshToken
+      expiresAt
+      user {
+        id
+        email
+        createdAt
+        lastUpdated
+        profile {
+          id
+          fullName
+          gender
+          createdAt
+          lastUpdated
+          image {
+            publicUrl
+          }
+        }
+        notificationSettings {
+          id
+          email
+          appUpdates
+          pushNotifications
+          specialOffers
+        }
+        kyc {
+          id
+          bvnVerified
+          ninVerified
+          image {
+            id
+            publicUrl
+          }
+        }
+        phoneNumbers {
+          id
+          number
+          verificationStatus
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useAppleSignUpMutation() {
+  return Urql.useMutation<AppleSignUpMutation, AppleSignUpMutationVariables>(AppleSignUpDocument);
 };
 export const LoginDocument = gql`
     mutation Login($input: LoginInput!) {

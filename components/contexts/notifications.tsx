@@ -16,9 +16,10 @@ import { handleIncomingCall, handleNotifeeEvent } from "@/lib/utils/call";
 import { handleIncomingChatMessage } from "@/lib/utils/notifications";
 import { useRouter } from "expo-router";
 import { CALL_TYPE_VALUE } from "@/lib/types/enums/hoting-chat";
-import { AppState, AppStateStatus } from "react-native";
+import { AppState, AppStateStatus, Platform } from "react-native";
 import { useAudioPlayer } from "expo-audio";
 import messaging from "@react-native-firebase/messaging";
+import { EventEmitter } from "@/lib/utils/event-emitter";
 
 interface NotificationContextType {
 	token: string | null;
@@ -97,10 +98,15 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 
 				if (enabled) {
 					const fcmToken = await getToken(messagingInstance);
-					if (fcmToken && user.user) {
-						updateToken({ input: { fcmToken } });
-					}
 					setToken(fcmToken);
+
+					if (fcmToken && user.user) {
+						if (Platform.OS === "android") {
+							// Android uses FCM directly — clear any stale VoIP token
+							updateToken({ input: { fcmToken, voipToken: null } });
+						}
+						// iOS token is sent once the VoIP token arrives via EventEmitter below
+					}
 				} else {
 					setError(new Error("Permission denied"));
 				}
@@ -110,6 +116,53 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 		};
 
 		setupMessaging();
+
+		// iOS: receive VoIP push token from index.js and send to backend
+		const handleVoipToken = (voipToken: string) => {
+			if (user.user && Platform.OS === "ios") {
+				updateToken({ input: { voipToken, fcmToken: token } });
+			}
+		};
+		EventEmitter.on("voip_token", handleVoipToken);
+
+		// iOS: user answered the call from the native CallKit UI
+		const handleCallKeepAnswer = (callData: {
+			callId: string;
+			chatId: string;
+			intent: string;
+		}) => {
+			const isVideo = callData.intent === "video-call";
+			router.push({
+				pathname: isVideo ? "/chats/[id]/call/video" : "/chats/[id]/call/voice",
+				params: {
+					id: callData.chatId,
+					initiate: "false",
+					accept: "true",
+					callId: callData.callId,
+				},
+			});
+		};
+
+		// iOS: user declined the call from the native CallKit UI
+		const handleCallKeepEnd = (callData: {
+			callId: string;
+			chatId: string;
+			intent: string;
+		}) => {
+			const isVideo = callData.intent === "video-call";
+			router.push({
+				pathname: isVideo ? "/chats/[id]/call/video" : "/chats/[id]/call/voice",
+				params: {
+					id: callData.chatId,
+					initiate: "false",
+					accept: "false",
+					callId: callData.callId,
+				},
+			});
+		};
+
+		EventEmitter.on("callkeep_answer", handleCallKeepAnswer);
+		EventEmitter.on("callkeep_end", handleCallKeepEnd);
 
 		const handleAppStateChange = async (nextAppState: AppStateStatus) => {
 			if (nextAppState === "active") {
@@ -231,6 +284,9 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 			unsubscribeForeground();
 			unsubscribeNotifee();
 			unsubscribeOpenedApp();
+			EventEmitter.off("voip_token", handleVoipToken);
+			EventEmitter.off("callkeep_answer", handleCallKeepAnswer);
+			EventEmitter.off("callkeep_end", handleCallKeepEnd);
 		};
 	}, [user.user?.id]);
 

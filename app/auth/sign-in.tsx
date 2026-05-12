@@ -9,6 +9,7 @@ import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { useUser } from "@/lib/hooks/user";
 import {
 	LoginInput,
+	useAppleLoginMutation,
 	useGoogleLoginMutation,
 	useLoginMutation,
 } from "@/lib/services/graphql/generated";
@@ -42,6 +43,7 @@ export default function Login() {
 	const [savePassword, setSavePassword] = React.useState(!!user.password);
 	const [res, mutate] = useLoginMutation();
 	const [, googleLogin] = useGoogleLoginMutation();
+	const [, appleLogin] = useAppleLoginMutation();
 
 	const handlePostLogin = (userType?: UserType) => {
 		if (returnUrl) {
@@ -98,7 +100,37 @@ export default function Login() {
 					AppleAuthentication.AppleAuthenticationScope.EMAIL,
 				],
 			});
-			// Send credential.identityToken to your backend for verification
+			if (credential.identityToken) {
+				appleLogin({
+					input: {
+						identityToken: credential.identityToken,
+						fullName: credential.fullName?.givenName
+							? `${credential.fullName.givenName} ${credential.fullName.familyName || ""}`.trim()
+							: undefined,
+					},
+				}).then((res) => {
+					if (res.error) {
+						handleError(res.error);
+					}
+					if (res.data?.appleLogin.data) {
+						Toast.show({
+							type: "success",
+							text1: "Success",
+							text2: res.data.appleLogin.message,
+						});
+						saveAuthTokens({
+							access: res.data.appleLogin.data.token,
+							refresh: res.data.appleLogin.data.refreshToken,
+						});
+						updateUser({
+							tokenData: { expiresAt: res.data.appleLogin.data.expiresAt },
+							user: res.data?.appleLogin.data?.user,
+							email: res.data.appleLogin.data.user.email,
+						});
+						handlePostLogin(user.userType);
+					}
+				});
+			}
 		} catch (e: any) {
 			console.error(e);
 		}
@@ -199,6 +231,7 @@ export default function Login() {
 						</Pressable>
 						<Pressable
 							aria-label="Sign In with Apple"
+							onPress={signInWithApple}
 							style={{
 								backgroundColor: hexToRgba(colors["text"], 0.1),
 								borderColor: hexToRgba(colors["text"], 0.2),

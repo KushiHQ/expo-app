@@ -16,6 +16,9 @@
 			"autoIncrement": true,
 			"android": {
 				"buildType": "app-bundle"
+			},
+			"ios": {
+				"buildConfiguration": "Release"
 			}
 		}
 	},
@@ -25,6 +28,11 @@
 				"serviceAccountKeyPath": "./google-play-key.json",
 				"track": "internal",
 				"releaseStatus": "draft"
+			},
+			"ios": {
+				"appleId": "ezkielvictor2700@gmail.com",
+				"ascAppId": "6768449564",
+				"appleTeamId": "63GVNP37V2"
 			}
 		}
 	}

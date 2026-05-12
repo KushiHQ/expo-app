@@ -1,3 +1,4 @@
+import moment from "moment";
 import BottomSheet from "@/components/atoms/a-bottom-sheet";
 import Button from "@/components/atoms/a-button";
 import ThemedText from "@/components/atoms/a-themed-text";
@@ -74,37 +75,37 @@ const ProfileScreen = () => {
 		href: Href;
 		label: string;
 	}[] = [
-		{
-			icon: UilUser,
-			href: `/users/${id}/profile/edit`,
-			label: "Profile",
-		},
-		{
-			icon: SolarCardLinear,
-			href: `/bookings`,
-			label: "My Bookings",
-		},
-		{
-			icon: SolarWalletMoneyOutline,
-			href: `/users/${id}/transactions`,
-			label: "Payments",
-		},
-		{
-			icon: IonNotificationsOutline,
-			href: `/users/${id}/notification-settings`,
-			label: "Notifications",
-		},
-		{
-			icon: HugeiconsShieldUser,
-			href: "/kyc",
-			label: "KYC",
-		},
-		{
-			icon: LinkIcon,
-			href: "/host/listings",
-			label: "Hostings",
-		},
-	];
+			{
+				icon: UilUser,
+				href: `/users/${id}/profile/edit`,
+				label: "Profile",
+			},
+			{
+				icon: SolarCardLinear,
+				href: `/bookings`,
+				label: "My Bookings",
+			},
+			{
+				icon: SolarWalletMoneyOutline,
+				href: `/users/${id}/transactions`,
+				label: "Payments",
+			},
+			{
+				icon: IonNotificationsOutline,
+				href: `/users/${id}/notification-settings`,
+				label: "Notifications",
+			},
+			{
+				icon: HugeiconsShieldUser,
+				href: "/kyc",
+				label: "KYC",
+			},
+			{
+				icon: LinkIcon,
+				href: "/host/listings",
+				label: "Hostings",
+			},
+		];
 
 	return (
 		<>
@@ -136,7 +137,9 @@ const ProfileScreen = () => {
 						>
 							<View className="flex-row items-center gap-2">
 								<CuidaBuildingOutline color={colors.accent} size={16} />
-								<ThemedText style={{ fontSize: 12 }}>2 Years</ThemedText>
+								<ThemedText style={{ fontSize: 12 }}>
+									{moment(user.user.user?.createdAt).fromNow()}
+								</ThemedText>
 							</View>
 							<Pressable
 								onPress={() => router.push(`/users/${id}/profile/edit`)}

@@ -174,6 +174,106 @@ export const GOOGLE_LOGIN = gql`
   }
 `;
 
+export const APPLE_LOGIN = gql`
+  mutation AppleLogin($input: AppleAuthInput!) {
+    appleLogin(input: $input) {
+      message
+      data {
+        token
+        refreshToken
+        expiresAt
+        user {
+          id
+          email
+          createdAt
+          lastUpdated
+          profile {
+            id
+            fullName
+            gender
+            createdAt
+            lastUpdated
+            image {
+              publicUrl
+            }
+          }
+          notificationSettings {
+            id
+            email
+            appUpdates
+            pushNotifications
+            specialOffers
+          }
+          kyc {
+            id
+            bvnVerified
+            ninVerified
+            image {
+              id
+              publicUrl
+            }
+          }
+          phoneNumbers {
+            id
+            number
+            verificationStatus
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const APPLE_SIGN_UP = gql`
+  mutation AppleSignUp($input: AppleAuthInput!) {
+    appleSignUp(input: $input) {
+      message
+      data {
+        token
+        refreshToken
+        expiresAt
+        user {
+          id
+          email
+          createdAt
+          lastUpdated
+          profile {
+            id
+            fullName
+            gender
+            createdAt
+            lastUpdated
+            image {
+              publicUrl
+            }
+          }
+          notificationSettings {
+            id
+            email
+            appUpdates
+            pushNotifications
+            specialOffers
+          }
+          kyc {
+            id
+            bvnVerified
+            ninVerified
+            image {
+              id
+              publicUrl
+            }
+          }
+          phoneNumbers {
+            id
+            number
+            verificationStatus
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const LOGIN_MUTATION = gql`
   mutation Login($input: LoginInput!) {
     login(input: $input) {

@@ -23,6 +23,7 @@ export default ({ config }) => ({
 		entitlements: {
 			"com.apple.developer.usernotifications.communication": true,
 			"aps-environment": "production",
+			"com.apple.developer.pushkit.voip": true,
 		},
 		infoPlist: {
 			NSLocationWhenInUseUsageDescription:
@@ -53,7 +54,6 @@ export default ({ config }) => ({
 			"android.permission.WAKE_LOCK",
 			"android.permission.DISABLE_KEYGUARD",
 			"android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE",
-			"android.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING",
 			"android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
 			"android.permission.FOREGROUND_SERVICE_CAMERA",
 			"android.permission.FOREGROUND_SERVICE_MICROPHONE",

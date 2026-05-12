@@ -93,9 +93,11 @@ const ChatListItem = ({
 			<View className="h-14 w-14 relative">
 				<Image
 					source={{
-						uri: chat.recipientUser.profile?.image?.publicUrl ?? getDefaultProfileImageUrl(
-							chat.recipientUser.profile.fullName ?? "",
-						),
+						uri:
+							chat.recipientUser.profile?.image?.publicUrl ??
+							getDefaultProfileImageUrl(
+								chat.recipientUser.profile.fullName ?? "",
+							),
 					}}
 					style={{
 						height: "100%",

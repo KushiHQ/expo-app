@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { BackHandler, Platform } from "react-native";
 import { usePathname } from "expo-router";
-import notifee from "@notifee/react-native";
+import notifee, { EventType } from "@notifee/react-native";
 
 export const useLockScreen = () => {
 	const pathname = usePathname();
@@ -16,7 +16,10 @@ export const useLockScreen = () => {
 			});
 
 			const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {
-				if (detail.pressAction?.id === "full_screen") {
+				if (
+					(type === EventType.PRESS || type === EventType.ACTION_PRESS) &&
+					detail.pressAction?.id === "full_screen"
+				) {
 					setIsLockScreenLaunch(true);
 				}
 			});
@@ -26,9 +29,15 @@ export const useLockScreen = () => {
 	}, []);
 
 	useEffect(() => {
-		if (isLockScreenLaunch && !pathname.includes("/call/")) {
-			BackHandler.exitApp();
-		}
+		if (!isLockScreenLaunch) return;
+
+		const timer = setTimeout(() => {
+			if (!pathname.includes("/call/")) {
+				BackHandler.exitApp();
+			}
+		}, 500);
+
+		return () => clearTimeout(timer);
 	}, [isLockScreenLaunch, pathname]);
 
 	return { isLockScreenLaunch };

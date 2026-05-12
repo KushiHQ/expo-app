@@ -8,6 +8,7 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import {
 	SignUpInput,
+	useAppleSignUpMutation,
 	useGoogleSignUpMutation,
 	useSignUpMutation,
 } from "@/lib/services/graphql/generated";
@@ -22,7 +23,7 @@ import { saveAuthTokens } from "@/lib/utils/auth";
 import { useUser } from "@/lib/hooks/user";
 import { UserType } from "@/lib/types/users";
 import { Fonts } from "@/lib/constants/theme";
-
+import * as AppleAuthentication from "expo-apple-authentication";
 export default function SignUp() {
 	const colors = useThemeColors();
 	const [inputs, setInputs] = React.useState<Partial<SignUpInput>>({});
@@ -30,6 +31,7 @@ export default function SignUp() {
 	const router = useRouter();
 	const { updateUser, user, returnUrl, setReturnUrl } = useUser();
 	const [, googleSignUp] = useGoogleSignUpMutation();
+	const [, appleSignUp] = useAppleSignUpMutation();
 
 	const handlePostLogin = (userType?: UserType) => {
 		if (returnUrl) {
@@ -76,7 +78,49 @@ export default function SignUp() {
 			console.error("Something went wrong:", error);
 		}
 	};
-
+	const signUpWithApple = async () => {
+		try {
+			const credential = await AppleAuthentication.signInAsync({
+				requestedScopes: [
+					AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+					AppleAuthentication.AppleAuthenticationScope.EMAIL,
+				],
+			});
+			if (credential.identityToken) {
+				appleSignUp({
+					input: {
+						identityToken: credential.identityToken,
+						fullName: credential.fullName?.givenName
+							? `${credential.fullName.givenName} ${credential.fullName.familyName || ""}`.trim()
+							: undefined,
+					},
+				}).then((res) => {
+					if (res.error) {
+						handleError(res.error);
+					}
+					if (res.data?.appleSignUp.data) {
+						Toast.show({
+							type: "success",
+							text1: "Success",
+							text2: res.data.appleSignUp.message,
+						});
+						saveAuthTokens({
+							access: res.data.appleSignUp.data.token,
+							refresh: res.data.appleSignUp.data.refreshToken,
+						});
+						updateUser({
+							tokenData: { expiresAt: res.data.appleSignUp.data.expiresAt },
+							user: res.data?.appleSignUp.data?.user,
+							email: res.data?.appleSignUp.data?.user.email,
+						});
+						handlePostLogin(user.userType);
+					}
+				});
+			}
+		} catch (error: any) {
+			console.error("Something went wrong:", error);
+		}
+	};
 	const handlePress = () => {
 		mutate({ input: cast(inputs) }).then((result) => {
 			if (result.error) {
@@ -158,6 +202,7 @@ export default function SignUp() {
 						</Pressable>
 						<Pressable
 							aria-label="Sign Up with Apple"
+							onPress={signUpWithApple}
 							style={{
 								backgroundColor: hexToRgba(colors["text"], 0.1),
 								borderColor: hexToRgba(colors["text"], 0.2),
