@@ -107,6 +107,7 @@ export default ({ config }) => ({
 					minSdkVersion: 26,
 					extraMavenRepos: [
 						"../../node_modules/@notifee/react-native/android/libs",
+						"https://packages.expo.io/android/maven",
 					],
 				},
 				ios: {
