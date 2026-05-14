@@ -56,10 +56,9 @@ jobs:
       - name: Build Android (local)
         run: |
           set -o pipefail
-          touch /tmp/.build_start
           eas build --platform android --profile production --local --non-interactive 2>&1 | tee /tmp/eas-output.txt || true
-          AAB_PATH=$(find "$GITHUB_WORKSPACE" /tmp -name "*.aab" -newer /tmp/.build_start 2>/dev/null | head -1)
-          if [ -z "$AAB_PATH" ]; then
+          AAB_PATH=$(grep -oE '[^[:space:]]+\.aab' /tmp/eas-output.txt | tail -1)
+          if [ -z "$AAB_PATH" ] || [ ! -f "$AAB_PATH" ]; then
             echo "❌ Could not locate built .aab file"
             exit 1
           fi

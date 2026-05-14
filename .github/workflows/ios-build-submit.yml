@@ -66,10 +66,9 @@ jobs:
       - name: Build iOS (local)
         run: |
           set -o pipefail
-          touch /tmp/.build_start
           eas build --platform ios --profile production --local --non-interactive 2>&1 | tee /tmp/eas-output.txt || true
-          IPA_PATH=$(find "$GITHUB_WORKSPACE" /private/var/folders /tmp -name "*.ipa" -newer /tmp/.build_start 2>/dev/null | head -1)
-          if [ -z "$IPA_PATH" ]; then
+          IPA_PATH=$(grep -oE '[^[:space:]]+\.ipa' /tmp/eas-output.txt | tail -1)
+          if [ -z "$IPA_PATH" ] || [ ! -f "$IPA_PATH" ]; then
             echo "❌ Could not locate built .ipa file"
             exit 1
           fi
