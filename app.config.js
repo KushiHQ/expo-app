@@ -145,6 +145,7 @@ export default ({ config }) => ({
 		"./lib/plugins/withNotifeeForeground.js",
 		"./lib/plugins/withAndroidSigning.js",
 		"./lib/plugins/withLockScreen.js",
+		"./lib/plugins/withGradleVersion.js",
 		"expo-audio",
 		"expo-web-browser",
 		[
