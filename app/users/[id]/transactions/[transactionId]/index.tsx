@@ -148,9 +148,8 @@ export default function TransactionDetails() {
 							Amount Paid
 						</ThemedText>
 						<View className="flex-row items-center mt-1">
-							<TablerCurrencyNaira size={32} color={colors.text} />
+							<TablerCurrencyNaira size={36} color={colors.text} />
 							<ThemedText
-								className="py-2"
 								style={{ fontSize: 36, fontFamily: Fonts.bold }}
 							>
 								{Number(transaction.amount).toLocaleString()}
@@ -230,8 +229,8 @@ export default function TransactionDetails() {
 							style={{ borderColor: hexToRgba(colors.text, 0.05) }}
 						>
 							<View className="flex-row justify-between items-center">
-								<ThemedText style={{ opacity: 0.6 }}>Reference</ThemedText>
-								<View className="flex-row items-center gap-2">
+								<ThemedText style={{ opacity: 0.6, flex: 1 }}>Reference</ThemedText>
+								<View className="flex-row items-center gap-2" style={{ flexShrink: 1 }}>
 									<ThemedText style={{ fontSize: 13, opacity: 0.7 }}>
 										{(transaction.reference ?? "").slice(0, 18)}...
 									</ThemedText>
@@ -243,16 +242,16 @@ export default function TransactionDetails() {
 								</View>
 							</View>
 
-							<View className="flex-row justify-between">
-								<ThemedText style={{ opacity: 0.6 }}>Date</ThemedText>
-								<ThemedText style={{ fontSize: 14 }}>
+							<View className="flex-row justify-between gap-4">
+								<ThemedText style={{ opacity: 0.6, flex: 1 }}>Date</ThemedText>
+								<ThemedText style={{ fontSize: 14, flex: 1, textAlign: "right" }}>
 									{new Date(transaction.createdAt).toLocaleString()}
 								</ThemedText>
 							</View>
 
-							<View className="flex-row justify-between">
-								<ThemedText style={{ opacity: 0.6 }}>Payment Type</ThemedText>
-								<ThemedText style={{ fontSize: 14 }}>
+							<View className="flex-row justify-between gap-4">
+								<ThemedText style={{ opacity: 0.6, flex: 1 }}>Payment Type</ThemedText>
+								<ThemedText style={{ fontSize: 14, flex: 1, textAlign: "right", textTransform: "capitalize" }}>
 									{transaction.type.replace(/_/g, " ")}
 								</ThemedText>
 							</View>
@@ -262,9 +261,9 @@ export default function TransactionDetails() {
 								style={{ backgroundColor: hexToRgba(colors.text, 0.05) }}
 							/>
 
-							<View className="flex-row justify-between">
-								<ThemedText style={{ opacity: 0.6 }}>Amount</ThemedText>
-								<ThemedText style={{ fontFamily: Fonts.semibold }}>
+							<View className="flex-row justify-between gap-4">
+								<ThemedText style={{ opacity: 0.6, flex: 1 }}>Amount</ThemedText>
+								<ThemedText style={{ fontFamily: Fonts.semibold, flex: 1, textAlign: "right" }}>
 									₦{Number(transaction.amount).toLocaleString()}
 								</ThemedText>
 							</View>

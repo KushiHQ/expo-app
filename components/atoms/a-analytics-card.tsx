@@ -53,11 +53,11 @@ const AnalyticsCard: React.FC<Props> = ({
 			<View className="flex-row items-center justify-between">
 				<View className="flex-row items-center gap-1.5">
 					<ThemedText
-						numberOfLines={1}
+						numberOfLines={2}
 						style={{
 							fontFamily: Fonts.semibold,
 							fontSize: 14,
-							maxWidth: "80%",
+							flex: 1,
 							color: hexToRgba(colors.text, 0.5),
 						}}
 					>

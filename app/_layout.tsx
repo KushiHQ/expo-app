@@ -38,10 +38,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import { enableScreens } from "react-native-screens";
 import "../global.css";
-
-enableScreens(false);
 
 SplashScreen.preventAutoHideAsync();
 
@@ -72,7 +69,8 @@ export default function RootLayout() {
 
 			if (isMobile && isShared) {
 				// Detect slugified hosting or reservation routes
-				const isHosting = pathname.startsWith("/guest/") && pathname.includes("___");
+				const isHosting =
+					pathname.startsWith("/guest/") && pathname.includes("___");
 				const isReservation = pathname.includes("/reservation/");
 
 				if (isHosting || isReservation) {
@@ -132,9 +130,7 @@ export default function RootLayout() {
 								<SafeAreaProvider>
 									<NotificationProvider>
 										<ThemeProvider
-											value={
-												colorScheme === "dark" ? DarkTheme : DefaultTheme
-											}
+											value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
 										>
 											<Stack screenOptions={{ animation: "default" }}>
 												<Stack.Screen
@@ -195,6 +191,7 @@ export default function RootLayout() {
 												/>
 											</Stack>
 											<StatusBar style="auto" />
+											<Toast config={toastConfig} />
 										</ThemeProvider>
 									</NotificationProvider>
 								</SafeAreaProvider>
@@ -203,7 +200,6 @@ export default function RootLayout() {
 					</KeyboardProvider>
 				</GestureHandlerRootView>
 			</GraphqlClientProvider>
-			<Toast config={toastConfig} />
 		</>
 	);
 }
