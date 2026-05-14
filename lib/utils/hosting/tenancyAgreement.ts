@@ -36,7 +36,7 @@ export function cleanupAgreementTemplateInput(
 		return updated;
 	});
 
-	return { sections: secs };
+	return { sections: secs, totalSections: 'totalSections' in agreement ? agreement.totalSections : secs.length };
 }
 
 interface DurationResult {

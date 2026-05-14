@@ -5,7 +5,6 @@ export default function Layout() {
 	return (
 		<Stack screenOptions={{ animation: "fade" }}>
 			<Stack.Screen name="index" options={{ headerShown: false }} />
-			<Stack.Screen name="[transactionId]" options={{ headerShown: false }} />
 		</Stack>
 	);
 }

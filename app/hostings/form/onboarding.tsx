@@ -46,41 +46,63 @@ export default function HostingOnboarding() {
 			};
 		});
 
-		ONBOARDING_STEPS.forEach((_, index) => {
-			if (index === 0) {
-				actions[index]["filled"] =
-					!!hosting?.title && !!hosting.propertyType && !!hosting.listingType;
-				actions[index]["disabled"] = !hosting;
-			} else if (index === 1) {
-				actions[index]["filled"] = !!hosting?.rooms?.length;
-			} else if (index === 2) {
-				actions[index]["filled"] =
-					!!hosting?.longitude &&
-					!!hosting.latitude &&
-					!!hosting.state &&
-					!!hosting.country &&
-					!!hosting.city &&
-					!!hosting.street &&
-					!!hosting.postalCode &&
-					!!hosting.contact;
-			} else if (index === 3) {
-				actions[index]["filled"] = !!hosting?.facilities?.length;
-			} else if (index === 4) {
-				actions[index]["filled"] =
-					!!hosting?.paymentInterval &&
-					!!hosting.price &&
-					!!hosting.paymentDetails;
-			} else if (index === 5) {
-				actions[index]["filled"] = !!hosting?.verification;
-			} else if (index === 6) {
-				actions[index]["filled"] =
-					!!hosting?.tenancyAgreementTemplate &&
-					hosting.tenancyAgreementTemplate.sections.length > 0;
-			} else if (index === 7) {
-				actions[index]["filled"] =
-					hosting?.publishStatus === PublishStatus.Live;
-			}
-		});
+		if (hosting) {
+			actions[0].filled =
+				!!hosting.title && !!hosting.propertyType && !!hosting.listingType;
+			actions[0].disabled = false;
+
+			// Step 1: Photos
+			actions[1].filled = !!hosting.rooms?.some(
+				(room) => room?.images && room.images.length > 0,
+			);
+
+			// Step 2: Location
+			actions[2].filled = !!(
+				hosting.longitude &&
+				hosting.latitude &&
+				hosting.state &&
+				hosting.country &&
+				hosting.city &&
+				hosting.postalCode &&
+				hosting.contact
+			);
+
+			// Step 3: Amenities
+			actions[3].filled = !!hosting.facilities?.length;
+
+			// Step 4: Pricing
+			actions[4].filled = !!(
+				hosting.paymentInterval &&
+				hosting.price &&
+				hosting.paymentDetails
+			);
+
+			// Step 5: Mandate
+			const v = hosting.verification;
+			actions[5].filled = !!(
+				v?.landlordFullName &&
+				v?.landlordAddress &&
+				v?.propertyRelationship &&
+				v?.declOwnership &&
+				v?.declLitigation &&
+				v?.declIndemnity
+			);
+
+			// Step 6: Tenancy Terms
+			actions[6].filled = !!(
+				hosting.tenancyAgreementTemplate?.sections &&
+				hosting.tenancyAgreementTemplate.sections?.length > 0 &&
+				hosting.host?.signature?.publicUrl
+			);
+
+			// Step 7: Review & Publish
+			actions[7].filled =
+				hosting.publishStatus === PublishStatus.Inreview ||
+				hosting.publishStatus === PublishStatus.Live;
+
+			// Step 8: Get Verified
+			actions[8].filled = hosting.publishStatus === PublishStatus.Live;
+		}
 
 		ONBOARDING_STEPS.forEach((_, index) => {
 			if (index !== 0) {

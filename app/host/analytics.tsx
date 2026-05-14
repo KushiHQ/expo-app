@@ -77,7 +77,7 @@ export default function HostAnalytics() {
 
 	const chartData = React.useMemo(() => {
 		return (
-			growthData?.hostAnalytics.revenueGrowth.dataPoints.map(
+			growthData?.hostAnalytics?.revenueGrowth?.dataPoints?.map(
 				(dp: { amount: number; label: string }) => ({
 					amount: dp.amount,
 					label: dp.label,
@@ -136,7 +136,7 @@ export default function HostAnalytics() {
 						>
 							Welcome,{" "}
 							{
-								analyticsData?.hostAnalytics.host.user.profile.fullName.split(
+								(analyticsData?.hostAnalytics.host.user.profile.fullName ?? "Host").split(
 									" ",
 								)[0]
 							}

@@ -39,8 +39,10 @@ export default function TransactionsScreen() {
 		[],
 	);
 
-	const getLabel = (s: string) =>
-		s === "All" ? "All" : s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+	const getLabel = (s: string | number) => {
+		const str = String(s);
+		return str === "All" ? "All" : str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+	};
 
 	const renderHeader = useMemo(
 		() => (
@@ -86,8 +88,8 @@ export default function TransactionsScreen() {
 		<DetailsLayout title="Transactions" scrollable={false}>
 			<FlatList
 				data={transactions}
-				keyExtractor={(item) => item.id}
-				renderItem={({ item }) => (
+				keyExtractor={(item) => item?.id || Math.random().toString()}
+				renderItem={({ item }) => item && (
 					<View className="px-5">
 						<TransactionCard transaction={item} />
 					</View>

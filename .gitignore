@@ -47,3 +47,4 @@ kushi*-firebase*.json
 google-services.json
 GoogleService-Info.plist
 google-play-key.json
+logs/

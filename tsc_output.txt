@@ -1,0 +1,455 @@
+node_modules/react-native-gifted-charts/src/BarChart/Animated2DWithGradient.tsx(84,10): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/Animated2DWithGradient.tsx(91,12): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/Animated2DWithGradient.tsx(93,16): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/Animated2DWithGradient.tsx(124,20): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/Animated2DWithGradient.tsx(147,16): error TS2786: 'LinearGradient' cannot be used as a JSX component.
+  Its instance type 'LinearGradient' is not a valid JSX element.
+    Property 'refs' is missing in type 'Component<LinearGradientProps, {}, any>' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/Animated2DWithGradient.tsx(182,20): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/Animated2DWithGradient.tsx(207,14): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(105,8): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(114,15): error TS18048: 'spacing' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(130,12): error TS2786: 'Text' cannot be used as a JSX component.
+  Its instance type 'Text' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & TextComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(142,8): error TS2786: 'Animated.View' cannot be used as a JSX component.
+  Its return type 'ReactNode | Promise<ReactNode>' is not a valid JSX element.
+    Type 'undefined' is not assignable to type 'Element | null'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(151,15): error TS18048: 'spacing' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(167,12): error TS2786: 'Text' cannot be used as a JSX component.
+  Its instance type 'Text' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & TextComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(181,10): error TS2786: 'LinearGradient' cannot be used as a JSX component.
+  Its instance type 'LinearGradient' is not a valid JSX element.
+    Property 'refs' is missing in type 'Component<LinearGradientProps, {}, any>' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(217,14): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(239,12): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(264,6): error TS2786: 'TouchableOpacity' cannot be used as a JSX component.
+  Its return type 'ReactNode' is not a valid JSX element.
+    Type 'undefined' is not assignable to type 'Element | null'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(275,16): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(276,16): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(284,10): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(297,10): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(328,22): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(353,22): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(367,22): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(390,20): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderBars.tsx(411,20): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(58,8): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(62,16): error TS18048: 'item.stacks' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(62,67): error TS18048: 'spacing' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(78,12): error TS2786: 'Text' cannot be used as a JSX component.
+  Its instance type 'Text' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & TextComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(90,10): error TS18048: 'props.item.stacks' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(97,12): error TS18048: 'props.item.stacks' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(104,10): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(108,22): error TS18048: 'item.stacks' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(112,12): error TS18048: 'item.stacks' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(114,16): error TS2786: 'TouchableOpacity' cannot be used as a JSX component.
+  Its return type 'ReactNode' is not a valid JSX element.
+    Type 'undefined' is not assignable to type 'Element | null'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(146,12): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(171,6): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(176,18): error TS18048: 'item.stacks' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(182,10): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/RenderStackBars.tsx(195,10): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(141,29): error TS7006: Parameter 'stackItem' implicitly has an 'any' type.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(144,10): error TS7006: Parameter 'acc' implicitly has an 'any' type.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(144,15): error TS7006: Parameter 'stack' implicitly has an 'any' type.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(157,11): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(158,9): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(360,14): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(370,16): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(388,20): error TS2786: 'Text' cannot be used as a JSX component.
+  Its instance type 'Text' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & TextComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(415,16): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(423,20): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(444,20): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(457,20): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(470,20): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(483,20): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(510,6): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(516,9): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: ViewProps): View', gave the following error.
+    Type '0 | { width: number; } | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+      Type '0' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+  Overload 2 of 2, '(props: ViewProps, context: any): View', gave the following error.
+    Type '0 | { width: number; } | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+      Type '0' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(520,8): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(props: FlatListProps<any>, context: any): FlatList<any>', gave the following error.
+    Type '0 | { width: number; } | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+      Type '0' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+  Overload 2 of 2, '(props: FlatListProps<any>, context: any): FlatList<any>', gave the following error.
+    Type 'false | Boolean' is not assignable to type 'boolean | undefined'.
+      Type 'Boolean' is not assignable to type 'boolean | undefined'.
+node_modules/react-native-gifted-charts/src/BarChart/index.tsx(520,8): error TS2786: 'FlatList' cannot be used as a JSX component.
+  Its instance type 'FlatList<any>' is not a valid JSX element.
+    Property 'refs' is missing in type 'FlatList<any>' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(38,6): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(115,6): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(117,10): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(126,16): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(126,56): error TS18048: 'sideWidth' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(129,19): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(133,16): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(133,56): error TS18048: 'sideWidth' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(134,18): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(144,16): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(147,24): error TS18048: 'sideWidth' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(152,19): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(162,14): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(162,38): error TS18048: 'sideWidth' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(165,17): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(168,16): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(170,26): error TS18048: 'sideWidth' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(171,36): error TS18048: 'sideWidth' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(178,17): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(184,12): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(195,16): error TS2786: 'LinearGradient' cannot be used as a JSX component.
+  Its instance type 'LinearGradient' is not a valid JSX element.
+    Property 'refs' is missing in type 'Component<LinearGradientProps, {}, any>' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/AnimatedBar/index.tsx(207,14): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/ThreeDBar/index.tsx(33,6): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/ThreeDBar/index.tsx(75,6): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/ThreeDBar/index.tsx(77,10): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/ThreeDBar/index.tsx(84,12): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/ThreeDBar/index.tsx(91,12): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/ThreeDBar/index.tsx(92,14): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/ThreeDBar/index.tsx(102,12): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/ThreeDBar/index.tsx(113,12): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/ThreeDBar/index.tsx(119,14): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/ThreeDBar/index.tsx(134,12): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/ThreeDBar/index.tsx(145,16): error TS2786: 'LinearGradient' cannot be used as a JSX component.
+  Its instance type 'LinearGradient' is not a valid JSX element.
+    Property 'refs' is missing in type 'Component<LinearGradientProps, {}, any>' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/ThreeDBar/index.tsx(159,10): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/lineSvg.tsx(22,8): error TS2786: 'Svg' cannot be used as a JSX component.
+  Its instance type 'Svg' is not a valid JSX element.
+    Property 'refs' is missing in type 'Svg' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/lineSvg.tsx(23,10): error TS2786: 'G' cannot be used as a JSX component.
+  Its instance type 'G<{ children: Element; fill: "lightgray"; stroke: any; strokeWidth: number; }>' is not a valid JSX element.
+    Property 'refs' is missing in type 'G<{ children: Element; fill: "lightgray"; stroke: any; strokeWidth: number; }>' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/lineSvg.tsx(24,12): error TS2786: 'Path' cannot be used as a JSX component.
+  Its instance type 'Path' is not a valid JSX element.
+    Property 'refs' is missing in type 'Path' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/lineSvg.tsx(30,6): error TS2786: 'Svg' cannot be used as a JSX component.
+  Its instance type 'Svg' is not a valid JSX element.
+    Property 'refs' is missing in type 'Svg' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/lineSvg.tsx(31,8): error TS2786: 'G' cannot be used as a JSX component.
+  Its instance type 'G<{ children: Element; fill: "lightgray"; stroke: any; strokeWidth: number; }>' is not a valid JSX element.
+    Property 'refs' is missing in type 'G<{ children: Element; fill: "lightgray"; stroke: any; strokeWidth: number; }>' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/Components/lineSvg.tsx(32,10): error TS2786: 'Path' cannot be used as a JSX component.
+  Its instance type 'Path' is not a valid JSX element.
+    Property 'refs' is missing in type 'Path' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(206,9): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(207,7): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(458,14): error TS2532: Object is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(467,16): error TS2532: Object is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(477,16): error TS2532: Object is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(576,35): error TS2532: Object is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(583,16): error TS2532: Object is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(591,16): error TS2532: Object is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(618,14): error TS2532: Object is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(649,16): error TS2532: Object is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(680,16): error TS2532: Object is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(706,8): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(721,10): error TS2786: 'Text' cannot be used as a JSX component.
+  Its instance type 'Text' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & TextComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(735,8): error TS2786: 'Animated.View' cannot be used as a JSX component.
+  Its return type 'ReactNode | Promise<ReactNode>' is not a valid JSX element.
+    Type 'undefined' is not assignable to type 'Element | null'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(752,10): error TS2786: 'Text' cannot be used as a JSX component.
+  Its instance type 'Text' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & TextComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(839,16): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(847,18): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(857,22): error TS2786: 'Text' cannot be used as a JSX component.
+  Its instance type 'Text' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & TextComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(880,18): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(892,22): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(911,22): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(925,22): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(939,22): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(953,22): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(970,36): error TS7006: Parameter 'dataForRender' implicitly has an 'any' type.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(976,16): error TS2786: 'Rect' cannot be used as a JSX component.
+  Its instance type 'Rect' is not a valid JSX element.
+    Property 'refs' is missing in type 'Rect' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(987,20): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(994,18): error TS2786: 'CanvasText' cannot be used as a JSX component.
+  Its instance type 'Text' is not a valid JSX element.
+    Property 'refs' is missing in type 'Text' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1007,22): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1018,16): error TS2786: 'Circle' cannot be used as a JSX component.
+  Its instance type 'Circle' is not a valid JSX element.
+    Property 'refs' is missing in type 'Circle' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1027,20): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1033,18): error TS2786: 'CanvasText' cannot be used as a JSX component.
+  Its instance type 'Text' is not a valid JSX element.
+    Property 'refs' is missing in type 'Text' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1046,22): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1061,5): error TS7006: Parameter 'dataForRender' implicitly has an 'any' type.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1062,5): error TS7006: Parameter 'dataPointsShape' implicitly has an 'any' type.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1063,5): error TS7006: Parameter 'dataPointsWidth' implicitly has an 'any' type.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1064,5): error TS7006: Parameter 'dataPointsHeight' implicitly has an 'any' type.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1065,5): error TS7006: Parameter 'dataPointsColor' implicitly has an 'any' type.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1066,5): error TS7006: Parameter 'dataPointsRadius' implicitly has an 'any' type.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1067,5): error TS7006: Parameter 'textColor' implicitly has an 'any' type.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1068,5): error TS7006: Parameter 'textFontSize' implicitly has an 'any' type.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1075,14): error TS2786: 'Rect' cannot be used as a JSX component.
+  Its instance type 'Rect' is not a valid JSX element.
+    Property 'refs' is missing in type 'Rect' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1081,18): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1088,16): error TS2786: 'CanvasText' cannot be used as a JSX component.
+  Its instance type 'Text' is not a valid JSX element.
+    Property 'refs' is missing in type 'Text' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1101,20): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1112,12): error TS2786: 'Circle' cannot be used as a JSX component.
+  Its instance type 'Circle' is not a valid JSX element.
+    Property 'refs' is missing in type 'Circle' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1115,39): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1121,14): error TS2786: 'CanvasText' cannot be used as a JSX component.
+  Its instance type 'Text' is not a valid JSX element.
+    Property 'refs' is missing in type 'Text' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1134,18): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1149,12): error TS2786: 'Rect' cannot be used as a JSX component.
+  Its instance type 'Rect' is not a valid JSX element.
+    Property 'refs' is missing in type 'Rect' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1156,35): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1158,22): error TS18048: 'item.value' is possibly 'undefined'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1178,8): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1187,10): error TS2786: 'Svg' cannot be used as a JSX component.
+  Its instance type 'Svg' is not a valid JSX element.
+    Property 'refs' is missing in type 'Svg' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1188,12): error TS2786: 'Path' cannot be used as a JSX component.
+  Its instance type 'Path' is not a valid JSX element.
+    Property 'refs' is missing in type 'Path' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1198,14): error TS2786: 'LinearGradient' cannot be used as a JSX component.
+  Its instance type 'LinearGradient' is not a valid JSX element.
+    Property 'refs' is missing in type 'LinearGradient' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1204,16): error TS2786: 'Stop' cannot be used as a JSX component.
+  Its instance type 'Stop' is not a valid JSX element.
+    Property 'refs' is missing in type 'Stop' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1209,16): error TS2786: 'Stop' cannot be used as a JSX component.
+  Its instance type 'Stop' is not a valid JSX element.
+    Property 'refs' is missing in type 'Stop' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1217,14): error TS2786: 'Path' cannot be used as a JSX component.
+  Its instance type 'Path' is not a valid JSX element.
+    Property 'refs' is missing in type 'Path' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1284,8): error TS2786: 'Animated.View' cannot be used as a JSX component.
+  Its return type 'ReactNode | Promise<ReactNode>' is not a valid JSX element.
+    Type 'undefined' is not assignable to type 'Element | null'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1293,10): error TS2786: 'Svg' cannot be used as a JSX component.
+  Its instance type 'Svg' is not a valid JSX element.
+    Property 'refs' is missing in type 'Svg' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1294,12): error TS2786: 'Path' cannot be used as a JSX component.
+  Its instance type 'Path' is not a valid JSX element.
+    Property 'refs' is missing in type 'Path' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1304,14): error TS2786: 'LinearGradient' cannot be used as a JSX component.
+  Its instance type 'LinearGradient' is not a valid JSX element.
+    Property 'refs' is missing in type 'LinearGradient' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1310,16): error TS2786: 'Stop' cannot be used as a JSX component.
+  Its instance type 'Stop' is not a valid JSX element.
+    Property 'refs' is missing in type 'Stop' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1315,16): error TS2786: 'Stop' cannot be used as a JSX component.
+  Its instance type 'Stop' is not a valid JSX element.
+    Property 'refs' is missing in type 'Stop' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1323,14): error TS2786: 'Path' cannot be used as a JSX component.
+  Its instance type 'Path' is not a valid JSX element.
+    Property 'refs' is missing in type 'Path' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1379,6): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1382,8): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(props: ScrollViewProps, context: any): ScrollView', gave the following error.
+    Type 'false | Boolean' is not assignable to type 'boolean | undefined'.
+      Type 'Boolean' is not assignable to type 'boolean | undefined'.
+  Overload 2 of 2, '(props: ScrollViewProps, context: any): ScrollView', gave the following error.
+    Type '0 | { width: number; } | undefined' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+      Type '0' is not assignable to type 'Falsy | ViewStyle | RegisteredStyle<ViewStyle> | RecursiveArray<Falsy | ViewStyle | RegisteredStyle<ViewStyle>> | readonly (Falsy | ... 1 more ... | RegisteredStyle<...>)[]'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1382,8): error TS2786: 'ScrollView' cannot be used as a JSX component.
+  Its instance type 'ScrollView' is not a valid JSX element.
+    Property 'refs' is missing in type 'ScrollView' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1406,16): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1425,16): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/LineChart/index.tsx(1515,14): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/PieChart/index.tsx(3,20): error TS7016: Could not find a declaration file for module 'react-native-canvas'. '/home/eazy/Documents/dev/mine/kushi/expo-app/node_modules/react-native-canvas/dist/Canvas.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/react-native-canvas` if it exists or add a new declaration (.d.ts) file containing `declare module 'react-native-canvas';`
+node_modules/react-native-gifted-charts/src/PieChart/index.tsx(363,6): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/react-native-gifted-charts/src/PieChart/index.tsx(366,10): error TS2786: 'View' cannot be used as a JSX component.
+  Its instance type 'View' is not a valid JSX element.
+    Property 'refs' is missing in type 'NativeMethods & ViewComponent' but required in type 'ElementClass'.
+node_modules/rn-range-slider/LabelContainer.tsx(10,14): error TS7006: Parameter 'value' implicitly has an 'any' type.
+node_modules/rn-range-slider/LabelContainer.tsx(15,13): error TS2339: Property 'renderContent' does not exist on type 'Readonly<{}>'.
+node_modules/rn-range-slider/hooks.tsx(72,7): error TS7031: Binding element 'nativeEvent' implicitly has an 'any' type.
+node_modules/rn-range-slider/hooks.tsx(114,6): error TS7006: Parameter 'thumbPositionInView' implicitly has an 'any' type.
+node_modules/rn-range-slider/hooks.tsx(114,27): error TS7006: Parameter 'value' implicitly has an 'any' type.
+node_modules/rn-range-slider/hooks.tsx(141,9): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: {}): LabelContainer', gave the following error.
+    Type '{ onLayout: ({ nativeEvent }: { nativeEvent: any; }) => void; ref: RefObject<LabelContainer | null>; renderContent: (value: number) => ReactNode; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<LabelContainer> & Readonly<{}>'.
+      Property 'onLayout' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<LabelContainer> & Readonly<{}>'.
+  Overload 2 of 2, '(props: {}, context: any): LabelContainer', gave the following error.
+    Type '{ onLayout: ({ nativeEvent }: { nativeEvent: any; }) => void; ref: RefObject<LabelContainer | null>; renderContent: (value: number) => ReactNode; }' is not assignable to type 'IntrinsicAttributes & IntrinsicClassAttributes<LabelContainer> & Readonly<{}>'.
+      Property 'onLayout' does not exist on type 'IntrinsicAttributes & IntrinsicClassAttributes<LabelContainer> & Readonly<{}>'.
+node_modules/rn-range-slider/hooks.tsx(194,34): error TS7031: Binding element 'nativeEvent' implicitly has an 'any' type.
+node_modules/rn-range-slider/index.tsx(116,5): error TS2349: This expression is not callable.
+  Not all constituents of type '{ position: string; left: Value; right: Value; } | (() => void)' are callable.
+    Type '{ position: string; left: Value; right: Value; }' has no call signatures.
+node_modules/rn-range-slider/index.tsx(144,7): error TS7031: Binding element 'nativeEvent' implicitly has an 'any' type.
+node_modules/rn-range-slider/index.tsx(260,13): error TS2349: This expression is not callable.
+  Not all constituents of type 'Element | ((thumbPositionInView: any, value: any) => void)' are callable.
+    Type 'Element' has no call signatures.
+node_modules/rn-range-slider/index.tsx(262,13): error TS2349: This expression is not callable.
+  Not all constituents of type 'Element | ((thumbPositionInView: any, value: any) => void)' are callable.
+    Type 'Element' has no call signatures.
+node_modules/rn-range-slider/index.tsx(263,13): error TS2349: This expression is not callable.
+  Not all constituents of type '{ position: string; left: Value; right: Value; } | (() => void)' are callable.
+    Type '{ position: string; left: Value; right: Value; }' has no call signatures.
+node_modules/rn-range-slider/index.tsx(300,8): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(props: ViewProps, context: any): View', gave the following error.
+    Type 'Element | ((thumbPositionInView: any, value: any) => void)' is not assignable to type 'ReactNode'.
+      Type '(thumbPositionInView: any, value: any) => void' is not assignable to type 'ReactNode'.
+  Overload 2 of 2, '(props: ViewProps, context: any): View', gave the following error.
+    Type 'Element | ((thumbPositionInView: any, value: any) => void)' is not assignable to type 'ReactNode'.
+      Type '(thumbPositionInView: any, value: any) => void' is not assignable to type 'ReactNode'.
+node_modules/rn-range-slider/index.tsx(307,26): error TS2322: Type '{ position: string; left: Value; right: Value; } | (() => void)' is not assignable to type 'false | "" | RegisteredStyle<ViewStyle> | Value | AnimatedInterpolation<string | number> | WithAnimatedObject<ViewStyle> | WithAnimatedArray<...> | null | undefined'.
+  Type '{ position: string; left: Animated.Value; right: Animated.Value; }' is not assignable to type 'false | "" | RegisteredStyle<ViewStyle> | Value | AnimatedInterpolation<string | number> | WithAnimatedObject<ViewStyle> | WithAnimatedArray<...> | null | undefined'.
+    Type '{ position: string; left: Animated.Value; right: Animated.Value; }' is not assignable to type 'WithAnimatedObject<ViewStyle>'.
+      Types of property 'position' are incompatible.
+        Type 'string' is not assignable to type '"fixed" | Value | "static" | "relative" | "absolute" | "sticky" | AnimatedInterpolation<string | number> | undefined'.

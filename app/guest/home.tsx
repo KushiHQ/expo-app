@@ -1,5 +1,6 @@
 import ProfileLayout from "@/components/layouts/profile";
 import EmptyList from "@/components/molecules/m-empty-list";
+import React from "react";
 import HostingCard, {
 	HostingCardSkeleton,
 } from "@/components/molecules/m-hosting-card";
@@ -19,6 +20,13 @@ export default function GuestHome() {
 	const { filter, updateFilter } = useHostingFilterStore();
 	const { isTablet } = useBreakpoint();
 	const numColumns = isTablet ? 2 : 1;
+
+	const handleCategoryChange = React.useCallback(
+		(v: string) => {
+			updateFilter({ category: v === "All" ? undefined : v });
+		},
+		[updateFilter],
+	);
 
 	const {
 		items: hostings,
@@ -54,9 +62,7 @@ export default function GuestHome() {
 							<HostingFilterManager />
 							<HotingVariantFilter
 								value={filter.category?.valueOf()}
-								onSelect={(v) =>
-									updateFilter({ category: v === "All" ? undefined : v })
-								}
+								onSelect={handleCategoryChange}
 							/>
 						</View>
 						{fetching && !hostings.length && (

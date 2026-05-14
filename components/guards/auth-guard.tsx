@@ -13,7 +13,6 @@ export const AuthGuard: React.FC<Props> = ({ children }) => {
   const pathname = usePathname();
   const params = useLocalSearchParams();
 
-  // If authenticated, just render children
   if (user?.user?.id) {
     return <>{children}</>;
   }
@@ -22,17 +21,11 @@ export const AuthGuard: React.FC<Props> = ({ children }) => {
   const queryString = Object.entries(params)
     .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
     .join("&");
-  
+
   const fullUrl = queryString ? `${pathname}?${queryString}` : pathname;
 
-  // Save the return URL and redirect to auth
-  // We use a useEffect-like pattern or just set it before redirecting
-  // But since this is a render function, we should be careful.
-  // Actually, setting it in a layout or via a side effect is safer.
-  
   return (
     <AuthRedirector returnUrl={fullUrl} setReturnUrl={setReturnUrl}>
-      {/* Show a loader while redirecting */}
       <View className="flex-1 items-center justify-center">
         <LoadingModal visible={true} />
       </View>
@@ -40,8 +33,8 @@ export const AuthGuard: React.FC<Props> = ({ children }) => {
   );
 };
 
-const AuthRedirector: React.FC<{ 
-  returnUrl: string; 
+const AuthRedirector: React.FC<{
+  returnUrl: string;
   setReturnUrl: (url: string | null) => void;
   children: React.ReactNode;
 }> = ({ returnUrl, setReturnUrl, children }) => {

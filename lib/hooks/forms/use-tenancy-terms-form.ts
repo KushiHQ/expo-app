@@ -35,6 +35,8 @@ export const useTenancyTermsForm = (id: string) => {
   const [{ data: templateData, fetching: templateFetching }, refetchTemplate] =
     useTenancyAgreementTemplateQuery();
 
+  const allTemplateSections = templateData?.tenancyAgreementTemplate?.sections || [];
+
   const [editOpen, setEditOpen] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
 
@@ -76,7 +78,7 @@ export const useTenancyTermsForm = (id: string) => {
 
         if (!currentTemplate || currentTemplate.sections.length === 0) {
           const processedSections =
-            templateData!.tenancyAgreementTemplate.sections
+            allTemplateSections
               .reduce(
                 (acc, { __typename, ...section }) => {
                   let activeSubClauses = section.subClauses
@@ -102,14 +104,12 @@ export const useTenancyTermsForm = (id: string) => {
                   }
                   return acc;
                 },
-                [] as NonNullable<
-                  typeof templateData
-                >["tenancyAgreementTemplate"]["sections"],
+                [] as TenancySection[],
               )
               .sort((a, b) => a.priority - b.priority);
 
           updateInput({
-            tenancyAgreementTemplate: { sections: processedSections },
+            tenancyAgreementTemplate: { sections: processedSections, totalSections: processedSections.length },
           });
 
           templateInitialized.current = true;
@@ -118,7 +118,7 @@ export const useTenancyTermsForm = (id: string) => {
     };
 
     initialize();
-  }, [templateData, input, updateInput, fetchingHosting, isReadyToInitialize]);
+  }, [allTemplateSections, input, updateInput, fetchingHosting, isReadyToInitialize]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -223,7 +223,7 @@ export const useTenancyTermsForm = (id: string) => {
         }),
       };
     });
-    updateInput({ tenancyAgreementTemplate: { sections: newSections } });
+    updateInput({ tenancyAgreementTemplate: { sections: newSections, totalSections: newSections.length } });
   }
 
   function toggleSection(section: TenancySection) {
@@ -238,7 +238,7 @@ export const useTenancyTermsForm = (id: string) => {
       toUpdate.sections.push(section);
     }
     toUpdate.sections.sort((a, b) => a.priority - b.priority);
-    updateInput({ tenancyAgreementTemplate: toUpdate });
+    updateInput({ tenancyAgreementTemplate: { sections: toUpdate.sections, totalSections: toUpdate.sections.length } });
   }
 
   function toggleSubClause(parentSectionId: string, subClause: SubClause) {
@@ -283,7 +283,7 @@ export const useTenancyTermsForm = (id: string) => {
       );
     } else {
       const parentSection =
-        templateData?.tenancyAgreementTemplate.sections.find(
+        allTemplateSections.find(
           (s) => s.id === parentSectionId,
         );
       if (parentSection) {
@@ -291,7 +291,7 @@ export const useTenancyTermsForm = (id: string) => {
       }
     }
     newSections.sort((a, b) => a.priority - b.priority);
-    updateInput({ tenancyAgreementTemplate: { sections: newSections } });
+    updateInput({ tenancyAgreementTemplate: { sections: newSections, totalSections: newSections.length } });
   }
 
   const hasSection = React.useCallback(
@@ -322,5 +322,6 @@ export const useTenancyTermsForm = (id: string) => {
     toggleSubClause,
     hasSection,
     hasSubClause,
+    allTemplateSections,
   };
 };

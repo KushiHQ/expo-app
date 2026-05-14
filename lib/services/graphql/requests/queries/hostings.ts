@@ -20,6 +20,7 @@ export const AI_HOSTING_CHAT_PREDICTIONS = gql`
 export const TENANCY_AGREEMENT_TEMPLATE = gql`
   query TenancyAgreementTemplate {
     tenancyAgreementTemplate {
+      totalSections
       sections {
         id
         title
@@ -107,6 +108,10 @@ export const HOSTING_QUERY = gql`
             }
           }
         }
+        signature {
+          id
+          publicUrl
+        }
         createdAt
       }
       coverImage {
@@ -161,6 +166,7 @@ export const HOSTING_QUERY = gql`
         value
       }
       tenancyAgreementTemplate {
+        totalSections
         sections {
           id
           title

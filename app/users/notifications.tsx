@@ -77,7 +77,7 @@ export default function UserNotifications() {
 		setVariables({ filter });
 	}, [activeType]); // eslint-disable-line react-hooks/exhaustive-deps
 
-	const hasUnread = notifications.some((n) => !n.isRead);
+	const hasUnread = notifications.some((n) => n && !n.isRead);
 
 	const handleMarkAllAsRead = async () => {
 		await markAllAsRead({});
@@ -153,7 +153,7 @@ export default function UserNotifications() {
 			{/* List */}
 			{!isFirstLoad && notifications.length > 0 && (
 				<View className="gap-3">
-					{notifications.map((notification) => (
+					{notifications.map((notification) => notification && (
 						<NotificationCard
 							key={notification.id}
 							notification={notification}

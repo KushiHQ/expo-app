@@ -1,21 +1,21 @@
 import {
 	useCameraDevice,
-	useFrameProcessor,
 	useCameraPermission,
+	usePhotoOutput,
 	Camera,
 } from "react-native-vision-camera";
-import { useFaceDetector } from "react-native-vision-camera-face-detector";
+import type { Face } from "react-native-vision-camera-face-detector";
+import { useFaceDetectorOutput } from "react-native-vision-camera-face-detector";
 import Stepper from "@/components/atoms/a-steppter";
 import DetailsLayout from "@/components/layouts/details";
 import { KYC_ONBOARDING_STEPS } from "@/lib/constants/kyc/onboarding";
 import { cast } from "@/lib/types/utils";
 import { Dimensions, View, StyleSheet, ColorValue } from "react-native";
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import ThemedText from "@/components/atoms/a-themed-text";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import Button from "@/components/atoms/a-button";
-import { Worklets } from "react-native-worklets-core";
 import { Image } from "expo-image";
 import { formMutation } from "@/lib/services/graphql/utils/fetch";
 import {
@@ -33,7 +33,7 @@ import { useUser } from "@/lib/hooks/user";
 import LoadingModal from "@/components/atoms/a-loading-modal";
 import { useRouter } from "expo-router";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const FRAME_WIDTH = SCREEN_WIDTH * 0.65;
 const FRAME_HEIGHT = 340;
@@ -109,50 +109,51 @@ export default function KycImage() {
 	const colors = useThemeColors();
 	const [faceDetected, setFaceDetected] = React.useState(false);
 	const { hasPermission, requestPermission } = useCameraPermission();
-	const { detectFaces } = useFaceDetector({ performanceMode: "fast" });
-	const camera = React.useRef<Camera | null>(null);
 	const [kycImage, setKycImage] = React.useState(
 		user.user?.kyc?.image?.publicUrl,
 	);
 	const [uploading, setUploading] = React.useState(false);
 
-	const updateFaceDetectionOnJS = Worklets.createRunOnJS(
-		(isDetected: boolean) => {
-			setFaceDetected(isDetected);
-		},
-	);
+	const photoOutput = usePhotoOutput({ quality: 0.9 });
 
-	const frameProcessor = useFrameProcessor(
-		(frame) => {
-			"worklet";
-			const faces = detectFaces(frame);
-
+	const onFacesDetected = useCallback(
+		(faces: Face[]) => {
 			if (faces.length === 0) {
-				updateFaceDetectionOnJS(false);
+				setFaceDetected(false);
 				return;
 			}
 
 			const face = faces[0];
 			const bounds = face.bounds;
 
-			const frameCenterX = frame.width / 2;
-			const frameCenterY = frame.height / 2;
+			const screenCenterX = SCREEN_WIDTH / 2;
+			const screenCenterY = SCREEN_HEIGHT / 2;
 
 			const faceCenterX = bounds.x + bounds.width / 2;
 			const faceCenterY = bounds.y + bounds.height / 2;
 
-			const xThreshold = frame.width * 0.2;
-			const yThreshold = frame.height * 0.2;
+			const xThreshold = SCREEN_WIDTH * 0.2;
+			const yThreshold = SCREEN_HEIGHT * 0.2;
 
-			const isCenteredX = Math.abs(frameCenterX - faceCenterX) < xThreshold;
-			const isCenteredY = Math.abs(frameCenterY - faceCenterY) < yThreshold;
+			const isCenteredX = Math.abs(screenCenterX - faceCenterX) < xThreshold;
+			const isCenteredY = Math.abs(screenCenterY - faceCenterY) < yThreshold;
+			const isGoodSize = bounds.width > SCREEN_WIDTH * 0.25;
 
-			const isGoodSize = bounds.width > frame.width * 0.25;
-
-			updateFaceDetectionOnJS(isCenteredX && isCenteredY && isGoodSize);
+			setFaceDetected(isCenteredX && isCenteredY && isGoodSize);
 		},
-		[detectFaces, updateFaceDetectionOnJS],
+		[],
 	);
+
+	const faceOutput = useFaceDetectorOutput({
+		performanceMode: "fast",
+		autoMode: true,
+		windowWidth: SCREEN_WIDTH,
+		windowHeight: SCREEN_HEIGHT,
+		onFacesDetected,
+		onError: (error: Error) => {
+			console.error("Face detection error:", error);
+		},
+	});
 
 	useEffect(() => {
 		if (!hasPermission) {
@@ -161,18 +162,13 @@ export default function KycImage() {
 	}, [hasPermission, requestPermission]);
 
 	const handleCapture = async () => {
-		if (camera.current) {
-			try {
-				const photo = await camera.current.takePhoto({
-					flash: "off",
-					enableShutterSound: false,
-				});
-
-				const imageUri = `file://${photo.path}`;
-				setKycImage(imageUri);
-			} catch (error) {
-				console.error("Failed to capture photo:", error);
-			}
+		try {
+			const photo = await photoOutput.capturePhoto({ flashMode: "off" }, {});
+			const tempPath = await photo.saveToTemporaryFileAsync();
+			photo.dispose();
+			setKycImage(`file://${tempPath}`);
+		} catch (error) {
+			console.error("Failed to capture photo:", error);
 		}
 	};
 
@@ -255,13 +251,10 @@ export default function KycImage() {
 								device && (
 									<View style={styles.cameraContainer}>
 										<Camera
-											ref={camera}
 											style={StyleSheet.absoluteFill}
 											device={device}
-											photo
 											isActive={true}
-											frameProcessor={frameProcessor}
-											pixelFormat="yuv"
+											outputs={[photoOutput, faceOutput]}
 										/>
 										<CameraFrame
 											borderColor={faceDetected ? colors.success : "white"}

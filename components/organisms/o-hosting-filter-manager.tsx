@@ -102,6 +102,27 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
 		});
 	}, [facilities, updateFilter]);
 
+	const handleCategoryChange = React.useCallback(
+		(v: string) => {
+			updateFilter({ category: v === "All" ? undefined : v });
+		},
+		[updateFilter],
+	);
+
+	const handlePriceChange = React.useCallback(
+		(low: number, high: number) => {
+			updateFilter({ minPrice: low, maxPrice: high });
+		},
+		[updateFilter],
+	);
+
+	const handleRatingChange = React.useCallback(
+		(v: string | number) => {
+			updateFilter({ minRating: Number(v) });
+		},
+		[updateFilter],
+	);
+
 	const handleToggleView = () => {
 		if (isMapView) {
 			router.back();
@@ -307,18 +328,14 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
 							<ThemedText style={{ fontSize: 14 }}>Category</ThemedText>
 							<HotingVariantFilter
 								value={filter.category?.valueOf()}
-								onSelect={(v) =>
-									updateFilter({ category: v === "All" ? undefined : v })
-								}
+								onSelect={handleCategoryChange}
 							/>
 						</View>
 						<View className="gap-3">
 							<ThemedText style={{ fontSize: 14 }}>Price Range</ThemedText>
 							<RangeSlider
 								withInput
-								onChange={(low, high) =>
-									updateFilter({ minPrice: low, maxPrice: high })
-								}
+								onChange={handlePriceChange}
 								min={0}
 								max={10000000}
 							/>
@@ -405,7 +422,7 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
 									{Array.from({ length: 5 }).map((_, index) => (
 										<RatingPill
 											selected={filter.minRating === index + 1}
-											onSelect={(v) => updateFilter({ minRating: Number(v) })}
+											onSelect={handleRatingChange}
 											key={index}
 										>
 											{String(index + 1)}

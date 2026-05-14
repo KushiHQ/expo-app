@@ -13,6 +13,7 @@ export default ({ config }) => ({
 	icon: "./assets/icons/adaptive-icon.png",
 	scheme: "kushi",
 	userInterfaceStyle: "automatic",
+	jsEngine: "hermes",
 	newArchEnabled: true,
 	ios: {
 		usesAppleSignIn: true,
@@ -23,13 +24,21 @@ export default ({ config }) => ({
 		infoPlist: {
 			NSLocationWhenInUseUsageDescription:
 				"This app needs access to your location to determine the address of properties.",
+			NSCameraUsageDescription:
+				"$(PRODUCT_NAME) needs camera access for identity verification.",
+			NSMicrophoneUsageDescription:
+				"$(PRODUCT_NAME) needs microphone access for video calls.",
 			ITSAppUsesNonExemptEncryption: false,
 			UIBackgroundModes: ["remote-notification", "audio", "voip"],
+			NSUserActivityTypes: ["INSendMessageIntent", "INStartCallIntent"],
 		},
 		icon: {
 			dark: "./assets/icons/ios-dark.png",
 			light: "./assets/icons/ios-light.png",
 			tinted: "./assets/icons/ios-tinted.png",
+		},
+		config: {
+			googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_IOS,
 		},
 	},
 	android: {
@@ -104,8 +113,6 @@ export default ({ config }) => ({
 					forceStaticLinking: [
 						"RNFBApp",
 						"RNFBMessaging",
-						"VisionCamera",
-						"VisionCameraFaceDetector",
 					],
 					deploymentTarget: "15.5",
 					clangAllowNonModularInFrameworkModules: true,
@@ -136,7 +143,6 @@ export default ({ config }) => ({
 		"./lib/plugins/withNotifeeForeground.js",
 		"./lib/plugins/withAndroidSigning.js",
 		"./lib/plugins/withLockScreen.js",
-		"react-native-vision-camera",
 		"expo-audio",
 		"expo-web-browser",
 		[
@@ -209,6 +215,6 @@ export default ({ config }) => ({
 	],
 	experiments: {
 		typedRoutes: true,
-		reactCompiler: true,
+		reactCompiler: false,
 	},
 });

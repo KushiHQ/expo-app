@@ -1,16 +1,4 @@
 import {
-	DarkTheme,
-	DefaultTheme,
-	ThemeProvider,
-} from "@react-navigation/native";
-import { Stack, usePathname, useLocalSearchParams } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import {
-	configureReanimatedLogger,
-	ReanimatedLogLevel,
-} from "react-native-reanimated";
-import * as SplashScreen from "expo-splash-screen";
-import {
 	Inter_100Thin,
 	Inter_200ExtraLight,
 	Inter_300Light,
@@ -22,23 +10,38 @@ import {
 	Inter_900Black,
 	useFonts,
 } from "@expo-google-fonts/inter";
+import {
+	DarkTheme,
+	DefaultTheme,
+	ThemeProvider,
+} from "@react-navigation/native";
+import { Stack, useLocalSearchParams, usePathname } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import {
+	configureReanimatedLogger,
+	ReanimatedLogLevel,
+} from "react-native-reanimated";
 
-import { useColorScheme } from "@/lib/hooks/use-color-scheme";
-import { Fonts } from "@/lib/constants/theme";
-import { useLockScreen } from "@/lib/hooks/use-lock-screen";
-import React from "react";
-import "../global.css";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import { PaperProvider } from "react-native-paper";
-import TansStackProvider from "@/components/providers/tanstack";
-import { KeyboardProvider } from "react-native-keyboard-controller";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import GraphqlClientProvider from "@/components/providers/graphql-client";
-import Toast from "react-native-toast-message";
 import toastConfig from "@/components/atoms/a-toast";
 import { NotificationProvider } from "@/components/contexts/notifications";
+import GraphqlClientProvider from "@/components/providers/graphql-client";
+import TansStackProvider from "@/components/providers/tanstack";
+import { Fonts } from "@/lib/constants/theme";
+import { useColorScheme } from "@/lib/hooks/use-color-scheme";
+import { useLockScreen } from "@/lib/hooks/use-lock-screen";
 import { initializeNotifications } from "@/lib/utils/notifications";
-import { LogBox, Platform, Linking } from "react-native";
+import React from "react";
+import { Linking, LogBox, Platform } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
+import { PaperProvider } from "react-native-paper";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
+import { enableScreens } from "react-native-screens";
+import "../global.css";
+
+enableScreens(false);
 
 SplashScreen.preventAutoHideAsync();
 
@@ -66,32 +69,31 @@ export default function RootLayout() {
 		if (Platform.OS === "web") {
 			const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 			const isShared = params.shared === "true";
-			
+
 			if (isMobile && isShared) {
 				// Detect slugified hosting or reservation routes
 				const isHosting = pathname.startsWith("/guest/") && pathname.includes("___");
 				const isReservation = pathname.includes("/reservation/");
-				
+
 				if (isHosting || isReservation) {
 					// For slugified hosting, we need to extract the ID from the end (___ID)
 					let deepLink = `kushi://${pathname.substring(1)}`;
-					
+
 					if (isHosting && !isReservation) {
 						const id = pathname.split("___").pop();
 						deepLink = `kushi://hostings/${id}`;
 					}
-					
+
 					const queryParams = { ...params };
 					delete queryParams.shared; // Remove shared from deep link
-					
-					const finalDeepLink = `${deepLink}${
-						Object.keys(queryParams).length
+
+					const finalDeepLink = `${deepLink}${Object.keys(queryParams).length
 							? `?${new URLSearchParams(queryParams as any).toString()}`
 							: ""
-					}`;
-					
+						}`;
+
 					setTimeout(() => {
-						Linking.openURL(finalDeepLink).catch(() => {});
+						Linking.openURL(finalDeepLink).catch(() => { });
 					}, 1000);
 				}
 			}

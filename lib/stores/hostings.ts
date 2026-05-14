@@ -111,7 +111,16 @@ export const useHostingFilterStore = create<HostingFilterStore>((set) => ({
 	filter: {},
 	setFilter: (filter) => set({ filter }),
 	updateFilter: (partialFilter) =>
-		set((state) => ({ filter: { ...state.filter, ...partialFilter } })),
+		set((state) => {
+			const hasChanged = Object.entries(partialFilter).some(([key, value]) => {
+				const current = state.filter[key as keyof HostingFilterInput];
+				return JSON.stringify(current) !== JSON.stringify(value);
+			});
+
+			if (!hasChanged) return state;
+
+			return { filter: { ...state.filter, ...partialFilter } };
+		}),
 	resetFilter: () => set({ filter: {} }),
 }));
 
@@ -161,7 +170,7 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>(
 				input: {
 					...rest,
 					tenancyAgreementTemplate: cleanupAgreementTemplateInput(
-						tenancyAgreementTemplate ?? { sections: [] },
+						tenancyAgreementTemplate ?? { sections: [], totalSections: 0 },
 					),
 					paymentDetailsId: paymentDetails?.id,
 				},

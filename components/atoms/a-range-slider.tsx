@@ -42,17 +42,22 @@ const RangeSlider: FC<RangeSliderProps> = ({
   const [lowText, setLowText] = useState(initialLow.toString());
   const [highText, setHighText] = useState(initialHigh.toString());
 
+  const onChangeRef = React.useRef(onChange);
+  React.useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
   const onValuesChange = useCallback(
     (newLow: number, newHigh: number) => {
       setLow(newLow);
       setHigh(newHigh);
       setLowText(newLow.toString());
       setHighText(newHigh.toString());
-      if (onChange) {
-        onChange(newLow, newHigh);
+      if (onChangeRef.current) {
+        onChangeRef.current(newLow, newHigh);
       }
     },
-    [onChange],
+    [],
   );
 
   const handleLowBlur = () => {

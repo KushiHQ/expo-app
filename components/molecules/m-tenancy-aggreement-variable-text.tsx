@@ -37,78 +37,41 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
 		const replacedText = React.useMemo(() => {
 			if (!replace) return text;
 
-			const formated = formatNaira(hosting?.price ?? 0);
+			const variablesMap: Record<string, string> = {};
 
-			let newText = text
-				.replaceAll(
-					"{{PROPERTY_DESCRIPTION}}",
-					`{{<<${capitalize(hosting?.title ?? "", true)}>>}}`,
-				)
-				.replaceAll(
-					"{{PROPERTY_ADDRESS}}",
-					`{{<<${capitalize(hostingAddress, true)}>>}}`,
-				)
-				.replaceAll("{{PRICE}}", `{{<<${formated.formated}>>}}`)
-				.replaceAll("{{PRICE_IN_WORDS}}", `{{<<${formated.amountInWords}>>}}`);
+			if (hosting) {
+				const formated = formatNaira(hosting.price ?? 0);
+				variablesMap["PROPERTY_DESCRIPTION"] = capitalize(hosting.title ?? "", true);
+				variablesMap["PROPERTY_ADDRESS"] = capitalize(hostingAddress, true);
+				variablesMap["PRICE"] = formated.formated;
+				variablesMap["PRICE_IN_WORDS"] = formated.amountInWords;
 
-			if (hosting?.cautionFee) {
-				newText = newText.replace(
-					"{{CAUTION_FEE}}",
-					`{{<<${formatNaira(hosting.cautionFee).formated}>>}}`,
-				);
-			}
-			if (hosting?.serviceCharge) {
-				newText = newText.replace(
-					"{{SERVICE_CHARGE}}",
-					`{{<<${formatNaira(hosting.serviceCharge).formated}>>}}`,
-				);
-			}
-
-			if (hosting?.verification) {
-				newText = newText.replaceAll(
-					"{{LANDLORD_FULL_NAME}}",
-					`{{<<${capitalize(hosting.verification.landlordFullName, true)}>>}}`,
-				);
-				newText = newText.replaceAll(
-					"{{LANDLORD_ADDRESS}}",
-					`{{<<${capitalize(hosting.verification.landlordAddress, true)}>>}}`,
-				); // Note: you might want to change this to landlordAddress!
+				if (hosting.cautionFee) {
+					variablesMap["CAUTION_FEE"] = formatNaira(hosting.cautionFee).formated;
+				}
+				if (hosting.serviceCharge) {
+					variablesMap["SERVICE_CHARGE"] = formatNaira(hosting.serviceCharge).formated;
+				}
+				if (hosting.verification) {
+					variablesMap["LANDLORD_FULL_NAME"] = capitalize(hosting.verification.landlordFullName ?? "", true);
+					variablesMap["LANDLORD_ADDRESS"] = capitalize(hosting.verification.landlordAddress ?? "", true);
+				}
 			}
 
 			if (application) {
-				newText = newText.replaceAll(
-					"{{TENANT_FULL_NAME}}",
-					`{{<<${capitalize(application.fullName ?? "")}>>}}`,
-				);
-				newText = newText.replaceAll(
-					"{{TENANT_ADDRESS}}",
-					`{{<<${capitalize(application.correspondenceAddress ?? "")}>>}}`,
-				);
+				variablesMap["TENANT_FULL_NAME"] = capitalize(application.fullName ?? "", true);
+				variablesMap["TENANT_ADDRESS"] = capitalize(application.correspondenceAddress ?? "", true);
 
 				const duration = hostingDuration(
 					hosting?.paymentInterval,
 					application.intervalMultiplier ?? 1,
-					application.checkInDate
-						? new Date(application.checkInDate)
-						: undefined,
+					application.checkInDate ? new Date(application.checkInDate) : undefined,
 				);
 
-				newText = newText.replaceAll(
-					"{{DURATION_LENGTH}}",
-					`{{<<${duration.metric}>>}}`,
-				);
-				newText = newText.replaceAll(
-					"{{START_DATE}}",
-					`{{<<${duration.startDateFormatted}>>}}`,
-				);
-				newText = newText.replaceAll(
-					"{{END_DATE}}",
-					`{{<<${duration.endDateFormatted}>>}}`,
-				);
-				newText = newText.replaceAll(
-					"{{TENANT_EMAIL}}",
-					`{{<<${application.email ?? ""}>>}}`,
-				);
+				variablesMap["DURATION_LENGTH"] = duration.metric;
+				variablesMap["START_DATE"] = duration.startDateFormatted;
+				variablesMap["END_DATE"] = duration.endDateFormatted;
+				variablesMap["TENANT_EMAIL"] = application.email ?? "";
 			}
 
 			if (providedValues && providedValues.length > 0) {
@@ -116,16 +79,19 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
 					if (val.value && val.value.trim() !== "") {
 						const cleanValue = val.value.replaceAll(",", "");
 						const isNumeric = !Number.isNaN(Number(cleanValue));
-
-						newText = newText.replaceAll(
-							`{{${val.key}}}`,
-							`{{<<${isNumeric ? Number(cleanValue).toLocaleString("en-US") : val.value}>>}}`,
-						);
+						variablesMap[val.key] = isNumeric
+							? Number(cleanValue).toLocaleString("en-US")
+							: val.value;
 					}
 				});
 			}
 
-			return newText;
+			return text.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
+				if (variablesMap[key] !== undefined && variablesMap[key] !== "") {
+					return `{{<<${variablesMap[key]}>>}}`;
+				}
+				return match;
+			});
 		}, [text, replace, hosting, hostingAddress, providedValues, application]);
 
 		return (

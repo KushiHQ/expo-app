@@ -5,7 +5,7 @@ import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import React from "react";
-import { RefreshControl, View } from "react-native";
+import { RefreshControl, View, FlatList, ActivityIndicator } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { CircleQuestionMark } from "lucide-react-native";
 import { PublishStatus } from "@/lib/services/graphql/generated";
@@ -45,6 +45,7 @@ export default function NewHostingStep7() {
 		toggleSubClause,
 		hasSection,
 		hasSubClause,
+		allTemplateSections,
 	} = useTenancyTermsForm(String(id));
 
 	return (
@@ -157,7 +158,7 @@ export default function NewHostingStep7() {
 
 			<BottomSheet isVisible={editOpen} onClose={() => setEditOpen(false)}>
 				{editOpen && (
-					<View>
+					<View style={{ flex: 1 }}>
 						<ThemedText
 							type="semibold"
 							style={{ fontSize: 18 }}
@@ -165,18 +166,28 @@ export default function NewHostingStep7() {
 						>
 							Edit Clauses
 						</ThemedText>
-						{hosting &&
-							templateData?.tenancyAgreementTemplate.sections.map((section) => (
-								<MemoizedEditSection
-									key={section.id || section.title}
-									section={section}
-									hosting={hosting}
-									isChecked={hasSection(section)}
-									onToggleSection={toggleSection}
-									hasSubClause={hasSubClause}
-									onToggleSubClause={toggleSubClause}
-								/>
-							))}
+						{hosting && (
+							<FlatList
+								data={allTemplateSections}
+								keyExtractor={(item) => item.id || item.title}
+								renderItem={({ item: section }) => (
+									<MemoizedEditSection
+										section={section}
+										hosting={hosting}
+										isChecked={hasSection(section)}
+										onToggleSection={toggleSection}
+										hasSubClause={hasSubClause}
+										onToggleSubClause={toggleSubClause}
+									/>
+								)}
+								ListFooterComponent={
+									templateFetching ? (
+										<ActivityIndicator color={colors.primary} style={{ margin: 20 }} />
+									) : null
+								}
+								contentContainerStyle={{ paddingBottom: 40 }}
+							/>
+						)}
 					</View>
 				)}
 			</BottomSheet>

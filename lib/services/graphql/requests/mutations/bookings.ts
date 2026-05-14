@@ -17,6 +17,7 @@ export const INITIATE_BOOKING_APPLICATION = gql`
         createdAt
         lastUpdated
         bookingAggrement {
+          totalSections
           sections {
             id
             title
@@ -71,6 +72,7 @@ export const UPDATE_BOOKING_APPLICATION = gql`
         createdAt
         lastUpdated
         bookingAggrement {
+          totalSections
           sections {
             id
             title
