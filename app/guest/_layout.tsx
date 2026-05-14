@@ -95,7 +95,7 @@ export default function Layout() {
 				}}
 				options={{
 					headerShown: false,
-					tabBarLabel: "Host",
+					tabBarLabel: () => null,
 					tabBarLabelStyle: {
 						fontFamily: Fonts.semibold,
 						fontSize: 16,
@@ -104,7 +104,7 @@ export default function Layout() {
 					tabBarIcon: () => (
 						<View
 							style={{ backgroundColor: colors["text"] }}
-							className="rounded-full p-[5px] mt-2"
+							className="rounded-full p-[5px] mt-6"
 						>
 							<LinkIcon size={28} color={colors["background"]} />
 						</View>

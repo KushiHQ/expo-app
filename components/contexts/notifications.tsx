@@ -46,6 +46,7 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 	children,
 }) => {
 	const [token, setToken] = React.useState<string | null>(null);
+	const tokenRef = React.useRef<string | null>(null);
 	const [error, setError] = React.useState<Error | null>(null);
 	const { user } = useUser();
 	const [, updateToken] = useUpdatePushNotificationTokenMutation();
@@ -99,6 +100,7 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 				if (enabled) {
 					const fcmToken = await getToken(messagingInstance);
 					setToken(fcmToken);
+					tokenRef.current = fcmToken;
 
 					if (fcmToken && user.user) {
 						if (Platform.OS === "android") {
@@ -120,7 +122,9 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 		// iOS: receive VoIP push token from index.js and send to backend
 		const handleVoipToken = (voipToken: string) => {
 			if (user.user && Platform.OS === "ios") {
-				updateToken({ input: { voipToken, fcmToken: token } });
+				// Use ref so we always read the latest FCM token even if this
+				// closure was created before setupMessaging() finished.
+				updateToken({ input: { voipToken, fcmToken: tokenRef.current } });
 			}
 		};
 		EventEmitter.on("voip_token", handleVoipToken);

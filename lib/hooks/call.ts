@@ -85,7 +85,7 @@ export const useActiveCall = () => {
 		if (isLockScreenLaunch) {
 			BackHandler.exitApp();
 		} else {
-			router.replace(`/chats/${id}`);
+			router.back();
 		}
 	}, [call, id, player, router, isLockScreenLaunch]);
 
@@ -188,7 +188,7 @@ export const useActiveCall = () => {
 
 		const handleLeft = () => {
 			setIsRinging(false);
-			router.replace(`/chats/${id}`);
+			router.back();
 		};
 
 		call.on("joined-meeting", updateParticipants);

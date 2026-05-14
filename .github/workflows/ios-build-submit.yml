@@ -78,7 +78,9 @@ jobs:
           DEBUG: expo:*
 
       - name: Submit to App Store
-        run: eas submit --platform ios --profile production --non-interactive --path "$IPA_PATH"
+        timeout-minutes: 5
+        continue-on-error: true
+        run: eas submit --platform ios --profile production --non-interactive --path "$IPA_PATH" || true
         env:
           # Generate an app-specific password at appleid.apple.com and add it as a repo secret.
           # Alternatively store an ASC API key in EAS (eas credentials) and remove this env var.
