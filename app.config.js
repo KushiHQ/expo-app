@@ -5,7 +5,7 @@ import "dotenv/config";
  * @returns {import('expo/config').ExpoConfig}
  */
 export default ({ config }) => ({
-	// Custom Expo configuration for Kushi App
+	// Custom Expo configuration for Kushi App (v1.0.0)
 	...config,
 	name: "Kushi",
 	slug: "kushi",
