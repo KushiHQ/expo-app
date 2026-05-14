@@ -9,7 +9,7 @@ import { router } from "expo-router";
 import React from "react";
 import { useLogoutMutation } from "@/lib/services/graphql/generated";
 import Toast from "react-native-toast-message";
-
+//
 export default function Logout() {
   const reset = useUserStore((v) => v.reset);
   const setSecuritySettings = useSecuritySettingsStore(
