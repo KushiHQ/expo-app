@@ -2,10 +2,17 @@ import { useEffect, useState } from "react";
 import { BackHandler, Platform } from "react-native";
 import { usePathname } from "expo-router";
 import notifee, { EventType } from "@notifee/react-native";
+import { setShowWhenLocked } from "lock-screen-manager";
 
 export const useLockScreen = () => {
 	const pathname = usePathname();
 	const [isLockScreenLaunch, setIsLockScreenLaunch] = useState(false);
+
+	// Enable lock screen display only while on a call screen.
+	useEffect(() => {
+		if (Platform.OS !== "android") return;
+		setShowWhenLocked(pathname.includes("/call/"));
+	}, [pathname]);
 
 	useEffect(() => {
 		if (Platform.OS === "android") {

@@ -185,6 +185,9 @@ importers:
       graphql-ws:
         specifier: ^6.0.8
         version: 6.0.8(graphql@16.13.2)(ws@8.20.0)
+      lock-screen-manager:
+        specifier: file:./modules/lock-screen-manager
+        version: file:modules/lock-screen-manager
       lucide-react-native:
         specifier: ^0.545.0
         version: 0.545.0(react-native-svg@15.12.1(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -4948,6 +4951,9 @@ packages:
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
+
+  lock-screen-manager@file:modules/lock-screen-manager:
+    resolution: {directory: modules/lock-screen-manager, type: directory}
 
   lodash.camelcase@4.3.0:
     resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
@@ -12624,6 +12630,8 @@ snapshots:
   locate-path@6.0.0:
     dependencies:
       p-locate: 5.0.0
+
+  lock-screen-manager@file:modules/lock-screen-manager: {}
 
   lodash.camelcase@4.3.0: {}
 
