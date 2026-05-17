@@ -5,4 +5,8 @@ plugins {
 
 android {
   namespace "expo.modules.lockscreenmanager"
+
+  defaultConfig {
+    versionName "1.0.0"
+  }
 }
