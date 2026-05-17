@@ -3,10 +3,12 @@
 When this file is referenced, perform the following task using a `generalist` sub-agent:
 
 ## Objective
+
 Concatenate all primary source code files into a single Markdown file named `CODEBASE.md` in the project root for the purpose of copyright registration.
 
 ## Requirements
-1. **Scope:** 
+
+1. **Scope:**
    - Scan all standard source directories (e.g., `src/`, `app/`, `lib/`, `components/`, `scripts/`, `functions/`).
    - Include key configuration files in the root (e.g., `package.json`, `tsconfig.json`, `tailwind.config.js`, `app.config.js`, `requirements.txt`, `go.mod`, `Cargo.toml`).
 2. **Exclusions (DO NOT INCLUDE):**
@@ -21,4 +23,5 @@ Concatenate all primary source code files into a single Markdown file named `COD
 4. **Final Output:** Save the result as `CODEBASE.md` in the root directory.
 
 ## How to use
-Tell Gemini CLI: *"Follow the instructions in COPYRIGHT_GEN.md to generate my codebase bundle."*
+
+Tell Gemini CLI: _"Follow the instructions in COPYRIGHT_GEN.md to generate my codebase bundle."_
