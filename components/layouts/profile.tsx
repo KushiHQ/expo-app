@@ -68,6 +68,7 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
 			<View style={{ flex: 1, width: "100%", maxWidth: isTablet ? 900 : undefined, alignSelf: "center" }}>
 				<View className="p-5 flex-row items-center justify-between">
 					<View className="flex-row items-center gap-3">
+						{router.canGoBack() ? (
 						<Pressable
 							onPress={() => {
 								Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -79,6 +80,9 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
 						>
 							<ChevronLeft size={22} color={colors["text"]} />
 						</Pressable>
+					) : (
+						<View className="w-11 h-11" />
+					)}
 						<View className="gap-0.5">
 							<ThemedText style={{ fontSize: 16, fontFamily: Fonts.semibold }}>
 								{user.user?.profile.fullName}

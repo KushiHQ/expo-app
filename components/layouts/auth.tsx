@@ -33,7 +33,9 @@ const AuthLayout: React.FC<Props> = ({ title, description, children }) => {
 					contentContainerStyle={{ flexGrow: 1 }}
 				>
 					<View className="p-5 flex-1">
+						{router.canGoBack() && (
 						<BackButton onPress={() => router.back()} className="top-5" />
+					)}
 						<View className="gap-9 mt-28">
 							<View
 								className="border items-center justify-center rounded-xl"

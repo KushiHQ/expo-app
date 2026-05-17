@@ -138,33 +138,37 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
         <View style={{ flex: 1, width: "100%", maxWidth: isTablet ? 840 : undefined, alignSelf: "center" }}>
           <View className="p-5 flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
-              <Pressable
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.back();
-                }}
-                aria-label="Go Back"
-                className="w-11 items-center justify-center rounded-2xl h-11"
-                style={{
-                  backgroundColor:
-                    backButton === "translucent"
-                      ? colors["surface-01"]
-                      : backButton === "light"
-                        ? hexToRgba("#fff", 0.15)
-                        : colors.secondary,
-                }}
-              >
-                <ChevronLeft
-                  size={22}
-                  color={
-                    backButton === "translucent"
-                      ? colors.text
-                      : backButton === "light"
-                        ? "#fff"
-                        : colors.background
-                  }
-                />
-              </Pressable>
+              {router.canGoBack() ? (
+                <Pressable
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.back();
+                  }}
+                  aria-label="Go Back"
+                  className="w-11 items-center justify-center rounded-2xl h-11"
+                  style={{
+                    backgroundColor:
+                      backButton === "translucent"
+                        ? colors["surface-01"]
+                        : backButton === "light"
+                          ? hexToRgba("#fff", 0.15)
+                          : colors.secondary,
+                  }}
+                >
+                  <ChevronLeft
+                    size={22}
+                    color={
+                      backButton === "translucent"
+                        ? colors.text
+                        : backButton === "light"
+                          ? "#fff"
+                          : colors.background
+                    }
+                  />
+                </Pressable>
+              ) : (
+                <View className="w-11 h-11" />
+              )}
               <View className="flex-row items-center gap-2">
                 {avatar && (
                   <View
