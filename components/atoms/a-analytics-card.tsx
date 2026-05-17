@@ -50,14 +50,15 @@ const AnalyticsCard: React.FC<Props> = ({
 				(index + 1) % 2 !== 0 && "mr-2",
 			)}
 		>
-			<View className="flex-row items-center justify-between">
-				<View className="flex-row items-center gap-1.5">
+			<View className="flex-row items-start justify-between gap-2">
+				<View className="flex-row items-center gap-1 flex-1">
 					<ThemedText
 						numberOfLines={2}
 						style={{
 							fontFamily: Fonts.semibold,
-							fontSize: 14,
+							fontSize: 13,
 							flex: 1,
+							lineHeight: 18,
 							color: hexToRgba(colors.text, 0.5),
 						}}
 					>
@@ -65,7 +66,7 @@ const AnalyticsCard: React.FC<Props> = ({
 					</ThemedText>
 					{description && (
 						<Tooltip description={description}>
-							<Info size={14} color={hexToRgba(colors.text, 0.3)} />
+							<Info size={13} color={hexToRgba(colors.text, 0.3)} />
 						</Tooltip>
 					)}
 				</View>
@@ -83,19 +84,24 @@ const AnalyticsCard: React.FC<Props> = ({
 			</View>
 
 			<View className="gap-1">
-				<View className="flex-row items-center">
+				<View className="flex-row items-center" style={{ flex: 1 }}>
 					{currency && (
 						<TablerCurrencyNaira
 							color={colors.text}
-							size={28}
-							style={{ marginRight: -4 }}
+							size={24}
+							style={{ marginRight: -2, flexShrink: 0 }}
 						/>
 					)}
 					<ThemedText
+						numberOfLines={1}
+						adjustsFontSizeToFit
+						minimumFontScale={0.6}
 						style={{
 							fontFamily: Fonts.black,
-							fontSize: 28,
+							fontSize: 26,
+							lineHeight: 34,
 							letterSpacing: -1,
+							flex: 1,
 						}}
 					>
 						{val.toLocaleString()}

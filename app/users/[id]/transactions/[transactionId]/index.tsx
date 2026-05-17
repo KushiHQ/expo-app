@@ -147,10 +147,16 @@ export default function TransactionDetails() {
 						<ThemedText style={{ opacity: 0.6, fontSize: 14 }}>
 							Amount Paid
 						</ThemedText>
-						<View className="flex-row items-center mt-1">
-							<TablerCurrencyNaira size={36} color={colors.text} />
+						<View
+							className="flex-row items-center mt-1"
+							style={{ alignSelf: "stretch", justifyContent: "center" }}
+						>
+							<TablerCurrencyNaira size={32} color={colors.text} style={{ flexShrink: 0 }} />
 							<ThemedText
-								style={{ fontSize: 36, fontFamily: Fonts.bold }}
+								numberOfLines={1}
+								adjustsFontSizeToFit
+								minimumFontScale={0.5}
+								style={{ fontSize: 36, lineHeight: 46, fontFamily: Fonts.bold, flexShrink: 1 }}
 							>
 								{Number(transaction.amount).toLocaleString()}
 							</ThemedText>
