@@ -135,45 +135,167 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
     return (
       <Wrapper className="flex-1" style={backgroundStyles}>
         <SafeAreaView className="flex-1">
-        <View style={{ flex: 1, width: "100%", maxWidth: isTablet ? 840 : undefined, alignSelf: "center" }}>
-          <View className="p-5 flex-row items-center justify-between">
-            <View className="flex-row items-center gap-2">
-              {router.canGoBack() ? (
-                <Pressable
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.back();
-                  }}
-                  aria-label="Go Back"
-                  className="w-11 items-center justify-center rounded-2xl h-11"
-                  style={{
-                    backgroundColor:
-                      backButton === "translucent"
-                        ? colors["surface-01"]
-                        : backButton === "light"
-                          ? hexToRgba("#fff", 0.15)
-                          : colors.secondary,
-                  }}
-                >
-                  <ChevronLeft
-                    size={22}
-                    color={
-                      backButton === "translucent"
-                        ? colors.text
-                        : backButton === "light"
-                          ? "#fff"
-                          : colors.background
-                    }
-                  />
-                </Pressable>
-              ) : (
-                <View className="w-11 h-11" />
-              )}
+          <View
+            style={{
+              flex: 1,
+              width: "100%",
+              maxWidth: isTablet ? 840 : undefined,
+              alignSelf: "center",
+            }}
+          >
+            <View className="p-5 flex-row items-center justify-between">
               <View className="flex-row items-center gap-2">
-                {avatar && (
-                  <View
+                {router.canGoBack() && (
+                  <Pressable
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      router.back();
+                    }}
+                    aria-label="Go Back"
+                    className="w-11 items-center justify-center rounded-2xl h-11"
+                    style={{
+                      backgroundColor:
+                        backButton === "translucent"
+                          ? colors["surface-01"]
+                          : backButton === "light"
+                            ? hexToRgba("#fff", 0.15)
+                            : colors.secondary,
+                    }}
+                  >
+                    <ChevronLeft
+                      size={22}
+                      color={
+                        backButton === "translucent"
+                          ? colors.text
+                          : backButton === "light"
+                            ? "#fff"
+                            : colors.background
+                      }
+                    />
+                  </Pressable>
+                )}
+                <View className="flex-row items-center gap-2">
+                  {avatar && (
+                    <View
+                      className="w-10 h-10 rounded-xl border overflow-hidden"
+                      style={{ borderColor: hexToRgba(colors.text, 0.2) }}
+                    >
+                      <Image
+                        style={{
+                          height: "100%",
+                          width: "100%",
+                          objectFit: "cover",
+                        }}
+                        source={{
+                          uri: avatar.image,
+                        }}
+                      />
+                    </View>
+                  )}
+                  <View className="gap-0.5">
+                    <ThemedText
+                      className="py-0"
+                      style={{
+                        fontSize: avatar ? 12 : 16,
+                        fontFamily: avatar ? Fonts.medium : Fonts.semibold,
+                        color: backButton === "light" ? "#fff" : colors.text,
+                      }}
+                    >
+                      {title}
+                    </ThemedText>
+                    {avatar?.online !== undefined && (
+                      <ThemedText
+                        className="py-0"
+                        style={{
+                          fontSize: 10,
+                          fontFamily: Fonts.regular,
+                          color: hexToRgba(
+                            backButton === "light" ? "#fff" : colors.text,
+                            0.5,
+                          ),
+                        }}
+                      >
+                        {avatar?.online
+                          ? "Online"
+                          : `Last seen ${moment(avatar?.lastSeen).fromNow()}`}
+                      </ThemedText>
+                    )}
+                  </View>
+                </View>
+              </View>
+              <View className="flex-row items-center gap-3">
+                {withShare && (
+                  <Pressable
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      onShare?.();
+                    }}
+                    className="h-11 w-11 rounded-2xl justify-center items-center border"
+                    style={{
+                      backgroundColor: colors["surface-01"],
+                      borderColor: hexToRgba(colors.text, 0.08),
+                    }}
+                  >
+                    <Share2Icon size={20} color={colors.primary} />
+                  </Pressable>
+                )}
+                {withPhone && (
+                  <Pressable
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      router.push(buildCallURL(String(id), "voice", true));
+                    }}
+                    className="h-11 w-11 rounded-2xl justify-center items-center border"
+                    style={{
+                      backgroundColor: colors["surface-01"],
+                      borderColor: hexToRgba(colors.text, 0.08),
+                    }}
+                  >
+                    <SolarPhoneOutline size={20} color={colors.primary} />
+                  </Pressable>
+                )}
+                {withVideo && (
+                  <Pressable
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      router.push(buildCallURL(String(id), "video", true));
+                    }}
+                    className="h-11 w-11 rounded-2xl justify-center items-center border"
+                    style={{
+                      backgroundColor: colors["surface-01"],
+                      borderColor: hexToRgba(colors.text, 0.08),
+                    }}
+                  >
+                    <HugeiconsVideo01 size={20} color={colors.primary} />
+                  </Pressable>
+                )}
+                {withNotifications && (
+                  <Pressable
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      router.push("/users/notifications");
+                    }}
+                  >
+                    <IonNotificationsOutline
+                      color={hexToRgba(colors["text"], 0.7)}
+                    />
+                  </Pressable>
+                )}
+                {withProfile && (
+                  <Pressable
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      router.push(
+                        variant === "guest"
+                          ? "/guest/profile"
+                          : "/host/profile",
+                      );
+                    }}
                     className="w-10 h-10 rounded-xl border overflow-hidden"
-                    style={{ borderColor: hexToRgba(colors.text, 0.2) }}
+                    style={{
+                      borderColor: hexToRgba(colors["text"], 0.6),
+                      borderWidth: 2,
+                    }}
                   >
                     <Image
                       style={{
@@ -182,158 +304,48 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                         objectFit: "cover",
                       }}
                       source={{
-                        uri: avatar.image,
+                        uri:
+                          user.user?.profile?.image?.publicUrl ??
+                          getDefaultProfileImageUrl(
+                            user.user?.profile.fullName ?? "",
+                          ),
                       }}
                     />
-                  </View>
+                  </Pressable>
                 )}
-                <View className="gap-0.5">
-                  <ThemedText
-                    className="py-0"
-                    style={{
-                      fontSize: avatar ? 12 : 16,
-                      fontFamily: avatar ? Fonts.medium : Fonts.semibold,
-                      color: backButton === "light" ? "#fff" : colors.text,
-                    }}
-                  >
-                    {title}
-                  </ThemedText>
-                  {avatar?.online !== undefined && (
-                    <ThemedText
-                      className="py-0"
-                      style={{
-                        fontSize: 10,
-                        fontFamily: Fonts.regular,
-                        color: hexToRgba(backButton === "light" ? "#fff" : colors.text, 0.5),
-                      }}
-                    >
-                      {avatar?.online
-                        ? "Online"
-                        : `Last seen ${moment(avatar?.lastSeen).fromNow()}`}
-                    </ThemedText>
-                  )}
-                </View>
               </View>
             </View>
-            <View className="flex-row items-center gap-3">
-              {withShare && (
-                <Pressable
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    onShare?.();
-                  }}
-                  className="h-11 w-11 rounded-2xl justify-center items-center border"
-                  style={{ 
-                    backgroundColor: colors["surface-01"],
-                    borderColor: hexToRgba(colors.text, 0.08),
-                  }}
-                >
-                  <Share2Icon size={20} color={colors.primary} />
-                </Pressable>
-              )}
-              {withPhone && (
-                <Pressable
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push(buildCallURL(String(id), "voice", true));
-                  }}
-                  className="h-11 w-11 rounded-2xl justify-center items-center border"
-                  style={{ 
-                    backgroundColor: colors["surface-01"],
-                    borderColor: hexToRgba(colors.text, 0.08),
-                  }}
-                >
-                  <SolarPhoneOutline size={20} color={colors.primary} />
-                </Pressable>
-              )}
-              {withVideo && (
-                <Pressable
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push(buildCallURL(String(id), "video", true));
-                  }}
-                  className="h-11 w-11 rounded-2xl justify-center items-center border"
-                  style={{ 
-                    backgroundColor: colors["surface-01"],
-                    borderColor: hexToRgba(colors.text, 0.08),
-                  }}
-                >
-                  <HugeiconsVideo01 size={20} color={colors.primary} />
-                </Pressable>
-              )}
-              {withNotifications && (
-                <Pressable
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push("/users/notifications");
-                  }}
-                >
-                  <IonNotificationsOutline
-                    color={hexToRgba(colors["text"], 0.7)}
-                  />
-                </Pressable>
-              )}
-              {withProfile && (
-                <Pressable
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push(
-                      variant === "guest" ? "/guest/profile" : "/host/profile",
-                    );
-                  }}
-                  className="w-10 h-10 rounded-xl border overflow-hidden"
-                  style={{
-                    borderColor: hexToRgba(colors["text"], 0.6),
-                    borderWidth: 2,
-                  }}
-                >
-                  <Image
-                    style={{
-                      height: "100%",
-                      width: "100%",
-                      objectFit: "cover",
-                    }}
-                    source={{
-                      uri: user.user?.profile?.image?.publicUrl ?? getDefaultProfileImageUrl(
-                        user.user?.profile.fullName ?? "",
-                      ),
-                    }}
-                  />
-                </Pressable>
-              )}
-            </View>
+
+            {scrollable ? (
+              <KeyboardAwareScrollView
+                ref={scrollViewRef}
+                className="flex-1"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ flexGrow: 1 }}
+                refreshControl={refreshControl}
+                bottomOffset={80}
+              >
+                {Content}
+              </KeyboardAwareScrollView>
+            ) : (
+              <View className="flex-1">{Content}</View>
+            )}
+
+            {footer && (
+              <Animated.View
+                style={[
+                  animatedFooterStyle,
+                  {
+                    backgroundColor: colors.background,
+                    marginBottom: -insets.bottom,
+                    paddingBottom: insets.bottom,
+                  },
+                ]}
+              >
+                {footer}
+              </Animated.View>
+            )}
           </View>
-
-          {scrollable ? (
-            <KeyboardAwareScrollView
-              ref={scrollViewRef}
-              className="flex-1"
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ flexGrow: 1 }}
-              refreshControl={refreshControl}
-              bottomOffset={80}
-            >
-              {Content}
-            </KeyboardAwareScrollView>
-          ) : (
-            <View className="flex-1">{Content}</View>
-          )}
-
-          {footer && (
-            <Animated.View
-              style={[
-                animatedFooterStyle,
-                {
-                  backgroundColor: colors.background,
-                  marginBottom: -insets.bottom,
-                  paddingBottom: insets.bottom,
-                },
-              ]}
-            >
-              {footer}
-            </Animated.View>
-          )}
-        </View>
         </SafeAreaView>
       </Wrapper>
     );

@@ -136,9 +136,10 @@ export default function HostAnalytics() {
 						>
 							Welcome,{" "}
 							{
-								(analyticsData?.hostAnalytics.host.user.profile.fullName ?? "Host").split(
-									" ",
-								)[0]
+								(
+									analyticsData?.hostAnalytics.host.user.profile.fullName ??
+									"Host"
+								).split(" ")[0]
 							}
 						</ThemedText>
 					)}
