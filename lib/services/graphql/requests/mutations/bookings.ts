@@ -9,7 +9,7 @@ export const INITIATE_BOOKING_APPLICATION = gql`
         fullName
         email
         phoneNumber
-        checkInDate
+        commencementDate
         correspondenceAddress
         intervalMultiplier
         status
@@ -64,7 +64,7 @@ export const UPDATE_BOOKING_APPLICATION = gql`
         fullName
         email
         phoneNumber
-        checkInDate
+        commencementDate
         correspondenceAddress
         intervalMultiplier
         status

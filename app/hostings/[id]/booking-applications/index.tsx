@@ -119,14 +119,14 @@ export default function BookingApplications() {
               <View className="flex-row items-center flex-wrap gap-2 justify-between">
                 <View className="flex-row items-center gap-2">
                   <ThemedText style={{ color: hexToRgba(colors.text, 0.6) }}>
-                    Check In:
+                    Commencement:
                   </ThemedText>
                   <ThemedText>
-                    {app.checkInDate
+                    {app.commencementDate
                       ? hostingDuration(
                         hostingData?.hosting.paymentInterval,
                         app.intervalMultiplier,
-                        new Date(app.checkInDate),
+                        new Date(app.commencementDate),
                       ).startDateFormatted
                       : "nil"}
                   </ThemedText>

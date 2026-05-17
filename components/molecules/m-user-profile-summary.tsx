@@ -75,6 +75,9 @@ const UserProfileSummary: React.FC<Props> = ({ edit, onPressAvatar, avatarUri })
 				<ThemedText style={{ fontFamily: Fonts.bold, fontSize: 15 }}>
 					{user.user?.profile.fullName}
 				</ThemedText>
+				<ThemedText style={{ fontSize: 11, color: hexToRgba(colors.text, 0.5) }}>
+					ID: {user.user?.kushiId}
+				</ThemedText>
 			</View>
 		</View>
 	);

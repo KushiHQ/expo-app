@@ -38,11 +38,11 @@ const CheckoutSummaryScreen: React.FC<Props> = ({
 	});
 
 	const duration = React.useMemo(() => {
-		const checkinDate = booking?.checkInDate;
+		const commencementDate = booking?.commencementDate;
 		return hostingDuration(
 			booking?.hosting.paymentInterval,
 			booking?.bookingApplication.intervalMultiplier,
-			checkinDate ? new Date(checkinDate) : undefined,
+			commencementDate ? new Date(commencementDate) : undefined,
 		);
 	}, [booking]);
 

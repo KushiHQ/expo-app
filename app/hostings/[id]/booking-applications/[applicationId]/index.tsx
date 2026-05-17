@@ -154,11 +154,11 @@ export default function BookingApplicationDetails() {
 										summary={toTitleCase(duration.metric)}
 									/>
 									<ItemSummary
-										label="Check In"
+										label="Commencement"
 										summary={toTitleCase(duration.startDateFormatted)}
 									/>
 									<ItemSummary
-										label="Check Out"
+										label="Expiry"
 										summary={toTitleCase(duration.endDateFormatted)}
 									/>
 									{app?.status && (
@@ -241,6 +241,10 @@ export default function BookingApplicationDetails() {
 				onConfirm={handleMutate}
 			/>
 			<LoadingModal visible={updating} />
+		</>
+	);
+}
+ng} />
 		</>
 	);
 }

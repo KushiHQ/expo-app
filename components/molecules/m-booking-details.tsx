@@ -140,8 +140,8 @@ const DateAndDurationSection: React.FC<SubProps> = ({ booking, printing }) => {
 					}}
 				>
 					{calculateBookingDuration(
-						booking.checkInDate ?? "",
-						booking.checkOutDate ?? "",
+						booking.commencementDate ?? "",
+						booking.expiryDate ?? "",
 					)}
 				</ThemedText>
 			</View>

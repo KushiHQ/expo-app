@@ -16,8 +16,8 @@ export const REVIEW_METRICS = {
     desc: "This rating evaluates the convenience and appeal of the hosting's location. A high score means the area was safe, accessible, and close to desired attractions or services.",
   },
   checkIn: {
-    label: "Check-In",
-    desc: "This rating measures how smooth and easy the check-in process was. A high score means the instructions were clear, the host was accommodating, and access to the property was seamless.",
+    label: "Commencement",
+    desc: "This rating measures how smooth and easy the commencement process was. A high score means the instructions were clear, the host was accommodating, and access to the property was seamless.",
   },
   value: {
     label: "Value",

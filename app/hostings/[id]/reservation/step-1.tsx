@@ -209,13 +209,13 @@ export default function BookingApplicationStep1() {
 						<View>
 							<DateInput
 								value={
-									input.checkInDate
-										? new Date(input.checkInDate).toISOString().split("T")[0]
+									input.commencementDate
+										? new Date(input.commencementDate).toISOString().split("T")[0]
 										: ""
 								}
-								onChangeText={(v) => updateInput({ checkInDate: v })}
+								onChangeText={(v) => updateInput({ commencementDate: v })}
 								focused
-								label="Check In"
+								label="Commencement"
 								placeholder="01/01/2025"
 							/>
 						</View>

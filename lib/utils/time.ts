@@ -68,16 +68,16 @@ export const formatChatMessageTime = (dateString: string | Date): string => {
 };
 
 export const calculateBookingDuration = (
-  checkInDateString: string,
-  checkOutDateString: string,
+  commencementDateString: string,
+  expiryDateString: string,
 ): string => {
-  if (!checkInDateString || !checkOutDateString) {
+  if (!commencementDateString || !expiryDateString) {
     return "N/A";
   }
 
   try {
-    const start = parseISO(checkInDateString);
-    const end = parseISO(checkOutDateString);
+    const start = parseISO(commencementDateString);
+    const end = parseISO(expiryDateString);
 
     const duration = intervalToDuration({
       start: start,

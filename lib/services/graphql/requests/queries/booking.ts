@@ -12,7 +12,7 @@ export const BOOKING_APPLICATIONS = gql`
     $pagination: PaginationInput
   ) {
     bookingApplications(filter: $filter, pagination: $pagination) {
-      checkInDate
+      commencementDate
       fullName
       createdAt
       status
@@ -53,7 +53,7 @@ export const BOOKING_APPLICATION = gql`
       fullName
       email
       phoneNumber
-      checkInDate
+      commencementDate
       correspondenceAddress
       intervalMultiplier
       status
@@ -140,8 +140,8 @@ export const BOOKINGS_QUERY = gql`
         id
       }
       createdAt
-      checkInDate
-      checkOutDate
+      commencementDate
+      expiryDate
       guestServiceCharge
       amount
       phoneNumber
@@ -184,8 +184,8 @@ export const BOOKING_QUERY = gql`
         status
       }
       createdAt
-      checkInDate
-      checkOutDate
+      commencementDate
+      expiryDate
       guestServiceCharge
       amount
       phoneNumber
@@ -220,7 +220,7 @@ export const BOOKING_QUERY = gql`
       bookingApplication {
         id
         intervalMultiplier
-        checkInDate
+        commencementDate
       }
       cautionFee
       serviceCharge
