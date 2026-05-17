@@ -20,6 +20,7 @@ import { AppState, AppStateStatus, Platform } from "react-native";
 import { useAudioPlayer } from "expo-audio";
 import messaging from "@react-native-firebase/messaging";
 import { EventEmitter } from "@/lib/utils/event-emitter";
+import VoipPushNotification from "react-native-voip-push-notification";
 
 interface NotificationContextType {
 	token: string | null;
@@ -128,6 +129,13 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 			}
 		};
 		EventEmitter.on("voip_token", handleVoipToken);
+
+		// Trigger PushKit to (re-)deliver the VoIP token now that the listener is
+		// registered. Doing this here rather than only in index.js avoids a race
+		// where PushKit fires before this effect has mounted its EventEmitter listener.
+		if (Platform.OS === "ios") {
+			VoipPushNotification.registerVoipToken();
+		}
 
 		// iOS: user answered the call from the native CallKit UI
 		const handleCallKeepAnswer = (callData: {
@@ -291,6 +299,9 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 			EventEmitter.off("voip_token", handleVoipToken);
 			EventEmitter.off("callkeep_answer", handleCallKeepAnswer);
 			EventEmitter.off("callkeep_end", handleCallKeepEnd);
+			if (Platform.OS === "ios") {
+				VoipPushNotification.removeEventListener("register");
+			}
 		};
 	}, [user.user?.id]);
 

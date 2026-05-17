@@ -27,7 +27,11 @@ type Props = {
 	scrollable?: boolean;
 };
 
-const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable = true }) => {
+const ProfileLayout: React.FC<Props> = ({
+	children,
+	refreshControl,
+	scrollable = true,
+}) => {
 	const colors = useThemeColors();
 	const router = useRouter();
 	const scrollViewRef = useRef<ScrollView>(null);
@@ -38,7 +42,9 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
 	const [{ data: notifData }] = useNotificationsQuery({
 		variables: { pagination: { limit: 20 } },
 	});
-	const unreadCount = (notifData?.notifications ?? []).filter((n) => !n.isRead).length;
+	const unreadCount = (notifData?.notifications ?? []).filter(
+		(n) => !n.isRead,
+	).length;
 
 	useEffect(() => {
 		const handleScrollToTop = () => {
@@ -65,100 +71,112 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
 	return (
 		<ThemedView className="flex-1">
 			<SafeAreaView className="flex-1">
-			<View style={{ flex: 1, width: "100%", maxWidth: isTablet ? 900 : undefined, alignSelf: "center" }}>
-				<View className="p-5 flex-row items-center justify-between">
-					<View className="flex-row items-center gap-3">
-						{router.canGoBack() ? (
-						<Pressable
-							onPress={() => {
-								Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-								router.back();
-							}}
-							aria-label="Go Back"
-							className="w-11 items-center justify-center rounded-2xl h-11"
-							style={{ backgroundColor: colors["surface-01"] }}
-						>
-							<ChevronLeft size={22} color={colors["text"]} />
-						</Pressable>
-					) : (
-						<View className="w-11 h-11" />
-					)}
-						<View className="gap-0.5">
-							<ThemedText style={{ fontSize: 16, fontFamily: Fonts.semibold }}>
-								{user.user?.profile.fullName}
-							</ThemedText>
-							<ThemedText
+				<View
+					style={{
+						flex: 1,
+						width: "100%",
+						maxWidth: isTablet ? 900 : undefined,
+						alignSelf: "center",
+					}}
+				>
+					<View className="p-5 flex-row items-center justify-between">
+						<View className="flex-row items-center gap-3">
+							{router.canGoBack() && (
+								<Pressable
+									onPress={() => {
+										Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+										router.back();
+									}}
+									aria-label="Go Back"
+									className="w-11 items-center justify-center rounded-2xl h-11"
+									style={{ backgroundColor: colors["surface-01"] }}
+								>
+									<ChevronLeft size={22} color={colors["text"]} />
+								</Pressable>
+							)}
+							<View className="gap-0.5">
+								<ThemedText
+									style={{ fontSize: 16, fontFamily: Fonts.semibold }}
+								>
+									{user.user?.profile.fullName}
+								</ThemedText>
+								<ThemedText
+									style={{
+										fontSize: 11,
+										fontFamily: Fonts.medium,
+										color: hexToRgba(colors["text"], 0.5),
+									}}
+								>
+									Find your perfect home
+								</ThemedText>
+							</View>
+						</View>
+						<View className="flex-row items-center gap-4">
+							<Pressable
+								onPress={() => {
+									Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+									router.push("/users/notifications");
+								}}
+								className="w-11 h-11 rounded-2xl items-center justify-center"
+								style={{ backgroundColor: colors["surface-01"] }}
+							>
+								<IonNotificationsOutline
+									size={20}
+									color={hexToRgba(colors["text"], 0.8)}
+								/>
+								{unreadCount > 0 && (
+									<View
+										className="absolute top-2.5 right-2.5 rounded-full items-center justify-center border-2"
+										style={{
+											width: 10,
+											height: 10,
+											backgroundColor: colors.primary,
+											borderColor: colors["surface-01"],
+										}}
+									/>
+								)}
+							</Pressable>
+							<Pressable
+								onPress={() => {
+									Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+									router.push("/guest/profile");
+								}}
+								className="w-11 h-11 rounded-2xl border-2 overflow-hidden"
 								style={{
-									fontSize: 11,
-									fontFamily: Fonts.medium,
-									color: hexToRgba(colors["text"], 0.5),
+									borderColor: hexToRgba(colors["text"], 0.1),
 								}}
 							>
-								Find your perfect home
-							</ThemedText>
-						</View>
-					</View>
-					<View className="flex-row items-center gap-4">
-						<Pressable
-							onPress={() => {
-								Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-								router.push("/users/notifications");
-							}}
-							className="w-11 h-11 rounded-2xl items-center justify-center"
-							style={{ backgroundColor: colors["surface-01"] }}
-						>
-							<IonNotificationsOutline size={20} color={hexToRgba(colors["text"], 0.8)} />
-							{unreadCount > 0 && (
-								<View
-									className="absolute top-2.5 right-2.5 rounded-full items-center justify-center border-2"
+								<Image
 									style={{
-										width: 10,
-										height: 10,
-										backgroundColor: colors.primary,
-										borderColor: colors["surface-01"],
+										height: "100%",
+										width: "100%",
+										objectFit: "cover",
+									}}
+									source={{
+										uri:
+											user.user?.profile?.image?.publicUrl ??
+											getDefaultProfileImageUrl(
+												user.user?.profile.fullName ?? "",
+											),
 									}}
 								/>
-							)}
-						</Pressable>
-						<Pressable
-							onPress={() => {
-								Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-								router.push("/guest/profile");
-							}}
-							className="w-11 h-11 rounded-2xl border-2 overflow-hidden"
-							style={{
-								borderColor: hexToRgba(colors["text"], 0.1),
-							}}
-						>
-							<Image
-								style={{
-									height: "100%",
-									width: "100%",
-									objectFit: "cover",
-								}}
-								source={{
-									uri: user.user?.profile?.image?.publicUrl ?? getDefaultProfileImageUrl(
-										user.user?.profile.fullName ?? "",
-									),
-								}}
-							/>
-						</Pressable>
+							</Pressable>
+						</View>
 					</View>
+					{scrollable ? (
+						<ScrollView
+							ref={scrollViewRef}
+							className="flex-1"
+							showsVerticalScrollIndicator={false}
+							contentContainerStyle={{ flexGrow: 1 }}
+							refreshControl={refreshControl}
+						>
+							{Content}
+						</ScrollView>
+					) : (
+						<View className="flex-1">{Content}</View>
+					)}
 				</View>
-				{scrollable ? (
-					<ScrollView
-						ref={scrollViewRef}
-						className="flex-1"
-						showsVerticalScrollIndicator={false}
-						contentContainerStyle={{ flexGrow: 1 }}
-						refreshControl={refreshControl}
-					>
-						{Content}
-					</ScrollView>
-				) : (
-					<View className="flex-1">{Content}</View>
-				)}
-			</View>
 			</SafeAreaView>
 		</ThemedView>
 	);
