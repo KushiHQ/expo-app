@@ -42,8 +42,8 @@ export default function PhoneVerification() {
 	] = useCompletePhoneNumberVerificationMutation();
 
 	const formatedNumber = React.useMemo(() => {
-		const str = input.length >= 11 ? input.slice(1) : input;
-		return `${country?.idd.root ?? "+234"}${str}`.replaceAll(" ", "");
+		const str = input.replaceAll(" ", "").replace(/^0+/, "");
+		return `${country?.idd.root ?? "+234"}${str}`;
 	}, [input, country]);
 
 	const loading = initiating || completing;

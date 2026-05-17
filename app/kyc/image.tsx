@@ -17,6 +17,7 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import Button from "@/components/atoms/a-button";
 import { Image } from "expo-image";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import { formMutation } from "@/lib/services/graphql/utils/fetch";
 import {
 	Kyc,
@@ -116,6 +117,10 @@ export default function KycImage() {
 
 	const photoOutput = usePhotoOutput({ quality: 0.9 });
 
+	useEffect(() => {
+		photoOutput.outputOrientation = "up";
+	}, [photoOutput]);
+
 	const onFacesDetected = useCallback((faces: Face[]) => {
 		if (faces.length === 0) {
 			setFaceDetected(false);
@@ -160,10 +165,37 @@ export default function KycImage() {
 
 	const handleCapture = async () => {
 		try {
-			const photo = await photoOutput.capturePhoto({ flashMode: "off" }, {});
+			const photo = await photoOutput.capturePhoto(
+				{
+					flashMode: "off",
+				},
+				{},
+			);
 			const tempPath = await photo.saveToTemporaryFileAsync();
+
+			let finalUri = `file://${tempPath}`;
+
+			// In Vision Camera v5, the captured photo might still have the raw sensor orientation.
+			// We use expo-image-manipulator to physically rotate the image based on the photo's orientation.
+			if (photo.orientation !== "up") {
+				const rotationMap: Record<string, number> = {
+					left: 90,
+					down: 180,
+					right: 270,
+				};
+				const rotation = rotationMap[photo.orientation];
+				if (rotation) {
+					const manipulated = await manipulateAsync(
+						finalUri,
+						[{ rotate: rotation }],
+						{ compress: 0.9, format: SaveFormat.JPEG },
+					);
+					finalUri = manipulated.uri;
+				}
+			}
+
 			photo.dispose();
-			setKycImage(`file://${tempPath}`);
+			setKycImage(finalUri);
 		} catch (error) {
 			console.error("Failed to capture photo:", error);
 		}
@@ -232,7 +264,7 @@ export default function KycImage() {
 				<View className="mt-4">
 					<Stepper
 						steps={KYC_ONBOARDING_STEPS.length}
-						currentStep={2}
+						currentStep={3}
 						titles={cast(KYC_ONBOARDING_STEPS)}
 					/>
 					<View className="mt-8">
@@ -252,6 +284,7 @@ export default function KycImage() {
 											device={device}
 											isActive={true}
 											outputs={[photoOutput, faceOutput]}
+											orientationSource="device"
 										/>
 										<CameraFrame
 											borderColor={faceDetected ? colors.success : "white"}
