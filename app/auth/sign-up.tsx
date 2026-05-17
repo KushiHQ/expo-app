@@ -90,7 +90,6 @@ export default function SignUp() {
 
 				const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri, {
 					preferEphemeralSession: true,
-					browserPackage: "com.android.chrome",
 				});
 
 				if (result.type === "success") {

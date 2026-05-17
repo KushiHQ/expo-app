@@ -13,6 +13,7 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "lock-screen-manager": "file:./modules/lock-screen-manager",
     "@config-plugins/react-native-webrtc": "^13.0.0",
     "@daily-co/config-plugin-rn-daily-js": "^0.0.12",
     "@daily-co/react-native-daily-js": "^0.84.1",
