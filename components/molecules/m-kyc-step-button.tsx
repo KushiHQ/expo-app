@@ -6,6 +6,7 @@ import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import { useUser } from "@/lib/hooks/user";
 import { useRouter } from "expo-router";
+import { PhoneNumberVerificationStatus } from "@/lib/services/graphql/generated";
 
 type Props = {
 	step: (typeof KYC_ONBOARDING_STEPS)[number];
@@ -17,7 +18,11 @@ const KycStepButton: React.FC<Props> = ({ step }) => {
 	const router = useRouter();
 
 	const disabled = React.useMemo(() => {
-		if (step === "Verify NIN") {
+		if (step === "Take A Selfie") {
+			return !user.user?.phoneNumbers.some(
+				(n) => n.verificationStatus === PhoneNumberVerificationStatus.Verified,
+			);
+		} else if (step === "Verify NIN") {
 			return !user.user?.kyc?.image?.publicUrl;
 		} else if (step === "Verify BVN") {
 			return !user.user?.kyc?.image?.publicUrl || !user.user.kyc.ninVerified;
@@ -26,7 +31,11 @@ const KycStepButton: React.FC<Props> = ({ step }) => {
 	}, [step, user]);
 
 	const complete = React.useMemo(() => {
-		if (step === "Take A Selfie") {
+		if (step === "Verify Phone Number") {
+			return !!user.user?.phoneNumbers.some(
+				(n) => n.verificationStatus === PhoneNumberVerificationStatus.Verified,
+			);
+		} else if (step === "Take A Selfie") {
 			return !!user.user?.kyc?.image?.publicUrl;
 		} else if (step === "Verify BVN") {
 			return !!user.user?.kyc?.bvnVerified;

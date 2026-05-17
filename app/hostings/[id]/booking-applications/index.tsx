@@ -1,6 +1,7 @@
 import Skeleton from "@/components/atoms/a-skeleton";
 import ThemedText from "@/components/atoms/a-themed-text";
 import DetailsLayout from "@/components/layouts/details";
+import EmptyList from "@/components/molecules/m-empty-list";
 import { BOOKING_APPLICATION_STATUS_COLORS } from "@/lib/constants/booking/application";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import {
@@ -29,6 +30,7 @@ export default function BookingApplications() {
     variables: {
       filter: {
         hostingId: String(id),
+        authGuest: true,
       },
     },
   });
@@ -137,6 +139,10 @@ export default function BookingApplications() {
               </View>
             </Pressable>
           ))}
+          {(!fetching || !hostingFetching) &&
+            !(data?.bookingApplications ?? []).length && (
+              <EmptyList message="No booking applications on this property" />
+            )}
         </View>
       </View>
     </DetailsLayout>

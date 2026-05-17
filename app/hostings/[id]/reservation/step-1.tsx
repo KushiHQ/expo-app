@@ -85,8 +85,13 @@ export default function BookingApplicationStep1() {
 		}
 		if (initiateError) {
 			handleError(initiateError);
+			if (initiateError.message.includes("Insufficient KYC")) {
+				router.replace("/kyc");
+			} else {
+				router.back();
+			}
 		}
-	}, [error, initiateError]);
+	}, [error, initiateError, router]);
 
 	const handleMutate = () => {
 		mutate({ input }).then((res) => {

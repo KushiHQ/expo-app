@@ -32,6 +32,7 @@ export default function HostingOnboarding() {
 		variables: {
 			filter: {
 				hostingId: hosting?.id,
+				authGuest: true,
 			},
 		},
 	});
@@ -132,36 +133,36 @@ export default function HostingOnboarding() {
 					before it reaches future tenants.
 				</ThemedText>
 				<TopListingCard hosting={hosting} />
-				{countData && countData?.bookingApplicationsCount > 0 && (
-					<View
-						className="border-b py-4"
-						style={{ borderColor: hexToRgba(colors.text, 0.15) }}
+				<View
+					className="border-b py-4"
+					style={{ borderColor: hexToRgba(colors.text, 0.15) }}
+				>
+					<HostingFormOnboardingAction
+						icon={FluentFormMultiple24Regular}
+						color="accent"
+						onPress={() =>
+							router.push(`/hostings/${hosting?.id}/booking-applications/`)
+						}
 					>
-						<HostingFormOnboardingAction
-							icon={FluentFormMultiple24Regular}
-							color="accent"
-							onPress={() =>
-								router.push(`/hostings/${hosting?.id}/booking-applications/`)
-							}
-						>
-							<View className="flex-1">
-								<ThemedText style={{ fontFamily: Fonts.bold }}>
-									Booking Applications (
-									{countData.bookingApplicationsCount.toLocaleString()})
-								</ThemedText>
-								<ThemedText
-									style={{
-										fontSize: 12,
-										color: hexToRgba(colors.text, 0.6),
-									}}
-								>
-									Review and manage pending tenant applications for this
-									property.
-								</ThemedText>
-							</View>
-						</HostingFormOnboardingAction>
-					</View>
-				)}
+						<View className="flex-1">
+							<ThemedText style={{ fontFamily: Fonts.bold }}>
+								Booking Applications (
+								{Number(
+									countData?.bookingApplicationsCount ?? "0",
+								).toLocaleString()}
+								)
+							</ThemedText>
+							<ThemedText
+								style={{
+									fontSize: 12,
+									color: hexToRgba(colors.text, 0.6),
+								}}
+							>
+								Review and manage pending tenant applications for this property.
+							</ThemedText>
+						</View>
+					</HostingFormOnboardingAction>
+				</View>
 				<View className="gap-4 mt-8">
 					{ONBOARDING_STEPS.map((step, index) => {
 						return (

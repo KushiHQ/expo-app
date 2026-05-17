@@ -123,7 +123,9 @@ export default function PhoneVerification() {
 			<View className="p-6 gap-8 mt-4">
 				<View className="gap-2">
 					<ThemedText type="subtitle">Verify your phone number</ThemedText>
-					<ThemedText style={{ color: hexToRgba(colors.text, 0.6), fontSize: 14 }}>
+					<ThemedText
+						style={{ color: hexToRgba(colors.text, 0.6), fontSize: 14 }}
+					>
 						<CircleQuestionMark color={hexToRgba(colors.text, 0.6)} size={14} />
 						{"  "}
 						We will send a 6-digit code to your phone number for verification.
@@ -134,49 +136,61 @@ export default function PhoneVerification() {
 					<ThemedText style={{ fontSize: 14, opacity: 0.8 }}>
 						Phone Number
 					</ThemedText>
-					<PhoneInput
-						placeholderTextColor={hexToRgba(colors.text, 0.5)}
-						modalSearchInputPlaceholderTextColor={hexToRgba(colors.text, 0.5)}
-						cursorColor={colors.primary}
-						modalStyles={{
-							backdrop: { backgroundColor: hexToRgba(colors.text, 0.1) },
-							content: { backgroundColor: colors.background },
-							countryItem: { backgroundColor: colors.background },
-							dragHandleIndicator: {
-								backgroundColor: hexToRgba(colors.text, 0.7),
-							},
-							flag: { color: colors.text },
-							callingCode: { color: colors.text },
-							searchInput: { color: colors.text },
-							countryName: { color: colors.text },
-							sectionTitle: { color: colors.text },
-							closeButtonText: { color: colors.text },
-							countryNotFoundMessage: { color: colors.text },
-							alphabetLetterText: { color: colors.text },
+					<View
+						style={{
+							borderWidth: 1,
+							borderColor: hexToRgba(colors.text, 0.1),
+							borderRadius: 12,
+							overflow: "hidden",
 						}}
-						phoneInputStyles={{
-							container: {
-								backgroundColor: colors.background,
-								borderColor: hexToRgba(colors.text, 0.2),
-								height: 56,
-								borderRadius: 12,
-							},
-							flagContainer: { backgroundColor: colors.background },
-							callingCode: { color: colors.text },
-							input: { color: colors.text },
-						}}
-						ref={phoneInputRef}
-						value={input}
-						onChangeSelectedCountry={setCountry}
-						defaultCountry="NG"
-						onChangePhoneNumber={setInput}
-						disabled={otpRequested}
-					/>
+					>
+						<PhoneInput
+							placeholderTextColor={hexToRgba(colors.text, 0.5)}
+							modalSearchInputPlaceholderTextColor={hexToRgba(colors.text, 0.5)}
+							cursorColor={colors.primary}
+							modalStyles={{
+								backdrop: { backgroundColor: hexToRgba(colors.text, 0.1) },
+								content: { backgroundColor: colors.background },
+								countryItem: { backgroundColor: colors.background },
+								dragHandleIndicator: {
+									backgroundColor: hexToRgba(colors.text, 0.7),
+								},
+								flag: { color: colors.text },
+								callingCode: { color: colors.text },
+								searchInput: { color: colors.text },
+								countryName: { color: colors.text },
+								sectionTitle: { color: colors.text },
+								closeButtonText: { color: colors.text },
+								countryNotFoundMessage: { color: colors.text },
+								alphabetLetterText: { color: colors.text },
+							}}
+							phoneInputStyles={{
+								container: {
+									backgroundColor: colors.background,
+									borderColor: "transparent",
+									height: 56,
+									borderRadius: 12,
+								},
+								flagContainer: { backgroundColor: colors.background },
+								callingCode: { color: colors.text },
+								input: { color: colors.text },
+							}}
+							ref={phoneInputRef}
+							value={input}
+							onChangeSelectedCountry={setCountry}
+							defaultCountry="NG"
+							onChangePhoneNumber={setInput}
+							disabled={otpRequested}
+						/>
+					</View>
 				</View>
 
 				{otpRequested && (
 					<View className="gap-4 items-center">
-						<ThemedText style={{ fontSize: 14, opacity: 0.8 }} className="self-start">
+						<ThemedText
+							style={{ fontSize: 14, opacity: 0.8 }}
+							className="self-start"
+						>
 							Enter 6-digit OTP
 						</ThemedText>
 						<OTPInput length={6} value={otp} onChangeText={setOtp} />

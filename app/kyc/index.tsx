@@ -15,6 +15,7 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { View } from "react-native";
+import { PhoneNumberVerificationStatus } from "@/lib/services/graphql/generated";
 
 export default function KycHome() {
 	const { user } = useUser();
@@ -23,7 +24,7 @@ export default function KycHome() {
 
 	const pendingStep = React.useMemo(() => {
 		const isPhoneVerified = user.user?.phoneNumbers?.some(
-			(p) => p.verificationStatus === "VERIFIED",
+			(p) => p.verificationStatus === PhoneNumberVerificationStatus.Verified,
 		);
 		if (!isPhoneVerified) {
 			return "Verify Phone Number";
@@ -53,8 +54,10 @@ export default function KycHome() {
 				>
 					<Button
 						onPress={() => {
-							if (pendingStep === "Verify Phone Number") router.push("/kyc/phone");
-							else if (pendingStep === "Take A Selfie") router.push("/kyc/image");
+							if (pendingStep === "Verify Phone Number")
+								router.push("/kyc/phone");
+							else if (pendingStep === "Take A Selfie")
+								router.push("/kyc/image");
 							else if (pendingStep === "Verify NIN") router.push("/kyc/nin");
 							else if (pendingStep === "Verify BVN") router.push("/kyc/bvn");
 							else {
@@ -123,11 +126,8 @@ export default function KycHome() {
 					</View>
 					<View className="items-center mt-8">
 						<Image
-							style={{
-								width: 280,
-								height: 320,
-								objectFit: "contain",
-							}}
+							contentFit="contain"
+							style={{ width: 280, height: 320 }}
 							source={
 								pendingStep
 									? require("@/assets/images/kyc-3d.png")
@@ -140,13 +140,9 @@ export default function KycHome() {
 							{pendingStep ? "Next Step:" : "Steps Completed:"}
 						</ThemedText>
 						<View className="flex-wrap flex-row gap-4 mt-4">
-							{pendingStep ? (
-								<KycStepButton step={pendingStep} />
-							) : (
-								KYC_ONBOARDING_STEPS.map((step) => (
-									<KycStepButton step={step} key={step} />
-								))
-							)}
+							{KYC_ONBOARDING_STEPS.map((step) => (
+								<KycStepButton step={step} key={step} />
+							))}
 						</View>
 					</View>
 				</View>
