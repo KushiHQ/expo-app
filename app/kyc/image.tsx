@@ -116,33 +116,30 @@ export default function KycImage() {
 
 	const photoOutput = usePhotoOutput({ quality: 0.9 });
 
-	const onFacesDetected = useCallback(
-		(faces: Face[]) => {
-			if (faces.length === 0) {
-				setFaceDetected(false);
-				return;
-			}
+	const onFacesDetected = useCallback((faces: Face[]) => {
+		if (faces.length === 0) {
+			setFaceDetected(false);
+			return;
+		}
 
-			const face = faces[0];
-			const bounds = face.bounds;
+		const face = faces[0];
+		const bounds = face.bounds;
 
-			const screenCenterX = SCREEN_WIDTH / 2;
-			const screenCenterY = SCREEN_HEIGHT / 2;
+		const screenCenterX = SCREEN_WIDTH / 2;
+		const screenCenterY = SCREEN_HEIGHT / 2;
 
-			const faceCenterX = bounds.x + bounds.width / 2;
-			const faceCenterY = bounds.y + bounds.height / 2;
+		const faceCenterX = bounds.x + bounds.width / 2;
+		const faceCenterY = bounds.y + bounds.height / 2;
 
-			const xThreshold = SCREEN_WIDTH * 0.2;
-			const yThreshold = SCREEN_HEIGHT * 0.2;
+		const xThreshold = SCREEN_WIDTH * 0.2;
+		const yThreshold = SCREEN_HEIGHT * 0.2;
 
-			const isCenteredX = Math.abs(screenCenterX - faceCenterX) < xThreshold;
-			const isCenteredY = Math.abs(screenCenterY - faceCenterY) < yThreshold;
-			const isGoodSize = bounds.width > SCREEN_WIDTH * 0.25;
+		const isCenteredX = Math.abs(screenCenterX - faceCenterX) < xThreshold;
+		const isCenteredY = Math.abs(screenCenterY - faceCenterY) < yThreshold;
+		const isGoodSize = bounds.width > SCREEN_WIDTH * 0.25;
 
-			setFaceDetected(isCenteredX && isCenteredY && isGoodSize);
-		},
-		[],
-	);
+		setFaceDetected(isCenteredX && isCenteredY && isGoodSize);
+	}, []);
 
 	const faceOutput = useFaceDetectorOutput({
 		performanceMode: "fast",
