@@ -23,6 +23,8 @@ export default function NewHostingStep6() {
   const colors = useThemeColors();
   const { id } = useLocalSearchParams();
   const landlordAddressRef = useRef<TextInput>(null);
+  const titleTypeRef = useRef<TextInput>(null);
+  const titleNumberRef = useRef<TextInput>(null);
   const {
     verificationMutate,
     verificationMutating,
@@ -102,6 +104,28 @@ export default function NewHostingStep6() {
                 onChangeText={(v) => {
                   updateVerificationInput({ landlordAddress: v });
                 }}
+                returnKeyType="next"
+                onSubmitEditing={() => titleTypeRef.current?.focus()}
+                blurOnSubmit={false}
+              />
+              <FloatingLabelInput
+                ref={titleTypeRef}
+                focused
+                label="Title Document Type (Optional)"
+                placeholder="e.g. Certificate of Occupancy"
+                value={verificationInput.titleType ?? undefined}
+                onChangeText={(v) => updateVerificationInput({ titleType: v || null })}
+                returnKeyType="next"
+                onSubmitEditing={() => titleNumberRef.current?.focus()}
+                blurOnSubmit={false}
+              />
+              <FloatingLabelInput
+                ref={titleNumberRef}
+                focused
+                label="Title/Reference Number (Optional)"
+                placeholder="e.g. LG/07/2019/00123"
+                value={verificationInput.titleNumber ?? undefined}
+                onChangeText={(v) => updateVerificationInput({ titleNumber: v || null })}
                 returnKeyType="done"
               />
               <View>

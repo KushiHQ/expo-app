@@ -202,11 +202,14 @@ export const HOSTING_QUERY = gql`
         declOwnership
         declLitigation
         declIndemnity
+        titleType
+        titleNumber
         createdAt
         lastUpdated
       }
       cautionFee
       serviceCharge
+      maxOccupants
       bookingApplicationsCount
     }
   }

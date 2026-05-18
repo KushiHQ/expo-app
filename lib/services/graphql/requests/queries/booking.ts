@@ -37,6 +37,7 @@ export const CALCULATE_HOSTING_FEE = gql`
       cautionFee
       serviceCharge
       legalFee
+      stampDuty
       guestServiceCharge
       hostServiceCharge
     }
@@ -144,6 +145,7 @@ export const BOOKINGS_QUERY = gql`
       phoneNumber
       cautionFee
       legalFee
+      stampDuty
       serviceCharge
     }
   }
@@ -222,6 +224,7 @@ export const BOOKING_QUERY = gql`
       cautionFee
       serviceCharge
       legalFee
+      stampDuty
     }
   }
 `;

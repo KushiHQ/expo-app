@@ -153,11 +153,14 @@ export const CREATE_UPDATE_HOSTING_MUTATION = gql`
           declOwnership
           declLitigation
           declIndemnity
+          titleType
+          titleNumber
           createdAt
           lastUpdated
         }
         cautionFee
         serviceCharge
+        maxOccupants
         bookingApplicationsCount
       }
     }

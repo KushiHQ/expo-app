@@ -34,6 +34,7 @@ export default function NewHostingStep5() {
   const colors = useThemeColors();
   const serviceChargeRef = useRef<TextInput>(null);
   const cautionFeeRef = useRef<TextInput>(null);
+  const maxOccupantsRef = useRef<TextInput>(null);
   const { data } = useBanksQuery();
   const { id } = useLocalSearchParams();
   const {
@@ -225,6 +226,23 @@ export default function NewHostingStep5() {
                     })
                   }
                   placeholder="100,000 (₦)"
+                  returnKeyType="next"
+                  onSubmitEditing={() => maxOccupantsRef.current?.focus()}
+                  blurOnSubmit={false}
+                />
+              </View>
+              <View className="flex-1">
+                <FloatingLabelInput
+                  ref={maxOccupantsRef}
+                  focused
+                  inputMode="numeric"
+                  label="Max Occupants (Optional)"
+                  value={input.maxOccupants != null ? String(input.maxOccupants) : undefined}
+                  onChangeText={(v) => {
+                    const parsed = parseInt(v, 10);
+                    updateInput({ maxOccupants: isNaN(parsed) ? undefined : parsed });
+                  }}
+                  placeholder="e.g. 4"
                   returnKeyType="done"
                 />
               </View>
