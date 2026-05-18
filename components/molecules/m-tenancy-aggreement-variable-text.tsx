@@ -64,7 +64,6 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
         variablesMap['COURT_STATE'] = hosting.state ?? '';
         variablesMap['LOCAL_GOVERNMENT_AREA'] = hosting.city ?? '';
         variablesMap['ARBITRATION_SEAT'] = hosting.city ?? '';
-        variablesMap['PERMITTED_USE'] = 'private residential dwelling';
         variablesMap['MEDIATION_INSTITUTION'] = mediationInstitutionLabel(hosting.state);
         variablesMap['COURT_JURISDICTION_PHRASE'] = courtJurisdictionPhrase(hosting.state);
 
