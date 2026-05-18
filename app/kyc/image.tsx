@@ -3,38 +3,38 @@ import {
   useCameraPermission,
   usePhotoOutput,
   Camera,
-} from 'react-native-vision-camera';
-import type { Face } from 'react-native-vision-camera-face-detector';
-import { useFaceDetectorOutput } from 'react-native-vision-camera-face-detector';
-import Stepper from '@/components/atoms/a-steppter';
-import DetailsLayout from '@/components/layouts/details';
-import { KYC_ONBOARDING_STEPS } from '@/lib/constants/kyc/onboarding';
-import { cast } from '@/lib/types/utils';
-import { Dimensions, View, StyleSheet, ColorValue } from 'react-native';
-import React, { useCallback, useEffect } from 'react';
-import ThemedText from '@/components/atoms/a-themed-text';
-import { hexToRgba } from '@/lib/utils/colors';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import Button from '@/components/atoms/a-button';
-import { Image } from 'expo-image';
-import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
-import { formMutation } from '@/lib/services/graphql/utils/fetch';
+} from "react-native-vision-camera";
+import type { Face } from "react-native-vision-camera-face-detector";
+import { useFaceDetectorOutput } from "react-native-vision-camera-face-detector";
+import Stepper from "@/components/atoms/a-steppter";
+import DetailsLayout from "@/components/layouts/details";
+import { KYC_ONBOARDING_STEPS } from "@/lib/constants/kyc/onboarding";
+import { cast } from "@/lib/types/utils";
+import { Dimensions, View, StyleSheet, ColorValue } from "react-native";
+import React, { useCallback, useEffect } from "react";
+import ThemedText from "@/components/atoms/a-themed-text";
+import { hexToRgba } from "@/lib/utils/colors";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import Button from "@/components/atoms/a-button";
+import { Image } from "expo-image";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
+import { formMutation } from "@/lib/services/graphql/utils/fetch";
 import {
   Kyc,
   UploadKycImageMutation,
   UploadKycImageMutationVariables,
   User,
-} from '@/lib/services/graphql/generated';
-import { UPLOAD_KYC_IMAGE } from '@/lib/services/graphql/requests/mutations/users';
-import { generateRNFile } from '@/lib/utils/file';
-import { handleError } from '@/lib/utils/error';
-import Toast from 'react-native-toast-message';
-import * as Haptics from 'expo-haptics';
-import { useUser } from '@/lib/hooks/user';
-import LoadingModal from '@/components/atoms/a-loading-modal';
-import { useRouter } from 'expo-router';
+} from "@/lib/services/graphql/generated";
+import { UPLOAD_KYC_IMAGE } from "@/lib/services/graphql/requests/mutations/users";
+import { generateRNFile } from "@/lib/utils/file";
+import { handleError } from "@/lib/utils/error";
+import Toast from "react-native-toast-message";
+import * as Haptics from "expo-haptics";
+import { useUser } from "@/lib/hooks/user";
+import LoadingModal from "@/components/atoms/a-loading-modal";
+import { useRouter } from "expo-router";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const FRAME_WIDTH = SCREEN_WIDTH * 0.65;
 const FRAME_HEIGHT = 340;
@@ -106,17 +106,19 @@ const CameraFrame = ({ borderColor }: { borderColor: ColorValue }) => {
 export default function KycImage() {
   const router = useRouter();
   const { updateUser, user } = useUser();
-  const device = useCameraDevice('front');
+  const device = useCameraDevice("front");
   const colors = useThemeColors();
   const [faceDetected, setFaceDetected] = React.useState(false);
   const { hasPermission, requestPermission } = useCameraPermission();
-  const [kycImage, setKycImage] = React.useState(user.user?.kyc?.image?.publicUrl);
+  const [kycImage, setKycImage] = React.useState(
+    user.user?.kyc?.image?.publicUrl,
+  );
   const [uploading, setUploading] = React.useState(false);
 
   const photoOutput = usePhotoOutput({ quality: 0.9 });
 
   useEffect(() => {
-    photoOutput.outputOrientation = 'up';
+    photoOutput.outputOrientation = "up";
   }, [photoOutput]);
 
   const onFacesDetected = useCallback((faces: Face[]) => {
@@ -144,16 +146,26 @@ export default function KycImage() {
     setFaceDetected(isCenteredX && isCenteredY && isGoodSize);
   }, []);
 
-  const faceOutput = useFaceDetectorOutput({
-    performanceMode: 'fast',
-    autoMode: true,
-    windowWidth: SCREEN_WIDTH,
-    windowHeight: SCREEN_HEIGHT,
-    onFacesDetected,
-    onError: (error: Error) => {
-      console.error('Face detection error:', error);
-    },
-  });
+  const faceDetectorOptions = React.useMemo(
+    () => ({
+      performanceMode: "fast" as const,
+      autoMode: true,
+      windowWidth: SCREEN_WIDTH,
+      windowHeight: SCREEN_HEIGHT,
+      onFacesDetected,
+      onError: (error: Error) => {
+        console.error("Face detection error:", error);
+      },
+    }),
+    [onFacesDetected],
+  );
+
+  const faceOutput = useFaceDetectorOutput(faceDetectorOptions);
+
+  const cameraOutputs = React.useMemo(
+    () => [photoOutput, faceOutput],
+    [photoOutput, faceOutput],
+  );
 
   useEffect(() => {
     if (!hasPermission) {
@@ -165,7 +177,7 @@ export default function KycImage() {
     try {
       const photo = await photoOutput.capturePhoto(
         {
-          flashMode: 'off',
+          flashMode: "off",
         },
         {},
       );
@@ -173,9 +185,7 @@ export default function KycImage() {
 
       let finalUri = `file://${tempPath}`;
 
-      // In Vision Camera v5, the captured photo might still have the raw sensor orientation.
-      // We use expo-image-manipulator to physically rotate the image based on the photo's orientation.
-      if (photo.orientation !== 'up') {
+      if (photo.orientation !== "up") {
         const rotationMap: Record<string, number> = {
           left: 90,
           down: 180,
@@ -183,10 +193,14 @@ export default function KycImage() {
         };
         const rotation = rotationMap[photo.orientation];
         if (rotation) {
-          const manipulated = await manipulateAsync(finalUri, [{ rotate: rotation }], {
-            compress: 0.9,
-            format: SaveFormat.JPEG,
-          });
+          const manipulated = await manipulateAsync(
+            finalUri,
+            [{ rotate: rotation }],
+            {
+              compress: 0.9,
+              format: SaveFormat.JPEG,
+            },
+          );
           finalUri = manipulated.uri;
         }
       }
@@ -194,7 +208,7 @@ export default function KycImage() {
       photo.dispose();
       setKycImage(finalUri);
     } catch (error) {
-      console.error('Failed to capture photo:', error);
+      console.error("Failed to capture photo:", error);
     }
   };
 
@@ -202,9 +216,12 @@ export default function KycImage() {
     if (!kycImage) return;
 
     setUploading(true);
-    formMutation<UploadKycImageMutation, UploadKycImageMutationVariables>(UPLOAD_KYC_IMAGE, {
-      file: generateRNFile(kycImage),
-    })
+    formMutation<UploadKycImageMutation, UploadKycImageMutationVariables>(
+      UPLOAD_KYC_IMAGE,
+      {
+        file: generateRNFile(kycImage),
+      },
+    )
       .then((res) => {
         if (res.error) {
           handleError(res.error);
@@ -212,9 +229,9 @@ export default function KycImage() {
         if (res.data) {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           Toast.show({
-            type: 'success',
-            text1: 'Success',
-            text2: 'KYC Image uploaded',
+            type: "success",
+            text1: "Success",
+            text2: "KYC Image uploaded",
           });
           updateUser({
             user: {
@@ -246,7 +263,7 @@ export default function KycImage() {
           >
             <Button
               disabled={!user.user?.kyc?.image?.publicUrl}
-              onPress={() => router.push('/kyc/nin')}
+              onPress={() => router.push("/kyc/nin")}
               type="primary"
               className="py-[18px]"
             >
@@ -265,7 +282,10 @@ export default function KycImage() {
             <View className="max-w-[400px] self-center">
               {kycImage ? (
                 <View style={styles.cameraContainer}>
-                  <Image source={{ uri: kycImage }} style={{ width: '100%', height: '100%' }} />
+                  <Image
+                    source={{ uri: kycImage }}
+                    style={{ width: "100%", height: "100%" }}
+                  />
                 </View>
               ) : (
                 device && (
@@ -274,10 +294,12 @@ export default function KycImage() {
                       style={StyleSheet.absoluteFill}
                       device={device}
                       isActive={true}
-                      outputs={[photoOutput, faceOutput]}
+                      outputs={cameraOutputs}
                       orientationSource="device"
                     />
-                    <CameraFrame borderColor={faceDetected ? colors.success : 'white'} />
+                    <CameraFrame
+                      borderColor={faceDetected ? colors.success : "white"}
+                    />
                   </View>
                 )
               )}
@@ -289,8 +311,9 @@ export default function KycImage() {
                   className="max-w-[400px] text-center"
                   style={{ color: hexToRgba(colors.text, 0.6) }}
                 >
-                  Please ensure your face is fully visible and well-lit. This image will be used to
-                  verify your identity against your NIN and BVN records.
+                  Please ensure your face is fully visible and well-lit. This
+                  image will be used to verify your identity against your NIN
+                  and BVN records.
                 </ThemedText>
                 <View className="max-w-[400px]  flex-row gap-4">
                   <Button
@@ -301,11 +324,13 @@ export default function KycImage() {
                     }}
                     className="mt-8 flex-1"
                   >
-                    <ThemedText style={{ color: colors.accent }}>Retake</ThemedText>
+                    <ThemedText style={{ color: colors.accent }}>
+                      Retake
+                    </ThemedText>
                   </Button>
                   <Button
                     onPress={handleUploadImage}
-                    disabled={!kycImage.startsWith('file')}
+                    disabled={!kycImage.startsWith("file")}
                     style={{
                       borderColor: hexToRgba(colors.primary, 0.7),
                       borderWidth: 1,
@@ -323,7 +348,8 @@ export default function KycImage() {
                   className="max-w-[400px] text-center"
                   style={{ color: hexToRgba(colors.text, 0.6) }}
                 >
-                  Please keep your face in center of the screen and facing forward
+                  Please keep your face in center of the screen and facing
+                  forward
                 </ThemedText>
                 <Button
                   onPress={handleCapture}
@@ -349,21 +375,21 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH * 0.8,
     maxWidth: 400,
     borderRadius: 12,
-    overflow: 'hidden',
-    position: 'relative',
+    overflow: "hidden",
+    position: "relative",
   },
   frameContainer: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   frameArea: {
     width: FRAME_WIDTH,
     height: FRAME_HEIGHT,
-    position: 'relative',
+    position: "relative",
   },
   corner: {
-    position: 'absolute',
+    position: "absolute",
     width: CORNER_LENGTH,
     height: CORNER_LENGTH,
   },
