@@ -129,7 +129,7 @@ export default function BookingApplicationStep1() {
 								!input.fullName ||
 								!input.email ||
 								!input.phoneNumber ||
-								!input.checkInDate ||
+								!input.commencementDate ||
 								!input.correspondenceAddress
 							}
 						>

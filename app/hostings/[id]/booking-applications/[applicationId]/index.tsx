@@ -48,11 +48,11 @@ export default function BookingApplicationDetails() {
 	});
 
 	const duration = React.useMemo(() => {
-		const checkinDate = data?.bookingApplication.checkInDate;
+		const commencementDate = data?.bookingApplication.commencementDate;
 		return hostingDuration(
 			hostingData?.hosting.paymentInterval,
 			data?.bookingApplication.intervalMultiplier,
-			checkinDate ? new Date(checkinDate) : undefined,
+			commencementDate ? new Date(commencementDate) : undefined,
 		);
 	}, [hostingData, data]);
 
@@ -241,10 +241,6 @@ export default function BookingApplicationDetails() {
 				onConfirm={handleMutate}
 			/>
 			<LoadingModal visible={updating} />
-		</>
-	);
-}
-ng} />
 		</>
 	);
 }

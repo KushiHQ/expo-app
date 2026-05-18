@@ -19,6 +19,7 @@ export const GOOGLE_SIGN_UP = gql`
         user {
           id
           email
+          kushiId
           createdAt
           lastUpdated
           profile {
@@ -69,6 +70,7 @@ export const REFRESH_TOKEN_MUTATION = gql`
         user {
           id
           email
+          kushiId
           createdAt
           lastUpdated
           profile {
@@ -135,6 +137,7 @@ export const GOOGLE_LOGIN = gql`
         user {
           id
           email
+          kushiId
           createdAt
           lastUpdated
           profile {
@@ -185,6 +188,7 @@ export const APPLE_LOGIN = gql`
         user {
           id
           email
+          kushiId
           createdAt
           lastUpdated
           profile {
@@ -235,6 +239,7 @@ export const APPLE_SIGN_UP = gql`
         user {
           id
           email
+          kushiId
           createdAt
           lastUpdated
           profile {
@@ -285,6 +290,7 @@ export const LOGIN_MUTATION = gql`
         user {
           id
           email
+          kushiId
           createdAt
           lastUpdated
           profile {

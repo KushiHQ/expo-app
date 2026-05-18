@@ -128,8 +128,8 @@ const DateAndDurationSection: React.FC<SubProps> = ({ booking, printing }) => {
 			<View className="flex-row items-center justify-between">
 				<PrintableLabel printing={printing}>Duration</PrintableLabel>
 				<PrintableText printing={printing}>
-					{new Date(booking.checkInDate ?? "").toLocaleDateString()} -{" "}
-					{new Date(booking.checkOutDate ?? "").toLocaleDateString()}
+					{new Date(booking.commencementDate ?? "").toLocaleDateString()} -{" "}
+					{new Date(booking.expiryDate ?? "").toLocaleDateString()}
 				</PrintableText>
 				<ThemedText
 					className="border px-2 rounded"
