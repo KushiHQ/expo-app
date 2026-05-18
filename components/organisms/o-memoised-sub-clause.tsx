@@ -41,7 +41,7 @@ const MemoizedSubClause = React.memo(
                 key={variable.name}
                 variable={variable}
                 index={vIdx}
-                providedValue={clause.providedValues[vIdx]?.value}
+                providedValue={clause.providedValues.find((v) => v.key === variable.name)?.value}
                 onUpdate={(v) =>
                   onUpdateVariable(sectionIndex, clauseIndex, {
                     key: variable.name,
