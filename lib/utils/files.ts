@@ -1,14 +1,12 @@
-import React from "react";
-import ViewShot from "react-native-view-shot";
-import * as Print from "expo-print";
-import * as Sharing from "expo-sharing";
+import React from 'react';
+import ViewShot from 'react-native-view-shot';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 
-export async function shareViewAsSinglePagePdf(
-	ref: React.RefObject<ViewShot | null>,
-) {
-	try {
-		const uri = await ref.current?.capture?.();
-		const html = `
+export async function shareViewAsSinglePagePdf(ref: React.RefObject<ViewShot | null>) {
+  try {
+    const uri = await ref.current?.capture?.();
+    const html = `
         <html>
           <head>
             <style>
@@ -29,36 +27,36 @@ export async function shareViewAsSinglePagePdf(
           </body>
         </html>
       `;
-		const { uri: pdfUri } = await Print.printToFileAsync({ html });
-		if (await Sharing.isAvailableAsync()) {
-			await Sharing.shareAsync(pdfUri, {
-				mimeType: "application/pdf",
-				dialogTitle: "Save or Share Receipt",
-			});
-		}
-	} catch {
-		alert("Oops, something went wrong while generating the PDF.");
-	}
+    const { uri: pdfUri } = await Print.printToFileAsync({ html });
+    if (await Sharing.isAvailableAsync()) {
+      await Sharing.shareAsync(pdfUri, {
+        mimeType: 'application/pdf',
+        dialogTitle: 'Save or Share Receipt',
+      });
+    }
+  } catch {
+    alert('Oops, something went wrong while generating the PDF.');
+  }
 }
 
 export async function shareViewAsImage(ref: React.RefObject<ViewShot | null>) {
-	try {
-		const imageUri = await ref.current?.capture?.();
+  try {
+    const imageUri = await ref.current?.capture?.();
 
-		if (!imageUri) {
-			throw new Error("Failed to capture the view.");
-		}
+    if (!imageUri) {
+      throw new Error('Failed to capture the view.');
+    }
 
-		if (await Sharing.isAvailableAsync()) {
-			await Sharing.shareAsync(imageUri, {
-				mimeType: "image/png",
-				dialogTitle: "Share or Save Image",
-			});
-		} else {
-			alert("Sharing is not available on this device.");
-		}
-	} catch (error) {
-		console.log(error);
-		alert("Oops, something went wrong while preparing the image.");
-	}
+    if (await Sharing.isAvailableAsync()) {
+      await Sharing.shareAsync(imageUri, {
+        mimeType: 'image/png',
+        dialogTitle: 'Share or Save Image',
+      });
+    } else {
+      alert('Sharing is not available on this device.');
+    }
+  } catch (error) {
+    console.log(error);
+    alert('Oops, something went wrong while preparing the image.');
+  }
 }

@@ -1,6 +1,6 @@
-import { Href, usePathname, useRouter } from "expo-router";
-import { useGalleryStore } from "../stores/gallery";
-import { cast } from "../types/utils";
+import { Href, usePathname, useRouter } from 'expo-router';
+import { useGalleryStore } from '../stores/gallery';
+import { cast } from '../types/utils';
 
 type CameraRedirectOptions = {
   clear?: boolean;
@@ -29,7 +29,7 @@ export const useCameraScreen = () => {
     }
     if (opts?.images?.length) {
       setGallery(opts.images);
-      path = `${path}${opts.images.map((img) => "&images=" + img)}`;
+      path = `${path}${opts.images.map((img) => '&images=' + img)}`;
     }
     if (opts?.multiple !== undefined) {
       path = `${path}&multiple=${opts.multiple}`;

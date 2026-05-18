@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
-import { Animated } from "react-native";
+import { useState, useEffect, useRef } from 'react';
+import { Animated } from 'react-native';
 
 interface UseCountUpProps {
-	targetNumber: number;
-	duration?: number;
+  targetNumber: number;
+  duration?: number;
 }
 
 /**
@@ -12,29 +12,26 @@ interface UseCountUpProps {
  * @param duration The duration of the animation in milliseconds (default: 500).
  * @returns The current number value during the animation.
  */
-export const useCountUp = ({
-	targetNumber,
-	duration = 500,
-}: UseCountUpProps): number => {
-	const [count, setCount] = useState(0);
+export const useCountUp = ({ targetNumber, duration = 500 }: UseCountUpProps): number => {
+  const [count, setCount] = useState(0);
 
-	const animatedValue = useRef(new Animated.Value(0)).current;
+  const animatedValue = useRef(new Animated.Value(0)).current;
 
-	useEffect(() => {
-		const listener = animatedValue.addListener(({ value }) => {
-			setCount(Number(value.toPrecision(2)));
-		});
+  useEffect(() => {
+    const listener = animatedValue.addListener(({ value }) => {
+      setCount(Number(value.toPrecision(2)));
+    });
 
-		Animated.timing(animatedValue, {
-			toValue: targetNumber,
-			duration: duration,
-			useNativeDriver: false,
-		}).start();
+    Animated.timing(animatedValue, {
+      toValue: targetNumber,
+      duration: duration,
+      useNativeDriver: false,
+    }).start();
 
-		return () => {
-			animatedValue.removeListener(listener);
-		};
-	}, [targetNumber, duration]);
+    return () => {
+      animatedValue.removeListener(listener);
+    };
+  }, [targetNumber, duration]);
 
-	return count;
+  return count;
 };

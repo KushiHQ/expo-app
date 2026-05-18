@@ -1,9 +1,9 @@
-import React from "react";
-import { Pressable } from "react-native";
-import * as Clipboard from "expo-clipboard";
-import { TablerCopyCheckFilled } from "../icons/i-copy";
-import { CustomSvgProps } from "@/lib/types/svgType";
-import * as Haptics from "expo-haptics";
+import React from 'react';
+import { Pressable } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
+import { TablerCopyCheckFilled } from '../icons/i-copy';
+import { CustomSvgProps } from '@/lib/types/svgType';
+import * as Haptics from 'expo-haptics';
 
 type Props = CustomSvgProps & {
   text: string;

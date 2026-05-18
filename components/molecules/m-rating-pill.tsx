@@ -1,8 +1,8 @@
-import { Pressable } from "react-native";
-import ThemedText from "../atoms/a-themed-text";
-import { hexToRgba } from "@/lib/utils/colors";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { HugeiconsStar } from "../icons/i-star";
+import { Pressable } from 'react-native';
+import ThemedText from '../atoms/a-themed-text';
+import { hexToRgba } from '@/lib/utils/colors';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { HugeiconsStar } from '../icons/i-star';
 
 type Props = {
   selected?: boolean;
@@ -15,22 +15,20 @@ const RatingPill: React.FC<Props> = ({ children, selected, onSelect }) => {
 
   return (
     <Pressable
-      className="border items-center gap-2 flex-row p-1 px-3 rounded-full"
+      className="flex-row items-center gap-2 rounded-full border p-1 px-3"
       onPress={() => onSelect?.(children)}
       style={{
-        borderColor: selected
-          ? hexToRgba(colors["accent"], 0.6)
-          : hexToRgba(colors["text"], 0.2),
+        borderColor: selected ? hexToRgba(colors['accent'], 0.6) : hexToRgba(colors['text'], 0.2),
       }}
     >
       <HugeiconsStar
         size={16}
-        color={hexToRgba(selected ? colors["accent"] : colors["text"], 0.9)}
+        color={hexToRgba(selected ? colors['accent'] : colors['text'], 0.9)}
       />
       <ThemedText
         style={{
           fontSize: 18,
-          color: hexToRgba(selected ? colors["accent"] : colors["text"], 0.9),
+          color: hexToRgba(selected ? colors['accent'] : colors['text'], 0.9),
         }}
       >
         {children}

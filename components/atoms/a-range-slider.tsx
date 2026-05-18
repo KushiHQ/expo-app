@@ -1,8 +1,8 @@
-import React, { FC, useCallback, useState } from "react";
-import { View, Text, StyleSheet, TextInput } from "react-native";
-import Slider from "rn-range-slider";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
+import React, { FC, useCallback, useState } from 'react';
+import { View, Text, StyleSheet, TextInput } from 'react-native';
+import Slider from 'rn-range-slider';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
 
 const formatValue = (value: number, currencySymbol: string): string => {
   if (value >= 1_000_000) {
@@ -32,7 +32,7 @@ const RangeSlider: FC<RangeSliderProps> = ({
   initialHigh = max,
   onChange,
   step = 1,
-  currencySymbol = "₦",
+  currencySymbol = '₦',
   withInput = false,
 }) => {
   const colors = useThemeColors();
@@ -47,21 +47,18 @@ const RangeSlider: FC<RangeSliderProps> = ({
     onChangeRef.current = onChange;
   }, [onChange]);
 
-  const onValuesChange = useCallback(
-    (newLow: number, newHigh: number) => {
-      setLow(newLow);
-      setHigh(newHigh);
-      setLowText(newLow.toString());
-      setHighText(newHigh.toString());
-      if (onChangeRef.current) {
-        onChangeRef.current(newLow, newHigh);
-      }
-    },
-    [],
-  );
+  const onValuesChange = useCallback((newLow: number, newHigh: number) => {
+    setLow(newLow);
+    setHigh(newHigh);
+    setLowText(newLow.toString());
+    setHighText(newHigh.toString());
+    if (onChangeRef.current) {
+      onChangeRef.current(newLow, newHigh);
+    }
+  }, []);
 
   const handleLowBlur = () => {
-    let parsed = parseInt(lowText.replace(/[^0-9]/g, ""), 10);
+    let parsed = parseInt(lowText.replace(/[^0-9]/g, ''), 10);
     if (isNaN(parsed) || parsed < min) parsed = min;
     if (parsed > high - step) parsed = high - step;
 
@@ -71,7 +68,7 @@ const RangeSlider: FC<RangeSliderProps> = ({
   };
 
   const handleHighBlur = () => {
-    let parsed = parseInt(highText.replace(/[^0-9]/g, ""), 10);
+    let parsed = parseInt(highText.replace(/[^0-9]/g, ''), 10);
     if (isNaN(parsed) || parsed > max) parsed = max;
     if (parsed < low + step) parsed = low + step;
 
@@ -82,38 +79,23 @@ const RangeSlider: FC<RangeSliderProps> = ({
 
   const renderThumb = useCallback(() => {
     return (
-      <View
-        style={[
-          styles.thumb,
-          { backgroundColor: colors.text, borderColor: colors.primary },
-        ]}
-      />
+      <View style={[styles.thumb, { backgroundColor: colors.text, borderColor: colors.primary }]} />
     );
   }, [colors]);
 
   const renderRail = useCallback(() => {
-    return (
-      <View
-        style={[styles.rail, { backgroundColor: hexToRgba(colors.text, 0.3) }]}
-      />
-    );
+    return <View style={[styles.rail, { backgroundColor: hexToRgba(colors.text, 0.3) }]} />;
   }, [colors]);
 
   const renderRailSelected = useCallback(() => {
-    return (
-      <View
-        style={[styles.railSelected, { backgroundColor: colors.primary }]}
-      />
-    );
+    return <View style={[styles.railSelected, { backgroundColor: colors.primary }]} />;
   }, [colors]);
 
   const renderLabel = useCallback(
     (value: number) => {
       return (
         <View style={[styles.labelBubble, { backgroundColor: colors.primary }]}>
-          <Text style={styles.labelText}>
-            {formatValue(value, currencySymbol)}
-          </Text>
+          <Text style={styles.labelText}>{formatValue(value, currencySymbol)}</Text>
         </View>
       );
     },
@@ -138,12 +120,7 @@ const RangeSlider: FC<RangeSliderProps> = ({
 
       {withInput && (
         <View style={styles.inputsContainer}>
-          <View
-            style={[
-              styles.inputWrapper,
-              { borderColor: hexToRgba(colors.text, 0.2) },
-            ]}
-          >
+          <View style={[styles.inputWrapper, { borderColor: hexToRgba(colors.text, 0.2) }]}>
             <Text style={{ color: hexToRgba(colors.text, 0.6) }}>Min</Text>
             <View style={styles.inputInner}>
               <Text style={{ color: colors.text }}>{currencySymbol}</Text>
@@ -157,19 +134,9 @@ const RangeSlider: FC<RangeSliderProps> = ({
             </View>
           </View>
 
-          <View
-            style={[
-              styles.dash,
-              { backgroundColor: hexToRgba(colors.text, 0.5) },
-            ]}
-          />
+          <View style={[styles.dash, { backgroundColor: hexToRgba(colors.text, 0.5) }]} />
 
-          <View
-            style={[
-              styles.inputWrapper,
-              { borderColor: hexToRgba(colors.text, 0.2) },
-            ]}
-          >
+          <View style={[styles.inputWrapper, { borderColor: hexToRgba(colors.text, 0.2) }]}>
             <Text style={{ color: hexToRgba(colors.text, 0.6) }}>Max</Text>
             <View style={styles.inputInner}>
               <Text style={{ color: colors.text }}>{currencySymbol}</Text>
@@ -190,10 +157,10 @@ const RangeSlider: FC<RangeSliderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
+    width: '100%',
   },
   slider: {
-    width: "100%",
+    width: '100%',
   },
   thumb: {
     width: 18,
@@ -216,22 +183,22 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   labelBubble: {
-    position: "absolute",
+    position: 'absolute',
     top: -40,
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 8,
   },
   labelText: {
-    color: "white",
+    color: 'white',
     fontSize: 14,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   // ✨ NEW STYLES
   inputsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginTop: 20,
     gap: 12,
   },
@@ -243,8 +210,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   inputInner: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 4,
     marginTop: 4,
   },

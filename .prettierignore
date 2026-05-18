@@ -1,0 +1,30 @@
+# Dependency directories
+node_modules/
+pnpm-lock.yaml
+package-lock.json
+
+# Native platform folders
+android/
+ios/
+
+# Build and cache directories
+.expo/
+dist/
+build/
+logs/
+
+# Config & Secret files
+*.json
+*.plist
+*.jks
+*.jks
+*.config.js
+.env
+google-services.json
+GoogleService-Info.plist
+
+# Git
+.git/
+
+# Assets
+assets/

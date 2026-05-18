@@ -1,9 +1,6 @@
-import moment from "moment";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
-import React, { useRef } from "react";
+import moment from 'moment';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useRef } from 'react';
 import {
   Pressable,
   RefreshControlProps,
@@ -11,27 +8,27 @@ import {
   StyleProp,
   View,
   ViewStyle,
-} from "react-native";
-import { useBreakpoint } from "@/lib/hooks/use-breakpoint";
-import { hexToRgba } from "@/lib/utils/colors";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import ThemedText from "../atoms/a-themed-text";
-import { ChevronLeft, Share2Icon } from "lucide-react-native";
-import { useLocalSearchParams, usePathname, useRouter } from "expo-router";
-import { Image } from "expo-image";
-import { EventEmitter } from "@/lib/utils/event-emitter";
-import { HugeiconsVideo01, SolarPhoneOutline } from "../icons/i-phone";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import Animated, { useAnimatedStyle } from "react-native-reanimated";
-import { useGradualKeyboardAnimation } from "@/lib/hooks/keyboard";
-import ThemedView from "../atoms/a-themed-view";
-import { IonNotificationsOutline } from "../icons/i-notifications";
-import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
-import { useUser } from "@/lib/hooks/user";
-import { buildCallURL } from "@/lib/utils/call";
-import { Fonts } from "@/lib/constants/theme";
+} from 'react-native';
+import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
+import { hexToRgba } from '@/lib/utils/colors';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import ThemedText from '../atoms/a-themed-text';
+import { ChevronLeft, Share2Icon } from 'lucide-react-native';
+import { useLocalSearchParams, usePathname, useRouter } from 'expo-router';
+import { Image } from 'expo-image';
+import { EventEmitter } from '@/lib/utils/event-emitter';
+import { HugeiconsVideo01, SolarPhoneOutline } from '../icons/i-phone';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import { useGradualKeyboardAnimation } from '@/lib/hooks/keyboard';
+import ThemedView from '../atoms/a-themed-view';
+import { IonNotificationsOutline } from '../icons/i-notifications';
+import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
+import { useUser } from '@/lib/hooks/user';
+import { buildCallURL } from '@/lib/utils/call';
+import { Fonts } from '@/lib/constants/theme';
 
-import * as Haptics from "expo-haptics";
+import * as Haptics from 'expo-haptics';
 
 type Props = {
   children?: React.ReactNode;
@@ -41,10 +38,10 @@ type Props = {
     online?: boolean;
     lastSeen?: string;
   };
-  variant?: "guest" | "host";
+  variant?: 'guest' | 'host';
   footer?: React.ReactNode;
-  backButton?: "translucent" | "solid" | "light";
-  background?: "transparent" | "solid" | "light";
+  backButton?: 'translucent' | 'solid' | 'light';
+  background?: 'transparent' | 'solid' | 'light';
   withShare?: boolean;
   withProfile?: boolean;
   refreshControl?: React.ReactElement<
@@ -67,9 +64,9 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
       title,
       avatar,
       footer,
-      variant = "guest",
-      backButton = "translucent",
-      background = "solid",
+      variant = 'guest',
+      backButton = 'translucent',
+      background = 'solid',
       withShare,
       withProfile,
       withNotifications,
@@ -102,7 +99,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
         }
       };
 
-      const routeName = path.split("/").pop();
+      const routeName = path.split('/').pop();
 
       EventEmitter.on(`scrollToTop:${routeName}`, handleScrollToTop);
 
@@ -121,13 +118,10 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
       };
     });
 
-    const Wrapper = background === "solid" ? ThemedView : View;
+    const Wrapper = background === 'solid' ? ThemedView : View;
 
     const Content = (
-      <View
-        className={scrollable ? "p-5 pt-0 flex-1" : "flex-1"}
-        style={contentStyles}
-      >
+      <View className={scrollable ? 'flex-1 p-5 pt-0' : 'flex-1'} style={contentStyles}>
         <View className="flex-1">{children}</View>
       </View>
     );
@@ -138,12 +132,12 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
           <View
             style={{
               flex: 1,
-              width: "100%",
+              width: '100%',
               maxWidth: isTablet ? 840 : undefined,
-              alignSelf: "center",
+              alignSelf: 'center',
             }}
           >
-            <View className="p-5 flex-row items-center justify-between">
+            <View className="flex-row items-center justify-between p-5">
               <View className="flex-row items-center gap-2">
                 {router.canGoBack() && (
                   <Pressable
@@ -152,23 +146,23 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                       router.back();
                     }}
                     aria-label="Go Back"
-                    className="w-11 items-center justify-center rounded-2xl h-11"
+                    className="h-11 w-11 items-center justify-center rounded-2xl"
                     style={{
                       backgroundColor:
-                        backButton === "translucent"
-                          ? colors["surface-01"]
-                          : backButton === "light"
-                            ? hexToRgba("#fff", 0.15)
+                        backButton === 'translucent'
+                          ? colors['surface-01']
+                          : backButton === 'light'
+                            ? hexToRgba('#fff', 0.15)
                             : colors.secondary,
                     }}
                   >
                     <ChevronLeft
                       size={22}
                       color={
-                        backButton === "translucent"
+                        backButton === 'translucent'
                           ? colors.text
-                          : backButton === "light"
-                            ? "#fff"
+                          : backButton === 'light'
+                            ? '#fff'
                             : colors.background
                       }
                     />
@@ -177,14 +171,14 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                 <View className="flex-row items-center gap-2">
                   {avatar && (
                     <View
-                      className="w-10 h-10 rounded-xl border overflow-hidden"
+                      className="h-10 w-10 overflow-hidden rounded-xl border"
                       style={{ borderColor: hexToRgba(colors.text, 0.2) }}
                     >
                       <Image
                         style={{
-                          height: "100%",
-                          width: "100%",
-                          objectFit: "cover",
+                          height: '100%',
+                          width: '100%',
+                          objectFit: 'cover',
                         }}
                         source={{
                           uri: avatar.image,
@@ -198,7 +192,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                       style={{
                         fontSize: avatar ? 12 : 16,
                         fontFamily: avatar ? Fonts.medium : Fonts.semibold,
-                        color: backButton === "light" ? "#fff" : colors.text,
+                        color: backButton === 'light' ? '#fff' : colors.text,
                       }}
                     >
                       {title}
@@ -209,14 +203,11 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                         style={{
                           fontSize: 10,
                           fontFamily: Fonts.regular,
-                          color: hexToRgba(
-                            backButton === "light" ? "#fff" : colors.text,
-                            0.5,
-                          ),
+                          color: hexToRgba(backButton === 'light' ? '#fff' : colors.text, 0.5),
                         }}
                       >
                         {avatar?.online
-                          ? "Online"
+                          ? 'Online'
                           : `Last seen ${moment(avatar?.lastSeen).fromNow()}`}
                       </ThemedText>
                     )}
@@ -230,9 +221,9 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       onShare?.();
                     }}
-                    className="h-11 w-11 rounded-2xl justify-center items-center border"
+                    className="h-11 w-11 items-center justify-center rounded-2xl border"
                     style={{
-                      backgroundColor: colors["surface-01"],
+                      backgroundColor: colors['surface-01'],
                       borderColor: hexToRgba(colors.text, 0.08),
                     }}
                   >
@@ -243,11 +234,11 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                   <Pressable
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      router.push(buildCallURL(String(id), "voice", true));
+                      router.push(buildCallURL(String(id), 'voice', true));
                     }}
-                    className="h-11 w-11 rounded-2xl justify-center items-center border"
+                    className="h-11 w-11 items-center justify-center rounded-2xl border"
                     style={{
-                      backgroundColor: colors["surface-01"],
+                      backgroundColor: colors['surface-01'],
                       borderColor: hexToRgba(colors.text, 0.08),
                     }}
                   >
@@ -258,11 +249,11 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                   <Pressable
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      router.push(buildCallURL(String(id), "video", true));
+                      router.push(buildCallURL(String(id), 'video', true));
                     }}
-                    className="h-11 w-11 rounded-2xl justify-center items-center border"
+                    className="h-11 w-11 items-center justify-center rounded-2xl border"
                     style={{
-                      backgroundColor: colors["surface-01"],
+                      backgroundColor: colors['surface-01'],
                       borderColor: hexToRgba(colors.text, 0.08),
                     }}
                   >
@@ -273,42 +264,34 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                   <Pressable
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      router.push("/users/notifications");
+                      router.push('/users/notifications');
                     }}
                   >
-                    <IonNotificationsOutline
-                      color={hexToRgba(colors["text"], 0.7)}
-                    />
+                    <IonNotificationsOutline color={hexToRgba(colors['text'], 0.7)} />
                   </Pressable>
                 )}
                 {withProfile && (
                   <Pressable
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      router.push(
-                        variant === "guest"
-                          ? "/guest/profile"
-                          : "/host/profile",
-                      );
+                      router.push(variant === 'guest' ? '/guest/profile' : '/host/profile');
                     }}
-                    className="w-10 h-10 rounded-xl border overflow-hidden"
+                    className="h-10 w-10 overflow-hidden rounded-xl border"
                     style={{
-                      borderColor: hexToRgba(colors["text"], 0.6),
+                      borderColor: hexToRgba(colors['text'], 0.6),
                       borderWidth: 2,
                     }}
                   >
                     <Image
                       style={{
-                        height: "100%",
-                        width: "100%",
-                        objectFit: "cover",
+                        height: '100%',
+                        width: '100%',
+                        objectFit: 'cover',
                       }}
                       source={{
                         uri:
                           user.user?.profile?.image?.publicUrl ??
-                          getDefaultProfileImageUrl(
-                            user.user?.profile.fullName ?? "",
-                          ),
+                          getDefaultProfileImageUrl(user.user?.profile.fullName ?? ''),
                       }}
                     />
                   </Pressable>
@@ -352,6 +335,6 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
   },
 );
 
-DetailsLayout.displayName = "DetailsLayout";
+DetailsLayout.displayName = 'DetailsLayout';
 
 export default DetailsLayout;

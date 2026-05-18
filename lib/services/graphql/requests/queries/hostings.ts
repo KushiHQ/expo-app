@@ -1,4 +1,4 @@
-import { gql } from "urql";
+import { gql } from 'urql';
 
 export const AI_HOSTING_CHAT_PREDICTIONS = gql`
   query AiHostingSearchPredictions($userInput: String!) {
@@ -269,10 +269,7 @@ export const SAVED_HOSTING_FOLDER_QUERY = gql`
 `;
 
 export const SAVED_HOSTINGS_QUERY = gql`
-  query SavedHostings(
-    $filters: SavedHostingFilterInput
-    $pagination: PaginationInput
-  ) {
+  query SavedHostings($filters: SavedHostingFilterInput, $pagination: PaginationInput) {
     savedHostings(filters: $filters, pagination: $pagination) {
       image {
         id
@@ -306,10 +303,7 @@ export const SAVED_HOSTING_QUERY = gql`
 `;
 
 export const HOST_LISTINGS_QUERY = gql`
-  query HostListings(
-    $pagination: PaginationInput
-    $filters: HostingFilterInput
-  ) {
+  query HostListings($pagination: PaginationInput, $filters: HostingFilterInput) {
     hostings(pagination: $pagination, filters: $filters) {
       id
       coverImage {

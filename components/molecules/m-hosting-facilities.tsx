@@ -1,16 +1,16 @@
-import React from "react";
-import { View } from "react-native";
-import ThemedText from "../atoms/a-themed-text";
-import { Fonts } from "@/lib/constants/theme";
-import { SimpleGrid } from "react-native-super-grid";
-import { FACILITY_ICONS } from "@/lib/types/enums/hosting-icons";
-import { cast } from "@/lib/types/utils";
-import { hexToRgba } from "@/lib/utils/colors";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { HostingQuery } from "@/lib/services/graphql/generated";
+import React from 'react';
+import { View } from 'react-native';
+import ThemedText from '../atoms/a-themed-text';
+import { Fonts } from '@/lib/constants/theme';
+import { SimpleGrid } from 'react-native-super-grid';
+import { FACILITY_ICONS } from '@/lib/types/enums/hosting-icons';
+import { cast } from '@/lib/types/utils';
+import { hexToRgba } from '@/lib/utils/colors';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { HostingQuery } from '@/lib/services/graphql/generated';
 
 type Props = {
-  hosting?: HostingQuery["hosting"];
+  hosting?: HostingQuery['hosting'];
 };
 
 const HostingFacilities: React.FC<Props> = ({ hosting }) => {
@@ -18,10 +18,7 @@ const HostingFacilities: React.FC<Props> = ({ hosting }) => {
 
   return (
     <View className="mt-8">
-      <ThemedText
-        className="mb-2"
-        style={{ fontFamily: Fonts.medium, fontSize: 18 }}
-      >
+      <ThemedText className="mb-2" style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
         Facilities
       </ThemedText>
       <SimpleGrid
@@ -33,16 +30,12 @@ const HostingFacilities: React.FC<Props> = ({ hosting }) => {
           return (
             <View className="items-center justify-center py-1">
               <View
-                className="w-6 h-6 items-center justify-center rounded-full"
+                className="h-6 w-6 items-center justify-center rounded-full"
                 style={{ backgroundColor: hexToRgba(colors.primary, 0.3) }}
               >
                 <Icon color={colors.primary} size={14} />
               </View>
-              <ThemedText
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                style={{ fontSize: 12 }}
-              >
+              <ThemedText numberOfLines={1} ellipsizeMode="tail" style={{ fontSize: 12 }}>
                 {item}
               </ThemedText>
             </View>

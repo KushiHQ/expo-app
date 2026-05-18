@@ -1,4 +1,4 @@
-import { gql } from "urql";
+import { gql } from 'urql';
 
 export const USER_PHONE_NUMBERS = gql`
   query UserPhoneNumers($pagination: PaginationInput) {

@@ -1,7 +1,7 @@
-import React, { FC } from "react";
-import { View, StyleSheet, StyleProp, ViewStyle } from "react-native";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
+import React, { FC } from 'react';
+import { View, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
 
 interface RatingRangeProps {
   value: number;
@@ -10,12 +10,7 @@ interface RatingRangeProps {
   color?: string;
 }
 
-const RatingRange: FC<RatingRangeProps> = ({
-  value,
-  max,
-  containerStyle,
-  color,
-}) => {
+const RatingRange: FC<RatingRangeProps> = ({ value, max, containerStyle, color }) => {
   const colors = useThemeColors();
 
   const percentage = (value / max) * 100;
@@ -52,13 +47,13 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   rangeBar: {
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
     borderRadius: 3,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   valueBar: {
-    height: "100%",
+    height: '100%',
     borderRadius: 3,
   },
 });

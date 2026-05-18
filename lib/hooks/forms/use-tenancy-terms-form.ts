@@ -1,6 +1,6 @@
-import React from "react";
-import { useFocusEffect, useRouter } from "expo-router";
-import { useHostingForm } from "@/lib/hooks/hosting-form";
+import React from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useHostingForm } from '@/lib/hooks/hosting-form';
 import {
   SubClause,
   SubClauseValueInput,
@@ -9,14 +9,14 @@ import {
   UpdateHostMutationVariables,
   useAuthHostQuery,
   useTenancyAgreementTemplateQuery,
-} from "@/lib/services/graphql/generated";
-import { handleError } from "@/lib/utils/error";
-import Toast from "react-native-toast-message";
-import { useGalleryStore } from "@/lib/stores/gallery";
-import { formMutation } from "@/lib/services/graphql/utils/fetch";
-import { UPDATE_HOST } from "@/lib/services/graphql/requests/mutations/users";
-import { generateRNFile } from "@/lib/utils/file";
-import { cleanupAgreementTemplateInput } from "@/lib/utils/hosting/tenancyAgreement";
+} from '@/lib/services/graphql/generated';
+import { handleError } from '@/lib/utils/error';
+import Toast from 'react-native-toast-message';
+import { useGalleryStore } from '@/lib/stores/gallery';
+import { formMutation } from '@/lib/services/graphql/utils/fetch';
+import { UPDATE_HOST } from '@/lib/services/graphql/requests/mutations/users';
+import { generateRNFile } from '@/lib/utils/file';
+import { cleanupAgreementTemplateInput } from '@/lib/utils/hosting/tenancyAgreement';
 
 export const useTenancyTermsForm = (id: string) => {
   const router = useRouter();
@@ -30,8 +30,7 @@ export const useTenancyTermsForm = (id: string) => {
     fetching: fetchingHosting,
   } = useHostingForm(id);
   const { gallery } = useGalleryStore();
-  const [{ data: hostQueryData, fetching: hostFetching }, refetchHost] =
-    useAuthHostQuery();
+  const [{ data: hostQueryData, fetching: hostFetching }, refetchHost] = useAuthHostQuery();
   const [{ data: templateData, fetching: templateFetching }, refetchTemplate] =
     useTenancyAgreementTemplateQuery();
 
@@ -60,13 +59,7 @@ export const useTenancyTermsForm = (id: string) => {
   const [isReadyToInitialize, setIsReadyToInitialize] = React.useState(false);
 
   React.useEffect(() => {
-    if (
-      !fetchingHosting &&
-      !templateFetching &&
-      hosting &&
-      templateData &&
-      input.id
-    ) {
+    if (!fetchingHosting && !templateFetching && hosting && templateData && input.id) {
       setIsReadyToInitialize(true);
     }
   }, [fetchingHosting, templateFetching, hosting, templateData]);
@@ -77,39 +70,33 @@ export const useTenancyTermsForm = (id: string) => {
         const currentTemplate = input.tenancyAgreementTemplate;
 
         if (!currentTemplate || currentTemplate.sections.length === 0) {
-          const processedSections =
-            allTemplateSections
-              .reduce(
-                (acc, { __typename, ...section }) => {
-                  let activeSubClauses = section.subClauses
-                    .filter((sub) => sub.isActive || sub.isMandatory)
-                    .sort((a, b) => a.priority - b.priority);
+          const processedSections = allTemplateSections
+            .reduce((acc, { __typename, ...section }) => {
+              let activeSubClauses = section.subClauses
+                .filter((sub) => sub.isActive || sub.isMandatory)
+                .sort((a, b) => a.priority - b.priority);
 
-                  if (!input.serviceCharge) {
-                    activeSubClauses = activeSubClauses.filter(
-                      (sub) => sub.id !== "sub_service_charge",
-                    );
-                  }
-                  if (!input.cautionFee) {
-                    activeSubClauses = activeSubClauses.filter(
-                      (sub) => sub.id !== "sub_caution",
-                    );
-                  }
+              if (!input.serviceCharge) {
+                activeSubClauses = activeSubClauses.filter(
+                  (sub) => sub.id !== 'sub_service_charge',
+                );
+              }
+              if (!input.cautionFee) {
+                activeSubClauses = activeSubClauses.filter((sub) => sub.id !== 'sub_caution');
+              }
 
-                  if (
-                    activeSubClauses.length > 0 ||
-                    !section.subClauses.length
-                  ) {
-                    acc.push({ ...section, subClauses: activeSubClauses });
-                  }
-                  return acc;
-                },
-                [] as TenancySection[],
-              )
-              .sort((a, b) => a.priority - b.priority);
+              if (activeSubClauses.length > 0 || !section.subClauses.length) {
+                acc.push({ ...section, subClauses: activeSubClauses });
+              }
+              return acc;
+            }, [] as TenancySection[])
+            .sort((a, b) => a.priority - b.priority);
 
           updateInput({
-            tenancyAgreementTemplate: { sections: processedSections, totalSections: processedSections.length },
+            tenancyAgreementTemplate: {
+              sections: processedSections,
+              totalSections: processedSections.length,
+            },
           });
 
           templateInitialized.current = true;
@@ -123,37 +110,25 @@ export const useTenancyTermsForm = (id: string) => {
   useFocusEffect(
     React.useCallback(() => {
       let signature = gallery.at(0);
-      if (
-        signature &&
-        !hostQueryData?.authHost.signature?.publicUrl &&
-        !hostFetching
-      ) {
+      if (signature && !hostQueryData?.authHost.signature?.publicUrl && !hostFetching) {
         setUploading(true);
-        formMutation<UpdateHostMutation, UpdateHostMutationVariables>(
-          UPDATE_HOST,
-          {
-            input: { signature: generateRNFile(signature) },
-          },
-        )
+        formMutation<UpdateHostMutation, UpdateHostMutationVariables>(UPDATE_HOST, {
+          input: { signature: generateRNFile(signature) },
+        })
           .then((res) => {
             if (res.error) handleError(res.error);
             if (res.data) {
-              refetchHost({ requestPolicy: "network-only" });
+              refetchHost({ requestPolicy: 'network-only' });
               Toast.show({
-                type: "success",
-                text1: "Success",
+                type: 'success',
+                text1: 'Success',
                 text2: res.data.updateHost.message,
               });
             }
           })
           .finally(() => setUploading(false));
       }
-    }, [
-      gallery,
-      hostFetching,
-      hostQueryData?.authHost.signature?.publicUrl,
-      refetchHost,
-    ]),
+    }, [gallery, hostFetching, hostQueryData?.authHost.signature?.publicUrl, refetchHost]),
   );
 
   const handleMutate = () => {
@@ -161,12 +136,10 @@ export const useTenancyTermsForm = (id: string) => {
       for (const subClause of section.subClauses) {
         if (subClause.requiredVariables.length > 0) {
           for (const variable of subClause.requiredVariables) {
-            if (
-              !subClause.providedValues.find((v) => v.key === variable.name)
-            ) {
+            if (!subClause.providedValues.find((v) => v.key === variable.name)) {
               Toast.show({
-                type: "error",
-                text1: "Missing Value",
+                type: 'error',
+                text1: 'Missing Value',
                 text2: `Please provide a value for ${variable.name}`,
               });
               return;
@@ -178,22 +151,18 @@ export const useTenancyTermsForm = (id: string) => {
     mutate({
       input: {
         ...input,
-        tenancyAgreementTemplate: cleanupAgreementTemplateInput(
-          input.tenancyAgreementTemplate!,
-        ),
+        tenancyAgreementTemplate: cleanupAgreementTemplateInput(input.tenancyAgreementTemplate!),
       },
     }).then((res) => {
       if (res.error) handleError(res.error);
       if (res.data) {
         Toast.show({
-          type: "success",
-          text1: "Success",
+          type: 'success',
+          text1: 'Success',
           text2: res.data.createOrUpdateHosting.message,
         });
         refetch();
-        router.push(
-          `/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`,
-        );
+        router.push(`/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`);
       }
     });
   };
@@ -211,9 +180,7 @@ export const useTenancyTermsForm = (id: string) => {
         subClauses: sec.subClauses.map((sub, cIdx) => {
           if (cIdx !== subClauseIndex) return sub;
           const newProvidedValues = [...sub.providedValues];
-          const vIndex = newProvidedValues.findIndex(
-            (v) => v.key === variable.key,
-          );
+          const vIndex = newProvidedValues.findIndex((v) => v.key === variable.key);
           if (vIndex > -1) {
             newProvidedValues[vIndex] = variable;
           } else {
@@ -223,7 +190,9 @@ export const useTenancyTermsForm = (id: string) => {
         }),
       };
     });
-    updateInput({ tenancyAgreementTemplate: { sections: newSections, totalSections: newSections.length } });
+    updateInput({
+      tenancyAgreementTemplate: { sections: newSections, totalSections: newSections.length },
+    });
   }
 
   function toggleSection(section: TenancySection) {
@@ -231,14 +200,17 @@ export const useTenancyTermsForm = (id: string) => {
       sections: [...(input.tenancyAgreementTemplate?.sections ?? [])],
     };
     if (toUpdate.sections.find((sec) => sec.id === section.id)) {
-      toUpdate.sections = toUpdate.sections.filter(
-        (sec) => sec.id !== section.id,
-      );
+      toUpdate.sections = toUpdate.sections.filter((sec) => sec.id !== section.id);
     } else {
       toUpdate.sections.push(section);
     }
     toUpdate.sections.sort((a, b) => a.priority - b.priority);
-    updateInput({ tenancyAgreementTemplate: { sections: toUpdate.sections, totalSections: toUpdate.sections.length } });
+    updateInput({
+      tenancyAgreementTemplate: {
+        sections: toUpdate.sections,
+        totalSections: toUpdate.sections.length,
+      },
+    });
   }
 
   function toggleSubClause(parentSectionId: string, subClause: SubClause) {
@@ -247,9 +219,7 @@ export const useTenancyTermsForm = (id: string) => {
       ...sec,
       subClauses: [...sec.subClauses],
     }));
-    const sectionIndex = newSections.findIndex(
-      (sec) => sec.id === parentSectionId,
-    );
+    const sectionIndex = newSections.findIndex((sec) => sec.id === parentSectionId);
 
     if (sectionIndex > -1) {
       const subIndex = newSections[sectionIndex].subClauses.findIndex(
@@ -258,40 +228,34 @@ export const useTenancyTermsForm = (id: string) => {
       if (subIndex > -1) {
         newSections[sectionIndex].subClauses.splice(subIndex, 1);
       } else {
-        if (subClause.id === "sub_caution" && !input.cautionFee) {
+        if (subClause.id === 'sub_caution' && !input.cautionFee) {
           Toast.show({
-            type: "error",
-            text1: "Missing Value",
-            text2: "Please provide caution fee...",
+            type: 'error',
+            text1: 'Missing Value',
+            text2: 'Please provide caution fee...',
           });
           return;
-        } else if (
-          subClause.id === "sub_service_charge" &&
-          !input.serviceCharge
-        ) {
+        } else if (subClause.id === 'sub_service_charge' && !input.serviceCharge) {
           Toast.show({
-            type: "error",
-            text1: "Missing Value",
-            text2: "Please provide service charge...",
+            type: 'error',
+            text1: 'Missing Value',
+            text2: 'Please provide service charge...',
           });
           return;
         }
         newSections[sectionIndex].subClauses.push(subClause);
       }
-      newSections[sectionIndex].subClauses.sort(
-        (a, b) => a.priority - b.priority,
-      );
+      newSections[sectionIndex].subClauses.sort((a, b) => a.priority - b.priority);
     } else {
-      const parentSection =
-        allTemplateSections.find(
-          (s) => s.id === parentSectionId,
-        );
+      const parentSection = allTemplateSections.find((s) => s.id === parentSectionId);
       if (parentSection) {
         newSections.push({ ...parentSection, subClauses: [subClause] });
       }
     }
     newSections.sort((a, b) => a.priority - b.priority);
-    updateInput({ tenancyAgreementTemplate: { sections: newSections, totalSections: newSections.length } });
+    updateInput({
+      tenancyAgreementTemplate: { sections: newSections, totalSections: newSections.length },
+    });
   }
 
   const hasSection = React.useCallback(

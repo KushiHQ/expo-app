@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type DownloadsStore = {
   downloads: Record<string, string>;
@@ -33,6 +33,6 @@ export const useDownloadsStore = create<DownloadsStore>()(
         return null;
       },
     }),
-    { name: "downloads-store", storage: createJSONStorage(() => AsyncStorage) },
+    { name: 'downloads-store', storage: createJSONStorage(() => AsyncStorage) },
   ),
 );

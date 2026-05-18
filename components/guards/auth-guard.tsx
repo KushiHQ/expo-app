@@ -1,8 +1,8 @@
-import React from "react";
-import { useUser } from "@/lib/hooks/user";
-import { Redirect, usePathname, useLocalSearchParams } from "expo-router";
-import { View } from "react-native";
-import LoadingModal from "../atoms/a-loading-modal";
+import React from 'react';
+import { useUser } from '@/lib/hooks/user';
+import { Redirect, usePathname, useLocalSearchParams } from 'expo-router';
+import { View } from 'react-native';
+import LoadingModal from '../atoms/a-loading-modal';
 
 interface Props {
   children: React.ReactNode;
@@ -20,7 +20,7 @@ export const AuthGuard: React.FC<Props> = ({ children }) => {
   // Construct the full URL to return to
   const queryString = Object.entries(params)
     .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
-    .join("&");
+    .join('&');
 
   const fullUrl = queryString ? `${pathname}?${queryString}` : pathname;
 

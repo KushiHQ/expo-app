@@ -5,13 +5,13 @@
  * @returns An rgba() string (e.g., 'rgba(230, 244, 254, 0.5)')
  */
 export const hexToRgba = (hex: string, alpha: number): string => {
-  let cleanHex = hex.replace("#", "").toUpperCase();
+  let cleanHex = hex.replace('#', '').toUpperCase();
 
   if (cleanHex.length === 3) {
     cleanHex = cleanHex
-      .split("")
+      .split('')
       .map((char) => char + char)
-      .join("");
+      .join('');
   }
 
   if (cleanHex.length !== 6) {
@@ -25,7 +25,7 @@ export const hexToRgba = (hex: string, alpha: number): string => {
     const b = parseInt(cleanHex.substring(4, 6), 16);
 
     if (isNaN(r) || isNaN(g) || isNaN(b)) {
-      throw new Error("Parsing resulted in NaN");
+      throw new Error('Parsing resulted in NaN');
     }
 
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;

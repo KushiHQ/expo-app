@@ -5,7 +5,7 @@
  */
 export const capitalize = (str: string, words: boolean = false): string => {
   if (!str) {
-    return "";
+    return '';
   }
   if (words) {
     return str.replace(/\b\w/g, (char) => char.toUpperCase());
@@ -26,7 +26,7 @@ export const slugify = (text: string) => {
     .toString()
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, "-") // Replace spaces with -
-    .replace(/[^\w-]+/g, "") // Remove all non-word chars
-    .replace(/--+/g, "-"); // Replace multiple - with single -
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\w-]+/g, '') // Remove all non-word chars
+    .replace(/--+/g, '-'); // Replace multiple - with single -
 };

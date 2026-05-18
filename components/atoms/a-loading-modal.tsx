@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from "react";
-import { Modal, View, StyleSheet, Animated, Easing } from "react-native";
-import Logo from "../../assets/vectors/logo.svg";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
+import React, { useEffect, useRef } from 'react';
+import { Modal, View, StyleSheet, Animated, Easing } from 'react-native';
+import Logo from '../../assets/vectors/logo.svg';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
 
 type Props = {
   visible: boolean;
@@ -36,21 +36,9 @@ const LoadingModal: React.FC<Props> = ({ visible }) => {
   }, [visible, scaleAnim]);
 
   return (
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={visible}
-      onRequestClose={() => { }}
-    >
-      <View
-        style={[
-          styles.modalOverlay,
-          { backgroundColor: hexToRgba(colors.text, 0.2) },
-        ]}
-      >
-        <Animated.View
-          style={[styles.logoContainer, { transform: [{ scale: scaleAnim }] }]}
-        >
+    <Modal animationType="fade" transparent={true} visible={visible} onRequestClose={() => {}}>
+      <View style={[styles.modalOverlay, { backgroundColor: hexToRgba(colors.text, 0.2) }]}>
+        <Animated.View style={[styles.logoContainer, { transform: [{ scale: scaleAnim }] }]}>
           <Logo width={100} height={100} />
         </Animated.View>
       </View>
@@ -61,12 +49,12 @@ const LoadingModal: React.FC<Props> = ({ visible }) => {
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   logoContainer: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

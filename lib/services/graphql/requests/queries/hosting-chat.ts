@@ -1,4 +1,4 @@
-import { gql } from "urql";
+import { gql } from 'urql';
 
 export const USER_CHATS_QUERY = gql`
   query UserChats($filter: HostingChatFilter, $pagination: PaginationInput) {

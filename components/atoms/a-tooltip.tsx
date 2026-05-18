@@ -1,18 +1,18 @@
-import React, { useRef, useState } from "react";
-import { View, StyleSheet, Pressable, Dimensions } from "react-native";
+import React, { useRef, useState } from 'react';
+import { View, StyleSheet, Pressable, Dimensions } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
-} from "react-native-reanimated";
-import { Portal } from "react-native-paper";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import ThemedText from "../atoms/a-themed-text";
-import { hexToRgba } from "@/lib/utils/colors";
-import { scheduleOnRN } from "react-native-worklets";
+} from 'react-native-reanimated';
+import { Portal } from 'react-native-paper';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import ThemedText from '../atoms/a-themed-text';
+import { hexToRgba } from '@/lib/utils/colors';
+import { scheduleOnRN } from 'react-native-worklets';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface TooltipProps {
   title?: string;
@@ -21,12 +21,7 @@ interface TooltipProps {
   children: React.ReactNode;
 }
 
-const Tooltip: React.FC<TooltipProps> = ({
-  title,
-  className,
-  description,
-  children,
-}) => {
+const Tooltip: React.FC<TooltipProps> = ({ title, className, description, children }) => {
   const colors = useThemeColors();
   const triggerRef = useRef<View>(null);
 
@@ -58,19 +53,13 @@ const Tooltip: React.FC<TooltipProps> = ({
 
   const TOOLTIP_WIDTH = 220;
   const tooltipX = coords.x + coords.width / 2 - TOOLTIP_WIDTH / 2;
-  const safeX = Math.max(
-    10,
-    Math.min(tooltipX, SCREEN_WIDTH - TOOLTIP_WIDTH - 10),
-  );
+  const safeX = Math.max(10, Math.min(tooltipX, SCREEN_WIDTH - TOOLTIP_WIDTH - 10));
   const tooltipY = coords.y + 25;
 
   const rTooltipStyle = useAnimatedStyle(() => {
     return {
       opacity: animation.value,
-      transform: [
-        { scale: animation.value },
-        { translateY: (1 - animation.value) * 20 },
-      ],
+      transform: [{ scale: animation.value }, { translateY: (1 - animation.value) * 20 }],
     };
   });
 
@@ -84,10 +73,7 @@ const Tooltip: React.FC<TooltipProps> = ({
 
       {isVisible && (
         <Portal>
-          <Pressable
-            style={StyleSheet.absoluteFillObject}
-            onPress={closeTooltip}
-          >
+          <Pressable style={StyleSheet.absoluteFillObject} onPress={closeTooltip}>
             <Animated.View
               style={[
                 styles.tooltipBubble,
@@ -100,18 +86,12 @@ const Tooltip: React.FC<TooltipProps> = ({
               ]}
             >
               {title && (
-                <ThemedText
-                  type="semibold"
-                  style={[styles.title, { color: colors.background }]}
-                >
+                <ThemedText type="semibold" style={[styles.title, { color: colors.background }]}>
                   {title}
                 </ThemedText>
               )}
               <ThemedText
-                style={[
-                  styles.description,
-                  { color: hexToRgba(colors.background, 0.9) },
-                ]}
+                style={[styles.description, { color: hexToRgba(colors.background, 0.9) }]}
               >
                 {description}
               </ThemedText>
@@ -137,11 +117,11 @@ export default Tooltip;
 
 const styles = StyleSheet.create({
   tooltipBubble: {
-    position: "absolute",
+    position: 'absolute',
     width: 220,
     padding: 12,
     borderRadius: 12,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -157,10 +137,10 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   arrow: {
-    position: "absolute",
+    position: 'absolute',
     bottom: -5,
     width: 12,
     height: 12,
-    transform: [{ rotate: "45deg" }],
+    transform: [{ rotate: '45deg' }],
   },
 });

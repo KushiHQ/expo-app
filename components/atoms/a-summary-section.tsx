@@ -1,14 +1,12 @@
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
-import { View } from "react-native";
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
+import { View } from 'react-native';
 
-const SummarySection: React.FC<{ children?: React.ReactNode }> = ({
-  children,
-}) => {
+const SummarySection: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const colors = useThemeColors();
   return (
     <View
-      className="p-3 rounded-xl gap-2"
+      className="gap-2 rounded-xl p-3"
       style={{
         borderWidth: 2,
         borderColor: hexToRgba(colors.primary, 0.08),

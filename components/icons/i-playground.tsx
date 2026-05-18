@@ -1,10 +1,8 @@
-import { CustomSvgProps } from "@/lib/types/svgType";
-import React from "react";
-import Svg, { Path } from "react-native-svg";
+import { CustomSvgProps } from '@/lib/types/svgType';
+import React from 'react';
+import Svg, { Path } from 'react-native-svg';
 
-export const MaterialSymbolsLightPlaygroundOutline: React.FC<CustomSvgProps> = (
-  props,
-) => {
+export const MaterialSymbolsLightPlaygroundOutline: React.FC<CustomSvgProps> = (props) => {
   return (
     <Svg
       width={props.width ?? props.size ?? 24}

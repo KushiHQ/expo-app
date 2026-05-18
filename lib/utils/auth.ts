@@ -1,7 +1,7 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const ACCESS_TOKEN = "authToken";
-const REFRESH_TOKEN = "refreshToken";
+const ACCESS_TOKEN = 'authToken';
+const REFRESH_TOKEN = 'refreshToken';
 
 export type AuthToken = {
   access: string;

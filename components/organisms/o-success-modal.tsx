@@ -1,10 +1,10 @@
-import React from "react";
-import ThemedModal from "../molecules/m-modal";
-import { View } from "react-native";
-import { Image } from "expo-image";
-import ThemedText from "../atoms/a-themed-text";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
+import React from 'react';
+import ThemedModal from '../molecules/m-modal';
+import { View } from 'react-native';
+import { Image } from 'expo-image';
+import ThemedText from '../atoms/a-themed-text';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
 
 type Props = {
   title?: string;
@@ -14,13 +14,7 @@ type Props = {
   onClose: () => void;
 };
 
-const SuccessModal: React.FC<Props> = ({
-  open,
-  onClose,
-  title,
-  description,
-  action,
-}) => {
+const SuccessModal: React.FC<Props> = ({ open, onClose, title, description, action }) => {
   const colors = useThemeColors();
 
   return (
@@ -36,22 +30,16 @@ const SuccessModal: React.FC<Props> = ({
             style={{
               width: 250,
               height: 250,
-              objectFit: "cover",
+              objectFit: 'cover',
             }}
-            source={require("@/assets/images/success-check.png")}
+            source={require('@/assets/images/success-check.png')}
           />
         </View>
         <View className="items-center gap-4 pb-4">
-          <ThemedText
-            type="title"
-            style={{ color: colors.primary, fontSize: 22 }}
-          >
+          <ThemedText type="title" style={{ color: colors.primary, fontSize: 22 }}>
             {title}
           </ThemedText>
-          <ThemedText
-            className="text-center"
-            style={{ color: hexToRgba(colors.text, 0.6) }}
-          >
+          <ThemedText className="text-center" style={{ color: hexToRgba(colors.text, 0.6) }}>
             {description}
           </ThemedText>
           <View className="mt-4">{action}</View>

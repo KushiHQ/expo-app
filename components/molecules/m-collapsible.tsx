@@ -1,21 +1,17 @@
-import React, { useState } from "react";
-import { View, Pressable, StyleSheet, LayoutChangeEvent } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
-import { ChevronDown, CircleQuestionMark } from "lucide-react-native";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
-import ThemedText from "../atoms/a-themed-text";
-import Tooltip from "../atoms/a-tooltip";
-import Checkbox from "../atoms/a-checkbox";
+import React, { useState } from 'react';
+import { View, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { ChevronDown, CircleQuestionMark } from 'lucide-react-native';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
+import ThemedText from '../atoms/a-themed-text';
+import Tooltip from '../atoms/a-tooltip';
+import Checkbox from '../atoms/a-checkbox';
 
 interface CollapsibleProps {
   title: string;
   outline?: boolean;
-  tint?: "primary" | "success" | "default" | "shade";
+  tint?: 'primary' | 'success' | 'default' | 'shade';
   withCheckbox?: boolean;
   checked?: boolean;
   checkDisabled?: boolean;
@@ -28,7 +24,7 @@ interface CollapsibleProps {
 const Collapsible: React.FC<CollapsibleProps> = ({
   title,
   outline = true,
-  tint = "default",
+  tint = 'default',
   withCheckbox,
   checked,
   checkDisabled,
@@ -89,11 +85,11 @@ const Collapsible: React.FC<CollapsibleProps> = ({
   });
 
   function getTintColor() {
-    return tint === "success"
+    return tint === 'success'
       ? colors.success
-      : tint === "shade"
+      : tint === 'shade'
         ? colors.shade
-        : tint === "primary"
+        : tint === 'primary'
           ? colors.primary
           : colors.text;
   }
@@ -104,11 +100,11 @@ const Collapsible: React.FC<CollapsibleProps> = ({
         styles.container,
         {
           backgroundColor: outline
-            ? hexToRgba(getTintColor(), tint !== "default" ? 0.1 : 0.02)
-            : "transparent",
+            ? hexToRgba(getTintColor(), tint !== 'default' ? 0.1 : 0.02)
+            : 'transparent',
           borderColor: outline
-            ? hexToRgba(getTintColor(), tint !== "default" ? 0.1 : 0.02)
-            : "transparent",
+            ? hexToRgba(getTintColor(), tint !== 'default' ? 0.1 : 0.02)
+            : 'transparent',
         },
       ]}
     >
@@ -121,20 +117,12 @@ const Collapsible: React.FC<CollapsibleProps> = ({
         }}
       >
         <View className="flex-row items-center gap-2">
-          <ThemedText
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            type="semibold"
-            style={styles.title}
-          >
+          <ThemedText numberOfLines={1} ellipsizeMode="tail" type="semibold" style={styles.title}>
             {title}
           </ThemedText>
           {description && (
             <Tooltip title={title} description={description}>
-              <CircleQuestionMark
-                color={hexToRgba(colors.text, 0.7)}
-                size={14}
-              />
+              <CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={14} />
             </Tooltip>
           )}
         </View>
@@ -155,7 +143,7 @@ const Collapsible: React.FC<CollapsibleProps> = ({
 
       <Animated.View
         style={[styles.contentContainer, rContentStyle]}
-        pointerEvents={expanded ? "auto" : "none"}
+        pointerEvents={expanded ? 'auto' : 'none'}
       >
         <View onLayout={onLayout} style={styles.absoluteContent}>
           {hasMounted ? children : null}
@@ -169,27 +157,27 @@ export default Collapsible;
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
+    width: '100%',
     borderRadius: 12,
     borderWidth: 1,
-    overflow: "hidden",
+    overflow: 'hidden',
     marginBottom: 10,
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 16,
   },
   title: {
     fontSize: 16,
   },
   contentContainer: {
-    width: "100%",
-    overflow: "hidden",
+    width: '100%',
+    overflow: 'hidden',
   },
   absoluteContent: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     left: 0,
     right: 0,

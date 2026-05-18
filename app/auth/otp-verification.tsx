@@ -1,21 +1,21 @@
-import Button from "@/components/atoms/a-button";
-import OTPInput from "@/components/atoms/a-otp-input";
-import ThemedText from "@/components/atoms/a-themed-text";
-import AuthLayout from "@/components/layouts/auth";
-import useCountdown from "@/lib/hooks/use-countdown";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import Button from '@/components/atoms/a-button';
+import OTPInput from '@/components/atoms/a-otp-input';
+import ThemedText from '@/components/atoms/a-themed-text';
+import AuthLayout from '@/components/layouts/auth';
+import useCountdown from '@/lib/hooks/use-countdown';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import {
   Otpinput,
   useResendEmailVerificationOtpMutation,
   useVerifyEmailMutation,
-} from "@/lib/services/graphql/generated";
-import { cast } from "@/lib/types/utils";
-import { handleError } from "@/lib/utils/error";
-import { formatSeconds } from "@/lib/utils/time";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
-import { Pressable, View } from "react-native";
-import Toast from "react-native-toast-message";
+} from '@/lib/services/graphql/generated';
+import { cast } from '@/lib/types/utils';
+import { handleError } from '@/lib/utils/error';
+import { formatSeconds } from '@/lib/utils/time';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React from 'react';
+import { Pressable, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 export default function OTPVerification() {
   const router = useRouter();
@@ -35,8 +35,8 @@ export default function OTPVerification() {
       }
       if (res.data) {
         Toast.show({
-          type: "success",
-          text1: "Success",
+          type: 'success',
+          text1: 'Success',
           text2: res.data.verifyEmail.message,
         });
         router.replace(`/auth/sign-in?email=${inputs.email}`);
@@ -49,15 +49,15 @@ export default function OTPVerification() {
     mutateResend({ email: cast(inputs.email) }).then((res) => {
       if (res.error) {
         Toast.show({
-          type: "error",
+          type: 'error',
           text1: res.error.name,
           text2: res.error.message,
         });
       }
       if (res.data) {
         Toast.show({
-          type: "success",
-          text1: "Success",
+          type: 'success',
+          text1: 'Success',
           text2: res.data.resendEmailVerificationOtp.message,
         });
       }
@@ -71,13 +71,10 @@ export default function OTPVerification() {
     >
       <View className="mt-10 h-full flex-1 justify-between">
         <View className="gap-4">
-          <OTPInput
-            length={6}
-            onChangeText={(v) => setInputs((c) => ({ ...c, otp: v }))}
-          />
-          <View className="flex-row justify-between items-center my-2">
-            <ThemedText style={{ color: colors["accent"] }}>
-              {count > 0 ? `Time Remaining ${formatSeconds(count)} ` : ""}
+          <OTPInput length={6} onChangeText={(v) => setInputs((c) => ({ ...c, otp: v }))} />
+          <View className="my-2 flex-row items-center justify-between">
+            <ThemedText style={{ color: colors['accent'] }}>
+              {count > 0 ? `Time Remaining ${formatSeconds(count)} ` : ''}
             </ThemedText>
             <Pressable
               className="disabled:opacity-70"
@@ -91,9 +88,7 @@ export default function OTPVerification() {
             onPress={handlePress}
             loading={res.fetching}
             type="primary"
-            disabled={
-              res.fetching || inputs.otp?.length !== 6 || !inputs.email?.length
-            }
+            disabled={res.fetching || inputs.otp?.length !== 6 || !inputs.email?.length}
           >
             <ThemedText content="primary">Continue</ThemedText>
           </Button>

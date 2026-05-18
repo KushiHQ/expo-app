@@ -1,10 +1,10 @@
-import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
-import { Play, Pause } from "lucide-react-native";
-import { useAudioPlayer, useAudioPlayerStatus } from "expo-audio";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
-import { Fonts } from "@/lib/constants/theme";
+import React from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { Play, Pause } from 'lucide-react-native';
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
+import { Fonts } from '@/lib/constants/theme';
 
 type Props = {
   url: string;
@@ -12,8 +12,8 @@ type Props = {
 };
 
 const WAVEFORM_BARS = [
-  0.3, 0.5, 0.8, 1.0, 0.7, 0.4, 0.5, 0.8, 0.9, 0.6, 0.4, 0.6, 0.8, 1.0, 0.9,
-  0.7, 0.5, 0.4, 0.6, 0.8, 0.7, 0.5, 0.4, 0.6, 0.8, 0.9, 0.7, 0.5, 0.4, 0.3,
+  0.3, 0.5, 0.8, 1.0, 0.7, 0.4, 0.5, 0.8, 0.9, 0.6, 0.4, 0.6, 0.8, 1.0, 0.9, 0.7, 0.5, 0.4, 0.6,
+  0.8, 0.7, 0.5, 0.4, 0.6, 0.8, 0.9, 0.7, 0.5, 0.4, 0.3,
 ];
 
 const AudioPlayerBubble: React.FC<Props> = ({ url, isSender }) => {
@@ -40,25 +40,22 @@ const AudioPlayerBubble: React.FC<Props> = ({ url, isSender }) => {
   };
 
   const formatTime = (seconds: number) => {
-    if (isNaN(seconds)) return "0:00";
+    if (isNaN(seconds)) return '0:00';
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
-    return `${m}:${s < 10 ? "0" : ""}${s}`;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  const activeColor = isSender ? colors["primary-content"] : colors.text;
+  const activeColor = isSender ? colors['primary-content'] : colors.text;
   const inactiveColor = isSender
-    ? hexToRgba(colors["primary-content"], 0.3)
+    ? hexToRgba(colors['primary-content'], 0.3)
     : hexToRgba(colors.text, 0.2);
 
   return (
     <View style={styles.container}>
       <Pressable
         onPress={handlePlayPause}
-        style={[
-          styles.playBtn,
-          { backgroundColor: hexToRgba(activeColor, 0.15) },
-        ]}
+        style={[styles.playBtn, { backgroundColor: hexToRgba(activeColor, 0.15) }]}
       >
         {isPlaying ? (
           <Pause size={18} color={activeColor} fill={activeColor} />
@@ -94,8 +91,8 @@ const AudioPlayerBubble: React.FC<Props> = ({ url, isSender }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 10,
     minWidth: 210,
     paddingVertical: 4,
@@ -104,14 +101,14 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   waveform: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     height: 24,
   },
   bar: {
@@ -121,9 +118,9 @@ const styles = StyleSheet.create({
   time: {
     fontSize: 11,
     fontFamily: Fonts.medium,
-    fontVariant: ["tabular-nums"],
+    fontVariant: ['tabular-nums'],
     minWidth: 32,
-    textAlign: "right",
+    textAlign: 'right',
     opacity: 0.8,
   },
 });

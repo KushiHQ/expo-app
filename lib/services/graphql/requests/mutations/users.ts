@@ -1,4 +1,4 @@
-import { gql } from "urql";
+import { gql } from 'urql';
 
 export const UPDATE_HOST = gql`
   mutation UpdateHost($input: HostInput!) {

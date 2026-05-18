@@ -1,5 +1,5 @@
-import ChatScreen from "@/components/screens/chat";
+import ChatScreen from '@/components/screens/chat';
 
 export default function HostChat() {
-	return <ChatScreen variant="host"/>;
+  return <ChatScreen variant="host" />;
 }

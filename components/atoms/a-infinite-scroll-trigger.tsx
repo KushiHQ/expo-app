@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { View, ActivityIndicator, Dimensions } from "react-native";
+import React, { useEffect, useRef, useState } from 'react';
+import { View, ActivityIndicator, Dimensions } from 'react-native';
 
 interface InfiniteScrollTriggerProps {
   onInView: () => void;
@@ -21,7 +21,7 @@ export const InfiniteScrollTrigger = ({
     const intervalId = setInterval(() => {
       if (viewRef.current) {
         viewRef.current.measureInWindow((x, y, width, height) => {
-          const windowHeight = Dimensions.get("window").height;
+          const windowHeight = Dimensions.get('window').height;
 
           const isVisible = y < windowHeight + 50 && y + height > 0;
 
@@ -41,11 +41,7 @@ export const InfiniteScrollTrigger = ({
   if (!active) return null;
 
   return (
-    <View
-      ref={viewRef}
-      className="p-4 items-center justify-center w-full h-20"
-      collapsable={false}
-    >
+    <View ref={viewRef} className="h-20 w-full items-center justify-center p-4" collapsable={false}>
       {isLoading ? (
         <ActivityIndicator size="small" color="#0000ff" />
       ) : (

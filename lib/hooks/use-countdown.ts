@@ -1,13 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 type UseCountdownOptions = {
   onCountdownEnd?: () => void;
 };
 
-const useCountdown = (
-  initialSeconds: number,
-  options?: UseCountdownOptions,
-) => {
+const useCountdown = (initialSeconds: number, options?: UseCountdownOptions) => {
   const [count, setCount] = useState(initialSeconds);
   const [isRunning, setIsRunning] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);

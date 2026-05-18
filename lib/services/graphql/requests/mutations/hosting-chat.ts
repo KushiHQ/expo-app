@@ -1,4 +1,4 @@
-import { gql } from "urql";
+import { gql } from 'urql';
 
 export const INITIATE_HOSTING_CHAT_MUTATION = gql`
   mutation InitiateHostingChat($hostingId: String!) {
@@ -47,16 +47,8 @@ export const CLEAR_CHAT_UNREAD_MESSAGES = gql`
 `;
 
 export const SEND_CHAT_CALL_NOTIFICATION = gql`
-  mutation SendChatCallNotification(
-    $chatId: String!
-    $callType: CallType!
-    $callId: String!
-  ) {
-    sendChatCallNotification(
-      chatId: $chatId
-      callType: $callType
-      callId: $callId
-    ) {
+  mutation SendChatCallNotification($chatId: String!, $callType: CallType!, $callId: String!) {
+    sendChatCallNotification(chatId: $chatId, callType: $callType, callId: $callId) {
       message
     }
   }

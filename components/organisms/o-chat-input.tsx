@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   TextInput,
@@ -7,24 +7,20 @@ import {
   Platform,
   Keyboard,
   Pressable,
-} from "react-native";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
-import { Send, Mic, Camera, Paperclip } from "lucide-react-native";
-import { Fonts } from "@/lib/constants/theme";
-import { twMerge } from "tailwind-merge";
-import * as DocumentPicker from "expo-document-picker";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCameraScreen } from "@/lib/hooks/camera";
-import { useGalleryStore } from "@/lib/stores/gallery";
-import ListImage from "../atoms/a-list-image";
-import ListDocument from "../molecules/m-list-document";
-import { VoiceRecorder } from "../atoms/a-voice-recorder";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
+} from 'react-native';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
+import { Send, Mic, Camera, Paperclip } from 'lucide-react-native';
+import { Fonts } from '@/lib/constants/theme';
+import { twMerge } from 'tailwind-merge';
+import * as DocumentPicker from 'expo-document-picker';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCameraScreen } from '@/lib/hooks/camera';
+import { useGalleryStore } from '@/lib/stores/gallery';
+import ListImage from '../atoms/a-list-image';
+import ListDocument from '../molecules/m-list-document';
+import { VoiceRecorder } from '../atoms/a-voice-recorder';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -43,18 +39,16 @@ type Props = {
 
 const ChatInput: React.FC<Props> = ({
   onSend,
-  placeholder = "Type a message...",
+  placeholder = 'Type a message...',
   maxLines = 5,
 }) => {
   const colors = useThemeColors();
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   const { fromCamera } = useLocalSearchParams();
   const [inputHeight, setInputHeight] = useState(40);
   const [isRecording, setIsRecording] = useState(false);
   const [media, setMedia] = React.useState<string[]>([]);
-  const [documents, setDocuments] = React.useState<
-    DocumentPicker.DocumentPickerAsset[]
-  >([]);
+  const [documents, setDocuments] = React.useState<DocumentPicker.DocumentPickerAsset[]>([]);
   const { gallery, clearGallery } = useGalleryStore();
   const { redirect } = useCameraScreen();
 
@@ -68,7 +62,7 @@ const ChatInput: React.FC<Props> = ({
 
   useFocusEffect(
     React.useCallback(() => {
-      if (fromCamera === "true" && gallery.length) {
+      if (fromCamera === 'true' && gallery.length) {
         setMedia(gallery);
         clearGallery();
       }
@@ -88,7 +82,7 @@ const ChatInput: React.FC<Props> = ({
         images: media,
         documents,
       });
-      setMessage("");
+      setMessage('');
       setMedia([]);
       setDocuments([]);
       setInputHeight(minHeight);
@@ -115,27 +109,23 @@ const ChatInput: React.FC<Props> = ({
 
   return (
     <View>
-      <View className="flex-row justify-end px-6 gap-4 flex-wrap">
+      <View className="flex-row flex-wrap justify-end gap-4 px-6">
         {media.map((image, index) => (
           <ListImage
             src={image}
             deletable
             index={index}
-            onDelete={(index) =>
-              setMedia((c) => c.filter((_, i) => i !== index))
-            }
+            onDelete={(index) => setMedia((c) => c.filter((_, i) => i !== index))}
             key={index}
           />
         ))}
         {documents.map((document, index) => (
           <ListDocument
-            document={{ type: "local", asset: document }}
+            document={{ type: 'local', asset: document }}
             index={index}
             deletable
             key={index}
-            onDelete={(index) =>
-              setDocuments((c) => c.filter((_, i) => i !== index))
-            }
+            onDelete={(index) => setDocuments((c) => c.filter((_, i) => i !== index))}
           />
         ))}
       </View>
@@ -153,7 +143,7 @@ const ChatInput: React.FC<Props> = ({
             onCancel={() => setIsRecording(false)}
             onSend={(audioUri) => {
               onSend({
-                text: "",
+                text: '',
                 images: [],
                 documents: [],
                 audio: audioUri,
@@ -165,8 +155,8 @@ const ChatInput: React.FC<Props> = ({
           <>
             <View
               className={twMerge(
-                "flex-row items-center justify-between",
-                inputHeight > minHeight && "items-end",
+                'flex-row items-center justify-between',
+                inputHeight > minHeight && 'items-end',
               )}
               style={[
                 styles.inputContainer,
@@ -213,18 +203,12 @@ const ChatInput: React.FC<Props> = ({
               style={[
                 styles.sendButton,
                 {
-                  backgroundColor: hasMessage
-                    ? colors.primary
-                    : hexToRgba(colors.text, 0.1),
+                  backgroundColor: hasMessage ? colors.primary : hexToRgba(colors.text, 0.1),
                 },
                 sendAnimatedStyle,
               ]}
             >
-              {hasMessage ? (
-                <Send size={24} color="#fff" />
-              ) : (
-                <Mic size={24} color={colors.text} />
-              )}
+              {hasMessage ? <Send size={24} color="#fff" /> : <Mic size={24} color={colors.text} />}
             </AnimatedPressable>
           </>
         )}
@@ -235,15 +219,15 @@ const ChatInput: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    alignItems: "flex-end",
+    flexDirection: 'row',
+    alignItems: 'flex-end',
     paddingHorizontal: 12,
     paddingVertical: 14,
     paddingBottom: 16,
     gap: 8,
     ...Platform.select({
       ios: {
-        shadowColor: "#000",
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: -2 },
         shadowOpacity: 0.05,
         shadowRadius: 4,
@@ -257,28 +241,28 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   inputContainer: {
     flex: 1,
     borderRadius: 20,
     borderWidth: 1,
     paddingHorizontal: 16,
-    justifyContent: "center",
+    justifyContent: 'center',
     minHeight: 30,
   },
   input: {
     fontSize: 16,
     paddingVertical: 0,
-    paddingTop: Platform.OS === "ios" ? 8 : 0,
+    paddingTop: Platform.OS === 'ios' ? 8 : 0,
   },
   sendButton: {
     width: 48,
     height: 48,
     borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

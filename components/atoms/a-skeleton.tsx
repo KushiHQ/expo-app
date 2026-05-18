@@ -1,14 +1,14 @@
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
-import React, { FC, ReactNode } from "react";
-import { StyleProp, ViewStyle } from "react-native";
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
+import React, { FC, ReactNode } from 'react';
+import { StyleProp, ViewStyle } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withRepeat,
   withTiming,
   Easing,
-} from "react-native-reanimated";
+} from 'react-native-reanimated';
 
 interface SkeletonProps {
   children?: ReactNode;
@@ -50,11 +50,7 @@ const Skeleton: FC<SkeletonProps> = ({
   return (
     <Animated.View
       className={className}
-      style={[
-        { backgroundColor: hexToRgba(colors.text, 0.08), borderRadius: 8 },
-        style,
-        rStyle,
-      ]}
+      style={[{ backgroundColor: hexToRgba(colors.text, 0.08), borderRadius: 8 }, style, rStyle]}
     >
       {children}
     </Animated.View>

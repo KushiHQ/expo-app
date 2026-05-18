@@ -1,4 +1,4 @@
-import { gql } from "urql";
+import { gql } from 'urql';
 
 export const LATEST_HOSTING_CHAT_MESSAGES = gql`
   subscription LatestHostingChatMessage($chatId: String!) {

@@ -1,12 +1,12 @@
-import ListImage from "@/components/atoms/a-list-image";
-import ThemedText from "@/components/atoms/a-themed-text";
-import DetailsLayout from "@/components/layouts/details";
-import { useHostingQuery } from "@/lib/services/graphql/generated";
-import { cast } from "@/lib/types/utils";
-import { useLocalSearchParams } from "expo-router";
-import React from "react";
-import { View } from "react-native";
-import { SimpleGrid } from "react-native-super-grid";
+import ListImage from '@/components/atoms/a-list-image';
+import ThemedText from '@/components/atoms/a-themed-text';
+import DetailsLayout from '@/components/layouts/details';
+import { useHostingQuery } from '@/lib/services/graphql/generated';
+import { cast } from '@/lib/types/utils';
+import { useLocalSearchParams } from 'expo-router';
+import React from 'react';
+import { View } from 'react-native';
+import { SimpleGrid } from 'react-native-super-grid';
 
 export default function HostingGallery() {
   const { id } = useLocalSearchParams();
@@ -49,7 +49,7 @@ export default function HostingGallery() {
                           height={80}
                           style={{
                             height: 80,
-                            width: "100%",
+                            width: '100%',
                             borderRadius: 12,
                             maxWidth: 150,
                           }}

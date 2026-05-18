@@ -1,40 +1,32 @@
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
-import { Image } from "expo-image";
-import React from "react";
-import { Pressable, View } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
+import { Image } from 'expo-image';
+import React from 'react';
+import { Pressable, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-import ThemedText from "../atoms/a-themed-text";
-import { CuidaBuildingOutline } from "../icons/i-home";
-import { TablerMessage2 } from "../icons/i-message";
-import { SolarPhoneOutline } from "../icons/i-phone";
-import { Fonts } from "@/lib/constants/theme";
-import {
-  HostingQuery,
-  useInitiateHostingChatMutation,
-} from "@/lib/services/graphql/generated";
-import moment from "moment";
-import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
-import LoadingModal from "../atoms/a-loading-modal";
-import { handleError } from "@/lib/utils/error";
-import { useRouter } from "expo-router";
-import { buildCallURL } from "@/lib/utils/call";
-import * as Haptics from "expo-haptics";
+import ThemedText from '../atoms/a-themed-text';
+import { CuidaBuildingOutline } from '../icons/i-home';
+import { TablerMessage2 } from '../icons/i-message';
+import { SolarPhoneOutline } from '../icons/i-phone';
+import { Fonts } from '@/lib/constants/theme';
+import { HostingQuery, useInitiateHostingChatMutation } from '@/lib/services/graphql/generated';
+import moment from 'moment';
+import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
+import LoadingModal from '../atoms/a-loading-modal';
+import { handleError } from '@/lib/utils/error';
+import { useRouter } from 'expo-router';
+import { buildCallURL } from '@/lib/utils/call';
+import * as Haptics from 'expo-haptics';
 
 type Props = {
-  hosting?: HostingQuery["hosting"];
+  hosting?: HostingQuery['hosting'];
 };
 
 const HostingHost: React.FC<Props> = ({ hosting }) => {
   const router = useRouter();
   const colors = useThemeColors();
-  const [{ fetching: chatInitiating }, initiateChat] =
-    useInitiateHostingChatMutation();
+  const [{ fetching: chatInitiating }, initiateChat] = useInitiateHostingChatMutation();
 
   const handleInitiateChat = () => {
     if (hosting)
@@ -55,9 +47,7 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
           handleError(res.error);
         }
         if (res.data) {
-          router.push(
-            buildCallURL(res.data.initiateHostingChat.id, "voice", true),
-          );
+          router.push(buildCallURL(res.data.initiateHostingChat.id, 'voice', true));
         }
       });
   };
@@ -76,19 +66,16 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
   return (
     <>
       <View
-        className="pb-8 gap-4 border-b"
+        className="gap-4 border-b pb-8"
         style={{
           borderColor: hexToRgba(colors.text, 0.1),
         }}
       >
-        <ThemedText
-          className="mt-4"
-          style={{ fontFamily: Fonts.medium, fontSize: 18 }}
-        >
+        <ThemedText className="mt-4" style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
           Host
         </ThemedText>
         <View
-          className="p-6 gap-4 overflow-hidden rounded-xl"
+          className="gap-4 overflow-hidden rounded-xl p-6"
           style={{
             backgroundColor: hexToRgba(colors.text, 0.1),
           }}
@@ -96,22 +83,22 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
               <View
-                className="w-8 h-8 rounded-full border overflow-hidden"
+                className="h-8 w-8 overflow-hidden rounded-full border"
                 style={{
-                  borderColor: hexToRgba(colors["text"], 0.6),
+                  borderColor: hexToRgba(colors['text'], 0.6),
                   borderWidth: 2,
                 }}
               >
                 <Image
                   style={{
-                    height: "100%",
-                    width: "100%",
-                    objectFit: "cover",
+                    height: '100%',
+                    width: '100%',
+                    objectFit: 'cover',
                   }}
                   source={{
-                    uri: hosting?.host.user.profile?.image?.publicUrl ?? getDefaultProfileImageUrl(
-                      hosting?.host.user.profile.fullName ?? "",
-                    ),
+                    uri:
+                      hosting?.host.user.profile?.image?.publicUrl ??
+                      getDefaultProfileImageUrl(hosting?.host.user.profile.fullName ?? ''),
                   }}
                 />
               </View>
@@ -119,12 +106,10 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
             </View>
             <View className="flex-row items-center gap-2">
               <CuidaBuildingOutline color={colors.accent} />
-              <ThemedText>
-                {moment(hosting?.host.createdAt).fromNow()}
-              </ThemedText>
+              <ThemedText>{moment(hosting?.host.createdAt).fromNow()}</ThemedText>
             </View>
           </View>
-          <View className="flex-row mt-4 gap-4 items-center">
+          <View className="mt-4 flex-row items-center gap-4">
             <AnimatedPressable
               onPressIn={() => (messageScale.value = withSpring(0.96))}
               onPressOut={() => (messageScale.value = withSpring(1))}
@@ -133,7 +118,7 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
                 handleInitiateChat();
               }}
               accessibilityLabel="Initiate chat with host"
-              className="flex-1 flex-row gap-2 rounded-2xl items-center py-4 justify-center"
+              className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl py-4"
               style={[
                 {
                   backgroundColor: colors.primary,
@@ -147,9 +132,7 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
               ]}
             >
               <TablerMessage2 size={22} color="#fff" strokeWidth={2} />
-              <ThemedText
-                style={{ color: "#fff", fontFamily: Fonts.semibold, fontSize: 16 }}
-              >
+              <ThemedText style={{ color: '#fff', fontFamily: Fonts.semibold, fontSize: 16 }}>
                 Message
               </ThemedText>
             </AnimatedPressable>
@@ -161,11 +144,11 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
                 handleInitiateCall();
               }}
               accessibilityLabel="Initiate call with host"
-              className="flex-1 flex-row gap-2 rounded-2xl items-center py-4 justify-center border"
+              className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border py-4"
               style={[
                 {
                   borderColor: hexToRgba(colors.text, 0.15),
-                  backgroundColor: colors["surface-01"],
+                  backgroundColor: colors['surface-01'],
                 },
                 callAnimatedStyle,
               ]}

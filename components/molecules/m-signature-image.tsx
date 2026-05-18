@@ -1,12 +1,12 @@
-import { Pressable, View } from "react-native";
-import React from "react";
-import { Image } from "expo-image";
-import { PROPERTY_BLURHASH } from "@/lib/constants/images";
-import ThemedText from "../atoms/a-themed-text";
-import { hexToRgba } from "@/lib/utils/colors";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { Camera } from "lucide-react-native";
-import { useCameraScreen } from "@/lib/hooks/camera";
+import { Pressable, View } from 'react-native';
+import React from 'react';
+import { Image } from 'expo-image';
+import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import ThemedText from '../atoms/a-themed-text';
+import { hexToRgba } from '@/lib/utils/colors';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { Camera } from 'lucide-react-native';
+import { useCameraScreen } from '@/lib/hooks/camera';
 
 interface Props {
   signature?: string;
@@ -21,17 +21,17 @@ const SignatureImage: React.FC<Props> = ({ signature }) => {
   };
 
   return (
-    <View className="gap-2 mt-4">
+    <View className="mt-4 gap-2">
       <ThemedText>Signature</ThemedText>
       {signature ? (
-        <View className="h-[120px] bg-white rounded-xl">
+        <View className="h-[120px] rounded-xl bg-white">
           <Image
             source={{
               uri: signature,
             }}
             style={{
-              height: "100%",
-              width: "100%",
+              height: '100%',
+              width: '100%',
               borderRadius: 20,
             }}
             contentFit="contain"
@@ -45,11 +45,11 @@ const SignatureImage: React.FC<Props> = ({ signature }) => {
       ) : (
         <Pressable
           onPress={handleTakeSignaturePic}
-          className="p-4 py-6 items-center justify-center rounded-xl"
+          className="items-center justify-center rounded-xl p-4 py-6"
           style={{
             borderWidth: 1.5,
             borderColor: hexToRgba(colors.primary, 0.5),
-            borderStyle: "dashed",
+            borderStyle: 'dashed',
           }}
         >
           <Camera color={hexToRgba(colors.primary, 0.7)} />
@@ -57,7 +57,7 @@ const SignatureImage: React.FC<Props> = ({ signature }) => {
             style={{
               fontSize: 14,
               maxWidth: 200,
-              textAlign: "center",
+              textAlign: 'center',
               color: hexToRgba(colors.text, 0.6),
             }}
           >

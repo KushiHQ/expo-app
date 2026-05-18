@@ -1,4 +1,4 @@
-import { gql } from "urql";
+import { gql } from 'urql';
 
 export const BOOKING_APPLICATIONS_COUNT = gql`
   query BookingApplicationsCount($filter: BookingApplicationFilter) {
@@ -7,10 +7,7 @@ export const BOOKING_APPLICATIONS_COUNT = gql`
 `;
 
 export const BOOKING_APPLICATIONS = gql`
-  query BookingApplications(
-    $filter: BookingApplicationFilter
-    $pagination: PaginationInput
-  ) {
+  query BookingApplications($filter: BookingApplicationFilter, $pagination: PaginationInput) {
     bookingApplications(filter: $filter, pagination: $pagination) {
       commencementDate
       fullName

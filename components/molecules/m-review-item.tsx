@@ -1,11 +1,11 @@
-import { Pressable, View } from "react-native";
-import ThemedText from "../atoms/a-themed-text";
-import React from "react";
-import { CircleQuestionMark } from "lucide-react-native";
-import { hexToRgba } from "@/lib/utils/colors";
-import RatingRange from "../atoms/a-rating-range";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import BottomSheet from "../atoms/a-bottom-sheet";
+import { Pressable, View } from 'react-native';
+import ThemedText from '../atoms/a-themed-text';
+import React from 'react';
+import { CircleQuestionMark } from 'lucide-react-native';
+import { hexToRgba } from '@/lib/utils/colors';
+import RatingRange from '../atoms/a-rating-range';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import BottomSheet from '../atoms/a-bottom-sheet';
 
 type Info = {
   title: string;
@@ -39,9 +39,7 @@ const ReviewItem: React.FC<Props> = ({ value, title, description }) => {
         </View>
         <View className=" flex-row items-center gap-2">
           <RatingRange color={colors.accent} max={5} value={value} />
-          <ThemedText style={{ fontSize: 12, color: colors.accent }}>
-            {value.toFixed(1)}
-          </ThemedText>
+          <ThemedText style={{ fontSize: 12, color: colors.accent }}>{value.toFixed(1)}</ThemedText>
         </View>
       </View>
       <BottomSheet isVisible={!!info} onClose={() => setInfo(undefined)}>

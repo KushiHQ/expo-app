@@ -1,6 +1,6 @@
-import { CustomSvgProps } from "@/lib/types/svgType";
-import React from "react";
-import Svg, { G, Path } from "react-native-svg";
+import { CustomSvgProps } from '@/lib/types/svgType';
+import React from 'react';
+import Svg, { G, Path } from 'react-native-svg';
 
 export const HugeiconsInboxDownload: React.FC<CustomSvgProps> = (props) => {
   return (
@@ -10,12 +10,7 @@ export const HugeiconsInboxDownload: React.FC<CustomSvgProps> = (props) => {
       viewBox="0 0 24 24"
       {...props}
     >
-      <G
-        fill="none"
-        stroke="currentColor"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-      >
+      <G fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth={1.5}>
         <Path
           strokeLinecap="round"
           d="M7 2.5c-1.407.165-2.376.515-3.109 1.254C2.5 5.156 2.5 7.412 2.5 11.926c0 4.513 0 6.77 1.391 8.172S7.521 21.5 12 21.5c4.478 0 6.718 0 8.109-1.402s1.391-3.659 1.391-8.172s0-6.77-1.391-8.172C19.376 3.014 18.407 2.665 17 2.5"

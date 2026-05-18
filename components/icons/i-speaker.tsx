@@ -1,6 +1,6 @@
-import { CustomSvgProps } from "@/lib/types/svgType";
-import React from "react";
-import Svg, { Path } from "react-native-svg";
+import { CustomSvgProps } from '@/lib/types/svgType';
+import React from 'react';
+import Svg, { Path } from 'react-native-svg';
 
 export const QlementineIconsSpeaker16: React.FC<CustomSvgProps> = (props) => {
   return (

@@ -1,10 +1,7 @@
-import { gql } from "urql";
+import { gql } from 'urql';
 
 export const NOTIFICATIONS_QUERY = gql`
-  query Notifications(
-    $filter: NotificationsFilterInput
-    $pagination: PaginationInput
-  ) {
+  query Notifications($filter: NotificationsFilterInput, $pagination: PaginationInput) {
     notifications(filter: $filter, pagination: $pagination) {
       id
       title
@@ -21,4 +18,3 @@ export const NOTIFICATIONS_QUERY = gql`
     }
   }
 `;
-

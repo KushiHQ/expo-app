@@ -1,4 +1,4 @@
-import { gql } from "urql";
+import { gql } from 'urql';
 
 export const INITIATE_BOOKING_APPLICATION = gql`
   mutation InitiateBookingApplication($hostingId: String!) {
@@ -139,9 +139,7 @@ export const INITIATE_BOOKING_APPLICATION_SUBMIT = gql`
 `;
 
 export const COMPLETE_BOOKING_APPLICATION_SUBMIT = gql`
-  mutation CompleteBookingApplicationSubmission(
-    $input: BookingApplicationSubmissionInput!
-  ) {
+  mutation CompleteBookingApplicationSubmission($input: BookingApplicationSubmissionInput!) {
     completeBookingApplicationSubmission(input: $input) {
       message
     }
@@ -149,9 +147,7 @@ export const COMPLETE_BOOKING_APPLICATION_SUBMIT = gql`
 `;
 
 export const HOST_UPDATE_BOOKING_APPLICATION_STATUS = gql`
-  mutation HostUpdateBookingApplicationStatus(
-    $input: BookingApplicationStatusUpdateInput!
-  ) {
+  mutation HostUpdateBookingApplicationStatus($input: BookingApplicationStatusUpdateInput!) {
     hostUpdateBookingApplicationStatus(input: $input) {
       message
     }

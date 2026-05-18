@@ -1,3 +1,3 @@
 export default function Guest() {
-	return <></>;
+  return <></>;
 }

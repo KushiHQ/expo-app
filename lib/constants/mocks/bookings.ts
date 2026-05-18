@@ -1,7 +1,7 @@
-import { faker } from "@faker-js/faker";
-import { Hosting } from "@/lib/services/graphql/generated";
+import { faker } from '@faker-js/faker';
+import { Hosting } from '@/lib/services/graphql/generated';
 
-export type BookingStatus = "Paid" | "Pending";
+export type BookingStatus = 'Paid' | 'Pending';
 
 export interface BookingDetails {
   transactionId: string;
@@ -24,17 +24,14 @@ export interface Booking {
   details: BookingDetails;
 }
 
-function generateMockBookingDetails(
-  amount: number,
-  status: BookingStatus,
-): BookingDetails {
+function generateMockBookingDetails(amount: number, status: BookingStatus): BookingDetails {
   const transactionId = faker.string.numeric(12);
   const startDate = faker.date.future();
   const endDate = faker.date.future({ years: 1, refDate: startDate });
 
   const formatDate = (date: Date) => {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = String(date.getFullYear()).slice(2);
     return `${day}/${month}/${year}`;
   };
@@ -50,13 +47,13 @@ function generateMockBookingDetails(
     transactionId,
     date: startDate.toISOString(),
     duration: `${formattedStartDate} - ${formattedEndDate}`,
-    durationText: "1 Year",
+    durationText: '1 Year',
     amount: amount,
     discount: discount,
     serviceFee: serviceFee,
     total: total,
     name: faker.person.fullName(),
-    phoneNumber: faker.phone.number({ style: "international" }),
+    phoneNumber: faker.phone.number({ style: 'international' }),
     status: status,
   };
 }
@@ -67,25 +64,19 @@ function generateMockBookingDetails(
  * @param hostings An array of Hosting objects to link the bookings to.
  * @returns An array of mock Booking objects.
  */
-export function generateMockBookings(
-  count: number,
-  hostings: Hosting[],
-): Booking[] {
+export function generateMockBookings(count: number, hostings: Hosting[]): Booking[] {
   const bookings: Booking[] = [];
 
   // Handle case where no hostings are provided
   if (!hostings.length) {
-    console.warn("Cannot generate bookings because the hosting list is empty.");
+    console.warn('Cannot generate bookings because the hosting list is empty.');
     return [];
   }
 
   for (let i = 0; i < count; i++) {
     const randomHosting = faker.helpers.arrayElement(hostings);
 
-    const status: BookingStatus = faker.helpers.arrayElement([
-      "Paid",
-      "Pending",
-    ]);
+    const status: BookingStatus = faker.helpers.arrayElement(['Paid', 'Pending']);
 
     const details = generateMockBookingDetails(randomHosting.price, status);
 

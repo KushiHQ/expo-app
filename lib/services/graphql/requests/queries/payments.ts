@@ -1,4 +1,4 @@
-import { gql } from "urql";
+import { gql } from 'urql';
 
 export const BANKS_QUERY = gql`
   query Banks {

@@ -1,30 +1,28 @@
 type Listener = (...args: any[]) => void;
 
 class EventEmitterClass {
-	private events: { [key: string]: Listener[] } = {};
+  private events: { [key: string]: Listener[] } = {};
 
-	on(event: string, listener: Listener) {
-		if (!this.events[event]) {
-			this.events[event] = [];
-		}
-		this.events[event].push(listener);
-	}
+  on(event: string, listener: Listener) {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event].push(listener);
+  }
 
-	off(event: string, listenerToRemove: Listener) {
-		if (!this.events[event]) return;
+  off(event: string, listenerToRemove: Listener) {
+    if (!this.events[event]) return;
 
-		this.events[event] = this.events[event].filter(
-			(listener) => listener !== listenerToRemove,
-		);
-	}
+    this.events[event] = this.events[event].filter((listener) => listener !== listenerToRemove);
+  }
 
-	emit(event: string, ...args: any[]) {
-		if (!this.events[event]) return;
+  emit(event: string, ...args: any[]) {
+    if (!this.events[event]) return;
 
-		this.events[event].forEach((listener) => {
-			listener(...args);
-		});
-	}
+    this.events[event].forEach((listener) => {
+      listener(...args);
+    });
+  }
 }
 
 export const EventEmitter = new EventEmitterClass();

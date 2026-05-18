@@ -1,11 +1,11 @@
-import { View } from "react-native";
-import BottomSheet from "../atoms/a-bottom-sheet";
-import React from "react";
-import { Image } from "expo-image";
-import ThemedText from "../atoms/a-themed-text";
-import Button from "../atoms/a-button";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
+import { View } from 'react-native';
+import BottomSheet from '../atoms/a-bottom-sheet';
+import React from 'react';
+import { Image } from 'expo-image';
+import ThemedText from '../atoms/a-themed-text';
+import Button from '../atoms/a-button';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
 
 type Props = {
   open: boolean;
@@ -15,7 +15,7 @@ type Props = {
   onConfirm?: () => void;
   confirmPrompt?: string;
   cancelPrompt?: string;
-  confirmMode?: "error" | "default";
+  confirmMode?: 'error' | 'default';
 };
 
 const ConfirmationSheet: React.FC<Props> = ({
@@ -26,7 +26,7 @@ const ConfirmationSheet: React.FC<Props> = ({
   onConfirm,
   confirmPrompt,
   cancelPrompt,
-  confirmMode = "default",
+  confirmMode = 'default',
 }) => {
   const colors = useThemeColors();
 
@@ -37,15 +37,15 @@ const ConfirmationSheet: React.FC<Props> = ({
           style={{
             width: 250,
             height: 250,
-            objectFit: "cover",
+            objectFit: 'cover',
           }}
-          source={require("@/assets/images/caution.png")}
+          source={require('@/assets/images/caution.png')}
         />
         <View className="items-center gap-2">
           <ThemedText type="semibold">{prompt}</ThemedText>
           {description && (
             <ThemedText
-              className="text-center max-w-[400px]"
+              className="max-w-[400px] text-center"
               style={{ color: hexToRgba(colors.text, 0.7) }}
             >
               {description}
@@ -59,17 +59,15 @@ const ConfirmationSheet: React.FC<Props> = ({
             style={{ borderColor: hexToRgba(colors.accent, 0.6) }}
             onPress={onClose}
           >
-            <ThemedText style={{ color: colors.accent }}>
-              {cancelPrompt ?? "Cancel"}
-            </ThemedText>
+            <ThemedText style={{ color: colors.accent }}>{cancelPrompt ?? 'Cancel'}</ThemedText>
           </Button>
           <Button
-            type={confirmMode === "error" ? "error" : "primary"}
+            type={confirmMode === 'error' ? 'error' : 'primary'}
             className="flex-1"
             onPress={onConfirm}
           >
-            <ThemedText content={confirmMode === "error" ? "error" : "primary"}>
-              {confirmPrompt ?? "Confirm"}
+            <ThemedText content={confirmMode === 'error' ? 'error' : 'primary'}>
+              {confirmPrompt ?? 'Confirm'}
             </ThemedText>
           </Button>
         </View>

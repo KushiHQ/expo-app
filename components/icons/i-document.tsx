@@ -1,6 +1,6 @@
-import { CustomSvgProps } from "@/lib/types/svgType";
-import React from "react";
-import Svg, { G, Path } from "react-native-svg";
+import { CustomSvgProps } from '@/lib/types/svgType';
+import React from 'react';
+import Svg, { G, Path } from 'react-native-svg';
 
 export const FluentDocumentPdf32Filled: React.FC<CustomSvgProps> = (props) => {
   return (
@@ -18,9 +18,7 @@ export const FluentDocumentPdf32Filled: React.FC<CustomSvgProps> = (props) => {
   );
 };
 
-export const FluentDocumentImage16Regular: React.FC<CustomSvgProps> = (
-  props,
-) => {
+export const FluentDocumentImage16Regular: React.FC<CustomSvgProps> = (props) => {
   return (
     <Svg
       width={props.size ?? props.width ?? 16}
@@ -52,9 +50,7 @@ export const FluentDocumentText28Filled: React.FC<CustomSvgProps> = (props) => {
   );
 };
 
-export const FluentDocumentSquare20Filled: React.FC<CustomSvgProps> = (
-  props,
-) => {
+export const FluentDocumentSquare20Filled: React.FC<CustomSvgProps> = (props) => {
   return (
     <Svg
       width={props.size ?? props.width ?? 20}
@@ -92,9 +88,7 @@ export const IconParkOutlineVideoTwo: React.FC<CustomSvgProps> = (props) => {
   );
 };
 
-export const FluentFormMultiple24Regular: React.FC<CustomSvgProps> = (
-  props,
-) => {
+export const FluentFormMultiple24Regular: React.FC<CustomSvgProps> = (props) => {
   return (
     <Svg
       width={props.size ?? props.width ?? 28}
