@@ -99,6 +99,12 @@ export const HOSTING_QUERY = gql`
         user {
           id
           email
+          kushiId
+          phoneNumber
+          kyc {
+            idDocumentType
+            youverifyReferenceId
+          }
           profile {
             fullName
             gender

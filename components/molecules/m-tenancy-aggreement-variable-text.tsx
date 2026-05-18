@@ -126,9 +126,19 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
           variablesMap['TITLE_NUMBER'] = v.titleNumber ?? '—';
         }
 
-        // Host email
-        if (hosting.host?.user?.email) {
-          variablesMap['LANDLORD_EMAIL'] = hosting.host.user.email;
+        // Host identity
+        if (hosting.host?.user) {
+          const hu = hosting.host.user;
+          if (hu.email) variablesMap['LANDLORD_EMAIL'] = hu.email;
+          if (hu.phoneNumber) variablesMap['LANDLORD_PHONE'] = hu.phoneNumber;
+          if (hu.kushiId) {
+            variablesMap['LANDLORD_KUSHI_ID'] = hu.kushiId;
+            variablesMap['LANDLORD_ID_NUMBER'] = hu.kushiId;
+          }
+          if (hu.kyc) {
+            variablesMap['LANDLORD_ID_TYPE'] = hu.kyc.idDocumentType ?? 'Government-issued ID';
+            variablesMap['KYC_REFERENCE_ID'] = hu.kyc.youverifyReferenceId ?? 'Pending';
+          }
         }
       }
 
