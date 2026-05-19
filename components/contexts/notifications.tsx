@@ -46,6 +46,7 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
   const notificationPlayer = useAudioPlayer(require('@/assets/audio/message-notification.mp3'));
 
   const handledCallId = React.useRef<string | null>(null);
+  const pendingVoipTokenRef = React.useRef<string | null>(null);
   // Tracks which chat the user is currently viewing (set by the chat screen)
   const currentChatId = React.useRef<string | null>(null);
 
@@ -92,10 +93,13 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 
           if (fcmToken && user.user) {
             if (Platform.OS === 'android') {
-              // Android uses FCM directly — clear any stale VoIP token
               updateToken({ input: { fcmToken, voipToken: null } });
+            } else if (pendingVoipTokenRef.current) {
+              // VoIP token already arrived before FCM was ready — send both now
+              updateToken({ input: { fcmToken, voipToken: pendingVoipTokenRef.current } });
+              pendingVoipTokenRef.current = null;
             }
-            // iOS token is sent once the VoIP token arrives via EventEmitter below
+            // If no VoIP token yet on iOS, handleVoipToken will send both once it arrives
           }
         } else {
           setError(new Error('Permission denied'));
@@ -110,9 +114,14 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
     // iOS: receive VoIP push token from index.js and send to backend
     const handleVoipToken = (voipToken: string) => {
       if (user.user && Platform.OS === 'ios') {
-        // Use ref so we always read the latest FCM token even if this
-        // closure was created before setupMessaging() finished.
-        updateToken({ input: { voipToken, fcmToken: tokenRef.current } });
+        if (tokenRef.current) {
+          // FCM token is already available — send both together
+          updateToken({ input: { voipToken, fcmToken: tokenRef.current } });
+        } else {
+          // FCM token not ready yet (setupMessaging still in flight) —
+          // store VoIP token and let setupMessaging send both once it finishes
+          pendingVoipTokenRef.current = voipToken;
+        }
       }
     };
     EventEmitter.on('voip_token', handleVoipToken);
