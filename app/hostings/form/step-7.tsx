@@ -19,6 +19,7 @@ import Skeleton from '@/components/atoms/a-skeleton';
 import TenancyAgreementVariableText from '@/components/molecules/m-tenancy-aggreement-variable-text';
 
 import { useTenancyTermsForm } from '@/lib/hooks/forms/use-tenancy-terms-form';
+import { subClauseConditionMet } from '@/lib/utils/hosting/tenancyAgreement';
 import MemoizedSubClause from '@/components/organisms/o-memoised-sub-clause';
 import { MemoizedEditSection } from '@/components/organisms/o-memoised-edit-sub-clause';
 
@@ -105,7 +106,9 @@ export default function NewHostingStep7() {
                       )}
                     </View>
                     <View className="mt-4">
-                      {section.subClauses.map((clause, cIdx) => (
+                      {section.subClauses
+                        .filter((clause) => subClauseConditionMet(clause.id, hosting))
+                        .map((clause, cIdx) => (
                         <MemoizedSubClause
                           key={clause.id}
                           clause={clause}

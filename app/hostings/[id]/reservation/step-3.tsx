@@ -18,6 +18,7 @@ import {
 import { hexToRgba } from '@/lib/utils/colors';
 import { handleError } from '@/lib/utils/error';
 import { removeTypenames } from '@/lib/utils/graphql/cleanup';
+import { subClauseConditionMet } from '@/lib/utils/hosting/tenancyAgreement';
 import { useBookingApplicationStore } from '@/lib/stores/bookings';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CircleQuestionMark } from 'lucide-react-native';
@@ -176,7 +177,9 @@ export default function BookingApplicationStep2() {
                       )}
                     </View>
                     <View className="mt-4">
-                      {section?.subClauses.map((clause) => (
+                      {section?.subClauses
+                        .filter((clause) => subClauseConditionMet(clause.id, hostingData.hosting, input))
+                        .map((clause) => (
                         <Collapsible
                           title={clause.title}
                           description={clause.description}

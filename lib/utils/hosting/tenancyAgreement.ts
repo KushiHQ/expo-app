@@ -3,6 +3,7 @@ import {
   GuestFormGuarantorRelationships,
   HostingPropertyRelationship,
   HostingVerificationTier,
+  HostingQuery,
   PaymentInterval,
   SubClause,
   TenancyTemplate,
@@ -238,4 +239,29 @@ export function hostingDuration(
     endDateFormatted: formatter.format(endDate),
     endDate,
   };
+}
+
+/**
+ * Returns false if a sub-clause should be hidden because the underlying hosting/application
+ * data that gives it meaning is absent.
+ *
+ * Pass `application` as `undefined` (not null) in host-only contexts (no application yet) —
+ * this makes the guarantor clause always pass so hosts can still configure it.
+ */
+export function subClauseConditionMet(
+  id: string,
+  hosting: HostingQuery['hosting'],
+  application?: { guestFormData?: { guarantorRelationships?: unknown } | null } | null,
+): boolean {
+  switch (id) {
+    case 'sub_caution_fee':
+      return (hosting?.cautionFee ?? 0) > 0;
+    case 'sub_service_charge':
+      return (hosting?.serviceCharge ?? 0) > 0;
+    case 'sub_guarantor':
+      if (application === undefined) return true;
+      return !!application?.guestFormData?.guarantorRelationships;
+    default:
+      return true;
+  }
 }
