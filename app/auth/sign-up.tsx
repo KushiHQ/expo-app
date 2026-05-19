@@ -18,7 +18,7 @@ import { handleError } from '@/lib/utils/error';
 import { Link, useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, View, Platform } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { saveAuthTokens } from '@/lib/utils/auth';
@@ -61,7 +61,7 @@ export default function SignUp() {
             handleError(res.error);
           }
           if (res.data?.googleSignUp.data) {
-            Toast.show({
+            toast.show({
               type: 'success',
               text1: 'Success',
               text2: res.data.googleSignUp.message,
@@ -109,7 +109,7 @@ export default function SignUp() {
                 handleError(res.error);
               }
               if (res.data?.appleSignUp.data) {
-                Toast.show({
+                toast.show({
                   type: 'success',
                   text1: 'Success',
                   text2: res.data.appleSignUp.message,
@@ -154,7 +154,7 @@ export default function SignUp() {
             handleError(res.error);
           }
           if (res.data?.appleSignUp.data) {
-            Toast.show({
+            toast.show({
               type: 'success',
               text1: 'Success',
               text2: res.data.appleSignUp.message,
@@ -182,7 +182,7 @@ export default function SignUp() {
         handleError(result.error);
       }
       if (result.data) {
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: result.data.signUp.message,

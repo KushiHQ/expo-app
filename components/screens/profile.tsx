@@ -22,7 +22,7 @@ import { ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import { Platform, Pressable, View } from 'react-native';
 import { useMutation } from 'urql';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 import { FluentDelete24Regular } from '../icons/i-delete';
 
 const DELETE_ACCOUNT = `
@@ -50,7 +50,7 @@ const ProfileScreen = () => {
     const res = await deleteAccount({});
     setIsDeleting(false);
     if (res.data?.deleteAccount?.data) {
-      Toast.show({
+      toast.show({
         type: 'success',
         text1: 'Account Deleted',
         text2: res.data.deleteAccount.message || 'Your account has been deleted.',
@@ -58,7 +58,7 @@ const ProfileScreen = () => {
       setDeleteConfirm(false);
       router.replace('/logout');
     } else if (res.error) {
-      Toast.show({
+      toast.show({
         type: 'error',
         text1: 'Error',
         text2: res.error.message || 'Failed to delete account.',

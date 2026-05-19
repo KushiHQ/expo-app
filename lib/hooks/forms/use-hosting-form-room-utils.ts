@@ -14,12 +14,13 @@ import { formMutation } from '@/lib/services/graphql/utils/fetch';
 import { CREATE_UPDATE_HOSTING_ROOM_IMAGE } from '@/lib/services/graphql/requests/mutations/hostings';
 import { generateRNFile } from '@/lib/utils/file';
 import { handleError } from '@/lib/utils/error';
-import Toast from 'react-native-toast-message';
+import { useToast } from '@/lib/hooks/use-toast';
 import { cast } from '@/lib/types/utils';
 import { useCameraScreen } from '../camera';
 
 export const useHostingFormRoomUtils = (hostingId: string) => {
   const { redirect } = useCameraScreen();
+  const { show } = useToast();
 
   const clearGallery = useGalleryStore((state) => state.clearGallery);
 
@@ -76,7 +77,7 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
                     handleError(res.error);
                   }
                   if (res.data?.createHostingRoomImage.data) {
-                    Toast.show({
+                    show({
                       type: 'success',
                       text1: 'Success',
                       text2: res.data.createHostingRoomImage.message,
@@ -130,7 +131,7 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
             handleError(res.error);
           }
           if (res.data?.deleteHostingRoomImage.message) {
-            Toast.show({
+            show({
               type: 'success',
               text2: res.data.deleteHostingRoomImage.message,
             });
@@ -150,7 +151,7 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
           handleError(res.error);
         }
         if (res.data?.deleteHostingRoom.message) {
-          Toast.show({
+          show({
             type: 'success',
             text2: res.data.deleteHostingRoom.message,
           });
@@ -172,7 +173,7 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
         handleError(res.error);
       }
       if (res.data) {
-        Toast.show({
+        show({
           type: 'success',
           text1: 'Success',
           text2: res.data.createOrUpdateHostingRoom.message,

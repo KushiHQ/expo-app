@@ -8,7 +8,7 @@ import { clearAuthTokens } from '@/lib/utils/auth';
 import { router } from 'expo-router';
 import React from 'react';
 import { useLogoutMutation } from '@/lib/services/graphql/generated';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 
 export default function Logout() {
   const reset = useUserStore((v) => v.reset);
@@ -23,13 +23,13 @@ export default function Logout() {
 
     logout({}).then((res) => {
       if (res.data) {
-        Toast.show({
+        toast.show({
           type: 'info',
           text1: 'Success',
           text2: res.data.logout.message,
         });
       } else {
-        Toast.show({ type: 'error', text2: 'Server logout failed' });
+        toast.show({ type: 'error', text2: 'Server logout failed' });
       }
     });
     router.replace('/onboarding');

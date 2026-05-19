@@ -6,7 +6,7 @@ import { handleError } from '@/lib/utils/error';
 import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { Pressable, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 import { PhHeart, PhHeartFill } from '../icons/i-heart';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 
@@ -34,7 +34,7 @@ const HostingLikeButton: React.FC<Props> = ({ saved: defSaved, className, id }) 
           handleError(res.error);
         }
         if (res.data) {
-          Toast.show({
+          toast.show({
             type: 'success',
             text2: res.data.deleteSavedHosting.message,
           });
@@ -47,7 +47,7 @@ const HostingLikeButton: React.FC<Props> = ({ saved: defSaved, className, id }) 
           handleError(res.error);
         }
         if (res.data) {
-          Toast.show({
+          toast.show({
             type: 'success',
             text2: res.data.createUpdateSavedHosting.message,
           });

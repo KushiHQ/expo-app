@@ -15,7 +15,7 @@ import Button from '@/components/atoms/a-button';
 import ThemedText from '@/components/atoms/a-themed-text';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import LoadingModal from '@/components/atoms/a-loading-modal';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 import SuccessModal from '@/components/organisms/o-success-modal';
 import React from 'react';
 import { StreamlineUltimateReceipt } from '@/components/icons/i-receipt';
@@ -50,7 +50,7 @@ export default function ReservationCheckout() {
       reference: String(ref),
     }).then((res) => {
       if (res.data?.verifyTransactionByReference) {
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: res.data.verifyTransactionByReference.message,

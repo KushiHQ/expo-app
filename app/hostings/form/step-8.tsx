@@ -16,7 +16,7 @@ import HostingCard from '@/components/molecules/m-hosting-card';
 import { PublishStatus } from '@/lib/services/graphql/generated';
 import LoadingModal from '@/components/atoms/a-loading-modal';
 import { handleError } from '@/lib/utils/error';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 import PublishListingSuccess from '@/components/molecules/m-publish-listing-success';
 import TextSelectButton from '@/components/molecules/m-text-select-button';
 import ItemSummary from '@/components/molecules/m-item-summary';
@@ -82,7 +82,7 @@ export default function NewHostingStep8() {
       }
       if (res.data?.createOrUpdateHosting) {
         router.push(`/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`);
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: res.data.createOrUpdateHosting.message,

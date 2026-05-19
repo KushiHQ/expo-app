@@ -13,7 +13,7 @@ import {
 } from '@/lib/services/graphql/generated';
 import { cast } from '@/lib/types/utils';
 import { handleError } from '@/lib/utils/error';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 
 type Props = {
   open: boolean;
@@ -33,7 +33,7 @@ const SavedHostingFolderModal: React.FC<Props> = ({ open, onClose, onCreate }) =
         onClose();
       }
       if (res.data) {
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: res.data.createUpdateSavedHostingFolder.message,

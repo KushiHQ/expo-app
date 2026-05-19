@@ -21,7 +21,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { CircleQuestionMark, Download } from 'lucide-react-native';
 import React from 'react';
 import { View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 import Pdf from 'react-native-pdf';
 import LeaveAReviewButton from '@/components/organisms/o-leave-a-review-button';
 import HostingReviewCard from '@/components/molecules/m-hosting-review-card';
@@ -74,7 +74,7 @@ export default function UserBooking() {
         handleError(res.error);
       }
       if (res.data) {
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: 'Booking finalized successfully',

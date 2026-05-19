@@ -1,13 +1,13 @@
-import { getMimeTypeFromExtension } from '@/lib/utils/file';
-import { CombinedError } from 'urql';
-import { DocumentNode } from 'graphql';
-import { print } from 'graphql/language/printer';
-import { getAuthTokens } from '@/lib/utils/auth';
+import { getMimeTypeFromExtension } from "@/lib/utils/file";
+import { CombinedError } from "urql";
+import { DocumentNode } from "graphql";
+import { print } from "graphql/language/printer";
+import { getAuthTokens } from "@/lib/utils/auth";
 
 export function generateRNFile(uri: string) {
   return {
     uri,
-    name: uri.split('/').pop() ?? '',
+    name: uri.split("/").pop() ?? "",
     type: getMimeTypeFromExtension(uri),
   };
 }
@@ -28,18 +28,30 @@ function manualExtractFiles(variables: any) {
     if (Array.isArray(current)) {
       current.forEach((item, index) => {
         const itemPath = [...path, index.toString()];
-        if (item && typeof item === 'object' && 'uri' in item && 'name' in item && 'type' in item) {
+        if (
+          item &&
+          typeof item === "object" &&
+          "uri" in item &&
+          "name" in item &&
+          "type" in item
+        ) {
           if (!filesMap.has(item)) filesMap.set(item, []);
           filesMap.get(item)!.push(itemPath);
         } else {
           traverse(item, itemPath);
         }
       });
-    } else if (current && typeof current === 'object') {
+    } else if (current && typeof current === "object") {
       for (const key in current) {
         const item = current[key];
         const itemPath = [...path, key];
-        if (item && typeof item === 'object' && 'uri' in item && 'name' in item && 'type' in item) {
+        if (
+          item &&
+          typeof item === "object" &&
+          "uri" in item &&
+          "name" in item &&
+          "type" in item
+        ) {
           if (!filesMap.has(item)) filesMap.set(item, []);
           filesMap.get(item)!.push(itemPath);
         } else {
@@ -69,7 +81,8 @@ export async function formMutation<R, V>(
   variables: V,
   options: FormMutationOptions = {},
 ): Promise<{ data: R; error?: CombinedError }> {
-  const { clone: variablesWithoutFiles, files: filesMap } = manualExtractFiles(variables);
+  const { clone: variablesWithoutFiles, files: filesMap } =
+    manualExtractFiles(variables);
   const operations = JSON.stringify({
     query: print(query),
     variables: variablesWithoutFiles,
@@ -81,25 +94,25 @@ export async function formMutation<R, V>(
   let response: Response;
 
   if (!hasFiles) {
-    response = await fetch(process.env.EXPO_PUBLIC_GRAPHQL_URL ?? '', {
-      method: 'POST',
+    response = await fetch(process.env.EXPO_PUBLIC_GRAPHQL_URL ?? "", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: authTokens?.access ? `Bearer ${authTokens.access}` : '',
+        "Content-Type": "application/json",
+        Authorization: authTokens?.access ? `Bearer ${authTokens.access}` : "",
         ...options.headers,
       },
       body: operations,
     });
   } else {
     const formData = new FormData();
-    formData.append('operations', operations);
+    formData.append("operations", operations);
 
     const map: Record<string, string[]> = {};
     let index = 0;
 
     for (const [file, paths] of filesMap) {
       const fieldName = `${index}`;
-      map[fieldName] = paths.map((p) => `variables.${p.join('.')}`);
+      map[fieldName] = paths.map((p) => `variables.${p.join(".")}`);
       formData.append(fieldName, {
         uri: file.uri,
         name: file.name,
@@ -108,12 +121,12 @@ export async function formMutation<R, V>(
       index++;
     }
 
-    formData.append('map', JSON.stringify(map));
+    formData.append("map", JSON.stringify(map));
 
-    response = await fetch(process.env.EXPO_PUBLIC_GRAPHQL_URL ?? '', {
-      method: 'POST',
+    response = await fetch(process.env.EXPO_PUBLIC_GRAPHQL_URL ?? "", {
+      method: "POST",
       headers: {
-        Authorization: authTokens?.access ? `Bearer ${authTokens.access}` : '',
+        Authorization: authTokens?.access ? `Bearer ${authTokens.access}` : "",
         ...options.headers,
       },
       body: formData,
@@ -121,14 +134,14 @@ export async function formMutation<R, V>(
   }
 
   if (!response.ok) {
-    console.log(await response.text());
+    console.error(await response.text());
     throw new Error(`HTTP error! Status: ${response.status}`);
   }
 
   const result = await response.json();
 
   if (result.errors) {
-    console.error('GraphQL errors:', result.errors);
+    console.error("GraphQL errors:", result.errors);
   }
 
   return result;

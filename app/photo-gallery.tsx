@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { View, StyleSheet, FlatList, useWindowDimensions, useColorScheme } from 'react-native';
+import { View, StyleSheet, FlatList, useWindowDimensions, useColorScheme, Pressable } from 'react-native';
 import Button from '@/components/atoms/a-button';
 import ThemedText from '@/components/atoms/a-themed-text';
 import { StatusBar } from 'expo-status-bar';
@@ -8,7 +8,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import ImagePicker from 'react-native-image-crop-picker';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { FluentImageEdit24Regular } from '@/components/icons/i-edit';
-import { Check } from 'lucide-react-native';
+import { Check, ChevronLeft } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cast } from '@/lib/types/utils';
 import { useFallbackImages } from '@/lib/hooks/images';
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
@@ -22,6 +23,7 @@ export default function PhotoGalleryScreen() {
   const colors = useThemeColors();
   const colorScheme = useColorScheme() ?? 'light';
   const { failedImages, handleImageError } = useFallbackImages();
+  const insets = useSafeAreaInsets();
 
   const flatListRef = useRef<FlatList>(null);
   const hasScrolledToIndex = useRef(false);
@@ -109,6 +111,24 @@ export default function PhotoGalleryScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
+
+      <Pressable
+        onPress={router.back}
+        style={{
+          position: 'absolute',
+          top: insets.top + 12,
+          left: 20,
+          zIndex: 10,
+          backgroundColor: 'rgba(0,0,0,0.45)',
+          borderRadius: 12,
+          width: 40,
+          height: 40,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <ChevronLeft color="#fff" size={22} />
+      </Pressable>
 
       <FlatList
         ref={flatListRef}

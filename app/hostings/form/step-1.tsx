@@ -14,7 +14,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CircleQuestionMark } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { RefreshControl, TextInput, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 
 export default function NewHostingStep1() {
   const router = useRouter();
@@ -36,7 +36,7 @@ export default function NewHostingStep1() {
       }
       if (res.data?.createOrUpdateHosting) {
         router.replace(`/hostings/form/step-2?id=${res.data?.createOrUpdateHosting.data?.id}`);
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: res.data.createOrUpdateHosting.message,

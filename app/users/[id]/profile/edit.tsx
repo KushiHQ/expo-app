@@ -10,7 +10,7 @@ import { handleError } from '@/lib/utils/error';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 import * as ImagePicker from 'expo-image-picker';
 import { formMutation } from '@/lib/services/graphql/utils/fetch';
 import { UPDATE_USER_PROFILE } from '@/lib/services/graphql/requests/mutations/users';
@@ -59,7 +59,7 @@ export default function UserProfileEdit() {
           handleError(res.error);
         }
         if (res.data?.updateProfile.data) {
-          Toast.show({
+          toast.show({
             type: 'success',
             text1: 'Success',
             text2: res.data.updateProfile.message,
@@ -113,8 +113,7 @@ export default function UserProfileEdit() {
                     focused
                     disabled
                     label="Password"
-                    placeholder="********"
-                    secureTextEntry
+                    placeholder="••••••••"
                   />
                 </View>
                 <Button

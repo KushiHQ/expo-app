@@ -24,7 +24,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CircleQuestionMark } from 'lucide-react-native';
 import React from 'react';
 import { RefreshControl, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 
 import SuccessModal from '@/components/organisms/o-success-modal';
 
@@ -84,7 +84,7 @@ export default function BookingApplicationStep2() {
         },
       }).then((res) => {
         if (res.data?.completeBookingApplicationSubmission) {
-          Toast.show({
+          toast.show({
             type: 'success',
             text1: 'Success',
             text2: res.data.completeBookingApplicationSubmission.message,
@@ -113,7 +113,7 @@ export default function BookingApplicationStep2() {
           applicationId: res.data.updateBookingApplication.data?.id,
         }).then((res) => {
           if (res.data?.initiateBookingApplicationSubmission) {
-            Toast.show({
+            toast.show({
               type: 'success',
               text1: 'Success',
               text2: res.data.initiateBookingApplicationSubmission.message,

@@ -28,7 +28,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { CircleQuestionMark } from 'lucide-react-native';
 import React from 'react';
 import { RefreshControl, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 
 export default function BookingApplicationStep2() {
   const router = useRouter();
@@ -68,7 +68,7 @@ export default function BookingApplicationStep2() {
   const handleMutate = () => {
     mutate({ input }).then((res) => {
       if (res.data?.updateBookingApplication) {
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: res.data.updateBookingApplication.message,

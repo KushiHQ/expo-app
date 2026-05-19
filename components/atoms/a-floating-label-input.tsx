@@ -201,7 +201,6 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
         )}
         {disabled && (
           <Pressable
-            disabled={disabled}
             className="absolute inset-0"
             onPress={props.onPress}
           ></Pressable>

@@ -15,7 +15,7 @@ import {
   useInitiatePhoneNumberVerificationMutation,
   useCompletePhoneNumberVerificationMutation,
 } from "@/lib/services/graphql/generated";
-import Toast from "react-native-toast-message";
+import { toast } from '@/lib/hooks/use-toast';
 import LoadingModal from "@/components/atoms/a-loading-modal";
 import OTPInput from "@/components/atoms/a-otp-input";
 import { handleError } from "@/lib/utils/error";
@@ -58,7 +58,7 @@ export default function PhoneVerification() {
 
   const handleInitiate = () => {
     if (!input) {
-      Toast.show({
+      toast.show({
         type: "error",
         text1: "Error",
         text2: "Please enter a valid phone number",
@@ -67,7 +67,7 @@ export default function PhoneVerification() {
     }
     initiateVerification({ phoneNumber: formatedNumber }).then((res) => {
       if (res.data?.initiatePhoneNumberVerification) {
-        Toast.show({
+        toast.show({
           type: "success",
           text1: "Success",
           text2: res.data.initiatePhoneNumberVerification.message,
@@ -79,7 +79,7 @@ export default function PhoneVerification() {
 
   const handleComplete = () => {
     if (otp.length !== 6) {
-      Toast.show({
+      toast.show({
         type: "error",
         text1: "Error",
         text2: "Please enter a valid 6-digit OTP",
@@ -90,7 +90,7 @@ export default function PhoneVerification() {
       input: { phoneNumber: formatedNumber, otp },
     }).then((res) => {
       if (res.data?.completePhoneNumberVerification) {
-        Toast.show({
+        toast.show({
           type: "success",
           text1: "Success",
           text2: "Phone number verified successfully",

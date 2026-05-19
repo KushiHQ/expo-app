@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router';
 import ThemedModal from './m-modal';
 import { useDeleteHostingMutation, HostListingsQuery } from '@/lib/services/graphql/generated';
 import LoadingModal from '../atoms/a-loading-modal';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 
 type Props = {
   open: boolean;
@@ -31,7 +31,7 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting }) => {
   const handleDelete = () => {
     deleteHosting({ hostingId: hosting.id }).then((res) => {
       if (res.data?.deleteHosting) {
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: res.data.deleteHosting.message,

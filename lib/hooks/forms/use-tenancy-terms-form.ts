@@ -11,7 +11,7 @@ import {
   useTenancyAgreementTemplateQuery,
 } from '@/lib/services/graphql/generated';
 import { handleError } from '@/lib/utils/error';
-import Toast from 'react-native-toast-message';
+import { useToast } from '@/lib/hooks/use-toast';
 import { useGalleryStore } from '@/lib/stores/gallery';
 import { formMutation } from '@/lib/services/graphql/utils/fetch';
 import { UPDATE_HOST } from '@/lib/services/graphql/requests/mutations/users';
@@ -20,6 +20,7 @@ import { cleanupAgreementTemplateInput } from '@/lib/utils/hosting/tenancyAgreem
 
 export const useTenancyTermsForm = (id: string) => {
   const router = useRouter();
+  const { show } = useToast();
   const {
     input,
     hosting,
@@ -119,7 +120,7 @@ export const useTenancyTermsForm = (id: string) => {
             if (res.error) handleError(res.error);
             if (res.data) {
               refetchHost({ requestPolicy: 'network-only' });
-              Toast.show({
+              show({
                 type: 'success',
                 text1: 'Success',
                 text2: res.data.updateHost.message,
@@ -137,7 +138,7 @@ export const useTenancyTermsForm = (id: string) => {
         if (subClause.requiredVariables.length > 0) {
           for (const variable of subClause.requiredVariables) {
             if (!subClause.providedValues.find((v) => v.key === variable.name)) {
-              Toast.show({
+              show({
                 type: 'error',
                 text1: 'Missing Value',
                 text2: `Please provide a value for ${variable.name}`,
@@ -156,7 +157,7 @@ export const useTenancyTermsForm = (id: string) => {
     }).then((res) => {
       if (res.error) handleError(res.error);
       if (res.data) {
-        Toast.show({
+        show({
           type: 'success',
           text1: 'Success',
           text2: res.data.createOrUpdateHosting.message,
@@ -232,14 +233,14 @@ export const useTenancyTermsForm = (id: string) => {
         newSections[sectionIndex].subClauses.splice(subIndex, 1);
       } else {
         if (subClause.id === 'sub_caution' && !input.cautionFee) {
-          Toast.show({
+          show({
             type: 'error',
             text1: 'Missing Value',
             text2: 'Please provide caution fee...',
           });
           return;
         } else if (subClause.id === 'sub_service_charge' && !input.serviceCharge) {
-          Toast.show({
+          show({
             type: 'error',
             text1: 'Missing Value',
             text2: 'Please provide service charge...',

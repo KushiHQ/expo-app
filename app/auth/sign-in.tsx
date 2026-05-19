@@ -21,7 +21,7 @@ import { handleError } from '@/lib/utils/error';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, View, Platform } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as WebBrowser from 'expo-web-browser';
@@ -67,7 +67,7 @@ export default function Login() {
             handleError(res.error);
           }
           if (res.data?.googleLogin.data) {
-            Toast.show({
+            toast.show({
               type: 'success',
               text1: 'Success',
               text2: res.data.googleLogin.message,
@@ -117,7 +117,7 @@ export default function Login() {
                 handleError(res.error);
               }
               if (res.data?.appleLogin.data) {
-                Toast.show({
+                toast.show({
                   type: 'success',
                   text1: 'Success',
                   text2: res.data.appleLogin.message,
@@ -162,7 +162,7 @@ export default function Login() {
             handleError(res.error);
           }
           if (res.data?.appleLogin.data) {
-            Toast.show({
+            toast.show({
               type: 'success',
               text1: 'Success',
               text2: res.data.appleLogin.message,
@@ -191,7 +191,7 @@ export default function Login() {
         handleError(res.error);
       }
       if (res.data?.login.data) {
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: res.data.login.message,

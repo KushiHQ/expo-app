@@ -15,7 +15,7 @@ import { formatSeconds } from '@/lib/utils/time';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { Pressable, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 
 export default function OTPVerification() {
   const router = useRouter();
@@ -34,7 +34,7 @@ export default function OTPVerification() {
         handleError(res.error);
       }
       if (res.data) {
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: res.data.verifyEmail.message,
@@ -48,14 +48,14 @@ export default function OTPVerification() {
     reset(60 * 2);
     mutateResend({ email: cast(inputs.email) }).then((res) => {
       if (res.error) {
-        Toast.show({
+        toast.show({
           type: 'error',
           text1: res.error.name,
           text2: res.error.message,
         });
       }
       if (res.data) {
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: res.data.resendEmailVerificationOtp.message,

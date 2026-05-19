@@ -19,7 +19,7 @@ import {
   useCreateUpdateHostingReviewMutation,
 } from '@/lib/services/graphql/generated';
 import { handleError } from '@/lib/utils/error';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 import LoadingModal from '../atoms/a-loading-modal';
 import { FluentImageEdit24Regular } from '../icons/i-edit';
 
@@ -55,7 +55,7 @@ const LeaveAReviewButton: React.FC<Props> = ({ hostingId, review, edit }) => {
         handleError(res.error);
       }
       if (res.data) {
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: res.data.createOrUpdateHostingReview.message,

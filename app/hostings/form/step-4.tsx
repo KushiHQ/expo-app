@@ -17,7 +17,7 @@ import { Check, CircleQuestionMark } from 'lucide-react-native';
 import React from 'react';
 import { View } from 'react-native';
 import { SimpleGrid } from 'react-native-super-grid';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 
 export default function NewHostingStep4() {
   const router = useRouter();
@@ -56,7 +56,7 @@ export default function NewHostingStep4() {
       }
       if (res.data?.createOrUpdateHosting) {
         router.push(`/hostings/form/step-5?id=${res.data?.createOrUpdateHosting.data?.id}`);
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: res.data.createOrUpdateHosting.message,

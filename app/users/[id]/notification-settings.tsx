@@ -12,7 +12,7 @@ import {
 import { handleError } from '@/lib/utils/error';
 import React from 'react';
 import { View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 
 export default function UserNotificationSettings() {
   const { user, updateUser } = useUser();
@@ -25,26 +25,32 @@ export default function UserNotificationSettings() {
   const debouncedInputs = useDebounce(inputs, 1000);
   const [, updateNotifications] = useUpdateUserNotificationSettingsMutation();
 
+  // Held in a ref so the effect can read the latest user without depending on it.
+  // Depending on user.user would cause an infinite loop: mutation succeeds →
+  // updateUser() changes user.user → effect re-runs → mutation fires again.
+  const userRef = React.useRef(user.user);
+  userRef.current = user.user;
+
   React.useEffect(() => {
     updateNotifications({ input: debouncedInputs }).then((res) => {
       if (res.error) {
         handleError(res.error);
       }
       if (res.data?.updateUserNotificationSettings.data) {
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: res.data.updateUserNotificationSettings.message,
         });
         updateUser({
           user: {
-            ...(user.user ?? ({} as User)),
+            ...(userRef.current ?? ({} as User)),
             notificationSettings: res.data.updateUserNotificationSettings.data,
           },
         });
       }
     });
-  }, [debouncedInputs, updateNotifications, updateUser, user.user]);
+  }, [debouncedInputs, updateNotifications, updateUser]);
 
   return (
     <DetailsLayout title="Notification Settings">

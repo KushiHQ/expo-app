@@ -7,7 +7,7 @@ import SavedHostingCard, {
 import { Fonts } from '@/lib/constants/theme';
 import React from 'react';
 import * as Haptics from 'expo-haptics';
-import { Platform, View } from 'react-native';
+import { Platform, RefreshControl, View } from 'react-native';
 import { SimpleGrid } from 'react-native-super-grid';
 import Button from '@/components/atoms/a-button';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
@@ -46,13 +46,19 @@ function SavedContent() {
   const insets = useSafeAreaInsets();
   const [{ fetching: folderFetching, data: folderData }, refetchFolders] =
     useSavedHostingFoldersQuery({ requestPolicy: 'cache-and-network' });
-  const [{ fetching: savedFetching, data: savedData }] = useSavedHostingsQuery({
+  const [{ fetching: savedFetching, data: savedData }, refetchSaved] = useSavedHostingsQuery({
     variables: {
       filters: {
         noFolder: true,
       },
     },
+    requestPolicy: 'cache-and-network',
   });
+
+  const handleRefresh = () => {
+    refetchFolders({ requestPolicy: 'network-only' });
+    refetchSaved({ requestPolicy: 'network-only' });
+  };
 
   const toggleSelectMode = () => {
     setSelectMode((c) => !c);
@@ -91,7 +97,16 @@ function SavedContent() {
 
   return (
     <>
-      <DetailsLayout title="Saved Listings" withProfile>
+      <DetailsLayout
+        title="Saved Listings"
+        withProfile
+        refreshControl={
+          <RefreshControl
+            refreshing={folderFetching || savedFetching}
+            onRefresh={handleRefresh}
+          />
+        }
+      >
         <View className="mt-6 gap-8">
           {(folderFetching || savedFetching) && (
             <View className="gap-2">

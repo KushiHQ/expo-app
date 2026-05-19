@@ -16,7 +16,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 
-import toastConfig from '@/components/atoms/a-toast';
+import ToastContainer from '@/components/atoms/a-toast-container';
 import { NotificationProvider } from '@/components/contexts/notifications';
 import GraphqlClientProvider from '@/components/providers/graphql-client';
 import TansStackProvider from '@/components/providers/tanstack';
@@ -30,7 +30,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
 import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
@@ -140,7 +139,7 @@ export default function RootLayout() {
                         <Stack.Screen name="logout" options={{ headerShown: false }} />
                       </Stack>
                       <StatusBar style="auto" />
-                      <Toast config={toastConfig} />
+                      <ToastContainer />
                     </ThemeProvider>
                   </NotificationProvider>
                 </SafeAreaProvider>

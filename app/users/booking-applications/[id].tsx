@@ -12,7 +12,7 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import Button from '@/components/atoms/a-button';
 import LoadingModal from '@/components/atoms/a-loading-modal';
 import ConfirmationSheet from '@/components/molecules/m-confirmation-sheet';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 import {
   useBookingApplicationQuery,
   useCancelBookingApplicationMutation,
@@ -53,7 +53,7 @@ export default function BookingApplicationDetails() {
   const handleCancel = () => {
     cancelApplication({ applicationId: String(id) }).then((res) => {
       if (res.data?.cancelBookingApplication) {
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: res.data.cancelBookingApplication.message,

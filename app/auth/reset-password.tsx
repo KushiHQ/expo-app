@@ -13,7 +13,7 @@ import { handleError } from '@/lib/utils/error';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 
 export default function ResetPassword() {
   const router = useRouter();
@@ -29,7 +29,7 @@ export default function ResetPassword() {
         handleError(res.error);
       }
       if (res.data) {
-        Toast.show({
+        toast.show({
           type: 'success',
           text1: 'Success',
           text2: res.data.completePasswordChange.message,

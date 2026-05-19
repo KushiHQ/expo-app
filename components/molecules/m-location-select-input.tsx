@@ -1,17 +1,17 @@
-import React from 'react';
-import BottomSheet from '../atoms/a-bottom-sheet';
-import { Dimensions, Keyboard, Pressable, View } from 'react-native';
-import ThemedText from '../atoms/a-themed-text';
-import { Fonts } from '@/lib/constants/theme';
-import { hexToRgba } from '@/lib/utils/colors';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useQuery } from '@tanstack/react-query';
-import { cast } from '@/lib/types/utils';
-import { TablerMapPinFilled } from '../icons/i-map';
-import { useDebounce } from '@/lib/hooks/use-debounce';
-import SearchInput from '../atoms/a-search-input';
+import React from "react";
+import BottomSheet from "../atoms/a-bottom-sheet";
+import { Dimensions, Keyboard, Pressable, View } from "react-native";
+import ThemedText from "../atoms/a-themed-text";
+import { Fonts } from "@/lib/constants/theme";
+import { hexToRgba } from "@/lib/utils/colors";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { useQuery } from "@tanstack/react-query";
+import { cast } from "@/lib/types/utils";
+import { TablerMapPinFilled } from "../icons/i-map";
+import { useDebounce } from "@/lib/hooks/use-debounce";
+import SearchInput from "../atoms/a-search-input";
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 // Google Places API Types
 interface GooglePlacePrediction {
@@ -67,37 +67,53 @@ type Props = {
   onSelect?: (location: SelectedLocation) => void;
 };
 
-const LocationSelectInput: React.FC<Props> = ({ isVisible, onClose, onSelect }) => {
+const LocationSelectInput: React.FC<Props> = ({
+  isVisible,
+  onClose,
+  onSelect,
+}) => {
   const colors = useThemeColors();
-  const [query, setQuery] = React.useState('');
+  const [query, setQuery] = React.useState("");
   const debouncedQuery = useDebounce(query, 500);
 
   const { isFetching, data } = useQuery({
-    queryKey: ['locations', debouncedQuery],
+    queryKey: ["locations", debouncedQuery],
     queryFn: async () => {
       if (!debouncedQuery) return null;
 
-      const url = new URL('https://maps.googleapis.com/maps/api/place/autocomplete/json');
+      const url = new URL(
+        "https://maps.googleapis.com/maps/api/place/autocomplete/json",
+      );
 
-      url.searchParams.append('input', debouncedQuery);
-      url.searchParams.append('components', 'country:ng');
-      url.searchParams.append('types', 'geocode');
+      url.searchParams.append("input", debouncedQuery);
+      url.searchParams.append("components", "country:ng");
+      url.searchParams.append("types", "geocode");
+      url.searchParams.append(
+        "key",
+        process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_WEB ?? "",
+      );
 
       const res = await fetch(url.toString());
-      return cast<GooglePlacesResponse>(await res.json());
+      const json = await res.json();
+      return cast<GooglePlacesResponse>(json);
     },
     enabled: !!debouncedQuery && debouncedQuery.length > 2,
   });
 
   const handleSelectLocation = async (prediction: GooglePlacePrediction) => {
     try {
-      const url = new URL('https://maps.googleapis.com/maps/api/place/details/json');
+      const url = new URL(
+        "https://maps.googleapis.com/maps/api/place/details/json",
+      );
 
-      url.searchParams.append('endpoint', 'details');
-      url.searchParams.append('place_id', prediction.place_id);
+      url.searchParams.append("place_id", prediction.place_id);
       url.searchParams.append(
-        'fields',
-        'address_components,geometry,formatted_address,name,place_id',
+        "fields",
+        "address_components,geometry,formatted_address,name,place_id",
+      );
+      url.searchParams.append(
+        "key",
+        process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_WEB ?? "",
       );
 
       const res = await fetch(url.toString());
@@ -108,17 +124,21 @@ const LocationSelectInput: React.FC<Props> = ({ isVisible, onClose, onSelect }) 
         const addressComponents = data.result.address_components;
 
         const city =
-          addressComponents.find((c) => c.types.includes('locality'))?.long_name ||
-          addressComponents.find((c) => c.types.includes('administrative_area_level_2'))
+          addressComponents.find((c) => c.types.includes("locality"))
             ?.long_name ||
+          addressComponents.find((c) =>
+            c.types.includes("administrative_area_level_2"),
+          )?.long_name ||
           null;
 
         const state =
-          addressComponents.find((c) => c.types.includes('administrative_area_level_1'))
-            ?.long_name || null;
+          addressComponents.find((c) =>
+            c.types.includes("administrative_area_level_1"),
+          )?.long_name || null;
 
         const country =
-          addressComponents.find((c) => c.types.includes('country'))?.long_name || null;
+          addressComponents.find((c) => c.types.includes("country"))
+            ?.long_name || null;
 
         onSelect?.({
           name: prediction.structured_formatting.main_text,
@@ -132,7 +152,7 @@ const LocationSelectInput: React.FC<Props> = ({ isVisible, onClose, onSelect }) 
         handleClose();
       }
     } catch (error) {
-      console.error('Error fetching place details:', error);
+      console.error("Error fetching place details:", error);
     }
   };
 
@@ -148,7 +168,11 @@ const LocationSelectInput: React.FC<Props> = ({ isVisible, onClose, onSelect }) 
           Find Location
         </ThemedText>
         <View className="gap-2">
-          <SearchInput value={query} onChangeText={setQuery} placeholder="Search location...." />
+          <SearchInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search location...."
+          />
           <View style={{ height: SCREEN_HEIGHT * 0.2 }}>
             {!isFetching && !data?.predictions?.length && query.length > 0 && (
               <ThemedText
@@ -158,7 +182,9 @@ const LocationSelectInput: React.FC<Props> = ({ isVisible, onClose, onSelect }) 
                   marginTop: 4,
                 }}
               >
-                {query.length < 3 ? 'Type at least 3 characters...' : 'No locations found'}
+                {query.length < 3
+                  ? "Type at least 3 characters..."
+                  : "No locations found"}
               </ThemedText>
             )}
             {!query && (
@@ -178,7 +204,10 @@ const LocationSelectInput: React.FC<Props> = ({ isVisible, onClose, onSelect }) 
                 onPress={() => handleSelectLocation(item)}
                 className="flex-row items-center gap-2 p-2"
               >
-                <TablerMapPinFilled size={18} color={hexToRgba(colors.text, 0.7)} />
+                <TablerMapPinFilled
+                  size={18}
+                  color={hexToRgba(colors.text, 0.7)}
+                />
                 <View className="flex-1">
                   <ThemedText style={{ fontFamily: Fonts.medium }}>
                     {item.structured_formatting.main_text}

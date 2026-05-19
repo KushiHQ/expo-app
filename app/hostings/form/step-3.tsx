@@ -1,26 +1,26 @@
-import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
-import LoadingModal from '@/components/atoms/a-loading-modal';
-import LocationCard from '@/components/atoms/a-location-card';
-import Skeleton from '@/components/atoms/a-skeleton';
-import ThemedText from '@/components/atoms/a-themed-text';
-import DetailsLayout from '@/components/layouts/details';
-import HostingStepper from '@/components/molecules/m-hosting-stepper';
-import { Fonts } from '@/lib/constants/theme';
-import { useHostingForm } from '@/lib/hooks/hosting-form';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { PROPERTY_TYPE_ICONS } from '@/lib/types/enums/hosting-icons';
-import { PropertyType } from '@/lib/types/enums/hostings';
-import { cast } from '@/lib/types/utils';
-import { hexToRgba } from '@/lib/utils/colors';
-import { handleError } from '@/lib/utils/error';
-import { getAddressFromCoords, getLocationAsync } from '@/lib/utils/locations';
-import * as Location from 'expo-location';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { CircleQuestionMark } from 'lucide-react-native';
-import React, { useRef } from 'react';
-import { Platform, TextInput, View } from 'react-native';
-import { RefreshControl } from 'react-native-gesture-handler';
-import Toast from 'react-native-toast-message';
+import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
+import LoadingModal from "@/components/atoms/a-loading-modal";
+import LocationCard from "@/components/atoms/a-location-card";
+import Skeleton from "@/components/atoms/a-skeleton";
+import ThemedText from "@/components/atoms/a-themed-text";
+import DetailsLayout from "@/components/layouts/details";
+import HostingStepper from "@/components/molecules/m-hosting-stepper";
+import { Fonts } from "@/lib/constants/theme";
+import { useHostingForm } from "@/lib/hooks/hosting-form";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { PROPERTY_TYPE_ICONS } from "@/lib/types/enums/hosting-icons";
+import { PropertyType } from "@/lib/types/enums/hostings";
+import { cast } from "@/lib/types/utils";
+import { hexToRgba } from "@/lib/utils/colors";
+import { handleError } from "@/lib/utils/error";
+import { getAddressFromCoords, getLocationAsync } from "@/lib/utils/locations";
+import * as Location from "expo-location";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { CircleQuestionMark } from "lucide-react-native";
+import React, { useRef } from "react";
+import { Platform, TextInput, View } from "react-native";
+import { RefreshControl } from "react-native-gesture-handler";
+import { toast } from "@/lib/hooks/use-toast";
 
 export default function NewHostingStep3() {
   const router = useRouter();
@@ -29,7 +29,13 @@ export default function NewHostingStep3() {
   const landmarkRef = useRef<TextInput>(null);
   const [locationFetching, setLocationFetching] = React.useState(false);
   const [permission, requestPermission] = Location.useForegroundPermissions();
-  const { input, mutate, updateInput, mutating, fetching: fetchingHosting } = useHostingForm(id);
+  const {
+    input,
+    mutate,
+    updateInput,
+    mutating,
+    fetching: fetchingHosting,
+  } = useHostingForm(id);
 
   const loading = fetchingHosting || locationFetching || mutating;
 
@@ -38,7 +44,10 @@ export default function NewHostingStep3() {
     try {
       const loc = await getLocationAsync();
       if (loc) {
-        const addreses = await getAddressFromCoords(loc?.coords.latitude, loc?.coords.longitude);
+        const addreses = await getAddressFromCoords(
+          loc?.coords.latitude,
+          loc?.coords.longitude,
+        );
         const address = addreses?.at(0);
         updateInput({
           latitude: loc.coords.latitude.toString(),
@@ -51,7 +60,7 @@ export default function NewHostingStep3() {
         });
       }
     } catch (err) {
-      console.log('Failed', { err });
+      console.error("Failed", { err });
     } finally {
       setLocationFetching(false);
     }
@@ -63,7 +72,13 @@ export default function NewHostingStep3() {
     } else if (!input.longitude || !input.latitude) {
       fetchLocation();
     }
-  }, [permission, input.latitude, input.longitude, fetchLocation, requestPermission]);
+  }, [
+    permission,
+    input.latitude,
+    input.longitude,
+    fetchLocation,
+    requestPermission,
+  ]);
 
   const Icon = PROPERTY_TYPE_ICONS[PropertyType.Residential];
 
@@ -73,10 +88,12 @@ export default function NewHostingStep3() {
         handleError(res.error);
       }
       if (res.data?.createOrUpdateHosting) {
-        router.push(`/hostings/form/step-4?id=${res.data?.createOrUpdateHosting.data?.id}`);
-        Toast.show({
-          type: 'success',
-          text1: 'Success',
+        router.push(
+          `/hostings/form/step-4?id=${res.data?.createOrUpdateHosting.data?.id}`,
+        );
+        toast.show({
+          type: "success",
+          text1: "Success",
           text2: res.data.createOrUpdateHosting.message,
         });
       }
@@ -86,24 +103,33 @@ export default function NewHostingStep3() {
   return (
     <>
       <DetailsLayout
-        refreshControl={<RefreshControl onRefresh={fetchLocation} refreshing={locationFetching} />}
+        refreshControl={
+          <RefreshControl
+            onRefresh={fetchLocation}
+            refreshing={locationFetching}
+          />
+        }
         title="Hosting"
         footer={
           <HostingStepper
             onPress={handleMutate}
-            disabled={mutating || !input.contact || !input.longitude || !input.latitude}
+            disabled={
+              mutating || !input.contact || !input.longitude || !input.latitude
+            }
             loading={mutating}
             step={3}
           />
         }
       >
         <View className="mt-2 gap-4">
-          <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
+          <ThemedText
+            style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}
+          >
             <CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
-            {'  '}
-            Pin your property&apos;s Location on the map. We&apos;ll automatically find the Address,
-            and you can add extra details like Contact info and nearby Landmarks to help guests find
-            you.
+            {"  "}
+            Pin your property&apos;s Location on the map. We&apos;ll
+            automatically find the Address, and you can add extra details like
+            Contact info and nearby Landmarks to help guests find you.
           </ThemedText>
           <View>
             {!input.longitude || !input.latitude ? (
@@ -118,7 +144,9 @@ export default function NewHostingStep3() {
               />
             )}
             {!input.state ? (
-              <Skeleton style={{ height: 100, borderRadius: 12, marginTop: 32 }} />
+              <Skeleton
+                style={{ height: 100, borderRadius: 12, marginTop: 32 }}
+              />
             ) : (
               <View className="mt-8 gap-4">
                 <View
@@ -142,13 +170,17 @@ export default function NewHostingStep3() {
                 >
                   <View className="flex-row items-center gap-2">
                     <Icon color={colors.primary} size={18} />
-                    <ThemedText style={{ fontFamily: Fonts.semibold }}>Address</ThemedText>
+                    <ThemedText style={{ fontFamily: Fonts.semibold }}>
+                      Address
+                    </ThemedText>
                   </View>
                   <View>
                     <ThemedText style={{ fontSize: 12 }}>
                       {input?.street}, {input?.city} {input?.postalCode},
                     </ThemedText>
-                    <ThemedText style={{ fontSize: 14, fontFamily: Fonts.medium }}>
+                    <ThemedText
+                      style={{ fontSize: 14, fontFamily: Fonts.medium }}
+                    >
                       {input?.state}, {input?.country}
                     </ThemedText>
                   </View>

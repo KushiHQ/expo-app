@@ -13,7 +13,7 @@ import PhoneInput, { ICountry, IPhoneInputRef } from 'react-native-international
 import { hexToRgba } from '@/lib/utils/colors';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { CircleQuestionMark } from 'lucide-react-native';
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 import LoadingModal from '../atoms/a-loading-modal';
 import { handleError } from '@/lib/utils/error';
 import OTPInput from '../atoms/a-otp-input';
@@ -75,7 +75,7 @@ const PhoneNumberSelectInput: React.FC<Props> = ({ defaultValue, onSelect }) => 
     const handleInitiate = () => {
       initiateVerification({ phoneNumber: formatedNumber }).then((res) => {
         if (res.data?.initiatePhoneNumberVerification) {
-          Toast.show({
+          toast.show({
             type: 'success',
             text1: 'Success',
             text2: res.data.initiatePhoneNumberVerification.message,
@@ -90,7 +90,7 @@ const PhoneNumberSelectInput: React.FC<Props> = ({ defaultValue, onSelect }) => 
         input: { phoneNumber: formatedNumber, otp },
       }).then((res) => {
         if (res.data?.completePhoneNumberVerification) {
-          Toast.show({
+          toast.show({
             type: 'success',
             text1: 'Success',
             text2: res.data.completePhoneNumberVerification.message,

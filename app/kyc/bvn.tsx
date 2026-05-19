@@ -19,7 +19,7 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React from "react";
 import { Dimensions, View } from "react-native";
-import Toast from "react-native-toast-message";
+import { toast } from '@/lib/hooks/use-toast';
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -37,7 +37,7 @@ export default function KycBVN() {
       }
       if (res.data) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Toast.show({
+        toast.show({
           type: "success",
           text1: "Success",
           text2: "BVN verified successfully",

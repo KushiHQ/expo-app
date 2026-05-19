@@ -1,9 +1,9 @@
-import Toast from 'react-native-toast-message';
+import { toast } from '@/lib/hooks/use-toast';
 import { CombinedError } from 'urql';
 
 export function handleError(error: CombinedError) {
   console.log('ERRROOR', error);
-  Toast.show({
+  toast.show({
     type: 'error',
     text1: 'Error',
     text2: error.message.replace('[GraphQL] ', ''),
