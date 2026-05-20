@@ -1,32 +1,32 @@
-import Button from "@/components/atoms/a-button";
-import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
-import LoadingModal from "@/components/atoms/a-loading-modal";
-import Stepper from "@/components/atoms/a-steppter";
-import ThemedText from "@/components/atoms/a-themed-text";
-import DetailsLayout from "@/components/layouts/details";
-import { SolarShieldKeyholeBold } from "@/components/icons/i-shield";
-import { KYC_ONBOARDING_STEPS } from "@/lib/constants/kyc/onboarding";
-import { Fonts } from "@/lib/constants/theme";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { useUser } from "@/lib/hooks/user";
-import { User, useVerifyKycMutation } from "@/lib/services/graphql/generated";
-import { cast } from "@/lib/types/utils";
-import { hexToRgba } from "@/lib/utils/colors";
-import { handleError } from "@/lib/utils/error";
-import * as Haptics from "expo-haptics";
-import { Image } from "expo-image";
-import { useRouter } from "expo-router";
-import React from "react";
-import { Dimensions, View } from "react-native";
+import Button from '@/components/atoms/a-button';
+import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
+import LoadingModal from '@/components/atoms/a-loading-modal';
+import Stepper from '@/components/atoms/a-steppter';
+import ThemedText from '@/components/atoms/a-themed-text';
+import DetailsLayout from '@/components/layouts/details';
+import { SolarShieldKeyholeBold } from '@/components/icons/i-shield';
+import { KYC_ONBOARDING_STEPS } from '@/lib/constants/kyc/onboarding';
+import { Fonts } from '@/lib/constants/theme';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { useUser } from '@/lib/hooks/user';
+import { User, useVerifyKycMutation } from '@/lib/services/graphql/generated';
+import { cast } from '@/lib/types/utils';
+import { hexToRgba } from '@/lib/utils/colors';
+import { handleError } from '@/lib/utils/error';
+import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { Dimensions, View } from 'react-native';
 import { toast } from '@/lib/hooks/use-toast';
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function KycNIN() {
   const { user, updateUser } = useUser();
   const router = useRouter();
   const colors = useThemeColors();
-  const [nin, setNin] = React.useState("");
+  const [nin, setNin] = React.useState('');
   const [{ fetching: verifying }, verifyKyc] = useVerifyKycMutation();
 
   const handleVerify = () => {
@@ -37,9 +37,9 @@ export default function KycNIN() {
       if (res.data) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         toast.show({
-          type: "success",
-          text1: "Success",
-          text2: "NIN verified successfully",
+          type: 'success',
+          text1: 'Success',
+          text2: 'NIN verified successfully',
         });
         updateUser({
           user: {
@@ -47,7 +47,7 @@ export default function KycNIN() {
             kyc: res.data.verifyKyc,
           },
         });
-        router.push("/kyc/bvn");
+        router.push('/kyc/bvn');
       }
     });
   };
@@ -66,11 +66,7 @@ export default function KycNIN() {
           >
             <Button
               disabled={user.user?.kyc.ninVerified ? false : nin.length !== 11}
-              onPress={
-                user.user?.kyc?.ninVerified
-                  ? () => router.push("/kyc/bvn")
-                  : handleVerify
-              }
+              onPress={user.user?.kyc?.ninVerified ? () => router.push('/kyc/bvn') : handleVerify}
               type="primary"
               className="py-[18px]"
             >
@@ -92,9 +88,9 @@ export default function KycNIN() {
                   width: SCREEN_WIDTH * 0.9,
                   maxWidth: 500,
                   aspectRatio: 16 / 14,
-                  objectFit: "contain",
+                  objectFit: 'contain',
                 }}
-                source={require("@/assets/images/id-3d.png")}
+                source={require('@/assets/images/id-3d.png')}
               />
             </View>
 
@@ -103,8 +99,8 @@ export default function KycNIN() {
               className="self-center text-center"
               style={{ color: hexToRgba(colors.text, 0.7) }}
             >
-              Please enter the National Identification Number (NIN) associated
-              with the photo you captured.
+              Please enter the National Identification Number (NIN) associated with the photo you
+              captured.
             </ThemedText>
             <View className="mt-8">
               <View
@@ -129,7 +125,7 @@ export default function KycNIN() {
                 inputMode="numeric"
                 placeholder="021234569"
                 disabled={!!user.user?.kyc.ninVerified}
-                value={user.user?.kyc.ninVerified ? "***********" : nin}
+                value={user.user?.kyc.ninVerified ? '***********' : nin}
                 onChangeText={setNin}
               />
             </View>

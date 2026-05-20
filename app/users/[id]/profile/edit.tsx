@@ -109,12 +109,7 @@ export default function UserProfileEdit() {
               />
               <View className="flex-row items-center gap-4">
                 <View className="flex-[1.5]">
-                  <FloatingLabelInput
-                    focused
-                    disabled
-                    label="Password"
-                    placeholder="••••••••"
-                  />
+                  <FloatingLabelInput focused disabled label="Password" placeholder="••••••••" />
                 </View>
                 <Button
                   className="flex-1"

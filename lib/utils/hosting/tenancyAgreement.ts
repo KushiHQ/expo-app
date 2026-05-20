@@ -120,7 +120,10 @@ export function landlordTypeLabel(
     default:
       base = 'Landlord';
   }
-  if (tier === HostingVerificationTier.OwnerVerified || tier === HostingVerificationTier.KushiVetted) {
+  if (
+    tier === HostingVerificationTier.OwnerVerified ||
+    tier === HostingVerificationTier.KushiVetted
+  ) {
     return `${base} (Kushi Verified)`;
   }
   return base;
@@ -128,11 +131,16 @@ export function landlordTypeLabel(
 
 export function verificationTierLabel(tier?: HostingVerificationTier | null): string {
   switch (tier) {
-    case HostingVerificationTier.IdentityVerified: return 'Identity Verified';
-    case HostingVerificationTier.AddressVerified: return 'Address Verified';
-    case HostingVerificationTier.OwnerVerified: return 'Owner Verified';
-    case HostingVerificationTier.KushiVetted: return 'Kushi Vetted';
-    default: return 'Unverified';
+    case HostingVerificationTier.IdentityVerified:
+      return 'Identity Verified';
+    case HostingVerificationTier.AddressVerified:
+      return 'Address Verified';
+    case HostingVerificationTier.OwnerVerified:
+      return 'Owner Verified';
+    case HostingVerificationTier.KushiVetted:
+      return 'Kushi Vetted';
+    default:
+      return 'Unverified';
   }
 }
 
@@ -155,24 +163,37 @@ export function courtJurisdictionPhrase(state?: string | null): string {
 
 export function employmentStatusLabel(status?: GuestFormEmploymentStatus | null): string {
   switch (status) {
-    case GuestFormEmploymentStatus.Employed: return 'Employed Person';
-    case GuestFormEmploymentStatus.SelfEmployed: return 'Self-Employed Person';
-    case GuestFormEmploymentStatus.CorpMember: return 'NYSC Corps Member';
-    case GuestFormEmploymentStatus.Student: return 'Student';
-    case GuestFormEmploymentStatus.Unemployed: return 'Unemployed Person';
-    default: return 'N/A';
+    case GuestFormEmploymentStatus.Employed:
+      return 'Employed Person';
+    case GuestFormEmploymentStatus.SelfEmployed:
+      return 'Self-Employed Person';
+    case GuestFormEmploymentStatus.CorpMember:
+      return 'NYSC Corps Member';
+    case GuestFormEmploymentStatus.Student:
+      return 'Student';
+    case GuestFormEmploymentStatus.Unemployed:
+      return 'Unemployed Person';
+    default:
+      return 'N/A';
   }
 }
 
 export function guarantorRelationshipLabel(rel?: GuestFormGuarantorRelationships | null): string {
   switch (rel) {
-    case GuestFormGuarantorRelationships.Parent: return 'Parent';
-    case GuestFormGuarantorRelationships.Sibling: return 'Sibling';
-    case GuestFormGuarantorRelationships.Employer: return 'Employer';
-    case GuestFormGuarantorRelationships.Spouse: return 'Spouse';
-    case GuestFormGuarantorRelationships.Clergy: return 'Clergy';
-    case GuestFormGuarantorRelationships.Other: return 'Personal Acquaintance';
-    default: return 'N/A';
+    case GuestFormGuarantorRelationships.Parent:
+      return 'Parent';
+    case GuestFormGuarantorRelationships.Sibling:
+      return 'Sibling';
+    case GuestFormGuarantorRelationships.Employer:
+      return 'Employer';
+    case GuestFormGuarantorRelationships.Spouse:
+      return 'Spouse';
+    case GuestFormGuarantorRelationships.Clergy:
+      return 'Clergy';
+    case GuestFormGuarantorRelationships.Other:
+      return 'Personal Acquaintance';
+    default:
+      return 'N/A';
   }
 }
 

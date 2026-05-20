@@ -1,5 +1,5 @@
 import * as Location from 'expo-location';
-import { Alert, Platform } from 'react-native';
+import { Alert } from 'react-native';
 
 export type LocationObject = {
   name: any;
@@ -17,12 +17,18 @@ export type LocationObject = {
 
 export const getLocationAsync = async () => {
   try {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Location permission is required to tag media.');
+      return null;
+    }
     const location = await Location.getCurrentPositionAsync({
       accuracy: Location.Accuracy.BestForNavigation,
     });
     return location;
-  } catch {
-    alert('Could not get your location.');
+  } catch (error) {
+    console.error('getLocationAsync error:', error);
+    Alert.alert('Error', 'Could not get your location.');
     return null;
   }
 };

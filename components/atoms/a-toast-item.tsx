@@ -64,12 +64,18 @@ export default function ToastItem({ toast, onDismiss }: Props) {
 
   const pan = Gesture.Pan()
     .activeOffsetX([-12, 12])
-    .onUpdate((e) => { translateX.value = e.translationX; })
+    .onUpdate((e) => {
+      translateX.value = e.translationX;
+    })
     .onEnd((e) => {
       if (Math.abs(e.translationX) > 80) {
-        translateX.value = withSpring(e.translationX > 0 ? 480 : -480, { duration: 280 }, (done) => {
-          if (done) runOnJS(dismiss)();
-        });
+        translateX.value = withSpring(
+          e.translationX > 0 ? 480 : -480,
+          { duration: 280 },
+          (done) => {
+            if (done) runOnJS(dismiss)();
+          },
+        );
       } else {
         translateX.value = withSpring(0, { damping: 22 });
       }
@@ -84,19 +90,9 @@ export default function ToastItem({ toast, onDismiss }: Props) {
     <GestureDetector gesture={pan}>
       <Animated.View style={animStyle}>
         {/* Glow halo */}
-        <View
-          style={[
-            styles.glowWrap,
-            { shadowColor: cfg.shadow },
-          ]}
-        >
+        <View style={[styles.glowWrap, { shadowColor: cfg.shadow }]}>
           {/* Toast surface */}
-          <View
-            style={[
-              styles.surface,
-              { backgroundColor: cfg.bg, borderColor: cfg.border },
-            ]}
-          >
+          <View style={[styles.surface, { backgroundColor: cfg.bg, borderColor: cfg.border }]}>
             {/* Top-half glass highlight — simulates frosted reflection */}
             <View
               pointerEvents="none"
@@ -128,12 +124,13 @@ export default function ToastItem({ toast, onDismiss }: Props) {
             {toast.action && (
               <TouchableOpacity
                 style={styles.actionBtn}
-                onPress={() => { toast.action!.onPress(); dismiss(); }}
+                onPress={() => {
+                  toast.action!.onPress();
+                  dismiss();
+                }}
                 hitSlop={10}
               >
-                <Text style={[styles.actionLabel, { color: cfg.icon }]}>
-                  {toast.action.label}
-                </Text>
+                <Text style={[styles.actionLabel, { color: cfg.icon }]}>{toast.action.label}</Text>
               </TouchableOpacity>
             )}
 

@@ -215,6 +215,15 @@ export default ({ config }) => ({
 		"@react-native-firebase/messaging",
 		"@react-native-google-signin/google-signin",
 		"expo-apple-authentication",
+		[
+			"@sentry/react-native/expo",
+			{
+				// When SENTRY_ORG + SENTRY_PROJECT + SENTRY_AUTH_TOKEN are present in the
+				// ENV_FILE GitHub secret, source maps are uploaded and stack traces are readable.
+				organization: process.env.SENTRY_ORG,
+				project: process.env.SENTRY_PROJECT,
+			},
+		],
 	],
 	experiments: {
 		typedRoutes: true,

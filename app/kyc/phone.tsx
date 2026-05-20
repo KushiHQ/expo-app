@@ -1,49 +1,42 @@
-import React from "react";
-import { View } from "react-native";
-import { useRouter } from "expo-router";
-import DetailsLayout from "@/components/layouts/details";
-import ThemedText from "@/components/atoms/a-themed-text";
-import Button from "@/components/atoms/a-button";
-import PhoneInput, {
-  ICountry,
-  IPhoneInputRef,
-} from "react-native-international-phone-number";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
-import { CircleQuestionMark } from "lucide-react-native";
+import React from 'react';
+import { View } from 'react-native';
+import { useRouter } from 'expo-router';
+import DetailsLayout from '@/components/layouts/details';
+import ThemedText from '@/components/atoms/a-themed-text';
+import Button from '@/components/atoms/a-button';
+import PhoneInput, { ICountry, IPhoneInputRef } from 'react-native-international-phone-number';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
+import { CircleQuestionMark } from 'lucide-react-native';
 import {
   useInitiatePhoneNumberVerificationMutation,
   useCompletePhoneNumberVerificationMutation,
-} from "@/lib/services/graphql/generated";
+} from '@/lib/services/graphql/generated';
 import { toast } from '@/lib/hooks/use-toast';
-import LoadingModal from "@/components/atoms/a-loading-modal";
-import OTPInput from "@/components/atoms/a-otp-input";
-import { handleError } from "@/lib/utils/error";
-import { useUser } from "@/lib/hooks/user";
+import LoadingModal from '@/components/atoms/a-loading-modal';
+import OTPInput from '@/components/atoms/a-otp-input';
+import { handleError } from '@/lib/utils/error';
+import { useUser } from '@/lib/hooks/user';
 
 export default function PhoneVerification() {
   const router = useRouter();
   const colors = useThemeColors();
   const { user, updateUser } = useUser();
-  const [input, setInput] = React.useState("");
+  const [input, setInput] = React.useState('');
   const [country, setCountry] = React.useState<ICountry>();
-  const [otp, setOtp] = React.useState("");
+  const [otp, setOtp] = React.useState('');
   const [otpRequested, setOtpRequested] = React.useState(false);
   const phoneInputRef = React.useRef<IPhoneInputRef>(null);
 
-  const [
-    { fetching: initiating, error: initiationError },
-    initiateVerification,
-  ] = useInitiatePhoneNumberVerificationMutation();
+  const [{ fetching: initiating, error: initiationError }, initiateVerification] =
+    useInitiatePhoneNumberVerificationMutation();
 
-  const [
-    { fetching: completing, error: complectionError },
-    completeVerification,
-  ] = useCompletePhoneNumberVerificationMutation();
+  const [{ fetching: completing, error: complectionError }, completeVerification] =
+    useCompletePhoneNumberVerificationMutation();
 
   const formatedNumber = React.useMemo(() => {
-    const str = input.replaceAll(" ", "").replace(/^0+/, "");
-    return `${country?.idd.root ?? "+234"}${str}`;
+    const str = input.replaceAll(' ', '').replace(/^0+/, '');
+    return `${country?.idd.root ?? '+234'}${str}`;
   }, [input, country]);
 
   const loading = initiating || completing;
@@ -59,17 +52,17 @@ export default function PhoneVerification() {
   const handleInitiate = () => {
     if (!input) {
       toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Please enter a valid phone number",
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter a valid phone number',
       });
       return;
     }
     initiateVerification({ phoneNumber: formatedNumber }).then((res) => {
       if (res.data?.initiatePhoneNumberVerification) {
         toast.show({
-          type: "success",
-          text1: "Success",
+          type: 'success',
+          text1: 'Success',
           text2: res.data.initiatePhoneNumberVerification.message,
         });
         setOtpRequested(true);
@@ -80,9 +73,9 @@ export default function PhoneVerification() {
   const handleComplete = () => {
     if (otp.length !== 6) {
       toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Please enter a valid 6-digit OTP",
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter a valid 6-digit OTP',
       });
       return;
     }
@@ -91,17 +84,17 @@ export default function PhoneVerification() {
     }).then((res) => {
       if (res.data?.completePhoneNumberVerification) {
         toast.show({
-          type: "success",
-          text1: "Success",
-          text2: "Phone number verified successfully",
+          type: 'success',
+          text1: 'Success',
+          text2: 'Phone number verified successfully',
         });
         if (user.user) {
           const updatedPhoneNumbers = [
             ...(user.user.phoneNumbers ?? []),
             {
-              id: res.data?.completePhoneNumberVerification.data?.id ?? "",
+              id: res.data?.completePhoneNumberVerification.data?.id ?? '',
               number: formatedNumber,
-              verificationStatus: "VERIFIED" as any,
+              verificationStatus: 'VERIFIED' as any,
             },
           ];
           updateUser({
@@ -111,7 +104,7 @@ export default function PhoneVerification() {
             },
           });
         }
-        router.replace("/kyc/image");
+        router.replace('/kyc/image');
       }
     });
   };
@@ -134,7 +127,7 @@ export default function PhoneVerification() {
             className="py-[18px]"
           >
             <ThemedText content="primary">
-              {otpRequested ? "Verify OTP" : "Send Verification Code"}
+              {otpRequested ? 'Verify OTP' : 'Send Verification Code'}
             </ThemedText>
           </Button>
         </View>
@@ -143,25 +136,21 @@ export default function PhoneVerification() {
       <View className="mt-4 gap-8 p-6">
         <View className="gap-2">
           <ThemedText type="subtitle">Verify your phone number</ThemedText>
-          <ThemedText
-            style={{ color: hexToRgba(colors.text, 0.6), fontSize: 14 }}
-          >
+          <ThemedText style={{ color: hexToRgba(colors.text, 0.6), fontSize: 14 }}>
             <CircleQuestionMark color={hexToRgba(colors.text, 0.6)} size={14} />
-            {"  "}
+            {'  '}
             We will send a 6-digit code to your phone number for verification.
           </ThemedText>
         </View>
 
         <View className="gap-4">
-          <ThemedText style={{ fontSize: 14, opacity: 0.8 }}>
-            Phone Number
-          </ThemedText>
+          <ThemedText style={{ fontSize: 14, opacity: 0.8 }}>Phone Number</ThemedText>
           <View
             style={{
               borderWidth: 1,
               borderColor: hexToRgba(colors.text, 0.1),
               borderRadius: 12,
-              overflow: "hidden",
+              overflow: 'hidden',
             }}
           >
             <PhoneInput
@@ -187,7 +176,7 @@ export default function PhoneVerification() {
               phoneInputStyles={{
                 container: {
                   backgroundColor: colors.background,
-                  borderColor: "transparent",
+                  borderColor: 'transparent',
                   height: 56,
                   borderRadius: 12,
                 },
@@ -207,18 +196,11 @@ export default function PhoneVerification() {
 
         {otpRequested && (
           <View className="items-center gap-4">
-            <ThemedText
-              style={{ fontSize: 14, opacity: 0.8 }}
-              className="self-start"
-            >
+            <ThemedText style={{ fontSize: 14, opacity: 0.8 }} className="self-start">
               Enter 6-digit OTP
             </ThemedText>
             <OTPInput length={6} value={otp} onChangeText={setOtp} />
-            <Button
-              variant="outline"
-              onPress={() => setOtpRequested(false)}
-              className="mt-2"
-            >
+            <Button variant="outline" onPress={() => setOtpRequested(false)} className="mt-2">
               <ThemedText style={{ color: colors.primary, fontSize: 12 }}>
                 Change phone number
               </ThemedText>

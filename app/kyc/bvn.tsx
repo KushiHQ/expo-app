@@ -1,33 +1,33 @@
-import Button from "@/components/atoms/a-button";
-import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
-import LoadingModal from "@/components/atoms/a-loading-modal";
-import Stepper from "@/components/atoms/a-steppter";
-import ThemedText from "@/components/atoms/a-themed-text";
-import DetailsLayout from "@/components/layouts/details";
-import { SolarShieldKeyholeBold } from "@/components/icons/i-shield";
-import { KYC_ONBOARDING_STEPS } from "@/lib/constants/kyc/onboarding";
-import { Fonts } from "@/lib/constants/theme";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { useUser } from "@/lib/hooks/user";
-import { User, useVerifyKycMutation } from "@/lib/services/graphql/generated";
-import { UserType } from "@/lib/types/users";
-import { cast } from "@/lib/types/utils";
-import { hexToRgba } from "@/lib/utils/colors";
-import { handleError } from "@/lib/utils/error";
-import * as Haptics from "expo-haptics";
-import { Image } from "expo-image";
-import { useRouter } from "expo-router";
-import React from "react";
-import { Dimensions, View } from "react-native";
+import Button from '@/components/atoms/a-button';
+import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
+import LoadingModal from '@/components/atoms/a-loading-modal';
+import Stepper from '@/components/atoms/a-steppter';
+import ThemedText from '@/components/atoms/a-themed-text';
+import DetailsLayout from '@/components/layouts/details';
+import { SolarShieldKeyholeBold } from '@/components/icons/i-shield';
+import { KYC_ONBOARDING_STEPS } from '@/lib/constants/kyc/onboarding';
+import { Fonts } from '@/lib/constants/theme';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { useUser } from '@/lib/hooks/user';
+import { User, useVerifyKycMutation } from '@/lib/services/graphql/generated';
+import { UserType } from '@/lib/types/users';
+import { cast } from '@/lib/types/utils';
+import { hexToRgba } from '@/lib/utils/colors';
+import { handleError } from '@/lib/utils/error';
+import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { Dimensions, View } from 'react-native';
 import { toast } from '@/lib/hooks/use-toast';
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function KycBVN() {
   const { user, updateUser } = useUser();
   const router = useRouter();
   const colors = useThemeColors();
-  const [bvn, setBvn] = React.useState("");
+  const [bvn, setBvn] = React.useState('');
   const [{ fetching: verifying }, verifyKyc] = useVerifyKycMutation();
 
   const handleVerify = () => {
@@ -38,9 +38,9 @@ export default function KycBVN() {
       if (res.data) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         toast.show({
-          type: "success",
-          text1: "Success",
-          text2: "BVN verified successfully",
+          type: 'success',
+          text1: 'Success',
+          text2: 'BVN verified successfully',
         });
         updateUser({
           user: {
@@ -49,9 +49,9 @@ export default function KycBVN() {
           },
         });
         if (user.userType === UserType.Host) {
-          router.replace("/host/analytics");
+          router.replace('/host/analytics');
         } else {
-          router.replace("/guest/home");
+          router.replace('/guest/home');
         }
       }
     });
@@ -74,9 +74,9 @@ export default function KycBVN() {
               onPress={() => {
                 if (user.user?.kyc.bvnVerified) {
                   if (user.userType === UserType.Host) {
-                    router.replace("/host/analytics");
+                    router.replace('/host/analytics');
                   } else {
-                    router.replace("/guest/home");
+                    router.replace('/guest/home');
                   }
                 } else {
                   handleVerify();
@@ -103,9 +103,9 @@ export default function KycBVN() {
                   width: SCREEN_WIDTH * 0.9,
                   maxWidth: 500,
                   aspectRatio: 16 / 14,
-                  objectFit: "contain",
+                  objectFit: 'contain',
                 }}
-                source={require("@/assets/images/card-security-3d.png")}
+                source={require('@/assets/images/card-security-3d.png')}
               />
             </View>
 
@@ -114,8 +114,8 @@ export default function KycBVN() {
               className="self-center text-center"
               style={{ color: hexToRgba(colors.text, 0.7) }}
             >
-              Please enter the Bank Verification Number (BVN) associated with
-              the photo you captured.
+              Please enter the Bank Verification Number (BVN) associated with the photo you
+              captured.
             </ThemedText>
             <View className="mt-8">
               <View
@@ -140,7 +140,7 @@ export default function KycBVN() {
                 maxLength={11}
                 placeholder="021234569"
                 disabled={!!user.user?.kyc.bvnVerified}
-                value={user.user?.kyc.bvnVerified ? "***********" : bvn}
+                value={user.user?.kyc.bvnVerified ? '***********' : bvn}
                 onChangeText={setBvn}
               />
             </View>

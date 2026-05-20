@@ -109,15 +109,15 @@ export default function NewHostingStep7() {
                       {section.subClauses
                         .filter((clause) => subClauseConditionMet(clause.id, hosting))
                         .map((clause, cIdx) => (
-                        <MemoizedSubClause
-                          key={clause.id}
-                          clause={clause}
-                          sectionIndex={sIdx}
-                          clauseIndex={cIdx}
-                          hosting={hosting}
-                          onUpdateVariable={handleUpdateVariable}
-                        />
-                      ))}
+                          <MemoizedSubClause
+                            key={clause.id}
+                            clause={clause}
+                            sectionIndex={sIdx}
+                            clauseIndex={cIdx}
+                            hosting={hosting}
+                            onUpdateVariable={handleUpdateVariable}
+                          />
+                        ))}
                     </View>
                   </Collapsible>
                 ))}

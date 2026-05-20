@@ -178,24 +178,26 @@ export default function BookingApplicationStep2() {
                     </View>
                     <View className="mt-4">
                       {section?.subClauses
-                        .filter((clause) => subClauseConditionMet(clause.id, hostingData.hosting, input))
+                        .filter((clause) =>
+                          subClauseConditionMet(clause.id, hostingData.hosting, input),
+                        )
                         .map((clause) => (
-                        <Collapsible
-                          title={clause.title}
-                          description={clause.description}
-                          key={clause.id}
-                        >
-                          <View className="mt-4">
-                            {clause.content && (
-                              <TenancyAgreementVariableText
-                                hosting={hostingData.hosting}
-                                providedValues={clause.providedValues}
-                                text={clause.content}
-                              />
-                            )}
-                          </View>
-                        </Collapsible>
-                      ))}
+                          <Collapsible
+                            title={clause.title}
+                            description={clause.description}
+                            key={clause.id}
+                          >
+                            <View className="mt-4">
+                              {clause.content && (
+                                <TenancyAgreementVariableText
+                                  hosting={hostingData.hosting}
+                                  providedValues={clause.providedValues}
+                                  text={clause.content}
+                                />
+                              )}
+                            </View>
+                          </Collapsible>
+                        ))}
                     </View>
                   </Collapsible>
                 ))}

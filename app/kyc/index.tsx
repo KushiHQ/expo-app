@@ -1,21 +1,21 @@
-import React from "react";
-import Button from "@/components/atoms/a-button";
-import Stepper from "@/components/atoms/a-steppter";
-import ThemedText from "@/components/atoms/a-themed-text";
-import DetailsLayout from "@/components/layouts/details";
-import KycStepButton from "@/components/molecules/m-kyc-step-button";
-import { SolarShieldKeyholeBold } from "@/components/icons/i-shield";
-import { KYC_ONBOARDING_STEPS } from "@/lib/constants/kyc/onboarding";
-import { Fonts } from "@/lib/constants/theme";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { useUser } from "@/lib/hooks/user";
-import { UserType } from "@/lib/types/users";
-import { cast } from "@/lib/types/utils";
-import { hexToRgba } from "@/lib/utils/colors";
-import { Image } from "expo-image";
-import { useRouter } from "expo-router";
-import { View } from "react-native";
-import { PhoneNumberVerificationStatus } from "@/lib/services/graphql/generated";
+import React from 'react';
+import Button from '@/components/atoms/a-button';
+import Stepper from '@/components/atoms/a-steppter';
+import ThemedText from '@/components/atoms/a-themed-text';
+import DetailsLayout from '@/components/layouts/details';
+import KycStepButton from '@/components/molecules/m-kyc-step-button';
+import { SolarShieldKeyholeBold } from '@/components/icons/i-shield';
+import { KYC_ONBOARDING_STEPS } from '@/lib/constants/kyc/onboarding';
+import { Fonts } from '@/lib/constants/theme';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { useUser } from '@/lib/hooks/user';
+import { UserType } from '@/lib/types/users';
+import { cast } from '@/lib/types/utils';
+import { hexToRgba } from '@/lib/utils/colors';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import { View } from 'react-native';
+import { PhoneNumberVerificationStatus } from '@/lib/services/graphql/generated';
 
 export default function KycHome() {
   const { user } = useUser();
@@ -27,16 +27,16 @@ export default function KycHome() {
       (p) => p.verificationStatus === PhoneNumberVerificationStatus.Verified,
     );
     if (!isPhoneVerified) {
-      return "Verify Phone Number";
+      return 'Verify Phone Number';
     }
     if (!user.user?.kyc?.image?.publicUrl) {
-      return "Take A Selfie";
+      return 'Take A Selfie';
     }
     if (!user.user?.kyc?.ninVerified) {
-      return "Verify NIN";
+      return 'Verify NIN';
     }
     if (!user.user?.kyc?.bvnVerified) {
-      return "Verify BVN";
+      return 'Verify BVN';
     }
     return null;
   }, [user]);
@@ -54,17 +54,15 @@ export default function KycHome() {
         >
           <Button
             onPress={() => {
-              if (pendingStep === "Verify Phone Number")
-                router.push("/kyc/phone");
-              else if (pendingStep === "Take A Selfie")
-                router.push("/kyc/image");
-              else if (pendingStep === "Verify NIN") router.push("/kyc/nin");
-              else if (pendingStep === "Verify BVN") router.push("/kyc/bvn");
+              if (pendingStep === 'Verify Phone Number') router.push('/kyc/phone');
+              else if (pendingStep === 'Take A Selfie') router.push('/kyc/image');
+              else if (pendingStep === 'Verify NIN') router.push('/kyc/nin');
+              else if (pendingStep === 'Verify BVN') router.push('/kyc/bvn');
               else {
                 if (user.userType === UserType.Host) {
-                  router.replace("/host/analytics");
+                  router.replace('/host/analytics');
                 } else {
-                  router.replace("/guest/home");
+                  router.replace('/guest/home');
                 }
               }
             }}
@@ -73,10 +71,10 @@ export default function KycHome() {
           >
             <ThemedText content="primary">
               {pendingStep
-                ? pendingStep === "Verify Phone Number"
-                  ? "Start Verification"
-                  : "Continue Verification"
-                : "Go to Dashboard"}
+                ? pendingStep === 'Verify Phone Number'
+                  ? 'Start Verification'
+                  : 'Continue Verification'
+                : 'Go to Dashboard'}
             </ThemedText>
           </Button>
         </View>
@@ -115,8 +113,8 @@ export default function KycHome() {
               className="self-center text-center"
             >
               {pendingStep
-                ? `Verify your Identity to ${user.userType === UserType.Host ? "List" : "Book"} Properties`
-                : "Verification Complete!"}
+                ? `Verify your Identity to ${user.userType === UserType.Host ? 'List' : 'Book'} Properties`
+                : 'Verification Complete!'}
             </ThemedText>
             <ThemedText
               type="subtitle"
@@ -124,8 +122,8 @@ export default function KycHome() {
               style={{ color: hexToRgba(colors.text, 0.7) }}
             >
               {pendingStep
-                ? "This helps us to secure your account and comply with regulations"
-                : "Your identity has been successfully verified. You can now access all features of the platform."}
+                ? 'This helps us to secure your account and comply with regulations'
+                : 'Your identity has been successfully verified. You can now access all features of the platform.'}
             </ThemedText>
           </View>
           <View className="mt-8 items-center">
@@ -134,14 +132,14 @@ export default function KycHome() {
               style={{ width: 280, height: 320 }}
               source={
                 pendingStep
-                  ? require("@/assets/images/kyc-3d.png")
-                  : require("@/assets/images/success-check.png")
+                  ? require('@/assets/images/kyc-3d.png')
+                  : require('@/assets/images/success-check.png')
               }
             />
           </View>
           <View className="mt-12">
             <ThemedText type="semibold">
-              {pendingStep ? "Next Step:" : "Steps Completed:"}
+              {pendingStep ? 'Next Step:' : 'Steps Completed:'}
             </ThemedText>
             <View className="mt-4 flex-row flex-wrap gap-4">
               {KYC_ONBOARDING_STEPS.map((step) => (

@@ -25,6 +25,5 @@ export const useToastStore = create<ToastStore>((set) => ({
       toasts: [...state.toasts, { ...toast, id }].slice(-5),
     }));
   },
-  dismiss: (id) =>
-    set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
+  dismiss: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
 }));

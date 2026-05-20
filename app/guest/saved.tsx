@@ -101,10 +101,7 @@ function SavedContent() {
         title="Saved Listings"
         withProfile
         refreshControl={
-          <RefreshControl
-            refreshing={folderFetching || savedFetching}
-            onRefresh={handleRefresh}
-          />
+          <RefreshControl refreshing={folderFetching || savedFetching} onRefresh={handleRefresh} />
         }
       >
         <View className="mt-6 gap-8">

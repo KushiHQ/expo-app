@@ -75,7 +75,8 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
         variablesMap['NUMBER_OF_BEDROOMS'] = roomCount('Bedroom');
         variablesMap['NUMBER_OF_BATHROOMS'] = roomCount('Bathroom');
         variablesMap['NUMBER_OF_LIVING_ROOMS'] = roomCount('Living Room');
-        variablesMap['MAXIMUM_OCCUPANTS'] = hosting.maxOccupants != null ? String(hosting.maxOccupants) : '—';
+        variablesMap['MAXIMUM_OCCUPANTS'] =
+          hosting.maxOccupants != null ? String(hosting.maxOccupants) : '—';
 
         // Rent / financials
         variablesMap['PRICE'] = periodic.formated;
@@ -119,7 +120,10 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
           variablesMap['LANDLORD_FULL_NAME'] = landlordName;
           variablesMap['LANDLORD_NAME'] = landlordName;
           variablesMap['LANDLORD_ADDRESS'] = capitalize(v.landlordAddress ?? '', true);
-          variablesMap['LANDLORD_TYPE'] = landlordTypeLabel(v.propertyRelationship, v.verificationTier);
+          variablesMap['LANDLORD_TYPE'] = landlordTypeLabel(
+            v.propertyRelationship,
+            v.verificationTier,
+          );
           variablesMap['VERIFICATION_TIER'] = verificationTierLabel(v.verificationTier);
           variablesMap['TITLE_TYPE'] = v.titleType ?? 'Certificate of Occupancy';
           variablesMap['TITLE_NUMBER'] = v.titleNumber ?? '—';

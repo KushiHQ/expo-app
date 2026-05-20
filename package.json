@@ -30,6 +30,7 @@
     "@react-navigation/bottom-tabs": "^7.15.9",
     "@react-navigation/elements": "^2.9.14",
     "@react-navigation/native": "^7.2.2",
+    "@sentry/react-native": "^8.11.1",
     "@tanstack/react-query": "^5.96.2",
     "@urql/exchange-auth": "^3.0.0",
     "blurhash": "^2.0.5",
