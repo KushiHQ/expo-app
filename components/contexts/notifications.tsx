@@ -98,14 +98,18 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
           if (fcmToken && user.user) {
             if (Platform.OS === 'android') {
               updateToken({ input: { fcmToken, voipToken: null } });
-            } else if (pendingVoipTokenRef.current) {
-              // VoIP token already arrived before FCM was ready — send both now
+            } else {
+              // iOS: always register the FCM token immediately so the backend can
+              // send chat notifications even if the VoIP token hasn't arrived yet.
+              // handleVoipToken will call updateToken again once PushKit delivers.
               updateToken({
-                input: { fcmToken, voipToken: pendingVoipTokenRef.current },
+                input: {
+                  fcmToken,
+                  voipToken: pendingVoipTokenRef.current ?? null,
+                },
               });
               pendingVoipTokenRef.current = null;
             }
-            // If no VoIP token yet on iOS, handleVoipToken will send both once it arrives
           }
         } else {
           setError(new Error('Permission denied'));
@@ -135,9 +139,9 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
     // iOS: receive VoIP push token from index.js and send to backend
     const handleVoipToken = (voipToken: string) => {
       savedVoipTokenRef.current = voipToken;
-      if (user.user && Platform.OS === 'ios') {
+      if (Platform.OS === 'ios') {
         if (tokenRef.current) {
-          // FCM token is already available — send both together
+          // FCM token is already available — update backend with both tokens
           updateToken({ input: { voipToken, fcmToken: tokenRef.current } });
         } else {
           // FCM token not ready yet (setupMessaging still in flight) —

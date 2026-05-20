@@ -140,6 +140,8 @@ export default ({ config }) => ({
 			if (!config.ios) config.ios = {};
 			if (!config.ios.entitlements) config.ios.entitlements = {};
 			config.ios.entitlements["com.apple.developer.usernotifications.communication"] = true;
+			// Required for APNs to deliver remote notifications to this app
+			config.ios.entitlements["aps-environment"] = "production";
 			return config;
 		},
 		"./lib/plugins/withNotifeeForeground.js",
