@@ -1,32 +1,32 @@
-import Button from "@/components/atoms/a-button";
-import Centered from "@/components/atoms/a-centered";
-import Checkbox from "@/components/atoms/a-checkbox";
-import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
-import ThemedText from "@/components/atoms/a-themed-text";
-import { LogosApple, LogosGoogle } from "@/components/icons/i-logos";
-import AuthLayout from "@/components/layouts/auth";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { useUser } from "@/lib/hooks/user";
+import Button from '@/components/atoms/a-button';
+import Centered from '@/components/atoms/a-centered';
+import Checkbox from '@/components/atoms/a-checkbox';
+import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
+import ThemedText from '@/components/atoms/a-themed-text';
+import { LogosApple, LogosGoogle } from '@/components/icons/i-logos';
+import AuthLayout from '@/components/layouts/auth';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { useUser } from '@/lib/hooks/user';
 import {
   LoginInput,
   useAppleLoginMutation,
   useGoogleLoginMutation,
   useLoginMutation,
-} from "@/lib/services/graphql/generated";
-import { UserType } from "@/lib/types/users";
-import { cast } from "@/lib/types/utils";
-import { saveAuthTokens } from "@/lib/utils/auth";
-import { hexToRgba } from "@/lib/utils/colors";
-import { handleError } from "@/lib/utils/error";
-import { Link, useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
-import { Pressable, View, Platform } from "react-native";
-import { toast } from "@/lib/hooks/use-toast";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import * as AppleAuthentication from "expo-apple-authentication";
-import * as WebBrowser from "expo-web-browser";
-import * as Linking from "expo-linking";
-import { Fonts } from "@/lib/constants/theme";
+} from '@/lib/services/graphql/generated';
+import { UserType } from '@/lib/types/users';
+import { cast } from '@/lib/types/utils';
+import { saveAuthTokens } from '@/lib/utils/auth';
+import { hexToRgba } from '@/lib/utils/colors';
+import { handleError } from '@/lib/utils/error';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+import React from 'react';
+import { Pressable, View, Platform } from 'react-native';
+import { toast } from '@/lib/hooks/use-toast';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
+import { Fonts } from '@/lib/constants/theme';
 
 export default function Login() {
   const router = useRouter();
@@ -46,15 +46,15 @@ export default function Login() {
       setReturnUrl(null);
       router.replace(destination as any);
     } else if (userType === UserType.Host) {
-      router.replace("/host/analytics");
+      router.replace('/host/analytics');
     } else {
-      router.replace("/guest/home");
+      router.replace('/guest/home');
     }
   };
 
   const signInWithGoogle = async () => {
     try {
-      if (Platform.OS === "android") {
+      if (Platform.OS === 'android') {
         await GoogleSignin.hasPlayServices();
       }
       const userInfo = await GoogleSignin.signIn();
@@ -67,8 +67,8 @@ export default function Login() {
           }
           if (res.data?.googleLogin.data) {
             toast.show({
-              type: "success",
-              text1: "Success",
+              type: 'success',
+              text1: 'Success',
               text2: res.data.googleLogin.message,
             });
             await saveAuthTokens({
@@ -84,29 +84,25 @@ export default function Login() {
           }
         });
     } catch (error: any) {
-      console.error("Something went wrong:", error);
+      console.error('Something went wrong:', error);
     }
   };
 
   const signInWithApple = async () => {
-    if (Platform.OS === "android") {
+    if (Platform.OS === 'android') {
       try {
-        const redirectUri = Linking.createURL("/auth/sign-in");
+        const redirectUri = Linking.createURL('/auth/sign-in');
         const authUrl = `https://kushicorp.com/auth/signin?redirect_uri=${encodeURIComponent(redirectUri)}`;
 
-        const result = await WebBrowser.openAuthSessionAsync(
-          authUrl,
-          redirectUri,
-          {
-            preferEphemeralSession: true,
-          },
-        );
+        const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri, {
+          preferEphemeralSession: true,
+        });
 
-        if (result.type === "success") {
+        if (result.type === 'success') {
           const { url } = result;
           const params = new URL(url).searchParams;
-          const identityToken = params.get("identityToken");
-          const fullName = params.get("fullName");
+          const identityToken = params.get('identityToken');
+          const fullName = params.get('fullName');
 
           if (identityToken) {
             appleLogin({
@@ -120,8 +116,8 @@ export default function Login() {
               }
               if (res.data?.appleLogin.data) {
                 toast.show({
-                  type: "success",
-                  text1: "Success",
+                  type: 'success',
+                  text1: 'Success',
                   text2: res.data.appleLogin.message,
                 });
                 await saveAuthTokens({
@@ -139,7 +135,7 @@ export default function Login() {
           }
         }
       } catch (error) {
-        console.error("Apple Sign-In Error:", error);
+        console.error('Apple Sign-In Error:', error);
       }
       return;
     }
@@ -156,7 +152,7 @@ export default function Login() {
           input: {
             identityToken: credential.identityToken,
             fullName: credential.fullName?.givenName
-              ? `${credential.fullName.givenName} ${credential.fullName.familyName || ""}`.trim()
+              ? `${credential.fullName.givenName} ${credential.fullName.familyName || ''}`.trim()
               : undefined,
           },
         }).then(async (res) => {
@@ -165,8 +161,8 @@ export default function Login() {
           }
           if (res.data?.appleLogin.data) {
             toast.show({
-              type: "success",
-              text1: "Success",
+              type: 'success',
+              text1: 'Success',
               text2: res.data.appleLogin.message,
             });
             await saveAuthTokens({
@@ -194,8 +190,8 @@ export default function Login() {
       }
       if (res.data?.login.data) {
         toast.show({
-          type: "success",
-          text1: "Success",
+          type: 'success',
+          text1: 'Success',
           text2: res.data.login.message,
         });
         await saveAuthTokens({
@@ -213,10 +209,7 @@ export default function Login() {
   };
 
   return (
-    <AuthLayout
-      title="Sign In"
-      description="Sign in easily with your email or social accounts"
-    >
+    <AuthLayout title="Sign In" description="Sign in easily with your email or social accounts">
       <View className="mt-10 flex-1 justify-between">
         <View className="gap-4">
           <View className="min-h-[150px] gap-4">
@@ -247,9 +240,7 @@ export default function Login() {
             onPress={handlePress}
             loading={res.fetching}
             type="primary"
-            disabled={
-              res.fetching || !inputs.email?.length || !inputs.password?.length
-            }
+            disabled={res.fetching || !inputs.email?.length || !inputs.password?.length}
           >
             <ThemedText content="primary">Sign In</ThemedText>
           </Button>
@@ -261,29 +252,25 @@ export default function Login() {
               aria-label="Sign In with Google"
               onPress={signInWithGoogle}
               style={{
-                backgroundColor: hexToRgba(colors["text"], 0.1),
-                borderColor: hexToRgba(colors["text"], 0.2),
+                backgroundColor: hexToRgba(colors['text'], 0.1),
+                borderColor: hexToRgba(colors['text'], 0.2),
               }}
               className="h-12 w-full max-w-[144px] flex-row items-center justify-center gap-3 rounded-full border"
             >
               <LogosGoogle />
-              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
-                Google
-              </ThemedText>
+              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>Google</ThemedText>
             </Pressable>
             <Pressable
               aria-label="Sign In with Apple"
               onPress={signInWithApple}
               style={{
-                backgroundColor: hexToRgba(colors["text"], 0.1),
-                borderColor: hexToRgba(colors["text"], 0.2),
+                backgroundColor: hexToRgba(colors['text'], 0.1),
+                borderColor: hexToRgba(colors['text'], 0.2),
               }}
               className="h-12 w-full max-w-[144px] flex-row items-center justify-center gap-3 rounded-full border"
             >
               <LogosApple />
-              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
-                Apple
-              </ThemedText>
+              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>Apple</ThemedText>
             </Pressable>
           </View>
         </View>

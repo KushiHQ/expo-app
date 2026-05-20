@@ -1,12 +1,12 @@
-import React from "react";
+import React from 'react';
 import {
   useCreateOrUpdateHostingMutation,
   useHostingQuery,
   useInitiateHostingVerificationMutation,
-} from "../services/graphql/generated";
-import { useActiveFormHosingStore } from "../stores/hostings";
-import { cast } from "../types/utils";
-import { removeTypenames } from "../utils/graphql/cleanup";
+} from '../services/graphql/generated';
+import { useActiveFormHosingStore } from '../stores/hostings';
+import { cast } from '../types/utils';
+import { removeTypenames } from '../utils/graphql/cleanup';
 
 export const useHostingForm = (id?: string | string[]) => {
   const [{ fetching: mutating }, mutate] = useCreateOrUpdateHostingMutation();
@@ -58,6 +58,6 @@ export const useHostingForm = (id?: string | string[]) => {
     mutating,
     fetching,
     hosting,
-    refetch: () => refetch({ requestPolicy: "network-only" }),
+    refetch: () => refetch({ requestPolicy: 'network-only' }),
   };
 };

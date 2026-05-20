@@ -26,7 +26,8 @@ const HostingFacilities: React.FC<Props> = ({ hosting }) => {
         itemDimension={80}
         data={hosting?.facilities ?? []}
         renderItem={({ item }) => {
-          const Icon = FACILITY_ICONS[cast<keyof typeof FACILITY_ICONS>(item)] ?? FALLBACK_FACILITY_ICON;
+          const Icon =
+            FACILITY_ICONS[cast<keyof typeof FACILITY_ICONS>(item)] ?? FALLBACK_FACILITY_ICON;
           return (
             <View className="items-center justify-center py-1">
               <View

@@ -71,7 +71,27 @@ export default function NewHostingStep2() {
           <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
             <CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
             {'  '}
-            Select a room type, then tap <ThemedText style={{ fontSize: 12, fontFamily: Fonts.semibold, color: hexToRgba(colors.text, 0.75) }}>Add Photos</ThemedText> to upload images for that space. Use <ThemedText style={{ fontSize: 12, fontFamily: Fonts.semibold, color: hexToRgba(colors.text, 0.75) }}>Details</ThemedText> to set the room count and description.
+            Select a room type, then tap{' '}
+            <ThemedText
+              style={{
+                fontSize: 12,
+                fontFamily: Fonts.semibold,
+                color: hexToRgba(colors.text, 0.75),
+              }}
+            >
+              Add Photos
+            </ThemedText>{' '}
+            to upload images for that space. Use{' '}
+            <ThemedText
+              style={{
+                fontSize: 12,
+                fontFamily: Fonts.semibold,
+                color: hexToRgba(colors.text, 0.75),
+              }}
+            >
+              Details
+            </ThemedText>{' '}
+            to set the room count and description.
           </ThemedText>
 
           {/* Existing room cards */}
@@ -97,7 +117,9 @@ export default function NewHostingStep2() {
               style={{ backgroundColor: hexToRgba(colors.text, 0.04) }}
             >
               <Layers color={hexToRgba(colors.text, 0.3)} size={28} />
-              <ThemedText style={{ fontSize: 13, color: hexToRgba(colors.text, 0.4), textAlign: 'center' }}>
+              <ThemedText
+                style={{ fontSize: 13, color: hexToRgba(colors.text, 0.4), textAlign: 'center' }}
+              >
                 No rooms added yet.{'\n'}Use the selector below to add your first space.
               </ThemedText>
             </View>
@@ -221,7 +243,8 @@ export default function NewHostingStep2() {
           {deleteModalIndex !== undefined && (
             <View className="gap-6">
               <ThemedText style={{ fontFamily: Fonts.medium }}>
-                Delete this room{rooms[deleteModalIndex]?.images.length ? ' and all its photos' : ''}?
+                Delete this room
+                {rooms[deleteModalIndex]?.images.length ? ' and all its photos' : ''}?
               </ThemedText>
               <View className="items-center gap-3">
                 <View className="h-28 w-32">
