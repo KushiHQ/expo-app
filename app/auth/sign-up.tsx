@@ -56,7 +56,7 @@ export default function SignUp() {
       if (userInfo.data?.idToken)
         googleSignUp({
           idToken: userInfo.data?.idToken,
-        }).then((res) => {
+        }).then(async (res) => {
           if (res.error) {
             handleError(res.error);
           }
@@ -66,7 +66,7 @@ export default function SignUp() {
               text1: 'Success',
               text2: res.data.googleSignUp.message,
             });
-            saveAuthTokens({
+            await saveAuthTokens({
               access: res.data.googleSignUp.data.token,
               refresh: res.data.googleSignUp.data.refreshToken,
             });
@@ -104,7 +104,7 @@ export default function SignUp() {
                 identityToken,
                 fullName: fullName ?? undefined,
               },
-            }).then((res) => {
+            }).then(async (res) => {
               if (res.error) {
                 handleError(res.error);
               }
@@ -114,7 +114,7 @@ export default function SignUp() {
                   text1: 'Success',
                   text2: res.data.appleSignUp.message,
                 });
-                saveAuthTokens({
+                await saveAuthTokens({
                   access: res.data.appleSignUp.data.token,
                   refresh: res.data.appleSignUp.data.refreshToken,
                 });
@@ -149,7 +149,7 @@ export default function SignUp() {
               ? `${credential.fullName.givenName} ${credential.fullName.familyName || ''}`.trim()
               : undefined,
           },
-        }).then((res) => {
+        }).then(async (res) => {
           if (res.error) {
             handleError(res.error);
           }
@@ -159,7 +159,7 @@ export default function SignUp() {
               text1: 'Success',
               text2: res.data.appleSignUp.message,
             });
-            saveAuthTokens({
+            await saveAuthTokens({
               access: res.data.appleSignUp.data.token,
               refresh: res.data.appleSignUp.data.refreshToken,
             });

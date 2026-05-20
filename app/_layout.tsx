@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react-native';
 import {
   Inter_100Thin,
   Inter_200ExtraLight,
@@ -15,7 +16,6 @@ import { Stack, useLocalSearchParams, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
-
 import ToastContainer from '@/components/atoms/a-toast-container';
 import { NotificationProvider } from '@/components/contexts/notifications';
 import GraphqlClientProvider from '@/components/providers/graphql-client';
@@ -32,6 +32,13 @@ import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../global.css';
 
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  environment: __DEV__ ? 'development' : 'production',
+  tracesSampleRate: 1.0,
+  debug: __DEV__ && Platform.OS !== 'android',
+});
+
 SplashScreen.preventAutoHideAsync();
 
 configureReanimatedLogger({
@@ -47,7 +54,7 @@ LogBox.ignoreLogs([
 
 initializeNotifications();
 
-export default function RootLayout() {
+function RootLayout() {
   const colorScheme = useColorScheme();
   const pathname = usePathname();
   const params = useLocalSearchParams();
@@ -151,3 +158,5 @@ export default function RootLayout() {
     </>
   );
 }
+
+export default Sentry.wrap(RootLayout);

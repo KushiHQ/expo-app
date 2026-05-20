@@ -62,7 +62,7 @@ export default function Login() {
       if (userInfo.data?.idToken)
         googleLogin({
           idToken: userInfo.data?.idToken,
-        }).then((res) => {
+        }).then(async (res) => {
           if (res.error) {
             handleError(res.error);
           }
@@ -72,7 +72,7 @@ export default function Login() {
               text1: 'Success',
               text2: res.data.googleLogin.message,
             });
-            saveAuthTokens({
+            await saveAuthTokens({
               access: res.data.googleLogin.data.token,
               refresh: res.data.googleLogin.data.refreshToken,
             });
@@ -112,7 +112,7 @@ export default function Login() {
                 identityToken,
                 fullName: fullName ?? undefined,
               },
-            }).then((res) => {
+            }).then(async (res) => {
               if (res.error) {
                 handleError(res.error);
               }
@@ -122,7 +122,7 @@ export default function Login() {
                   text1: 'Success',
                   text2: res.data.appleLogin.message,
                 });
-                saveAuthTokens({
+                await saveAuthTokens({
                   access: res.data.appleLogin.data.token,
                   refresh: res.data.appleLogin.data.refreshToken,
                 });
@@ -157,7 +157,7 @@ export default function Login() {
               ? `${credential.fullName.givenName} ${credential.fullName.familyName || ''}`.trim()
               : undefined,
           },
-        }).then((res) => {
+        }).then(async (res) => {
           if (res.error) {
             handleError(res.error);
           }
@@ -167,7 +167,7 @@ export default function Login() {
               text1: 'Success',
               text2: res.data.appleLogin.message,
             });
-            saveAuthTokens({
+            await saveAuthTokens({
               access: res.data.appleLogin.data.token,
               refresh: res.data.appleLogin.data.refreshToken,
             });
@@ -186,7 +186,7 @@ export default function Login() {
   };
 
   const handlePress = () => {
-    mutate({ input: cast(inputs) }).then((res) => {
+    mutate({ input: cast(inputs) }).then(async (res) => {
       if (res.error) {
         handleError(res.error);
       }
@@ -196,7 +196,7 @@ export default function Login() {
           text1: 'Success',
           text2: res.data.login.message,
         });
-        saveAuthTokens({
+        await saveAuthTokens({
           access: res.data.login.data.token,
           refresh: res.data.login.data.refreshToken,
         });
