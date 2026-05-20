@@ -1,15 +1,20 @@
-import ProfileLayout from '@/components/layouts/profile';
-import EmptyList from '@/components/molecules/m-empty-list';
-import React from 'react';
-import HostingCard, { HostingCardSkeleton } from '@/components/molecules/m-hosting-card';
-import { HotingVariantFilter } from '@/components/molecules/m-hosting-variant-filter';
-import HostingFilterManager from '@/components/organisms/o-hosting-filter-manager';
-import { PublishStatus, useHostingsQuery } from '@/lib/services/graphql/generated';
-import { useHostingFilterStore } from '@/lib/stores/hostings';
-import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
-import { View, FlatList } from 'react-native';
-import { RefreshControl } from 'react-native-gesture-handler';
-import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
+import ProfileLayout from "@/components/layouts/profile";
+import EmptyList from "@/components/molecules/m-empty-list";
+import React from "react";
+import HostingCard, {
+  HostingCardSkeleton,
+} from "@/components/molecules/m-hosting-card";
+import { HotingVariantFilter } from "@/components/molecules/m-hosting-variant-filter";
+import HostingFilterManager from "@/components/organisms/o-hosting-filter-manager";
+import {
+  PublishStatus,
+  useHostingsQuery,
+} from "@/lib/services/graphql/generated";
+import { useHostingFilterStore } from "@/lib/stores/hostings";
+import { useInfiniteQuery } from "@/lib/hooks/use-infinite-query";
+import { View, FlatList } from "react-native";
+import { RefreshControl } from "react-native-gesture-handler";
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint";
 
 export default function GuestHome() {
   const { filter, updateFilter } = useHostingFilterStore();
@@ -18,7 +23,7 @@ export default function GuestHome() {
 
   const handleCategoryChange = React.useCallback(
     (v: string) => {
-      updateFilter({ propertyType: v === 'All' ? undefined : v });
+      updateFilter({ propertyType: v === "All" ? undefined : v });
     },
     [updateFilter],
   );
@@ -30,7 +35,7 @@ export default function GuestHome() {
     hasNextPage,
     refresh,
   } = useInfiniteQuery(useHostingsQuery, {
-    queryKey: 'hostings',
+    queryKey: "hostings",
     initialVariables: {
       filters: { ...filter, publishStatus: PublishStatus.Live, onSale: true },
     },
@@ -56,15 +61,15 @@ export default function GuestHome() {
             <View className="gap-6">
               <HostingFilterManager />
               <HotingVariantFilter
-                value={filter.category?.valueOf()}
+                value={filter.propertyType?.valueOf()}
                 onSelect={handleCategoryChange}
               />
             </View>
             {fetching && !hostings.length && (
               <View
                 style={{
-                  flexDirection: numColumns > 1 ? 'row' : 'column',
-                  flexWrap: 'wrap',
+                  flexDirection: numColumns > 1 ? "row" : "column",
+                  flexWrap: "wrap",
                   gap: 16,
                   marginTop: 40,
                 }}
@@ -74,7 +79,7 @@ export default function GuestHome() {
                     key={index}
                     style={{
                       flex: 1,
-                      minWidth: numColumns > 1 ? '45%' : undefined,
+                      minWidth: numColumns > 1 ? "45%" : undefined,
                     }}
                   >
                     <HostingCardSkeleton />
@@ -85,13 +90,17 @@ export default function GuestHome() {
           </View>
         }
         ListEmptyComponent={
-          !fetching && !hostings.length ? <EmptyList message="No hostings yet" /> : null
+          !fetching && !hostings.length ? (
+            <EmptyList message="No hostings yet" />
+          ) : null
         }
         onEndReached={() => {
           if (hasNextPage) loadMore();
         }}
         onEndReachedThreshold={0.5}
-        refreshControl={<RefreshControl refreshing={fetching} onRefresh={() => refresh()} />}
+        refreshControl={
+          <RefreshControl refreshing={fetching} onRefresh={() => refresh()} />
+        }
       />
     </ProfileLayout>
   );
