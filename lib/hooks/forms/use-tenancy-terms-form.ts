@@ -1,6 +1,6 @@
-import React from 'react';
-import { useFocusEffect, useRouter } from 'expo-router';
-import { useHostingForm } from '@/lib/hooks/hosting-form';
+import React from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useHostingForm } from "@/lib/hooks/hosting-form";
 import {
   SubClause,
   SubClauseValueInput,
@@ -9,14 +9,14 @@ import {
   UpdateHostMutationVariables,
   useAuthHostQuery,
   useTenancyAgreementTemplateQuery,
-} from '@/lib/services/graphql/generated';
-import { handleError } from '@/lib/utils/error';
-import { useToast } from '@/lib/hooks/use-toast';
-import { useGalleryStore } from '@/lib/stores/gallery';
-import { formMutation } from '@/lib/services/graphql/utils/fetch';
-import { UPDATE_HOST } from '@/lib/services/graphql/requests/mutations/users';
-import { generateRNFile } from '@/lib/utils/file';
-import { cleanupAgreementTemplateInput } from '@/lib/utils/hosting/tenancyAgreement';
+} from "@/lib/services/graphql/generated";
+import { handleError } from "@/lib/utils/error";
+import { useToast } from "@/lib/hooks/use-toast";
+import { useGalleryStore } from "@/lib/stores/gallery";
+import { formMutation } from "@/lib/services/graphql/utils/fetch";
+import { UPDATE_HOST } from "@/lib/services/graphql/requests/mutations/users";
+import { generateRNFile } from "@/lib/utils/file";
+import { cleanupAgreementTemplateInput } from "@/lib/utils/hosting/tenancyAgreement";
 
 export const useTenancyTermsForm = (id: string) => {
   const router = useRouter();
@@ -31,11 +31,13 @@ export const useTenancyTermsForm = (id: string) => {
     fetching: fetchingHosting,
   } = useHostingForm(id);
   const { gallery } = useGalleryStore();
-  const [{ data: hostQueryData, fetching: hostFetching }, refetchHost] = useAuthHostQuery();
+  const [{ data: hostQueryData, fetching: hostFetching }, refetchHost] =
+    useAuthHostQuery();
   const [{ data: templateData, fetching: templateFetching }, refetchTemplate] =
     useTenancyAgreementTemplateQuery();
 
-  const allTemplateSections = templateData?.tenancyAgreementTemplate?.sections || [];
+  const allTemplateSections =
+    templateData?.tenancyAgreementTemplate?.sections || [];
 
   const [editOpen, setEditOpen] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
@@ -60,7 +62,13 @@ export const useTenancyTermsForm = (id: string) => {
   const [isReadyToInitialize, setIsReadyToInitialize] = React.useState(false);
 
   React.useEffect(() => {
-    if (!fetchingHosting && !templateFetching && hosting && templateData && input.id) {
+    if (
+      !fetchingHosting &&
+      !templateFetching &&
+      hosting &&
+      templateData &&
+      input.id
+    ) {
       setIsReadyToInitialize(true);
     }
   }, [fetchingHosting, templateFetching, hosting, templateData]);
@@ -79,11 +87,13 @@ export const useTenancyTermsForm = (id: string) => {
 
               if (!input.serviceCharge) {
                 activeSubClauses = activeSubClauses.filter(
-                  (sub) => sub.id !== 'sub_service_charge',
+                  (sub) => sub.id !== "sub_service_charge",
                 );
               }
               if (!input.cautionFee) {
-                activeSubClauses = activeSubClauses.filter((sub) => sub.id !== 'sub_caution');
+                activeSubClauses = activeSubClauses.filter(
+                  (sub) => sub.id !== "sub_caution",
+                );
               }
 
               if (activeSubClauses.length > 0 || !section.subClauses.length) {
@@ -106,30 +116,48 @@ export const useTenancyTermsForm = (id: string) => {
     };
 
     initialize();
-  }, [allTemplateSections, input, updateInput, fetchingHosting, isReadyToInitialize]);
+  }, [
+    allTemplateSections,
+    input,
+    updateInput,
+    fetchingHosting,
+    isReadyToInitialize,
+  ]);
 
   useFocusEffect(
     React.useCallback(() => {
       let signature = gallery.at(0);
-      if (signature && !hostQueryData?.authHost.signature?.publicUrl && !hostFetching) {
+      if (
+        signature &&
+        !hostQueryData?.authHost.signature?.publicUrl &&
+        !hostFetching
+      ) {
         setUploading(true);
-        formMutation<UpdateHostMutation, UpdateHostMutationVariables>(UPDATE_HOST, {
-          input: { signature: generateRNFile(signature) },
-        })
+        formMutation<UpdateHostMutation, UpdateHostMutationVariables>(
+          UPDATE_HOST,
+          {
+            input: { signature: generateRNFile(signature) },
+          },
+        )
           .then((res) => {
             if (res.error) handleError(res.error);
             if (res.data) {
-              refetchHost({ requestPolicy: 'network-only' });
+              refetchHost({ requestPolicy: "network-only" });
               show({
-                type: 'success',
-                text1: 'Success',
+                type: "success",
+                text1: "Success",
                 text2: res.data.updateHost.message,
               });
             }
           })
           .finally(() => setUploading(false));
       }
-    }, [gallery, hostFetching, hostQueryData?.authHost.signature?.publicUrl, refetchHost]),
+    }, [
+      gallery,
+      hostFetching,
+      hostQueryData?.authHost.signature?.publicUrl,
+      refetchHost,
+    ]),
   );
 
   const handleMutate = () => {
@@ -137,11 +165,13 @@ export const useTenancyTermsForm = (id: string) => {
       for (const subClause of section.subClauses) {
         if (subClause.requiredVariables.length > 0) {
           for (const variable of subClause.requiredVariables) {
-            if (!subClause.providedValues.find((v) => v.key === variable.name)) {
+            if (
+              !subClause.providedValues.find((v) => v.key === variable.name)
+            ) {
               show({
-                type: 'error',
-                text1: 'Missing Value',
-                text2: `Please provide a value for ${variable.name}`,
+                type: "error",
+                text1: "Missing Value",
+                text2: `Please provide a value for ${variable.name} in section ${section.title} and sub clause ${subClause.title}`,
               });
               return;
             }
@@ -152,18 +182,22 @@ export const useTenancyTermsForm = (id: string) => {
     mutate({
       input: {
         ...input,
-        tenancyAgreementTemplate: cleanupAgreementTemplateInput(input.tenancyAgreementTemplate!),
+        tenancyAgreementTemplate: cleanupAgreementTemplateInput(
+          input.tenancyAgreementTemplate!,
+        ),
       },
     }).then((res) => {
       if (res.error) handleError(res.error);
       if (res.data) {
         show({
-          type: 'success',
-          text1: 'Success',
+          type: "success",
+          text1: "Success",
           text2: res.data.createOrUpdateHosting.message,
         });
         refetch();
-        router.push(`/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`);
+        router.push(
+          `/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`,
+        );
       }
     });
   };
@@ -181,7 +215,9 @@ export const useTenancyTermsForm = (id: string) => {
         subClauses: sec.subClauses.map((sub, cIdx) => {
           if (cIdx !== subClauseIndex) return sub;
           const newProvidedValues = [...sub.providedValues];
-          const vIndex = newProvidedValues.findIndex((v) => v.key === variable.key);
+          const vIndex = newProvidedValues.findIndex(
+            (v) => v.key === variable.key,
+          );
           if (vIndex > -1) {
             newProvidedValues[vIndex] = variable;
           } else {
@@ -204,7 +240,9 @@ export const useTenancyTermsForm = (id: string) => {
       sections: [...(input.tenancyAgreementTemplate?.sections ?? [])],
     };
     if (toUpdate.sections.find((sec) => sec.id === section.id)) {
-      toUpdate.sections = toUpdate.sections.filter((sec) => sec.id !== section.id);
+      toUpdate.sections = toUpdate.sections.filter(
+        (sec) => sec.id !== section.id,
+      );
     } else {
       toUpdate.sections.push(section);
     }
@@ -223,7 +261,9 @@ export const useTenancyTermsForm = (id: string) => {
       ...sec,
       subClauses: [...sec.subClauses],
     }));
-    const sectionIndex = newSections.findIndex((sec) => sec.id === parentSectionId);
+    const sectionIndex = newSections.findIndex(
+      (sec) => sec.id === parentSectionId,
+    );
 
     if (sectionIndex > -1) {
       const subIndex = newSections[sectionIndex].subClauses.findIndex(
@@ -232,26 +272,33 @@ export const useTenancyTermsForm = (id: string) => {
       if (subIndex > -1) {
         newSections[sectionIndex].subClauses.splice(subIndex, 1);
       } else {
-        if (subClause.id === 'sub_caution' && !input.cautionFee) {
+        if (subClause.id === "sub_caution" && !input.cautionFee) {
           show({
-            type: 'error',
-            text1: 'Missing Value',
-            text2: 'Please provide caution fee...',
+            type: "error",
+            text1: "Missing Value",
+            text2: "Please provide caution fee...",
           });
           return;
-        } else if (subClause.id === 'sub_service_charge' && !input.serviceCharge) {
+        } else if (
+          subClause.id === "sub_service_charge" &&
+          !input.serviceCharge
+        ) {
           show({
-            type: 'error',
-            text1: 'Missing Value',
-            text2: 'Please provide service charge...',
+            type: "error",
+            text1: "Missing Value",
+            text2: "Please provide service charge...",
           });
           return;
         }
         newSections[sectionIndex].subClauses.push(subClause);
       }
-      newSections[sectionIndex].subClauses.sort((a, b) => a.priority - b.priority);
+      newSections[sectionIndex].subClauses.sort(
+        (a, b) => a.priority - b.priority,
+      );
     } else {
-      const parentSection = allTemplateSections.find((s) => s.id === parentSectionId);
+      const parentSection = allTemplateSections.find(
+        (s) => s.id === parentSectionId,
+      );
       if (parentSection) {
         newSections.push({ ...parentSection, subClauses: [subClause] });
       }

@@ -45,75 +45,81 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
     useCreateOrUpdateHostingRoomMutation();
   const [{ fetching: deleteingImage }, deleteImageMutate] = useDeleteHostingRoomImageMutation();
   const [{ fetching: deletingRoom }, deleteRoomMutate] = useDeleteHostingRoomMutation();
-  const [addingImages, setAddingImages] = React.useState(false);
+  const [addingImagesCount, setAddingImagesCount] = React.useState(0);
+  const addingImages = addingImagesCount > 0;
 
   const loading =
     deleteingImage || deletingRoom || fetchingHosting || hostingRoomSaving || addingImages;
 
+  // Sync rooms from server data whenever hosting updates (data-driven, not focus-driven).
+  // hosting is kept fresh by useHostingForm which calls refreshHosting() on every refetch,
+  // so this always reflects the true server state.
+  React.useEffect(() => {
+    if (hosting?.rooms) {
+      setRooms(
+        hosting.rooms.map(({ images, ...room }) => ({
+          id: cast(room.id),
+          name: cast(room.name),
+          count: cast(room.count),
+          description: cast(room.description),
+          images: images?.map((img) => img.asset.publicUrl) ?? [],
+        })),
+      );
+    }
+  }, [hosting]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // On returning from the camera, upload any new file:// images and then do a single
+  // refetch after all uploads finish so the server state is re-synced cleanly.
   useFocusEffect(
     React.useCallback(() => {
       const currentGallery = useGalleryStore.getState().gallery;
+      if (currentGallery.length === 0) return;
 
-      if (currentGallery.length > 0) {
-        updateActiveRoom({ images: currentGallery });
-        const roomId = rooms[activeIndex]?.id;
+      // Immediately reflect the gallery images in local state (mix of existing
+      // https:// URLs and new file:// URIs).
+      updateActiveRoom({ images: currentGallery });
+      clearGallery();
 
-        if (roomId) {
-          currentGallery.forEach(async (image, index) => {
-            if (image.startsWith('file')) {
-              setAddingImages(true);
-              formMutation<CreateHostingRoomImageMutation, CreateHostingRoomImageMutationVariables>(
-                CREATE_UPDATE_HOSTING_ROOM_IMAGE,
-                {
-                  input: {
-                    roomId,
-                    asset: generateRNFile(image),
-                  },
-                },
-              )
-                .then((res) => {
-                  setAddingImages(false);
-                  if (res.error) {
-                    handleError(res.error);
-                  }
-                  if (res.data?.createHostingRoomImage.data) {
-                    show({
-                      type: 'success',
-                      text1: 'Success',
-                      text2: res.data.createHostingRoomImage.message,
-                    });
-                    updateActiveRoomImage(
-                      index,
-                      res.data.createHostingRoomImage.data.asset.publicUrl,
-                    );
-                    refetchHosting();
-                  }
-                })
-                .catch(() => {
-                  setAddingImages(false);
-                });
+      const roomId = useHostingRoomsStore.getState().rooms[activeIndex]?.id;
+      if (!roomId) return;
+
+      const fileEntries = currentGallery
+        .map((image, index) => ({ image, index }))
+        .filter(({ image }) => image.startsWith('file'));
+
+      if (fileEntries.length === 0) return;
+
+      setAddingImagesCount(fileEntries.length);
+
+      const uploads = fileEntries.map(({ image, index }) =>
+        formMutation<CreateHostingRoomImageMutation, CreateHostingRoomImageMutationVariables>(
+          CREATE_UPDATE_HOSTING_ROOM_IMAGE,
+          { input: { roomId, asset: generateRNFile(image) } },
+        )
+          .then((res) => {
+            setAddingImagesCount((c) => c - 1);
+            if (res.error) {
+              handleError(res.error);
             }
-          });
-        }
-        clearGallery();
-      }
-    }, [activeIndex, clearGallery, refetchHosting, rooms, updateActiveRoom, updateActiveRoomImage]),
-  );
+            if (res.data?.createHostingRoomImage.data) {
+              show({
+                type: 'success',
+                text1: 'Success',
+                text2: res.data.createHostingRoomImage.message,
+              });
+              updateActiveRoomImage(index, res.data.createHostingRoomImage.data.asset.publicUrl);
+            }
+          })
+          .catch(() => {
+            setAddingImagesCount((c) => c - 1);
+          }),
+      );
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (hosting) {
-        setRooms(
-          hosting.rooms?.map(({ images, ...room }) => ({
-            id: cast(room.id),
-            name: cast(room.name),
-            count: cast(room.count),
-            description: cast(room.description),
-            images: images?.map((img) => img.asset.publicUrl) ?? [],
-          })) ?? [],
-        );
-      }
-    }, [hosting, setRooms]),
+      // Single refetch after all uploads complete so setRooms() sees the full picture.
+      Promise.allSettled(uploads).then(() => {
+        refetchHosting();
+      });
+    }, [activeIndex, clearGallery, refetchHosting, show, updateActiveRoom, updateActiveRoomImage]),
   );
 
   const handleDeleteImage = (roomIndex: number, imageIndex: number) => {
@@ -157,9 +163,9 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
           });
           setActiveModalIndex(undefined);
           setDeleteModalIndex(undefined);
-          refetchHosting();
           deleteRoom(activeIndex);
           setActiveIndex(0);
+          refetchHosting();
         }
       });
     }
@@ -168,7 +174,7 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
   const handleSaveHostingRoom = (index: number, { images, ...rest }: RoomData) => {
     if (!hosting?.id) return;
     saveRoom(rest.name, index);
-    saveHostingRoomMutate({ input: { ...rest, hostingId: hosting?.id } }).then((res) => {
+    saveHostingRoomMutate({ input: { ...rest, hostingId: hosting.id } }).then((res) => {
       if (res.error) {
         handleError(res.error);
       }
@@ -185,6 +191,8 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
           count: created?.count ?? 1,
           description: cast(created?.description),
         });
+        // Refetch so hosting.rooms reflects the new/updated room (including server-assigned ID).
+        refetchHosting();
       }
     });
   };

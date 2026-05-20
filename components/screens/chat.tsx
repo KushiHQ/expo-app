@@ -11,7 +11,7 @@ import { hexToRgba } from '@/lib/utils/colors';
 import { AUDIO_EXTENSIONS } from '@/lib/utils/file';
 import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Mic } from 'lucide-react-native';
 import moment from 'moment';

@@ -23,7 +23,8 @@ import {
 import { Bank } from '@/lib/types/queries/banks';
 import { hexToRgba } from '@/lib/utils/colors';
 import { handleError } from '@/lib/utils/error';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import { CircleQuestionMark } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { TextInput, View } from 'react-native';

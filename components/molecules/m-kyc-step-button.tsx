@@ -5,7 +5,7 @@ import React from 'react';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import { useUser } from '@/lib/hooks/user';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import { PhoneNumberVerificationStatus } from '@/lib/services/graphql/generated';
 
 type Props = {

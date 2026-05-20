@@ -15,7 +15,7 @@ import { hexToRgba } from '@/lib/utils/colors';
 import { handleError } from '@/lib/utils/error';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import React from 'react';
 import { Dimensions, View } from 'react-native';
 import { toast } from '@/lib/hooks/use-toast';

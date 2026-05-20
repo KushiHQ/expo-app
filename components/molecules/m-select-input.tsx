@@ -1,6 +1,6 @@
-import React from 'react';
-import { FloatingLabelInputProps } from '../atoms/a-floating-label-input';
-import BottomSheet from '../atoms/a-bottom-sheet';
+import React from "react";
+import { FloatingLabelInputProps } from "../atoms/a-floating-label-input";
+import BottomSheet from "../atoms/a-bottom-sheet";
 import {
   Dimensions,
   FlatList,
@@ -8,23 +8,24 @@ import {
   ListRenderItem,
   Pressable,
   View,
-} from 'react-native';
-import ThemedText from '../atoms/a-themed-text';
-import { ChevronDown, CircleQuestionMark } from 'lucide-react-native';
-import { hexToRgba } from '@/lib/utils/colors';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import SearchInput from '../atoms/a-search-input';
-import { cast } from '@/lib/types/utils';
-import EmptyList from './m-empty-list';
-import { capitalize } from '@/lib/utils/text';
-import Checkbox from '../atoms/a-checkbox';
-import Tooltip from '../atoms/a-tooltip';
+} from "react-native";
+import ThemedText from "../atoms/a-themed-text";
+import { ChevronDown, CircleQuestionMark } from "lucide-react-native";
+import { hexToRgba } from "@/lib/utils/colors";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import SearchInput from "../atoms/a-search-input";
+import { cast } from "@/lib/types/utils";
+import EmptyList from "./m-empty-list";
+import { capitalize } from "@/lib/utils/text";
+import Checkbox from "../atoms/a-checkbox";
+import Tooltip from "../atoms/a-tooltip";
+import { twMerge } from "tailwind-merge";
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SCREEN_HEIGHT = Dimensions.get("window").height;
 const LIST_MAX_HEIGHT = SCREEN_HEIGHT * 0.45;
 export type SelectionDetails = { selected?: boolean };
 
-interface BaseProps<T> extends Omit<FloatingLabelInputProps, 'defaultValue'> {
+interface BaseProps<T> extends Omit<FloatingLabelInputProps, "defaultValue"> {
   defaultValue?: T;
   getValueString?: (value: T) => string;
   selectedValueString?: string;
@@ -47,7 +48,7 @@ type WithSearch<T> = BaseProps<T> & {
 type Props<T> = WithSearch<T> | WithoutSearch<T>;
 
 const getValueString = (value: any) => {
-  if (typeof value === 'object') {
+  if (typeof value === "object") {
     return cast<Record<string, any>>(value).value;
   } else {
     return value;
@@ -55,7 +56,7 @@ const getValueString = (value: any) => {
 };
 
 const getLabelString = (value: any) => {
-  if (typeof value === 'object') {
+  if (typeof value === "object") {
     return cast<Record<string, any>>(value).label;
   } else {
     return value;
@@ -66,10 +67,13 @@ const SelectInput = <T extends object>(props: Props<T>) => {
   const { options, renderItem: RenderItem, onSelect, ...rest } = props;
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState(props.defaultValue);
-  const [search, setSearch] = React.useState('');
+  const [search, setSearch] = React.useState("");
   const colors = useThemeColors();
   const valueStringFunc = props.getValueString ?? getValueString;
-  const selectedValue = React.useMemo(() => valueStringFunc(cast(value)), [value, valueStringFunc]);
+  const selectedValue = React.useMemo(
+    () => valueStringFunc(cast(value)),
+    [value, valueStringFunc],
+  );
   const selectedLabel = React.useMemo(
     () => (props.getLabelString ?? getLabelString)(value),
     [value, getLabelString, props.getLabelString],
@@ -118,7 +122,8 @@ const SelectInput = <T extends object>(props: Props<T>) => {
   const renderListOption: ListRenderItem<T> = React.useCallback(
     ({ item }) => {
       const isSelected =
-        String(selectedValue).toLowerCase() === String(valueStringFunc(item)).toLowerCase();
+        String(selectedValue).toLowerCase() ===
+        String(valueStringFunc(item)).toLowerCase();
 
       return (
         <Pressable
@@ -127,7 +132,7 @@ const SelectInput = <T extends object>(props: Props<T>) => {
             setValue(item);
             onSelect?.(item);
             setOpen(false);
-            setSearch('');
+            setSearch("");
           }}
         >
           <RenderItem {...item} selected={isSelected} />
@@ -142,17 +147,29 @@ const SelectInput = <T extends object>(props: Props<T>) => {
       <View className="relative flex-1">
         <Pressable
           onPress={handlePress}
-          className="relative rounded-xl border p-3.5"
+          className={twMerge(
+            "relative overflow-hidden rounded-xl border p-3.5",
+            props.className,
+          )}
           style={{
             borderColor: hexToRgba(colors.text, 0.3),
             backgroundColor: hexToRgba(colors.text, 0.05),
           }}
         >
           <View className="absolute top-1.5 flex-row gap-5">
-            <ThemedText style={{ fontSize: 12, left: 13 }}>{props.label}</ThemedText>
+            <ThemedText style={{ fontSize: 12, left: 13 }}>
+              {props.label}
+            </ThemedText>
             {rest.description && (
-              <Tooltip title={rest.label} description={rest.description} className="mt-[3px]">
-                <CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={14} />
+              <Tooltip
+                title={rest.label}
+                description={rest.description}
+                className="mt-[3px]"
+              >
+                <CircleQuestionMark
+                  color={hexToRgba(colors.text, 0.7)}
+                  size={14}
+                />
               </Tooltip>
             )}
           </View>
@@ -162,18 +179,23 @@ const SelectInput = <T extends object>(props: Props<T>) => {
               ellipsizeMode="tail"
               style={{
                 fontSize: 14,
-                maxWidth: '80%',
+                maxWidth: "80%",
                 color: !value ? hexToRgba(colors.text, 0.4) : colors.text,
               }}
             >
-              {props.selectedValueString ?? capitalize(selectedLabel ?? rest.placeholder ?? '')}
+              {props.selectedValueString ??
+                capitalize(selectedLabel ?? rest.placeholder ?? "")}
             </ThemedText>
             <ChevronDown color={hexToRgba(colors.text, 0.4)} />
           </View>
         </Pressable>
       </View>
 
-      <BottomSheet scrollable={false} isVisible={open} onClose={() => setOpen(false)}>
+      <BottomSheet
+        scrollable={false}
+        isVisible={open}
+        onClose={() => setOpen(false)}
+      >
         <View style={{ paddingBottom: 20 }}>
           <ThemedText type="semibold" className="mb-4">
             {props.label}
@@ -181,7 +203,11 @@ const SelectInput = <T extends object>(props: Props<T>) => {
 
           {rest.searchable && (
             <View className="mb-4">
-              <SearchInput value={search} onChangeText={setSearch} placeholder="Search..." />
+              <SearchInput
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Search..."
+              />
             </View>
           )}
 
@@ -190,7 +216,9 @@ const SelectInput = <T extends object>(props: Props<T>) => {
               data={filtered}
               renderItem={renderListOption}
               keyExtractor={(item, index) => {
-                return (item as any).id || (item as any).code || index.toString();
+                return (
+                  (item as any).id || (item as any).code || index.toString()
+                );
               }}
               initialNumToRender={10}
               maxToRenderPerBatch={10}
@@ -226,8 +254,14 @@ export const SelectOption: React.FC<SelectOptionType & SelectionDetails> = ({
     <View
       className="flex-row items-center justify-between rounded-md border p-2 pl-4"
       style={{
-        borderColor: hexToRgba(selected ? colors.primary : colors.text, selected ? 0.5 : 0.2),
-        backgroundColor: hexToRgba(selected ? colors.primary : colors.text, selected ? 0.2 : 0.1),
+        borderColor: hexToRgba(
+          selected ? colors.primary : colors.text,
+          selected ? 0.5 : 0.2,
+        ),
+        backgroundColor: hexToRgba(
+          selected ? colors.primary : colors.text,
+          selected ? 0.2 : 0.1,
+        ),
       }}
     >
       <View className="flex-row items-center gap-2">

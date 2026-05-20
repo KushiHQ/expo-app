@@ -12,7 +12,8 @@ import {
 import { useBookingApplicationStore } from '@/lib/stores/bookings';
 import { hexToRgba } from '@/lib/utils/colors';
 import { formatNaira } from '@/lib/utils/currency';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react-native';
 import React from 'react';
 import { Pressable, View } from 'react-native';

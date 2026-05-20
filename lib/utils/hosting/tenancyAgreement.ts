@@ -8,8 +8,8 @@ import {
   SubClause,
   TenancyTemplate,
   TenancyTemplateInput,
-} from '@/lib/services/graphql/generated';
-import { cast } from '@/lib/types/utils';
+} from "@/lib/services/graphql/generated";
+import { cast } from "@/lib/types/utils";
 
 export function cleanupAgreementTemplateInput(
   agreement: TenancyTemplate | TenancyTemplateInput,
@@ -17,12 +17,13 @@ export function cleanupAgreementTemplateInput(
   const toUpdate = { sections: [...agreement.sections] };
   const secs = toUpdate.sections.map((sec) => {
     let updated = { ...sec };
-    if (cast<TenancyTemplate['sections'][number]>(sec)['__typename']) {
-      const { __typename, ...rest } = cast<TenancyTemplate['sections'][number]>(sec);
+    if (cast<TenancyTemplate["sections"][number]>(sec)["__typename"]) {
+      const { __typename, ...rest } =
+        cast<TenancyTemplate["sections"][number]>(sec);
       updated = rest;
     }
     const refinedSubClauses = updated.subClauses.map((clause) => {
-      if (cast<SubClause>(clause)['__typename']) {
+      if (cast<SubClause>(clause)["__typename"]) {
         const { __typename, ...rest } = cast<SubClause>(clause);
         const { requiredVariables, providedValues, ...restVals } = rest;
 
@@ -36,13 +37,14 @@ export function cleanupAgreementTemplateInput(
       }
     });
 
-    updated['subClauses'] = refinedSubClauses;
+    updated["subClauses"] = refinedSubClauses;
     return updated;
   });
 
   return {
     sections: secs,
-    totalSections: 'totalSections' in agreement ? agreement.totalSections : secs.length,
+    totalSections:
+      "totalSections" in agreement ? agreement.totalSections : secs.length,
   };
 }
 
@@ -59,48 +61,48 @@ export function intervalVars(interval?: PaymentInterval | null): IntervalVars {
   switch (interval) {
     case PaymentInterval.Monthly:
       return {
-        intervalLabel: 'per month',
-        frequencyLabel: 'monthly in advance',
-        dueDateClause: 'on the 1st day of each calendar month',
+        intervalLabel: "per month",
+        frequencyLabel: "monthly in advance",
+        dueDateClause: "on the 1st day of each calendar month",
         annualMultiplier: 12,
-        minOccupationPeriod: '3 months',
-        breakNoticePeriod: '1 month',
+        minOccupationPeriod: "3 months",
+        breakNoticePeriod: "1 month",
       };
     case PaymentInterval.Weekly:
       return {
-        intervalLabel: 'per week',
-        frequencyLabel: 'weekly in advance',
-        dueDateClause: 'every Monday of each week',
+        intervalLabel: "per week",
+        frequencyLabel: "weekly in advance",
+        dueDateClause: "every Monday of each week",
         annualMultiplier: 52,
-        minOccupationPeriod: '4 weeks',
-        breakNoticePeriod: '2 weeks',
+        minOccupationPeriod: "4 weeks",
+        breakNoticePeriod: "2 weeks",
       };
     case PaymentInterval.Nightly:
       return {
-        intervalLabel: 'per night',
-        frequencyLabel: 'nightly in advance',
-        dueDateClause: 'on each day of occupation',
+        intervalLabel: "per night",
+        frequencyLabel: "nightly in advance",
+        dueDateClause: "on each day of occupation",
         annualMultiplier: 365,
-        minOccupationPeriod: 'N/A',
-        breakNoticePeriod: 'N/A',
+        minOccupationPeriod: "N/A",
+        breakNoticePeriod: "N/A",
       };
     case PaymentInterval.OneTimePayment:
       return {
-        intervalLabel: 'as a one-time payment',
-        frequencyLabel: 'in full upon execution of this Agreement',
-        dueDateClause: 'upon execution of this Agreement',
+        intervalLabel: "as a one-time payment",
+        frequencyLabel: "in full upon execution of this Agreement",
+        dueDateClause: "upon execution of this Agreement",
         annualMultiplier: 1,
-        minOccupationPeriod: 'N/A',
-        breakNoticePeriod: 'N/A',
+        minOccupationPeriod: "N/A",
+        breakNoticePeriod: "N/A",
       };
     default:
       return {
-        intervalLabel: 'per annum',
-        frequencyLabel: 'annually in advance',
-        dueDateClause: 'on the anniversary of the Commencement Date each year',
+        intervalLabel: "per annum",
+        frequencyLabel: "annually in advance",
+        dueDateClause: "on the anniversary of the Commencement Date each year",
         annualMultiplier: 1,
-        minOccupationPeriod: '6 months',
-        breakNoticePeriod: '1 month',
+        minOccupationPeriod: "6 months",
+        breakNoticePeriod: "1 month",
       };
   }
 }
@@ -112,13 +114,13 @@ export function landlordTypeLabel(
   let base: string;
   switch (relationship) {
     case HostingPropertyRelationship.Agent:
-      base = 'Property Agent';
+      base = "Property Agent";
       break;
     case HostingPropertyRelationship.Subletter:
-      base = 'Sub-Lessor';
+      base = "Sub-Lessor";
       break;
     default:
-      base = 'Landlord';
+      base = "Landlord";
   }
   if (
     tier === HostingVerificationTier.OwnerVerified ||
@@ -129,71 +131,78 @@ export function landlordTypeLabel(
   return base;
 }
 
-export function verificationTierLabel(tier?: HostingVerificationTier | null): string {
+export function verificationTierLabel(
+  tier?: HostingVerificationTier | null,
+): string {
   switch (tier) {
     case HostingVerificationTier.IdentityVerified:
-      return 'Identity Verified';
+      return "Identity Verified";
     case HostingVerificationTier.AddressVerified:
-      return 'Address Verified';
+      return "Address Verified";
     case HostingVerificationTier.OwnerVerified:
-      return 'Owner Verified';
+      return "Owner Verified";
     case HostingVerificationTier.KushiVetted:
-      return 'Kushi Vetted';
+      return "Kushi Vetted";
     default:
-      return 'Unverified';
+      return "Unverified";
   }
 }
 
 export function mediationInstitutionLabel(state?: string | null): string {
-  const s = (state ?? '').toLowerCase();
-  if (s.includes('abuja') || s.includes('fct')) return 'Abuja Multi-Door Courthouse';
-  if (s.includes('lagos')) return 'Lagos Multi-Door Courthouse';
-  if (s.includes('rivers')) return 'Rivers State Multi-Door Courthouse';
-  return 'Multi-Door Courthouse';
+  const s = (state ?? "").toLowerCase();
+  if (s.includes("abuja") || s.includes("fct"))
+    return "Abuja Multi-Door Courthouse";
+  if (s.includes("lagos")) return "Lagos Multi-Door Courthouse";
+  if (s.includes("rivers")) return "Rivers State Multi-Door Courthouse";
+  return "Multi-Door Courthouse";
 }
 
 export function courtJurisdictionPhrase(state?: string | null): string {
-  const s = (state ?? '').toLowerCase();
-  if (s.includes('abuja') || s.includes('fct')) {
-    return 'the appropriate Area Court or High Court of the Federal Capital Territory';
+  const s = (state ?? "").toLowerCase();
+  if (s.includes("abuja") || s.includes("fct")) {
+    return "the appropriate Area Court or High Court of the Federal Capital Territory";
   }
-  if (!state) return 'the appropriate court of competent jurisdiction';
+  if (!state) return "the appropriate court of competent jurisdiction";
   return `the appropriate Magistrate Court or High Court of ${state} State`;
 }
 
-export function employmentStatusLabel(status?: GuestFormEmploymentStatus | null): string {
+export function employmentStatusLabel(
+  status?: GuestFormEmploymentStatus | null,
+): string {
   switch (status) {
     case GuestFormEmploymentStatus.Employed:
-      return 'Employed Person';
+      return "Employed Person";
     case GuestFormEmploymentStatus.SelfEmployed:
-      return 'Self-Employed Person';
+      return "Self-Employed Person";
     case GuestFormEmploymentStatus.CorpMember:
-      return 'NYSC Corps Member';
+      return "NYSC Corps Member";
     case GuestFormEmploymentStatus.Student:
-      return 'Student';
+      return "Student";
     case GuestFormEmploymentStatus.Unemployed:
-      return 'Unemployed Person';
+      return "Unemployed Person";
     default:
-      return 'N/A';
+      return "N/A";
   }
 }
 
-export function guarantorRelationshipLabel(rel?: GuestFormGuarantorRelationships | null): string {
+export function guarantorRelationshipLabel(
+  rel?: GuestFormGuarantorRelationships | null,
+): string {
   switch (rel) {
     case GuestFormGuarantorRelationships.Parent:
-      return 'Parent';
+      return "Parent";
     case GuestFormGuarantorRelationships.Sibling:
-      return 'Sibling';
+      return "Sibling";
     case GuestFormGuarantorRelationships.Employer:
-      return 'Employer';
+      return "Employer";
     case GuestFormGuarantorRelationships.Spouse:
-      return 'Spouse';
+      return "Spouse";
     case GuestFormGuarantorRelationships.Clergy:
-      return 'Clergy';
+      return "Clergy";
     case GuestFormGuarantorRelationships.Other:
-      return 'Personal Acquaintance';
+      return "Personal Acquaintance";
     default:
-      return 'N/A';
+      return "N/A";
   }
 }
 
@@ -210,23 +219,23 @@ export function hostingDuration(
   startDate: Date = new Date(),
 ): DurationResult {
   const safeMultiplier = Math.max(1, multiplier ?? 1);
-  let label = 'Years';
+  let label = "Years";
 
   switch (paymentInterval) {
     case PaymentInterval.Nightly:
-      label = 'Nights';
+      label = "Nights";
       break;
     case PaymentInterval.Weekly:
-      label = 'Weeks';
+      label = "Weeks";
       break;
     case PaymentInterval.Monthly:
-      label = 'Months';
+      label = "Months";
       break;
     case PaymentInterval.Anually:
-      label = 'Years';
+      label = "Years";
       break;
     default:
-      label = 'Years';
+      label = "Years";
   }
 
   const metric =
@@ -248,10 +257,10 @@ export function hostingDuration(
     endDate.setDate(endDate.getDate() - 1);
   }
 
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
   });
 
   return {
@@ -271,15 +280,17 @@ export function hostingDuration(
  */
 export function subClauseConditionMet(
   id: string,
-  hosting: HostingQuery['hosting'],
-  application?: { guestFormData?: { guarantorRelationships?: unknown } | null } | null,
+  hosting: HostingQuery["hosting"],
+  application?: {
+    guestFormData?: { guarantorRelationships?: unknown } | null;
+  } | null,
 ): boolean {
   switch (id) {
-    case 'sub_caution_fee':
+    case "sub_caution_fee":
       return (hosting?.cautionFee ?? 0) > 0;
-    case 'sub_service_charge':
+    case "sub_service_charge":
       return (hosting?.serviceCharge ?? 0) > 0;
-    case 'sub_guarantor':
+    case "sub_guarantor":
       if (application === undefined) return true;
       return !!application?.guestFormData?.guarantorRelationships;
     default:

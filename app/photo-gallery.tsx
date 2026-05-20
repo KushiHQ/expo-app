@@ -69,7 +69,10 @@ export default function PhotoGalleryScreen() {
 
   const onUsePhotos = () => {
     if (redirect) {
-      router.replace(cast(`${redirect}?fromCamera=${fromCamera}`), {});
+      // dismissTo pops this screen and finds the existing redirect screen already
+      // in the stack (placed there before the camera was opened). This avoids
+      // replace() which would push a duplicate of that screen onto the stack.
+      router.dismissTo(cast(`${redirect}?fromCamera=${fromCamera}`));
     } else {
       router.back();
     }

@@ -1,12 +1,12 @@
-import { create } from 'zustand';
-import { Room } from '../types/enums/hostings';
+import { create } from "zustand";
+import { Room } from "../types/enums/hostings";
 import {
   HostingFilterInput,
   HostingInput,
   HostingQuery,
   HostingVerificationInput,
-} from '../services/graphql/generated';
-import { cleanupAgreementTemplateInput } from '../utils/hosting/tenancyAgreement';
+} from "../services/graphql/generated";
+import { cleanupAgreementTemplateInput } from "../utils/hosting/tenancyAgreement";
 
 export type RoomData = {
   id?: string;
@@ -67,7 +67,7 @@ export const useHostingRoomsStore = create<HostingRoomsStore>((set, get) => ({
     set((state) => {
       const rooms = [...state.rooms];
       const roomData = rooms[index];
-      rooms[state.activeIndex] = { ...room, ...roomData };
+      rooms[index] = { ...roomData, ...room };
 
       return { rooms };
     });
@@ -76,7 +76,9 @@ export const useHostingRoomsStore = create<HostingRoomsStore>((set, get) => ({
     set((state) => {
       const rooms = [...state.rooms];
       const currentImages = rooms[roomIndex].images;
-      rooms[roomIndex].images = currentImages.filter((_, i) => i !== imageIndex);
+      rooms[roomIndex].images = currentImages.filter(
+        (_, i) => i !== imageIndex,
+      );
 
       return { rooms };
     });
@@ -125,66 +127,71 @@ export const useHostingFilterStore = create<HostingFilterStore>((set) => ({
 interface ActiveFormHostingStore {
   input: HostingInput;
   verificationInput: Partial<HostingVerificationInput>;
-  hosting?: HostingQuery['hosting'];
-  initiate: (hosting: HostingQuery['hosting']) => void;
+  hosting?: HostingQuery["hosting"];
+  initiate: (hosting: HostingQuery["hosting"]) => void;
+  refreshHosting: (hosting: HostingQuery["hosting"]) => void;
   updateInput: (data: Partial<HostingInput>) => void;
   updateVerificationInput: (data: Partial<HostingVerificationInput>) => void;
   clear: () => void;
 }
 
-export const useActiveFormHosingStore = create<ActiveFormHostingStore>((set) => ({
-  input: {} as HostingInput,
-  verificationInput: {} as HostingVerificationInput,
-  hosting: {} as HostingQuery['hosting'],
+export const useActiveFormHosingStore = create<ActiveFormHostingStore>(
+  (set) => ({
+    input: {} as HostingInput,
+    verificationInput: {} as HostingVerificationInput,
+    hosting: {} as HostingQuery["hosting"],
 
-  initiate: (hosting) => {
-    const {
-      host,
-      lastUpdated,
-      createdAt,
-      totalRatings,
-      coverImage,
-      paymentDetails,
-      rooms,
-      saved,
-      reviews,
-      reviewAverage,
-      tenancyAgreementTemplate,
-      __typename,
-      verification,
-      ...rest
-    } = hosting;
+    initiate: (hosting) => {
+      const {
+        host,
+        lastUpdated,
+        createdAt,
+        totalRatings,
+        coverImage,
+        paymentDetails,
+        rooms,
+        saved,
+        reviews,
+        reviewAverage,
+        tenancyAgreementTemplate,
+        __typename,
+        verification,
+        bookingApplicationsCount,
+        ...rest
+      } = hosting;
 
-    const {
-      __typename: __vTypeName,
-      verificationTier,
-      createdAt: createdAt2,
-      lastUpdated: lastUpdated2,
-      ...vRest
-    } = verification ?? {};
+      const {
+        __typename: __vTypeName,
+        verificationTier,
+        createdAt: createdAt2,
+        lastUpdated: lastUpdated2,
+        ...vRest
+      } = verification ?? {};
 
-    set(() => ({
-      input: {
-        ...rest,
-        tenancyAgreementTemplate: cleanupAgreementTemplateInput(
-          tenancyAgreementTemplate ?? { sections: [], totalSections: 0 },
-        ),
-        paymentDetailsId: paymentDetails?.id,
-      },
-      verificationInput: { hostingId: hosting.id, ...vRest },
-      hosting,
-    }));
-  },
-  updateInput: (data) =>
-    set((state) => ({
-      input: { ...state.input, ...data },
-    })),
-  updateVerificationInput: (data) =>
-    set((state) => ({
-      verificationInput: {
-        ...state.verificationInput,
-        ...data,
-      },
-    })),
-  clear: () => set({ input: undefined, hosting: undefined }),
-}));
+      set(() => ({
+        input: {
+          ...rest,
+          tenancyAgreementTemplate: cleanupAgreementTemplateInput(
+            tenancyAgreementTemplate ?? { sections: [], totalSections: 0 },
+          ),
+          paymentDetailsId: paymentDetails?.id,
+        },
+        verificationInput: { hostingId: hosting.id, ...vRest },
+        hosting,
+      }));
+    },
+    refreshHosting: (hosting) => set(() => ({ hosting })),
+    updateInput: (data) =>
+      set((state) => ({
+        input: { ...state.input, ...data },
+      })),
+    updateVerificationInput: (data) =>
+      set((state) => ({
+        verificationInput: {
+          ...state.verificationInput,
+          ...data,
+        },
+      })),
+    clear: () => set({ input: undefined, hosting: undefined }),
+  }),
+);

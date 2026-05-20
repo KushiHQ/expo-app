@@ -8,7 +8,8 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useUser } from '@/lib/hooks/user';
 import { hexToRgba } from '@/lib/utils/colors';
 import { ImageBackground } from 'expo-image';
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import React from 'react';
 import { View } from 'react-native';
 

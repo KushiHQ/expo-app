@@ -9,7 +9,7 @@ import { MynauiStarSolid } from '../icons/i-star';
 import Carousel from '../atoms/a-carousel';
 import { Image } from 'expo-image';
 import Skeleton from '../atoms/a-skeleton';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
 import { useFallbackImages } from '@/lib/hooks/images';
 import { HostingQuery, HostingsQuery } from '@/lib/services/graphql/generated';

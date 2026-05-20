@@ -13,7 +13,7 @@ import BookingDetailsSheet from './m-booking-details';
 import { BookingsQuery } from '@/lib/services/graphql/generated';
 import { capitalize } from '@/lib/utils/text';
 import { getBookingStatus } from '@/lib/utils/bookings';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 
 type Props = {
   booking: BookingsQuery['bookings'][number];

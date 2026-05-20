@@ -13,7 +13,7 @@ import { UserType } from '@/lib/types/users';
 import { cast } from '@/lib/types/utils';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import { View } from 'react-native';
 import { PhoneNumberVerificationStatus } from '@/lib/services/graphql/generated';
 

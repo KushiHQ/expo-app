@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import ThemedText from '@/components/atoms/a-themed-text';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { BOOKING_APPLICATION_STATUS_COLORS } from '@/lib/constants/booking/application';

@@ -1,4 +1,4 @@
-import { LoginMutation } from '../services/graphql/generated';
+import { LoginMutation } from "../services/graphql/generated";
 
 export type UserData = {
   tokenData?: {
@@ -6,12 +6,11 @@ export type UserData = {
   };
   userType?: UserType;
   email?: string;
-  hostListingsView?: 'list' | 'grid' | 'block';
-  password?: string;
-  user?: NonNullable<LoginMutation['login']['data']>['user'];
+  hostListingsView?: "list" | "grid" | "block";
+  user?: NonNullable<LoginMutation["login"]["data"]>["user"];
 };
 
 export enum UserType {
-  Host = 'Host',
-  Guest = 'Guest',
+  Host = "Host",
+  Guest = "Guest",
 }

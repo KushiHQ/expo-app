@@ -1,4 +1,5 @@
-import { Href, usePathname, useRouter } from 'expo-router';
+import { Href, usePathname } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import { useGalleryStore } from '../stores/gallery';
 import { cast } from '../types/utils';
 

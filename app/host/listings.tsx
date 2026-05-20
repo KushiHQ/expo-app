@@ -12,7 +12,7 @@ import { useDebounce } from '@/lib/hooks/use-debounce';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useUser } from '@/lib/hooks/user';
 import { useHostListingsQuery } from '@/lib/services/graphql/generated';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
 import React from 'react';
 import { FlatList, Pressable, RefreshControl, View } from 'react-native';

@@ -12,38 +12,37 @@ type Props = {
   onDeleteRoomImage?: (roomIndex: number, imageIndex: number) => void;
 };
 
-const HostingRoomImage: React.FC<Props> = ({
-  src,
-  roomIndex,
-  imageIndex,
-  onDeleteRoomImage: onDeleteRoomImage,
-}) => {
+const HostingRoomImage: React.FC<Props> = ({ src, roomIndex, imageIndex, onDeleteRoomImage }) => {
   const { failedImages, handleImageError } = useFallbackImages();
 
   return (
-    <View className="relative h-16 w-20">
+    <View style={{ position: 'relative', width: 88, height: 88 }}>
       <Image
-        source={{
-          uri: failedImages.has(0) ? FALLBACK_IMAGE : src,
-        }}
-        style={{
-          height: '100%',
-          width: '100%',
-          borderRadius: 8,
-        }}
+        source={{ uri: failedImages.has(imageIndex) ? FALLBACK_IMAGE : src }}
+        style={{ height: '100%', width: '100%', borderRadius: 12 }}
         contentFit="cover"
-        transition={300}
+        transition={400}
         placeholder={{ blurhash: PROPERTY_BLURHASH }}
         placeholderContentFit="cover"
         cachePolicy="memory-disk"
         priority="high"
-        onError={() => handleImageError(0)}
+        onError={() => handleImageError(imageIndex)}
       />
       <Pressable
         onPress={() => onDeleteRoomImage?.(roomIndex, imageIndex)}
-        className="absolute right-0 top-0 h-6 w-6 items-center justify-center rounded bg-white"
+        style={{
+          position: 'absolute',
+          top: 4,
+          right: 4,
+          width: 20,
+          height: 20,
+          borderRadius: 10,
+          backgroundColor: 'rgba(0,0,0,0.72)',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
       >
-        <X color="#000000" size={12} />
+        <X color="#FFFFFF" size={10} strokeWidth={2.5} />
       </Pressable>
     </View>
   );

@@ -58,7 +58,12 @@ export const handleIncomingChatMessage = async (remoteMessage: any) => {
       importance: AndroidImportance.HIGH,
       pressAction: { id: 'default', launchActivity: 'default' },
       color: '#266DD3',
-      largeIcon: notification?.image, // Use the image from FCM notification if available
+      // Only set largeIcon when the value is an actual https:// URL;
+      // undefined / null / empty string / non-URL values cause Notifee to throw.
+      largeIcon:
+        typeof notification?.image === 'string' && notification.image.startsWith('http')
+          ? notification.image
+          : undefined,
     },
     ios: {
       sound: 'message-notification.mp3',

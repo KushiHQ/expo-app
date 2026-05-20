@@ -253,7 +253,11 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
         return;
       }
 
-      // Chat message: show a Notifee banner unless the user is already in this chat
+      // Only chat messages carry intent === 'notification'. Every other intent
+      // (hosting saves, form updates, etc.) is intentionally ignored here — the
+      // user is already looking at the app and sees toasts/UI feedback directly.
+      if (remoteMessage.data?.intent !== 'notification') return;
+
       const chatId = remoteMessage.data?.id as string | undefined;
       const isViewingThisChat = chatId && currentChatId.current === chatId;
 
@@ -265,7 +269,7 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
           console.log('Failed to play notification sound', err);
         }
       } else {
-        // Show a visible Notifee banner
+        // Show a visible Notifee banner for messages from other chats
         try {
           await handleIncomingChatMessage(remoteMessage);
         } catch (err) {

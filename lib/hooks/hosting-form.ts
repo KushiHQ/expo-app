@@ -1,11 +1,12 @@
-import React from 'react';
+import React from "react";
 import {
   useCreateOrUpdateHostingMutation,
   useHostingQuery,
   useInitiateHostingVerificationMutation,
-} from '../services/graphql/generated';
-import { useActiveFormHosingStore } from '../stores/hostings';
-import { cast } from '../types/utils';
+} from "../services/graphql/generated";
+import { useActiveFormHosingStore } from "../stores/hostings";
+import { cast } from "../types/utils";
+import { removeTypenames } from "../utils/graphql/cleanup";
 
 export const useHostingForm = (id?: string | string[]) => {
   const [{ fetching: mutating }, mutate] = useCreateOrUpdateHostingMutation();
@@ -15,6 +16,7 @@ export const useHostingForm = (id?: string | string[]) => {
     input,
     verificationInput,
     initiate,
+    refreshHosting,
     updateVerificationInput,
     updateInput,
     hosting,
@@ -27,10 +29,22 @@ export const useHostingForm = (id?: string | string[]) => {
   });
 
   React.useEffect(() => {
-    if (data && (!input.id || input.id !== data.hosting.id)) {
+    if (!data) return;
+    if (!input.id || input.id !== data.hosting.id) {
       initiate(data.hosting);
+    } else {
+      refreshHosting(data.hosting);
     }
-  }, [data, input.id, initiate]);
+  }, [data]);
+
+  const safeMutate = React.useCallback(
+    (variables: Parameters<typeof mutate>[0]) =>
+      mutate({
+        ...variables,
+        input: removeTypenames(variables.input) as typeof variables.input,
+      }),
+    [mutate],
+  );
 
   return {
     input,
@@ -38,12 +52,12 @@ export const useHostingForm = (id?: string | string[]) => {
     updateVerificationInput,
     updateInput,
     clearInput: clear,
-    mutate,
+    mutate: safeMutate,
     verificationMutating,
     verificationMutate,
     mutating,
     fetching,
     hosting,
-    refetch: () => refetch({ requestPolicy: 'network-only' }),
+    refetch: () => refetch({ requestPolicy: "network-only" }),
   };
 };

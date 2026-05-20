@@ -8,7 +8,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 import ThemedText from '../atoms/a-themed-text';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Fonts } from '@/lib/constants/theme';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import { HostingChatQuery } from '@/lib/services/graphql/generated';
 import { capitalize } from '@/lib/utils/text';
 

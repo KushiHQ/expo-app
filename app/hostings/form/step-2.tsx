@@ -14,8 +14,10 @@ import { useFallbackImages } from '@/lib/hooks/images';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { CircleQuestionMark } from 'lucide-react-native';
+import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
+import { Room } from '@/lib/types/enums/hostings';
+import { CircleQuestionMark, Layers } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { RefreshControl, TextInput, View } from 'react-native';
 
@@ -46,6 +48,8 @@ export default function NewHostingStep2() {
     handleDeleteActiveRoom,
   } = useHostingFormRoomUtils(String(id));
 
+  const allRoomTypesUsed = rooms.length >= 20;
+
   return (
     <>
       <DetailsLayout
@@ -67,16 +71,16 @@ export default function NewHostingStep2() {
           <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
             <CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
             {'  '}
-            Show off your property! 📸 Select a Room (like &lsquo;Bedroom&rsquo; or
-            &lsquo;Kitchen&rsquo;), then tap the camera icon to upload all the Photos for that
-            specific space. Add as many room categories as you need, and tap &lsquo;Details&rsquo;
-            to specify the Count of each room.
+            Select a room type, then tap <ThemedText style={{ fontSize: 12, fontFamily: Fonts.semibold, color: hexToRgba(colors.text, 0.75) }}>Add Photos</ThemedText> to upload images for that space. Use <ThemedText style={{ fontSize: 12, fontFamily: Fonts.semibold, color: hexToRgba(colors.text, 0.75) }}>Details</ThemedText> to set the room count and description.
           </ThemedText>
-          {Array.from({ length: rooms.length + 1 }).map((_, index) => (
+
+          {/* Existing room cards */}
+          {rooms.map((room, index) => (
             <RoomItemCard
-              key={index}
+              key={room.id ?? `room-${index}`}
               index={index}
-              room={rooms[index]}
+              room={room}
+              rooms={rooms}
               colors={colors}
               hostingRoomSaving={hostingRoomSaving}
               handleSaveHostingRoom={handleSaveHostingRoom}
@@ -85,9 +89,39 @@ export default function NewHostingStep2() {
               setActiveModalIndex={setActiveModalIndex}
             />
           ))}
+
+          {/* Empty state */}
+          {rooms.length === 0 && (
+            <View
+              className="items-center justify-center gap-3 rounded-2xl py-10"
+              style={{ backgroundColor: hexToRgba(colors.text, 0.04) }}
+            >
+              <Layers color={hexToRgba(colors.text, 0.3)} size={28} />
+              <ThemedText style={{ fontSize: 13, color: hexToRgba(colors.text, 0.4), textAlign: 'center' }}>
+                No rooms added yet.{'\n'}Use the selector below to add your first space.
+              </ThemedText>
+            </View>
+          )}
+
+          {/* Add new room card */}
+          {!allRoomTypesUsed && (
+            <RoomItemCard
+              key={`add-room-${rooms.length}`}
+              index={rooms.length}
+              room={undefined}
+              rooms={rooms}
+              colors={colors}
+              hostingRoomSaving={hostingRoomSaving}
+              handleSaveHostingRoom={handleSaveHostingRoom}
+              handleRoomImageEdit={handleRoomImageEdit}
+              handleDeleteImage={handleDeleteImage}
+              setActiveModalIndex={setActiveModalIndex}
+            />
+          )}
         </View>
       </DetailsLayout>
 
+      {/* Details modal */}
       <ThemedModal
         visible={activeModalIndex !== undefined}
         onClose={() => setActiveModalIndex(undefined)}
@@ -95,118 +129,105 @@ export default function NewHostingStep2() {
         <View className="gap-4">
           {activeModalIndex !== undefined && rooms[activeModalIndex] && (
             <>
-              <ThemedText style={{ fontFamily: Fonts.medium }}>
-                {rooms[activeModalIndex].name}
+              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 16 }}>
+                {Room[rooms[activeModalIndex].name]}
               </ThemedText>
-              <View>
-                {rooms[activeModalIndex] && !(rooms[activeModalIndex].images.length > 0) && (
-                  <View
-                    className="flex-1 items-center justify-center rounded-xl p-4"
-                    style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
-                  >
-                    <ThemedText
-                      style={{
-                        color: hexToRgba(colors.text, 0.8),
-                        fontSize: 12,
-                      }}
-                    >
-                      No Images Yet
-                    </ThemedText>
-                  </View>
-                )}
-                {rooms[activeModalIndex]?.images.length > 0 && (
-                  <View className="flex-1 flex-row gap-2">
-                    {rooms[activeModalIndex].images.slice(0, 4).map((img, id) => (
-                      <HostingRoomImage
-                        src={img}
-                        key={id}
-                        imageIndex={id}
-                        roomIndex={activeModalIndex}
-                        onDeleteRoomImage={deleteRoomImage}
-                      />
-                    ))}
-                  </View>
-                )}
-                <View className="mt-8">
-                  <View className="mb-4 flex-row gap-4">
-                    <View className="flex-1">
-                      <FloatingLabelInput
-                        focused
-                        value={rooms.at(activeIndex)?.count?.toString()}
-                        label="Count"
-                        inputMode="numeric"
-                        onChangeText={(v) => updateActiveRoom({ count: Number(v) })}
-                        placeholder="How many of this room are there"
-                        returnKeyType="next"
-                        onSubmitEditing={() => descriptionRef.current?.focus()}
-                        blurOnSubmit={false}
-                      />
-                    </View>
-                    <Button
-                      onPress={() => handleRoomImageEdit(activeModalIndex)}
-                      style={{ backgroundColor: colors.text, borderRadius: 10 }}
-                      className="py-3"
-                    >
-                      <ThemedText style={{ color: colors.background }}>Add More Photos</ThemedText>
-                    </Button>
-                  </View>
-                  <FloatingLabelInput
-                    ref={descriptionRef}
-                    focused
-                    multiline
-                    value={rooms.at(activeIndex)?.description}
-                    label="Description (Optional)"
-                    placeholder="Provide brief description of these images"
-                    containerStyle={{ minHeight: 80 }}
-                    numberOfLines={6}
-                    onChangeText={(description) => updateActiveRoom({ description })}
-                    returnKeyType="done"
-                  />
+
+              {/* Images preview in modal */}
+              {rooms[activeModalIndex].images.length > 0 && (
+                <View className="flex-row flex-wrap gap-2">
+                  {rooms[activeModalIndex].images.slice(0, 6).map((img, id) => (
+                    <HostingRoomImage
+                      src={img}
+                      key={id}
+                      imageIndex={id}
+                      roomIndex={activeModalIndex}
+                      onDeleteRoomImage={deleteRoomImage}
+                    />
+                  ))}
                 </View>
-                <View className="mt-4 flex-row gap-2">
+              )}
+
+              <View className="gap-3">
+                <View className="flex-row gap-3">
+                  <View className="flex-1">
+                    <FloatingLabelInput
+                      focused
+                      value={rooms.at(activeIndex)?.count?.toString()}
+                      label="Count"
+                      inputMode="numeric"
+                      onChangeText={(v) => updateActiveRoom({ count: Number(v) })}
+                      placeholder="How many of this room"
+                      returnKeyType="next"
+                      onSubmitEditing={() => descriptionRef.current?.focus()}
+                      blurOnSubmit={false}
+                    />
+                  </View>
                   <Button
-                    className="flex-1"
-                    type="error"
-                    disabled={hostingRoomSaving}
-                    onPress={() => setDeleteModalIndex(activeIndex)}
+                    onPress={() => handleRoomImageEdit(activeModalIndex)}
+                    style={{ backgroundColor: hexToRgba(colors.text, 0.08), borderRadius: 10 }}
+                    className="items-center justify-center px-4"
                   >
-                    <ThemedText content="error">Delete</ThemedText>
-                  </Button>
-                  <Button
-                    disabled={hostingRoomSaving}
-                    loading={hostingRoomSaving}
-                    className="flex-1"
-                    type="text"
-                    onPress={() => {
-                      handleSaveHostingRoom(activeIndex, rooms[activeIndex]);
-                      setActiveModalIndex(undefined);
-                    }}
-                  >
-                    <ThemedText content="text">Save</ThemedText>
+                    <ThemedText style={{ fontSize: 12 }}>Add{'\n'}Photos</ThemedText>
                   </Button>
                 </View>
+                <FloatingLabelInput
+                  ref={descriptionRef}
+                  focused
+                  multiline
+                  value={rooms.at(activeIndex)?.description}
+                  label="Description (Optional)"
+                  placeholder="Brief description of this space"
+                  containerStyle={{ minHeight: 80 }}
+                  numberOfLines={4}
+                  onChangeText={(description) => updateActiveRoom({ description })}
+                  returnKeyType="done"
+                />
+              </View>
+
+              <View className="flex-row gap-2">
+                <Button
+                  className="flex-1"
+                  type="error"
+                  disabled={hostingRoomSaving}
+                  onPress={() => setDeleteModalIndex(activeIndex)}
+                >
+                  <ThemedText content="error">Delete Room</ThemedText>
+                </Button>
+                <Button
+                  disabled={hostingRoomSaving}
+                  loading={hostingRoomSaving}
+                  className="flex-1"
+                  type="text"
+                  onPress={() => {
+                    handleSaveHostingRoom(activeIndex, rooms[activeIndex]);
+                    setActiveModalIndex(undefined);
+                  }}
+                >
+                  <ThemedText content="text">Save</ThemedText>
+                </Button>
               </View>
             </>
           )}
         </View>
       </ThemedModal>
 
+      {/* Delete confirmation modal */}
       <ThemedModal
         visible={deleteModalIndex !== undefined}
         onClose={() => setDeleteModalIndex(undefined)}
       >
         <View>
           {deleteModalIndex !== undefined && (
-            <View className="gap-8">
-              <ThemedText>
-                Are you want to delete this room
-                {rooms[deleteModalIndex].images.length ? "and all it's images" : ''}?
+            <View className="gap-6">
+              <ThemedText style={{ fontFamily: Fonts.medium }}>
+                Delete this room{rooms[deleteModalIndex]?.images.length ? ' and all its photos' : ''}?
               </ThemedText>
-              <View className="items-center gap-4">
+              <View className="items-center gap-3">
                 <View className="h-28 w-32">
                   <Image
                     source={
-                      rooms[deleteModalIndex].images.length
+                      rooms[deleteModalIndex]?.images.length
                         ? {
                             uri: failedImages.has(0)
                               ? FALLBACK_IMAGE
@@ -214,11 +235,7 @@ export default function NewHostingStep2() {
                           }
                         : require('@/assets/images/room-image.jpg')
                     }
-                    style={{
-                      height: '100%',
-                      width: '100%',
-                      borderRadius: 8,
-                    }}
+                    style={{ height: '100%', width: '100%', borderRadius: 10 }}
                     contentFit="cover"
                     transition={300}
                     placeholder={{ blurhash: PROPERTY_BLURHASH }}
@@ -228,8 +245,8 @@ export default function NewHostingStep2() {
                     onError={() => handleImageError(0)}
                   />
                 </View>
-                <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 20 }}>
-                  {rooms[deleteModalIndex].name}
+                <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
+                  {rooms[deleteModalIndex] ? Room[rooms[deleteModalIndex].name] : ''}
                 </ThemedText>
               </View>
               <View className="flex-row items-center gap-2">

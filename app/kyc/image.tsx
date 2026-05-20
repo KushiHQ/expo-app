@@ -32,7 +32,7 @@ import { toast } from '@/lib/hooks/use-toast';
 import * as Haptics from 'expo-haptics';
 import { useUser } from '@/lib/hooks/user';
 import LoadingModal from '@/components/atoms/a-loading-modal';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 

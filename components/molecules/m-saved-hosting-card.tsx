@@ -7,7 +7,7 @@ import { MynauiStarSolid } from '../icons/i-star';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { Fonts } from '@/lib/constants/theme';
 import Skeleton from '../atoms/a-skeleton';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import Checkbox from '../atoms/a-checkbox';
 import { useFallbackImages } from '@/lib/hooks/images';
 import { SavedHostingsQuery } from '@/lib/services/graphql/generated';

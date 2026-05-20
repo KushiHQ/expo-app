@@ -8,7 +8,7 @@ import ThemedText from '../atoms/a-themed-text';
 import { Fonts } from '@/lib/constants/theme';
 import { SavedHostingFolder } from '@/lib/services/graphql/generated';
 import React from 'react';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 
 type Props = {
   folder: SavedHostingFolder;

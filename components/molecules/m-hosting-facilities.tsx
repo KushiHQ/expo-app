@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
 import { Fonts } from '@/lib/constants/theme';
 import { SimpleGrid } from 'react-native-super-grid';
-import { FACILITY_ICONS } from '@/lib/types/enums/hosting-icons';
+import { FACILITY_ICONS, FALLBACK_FACILITY_ICON } from '@/lib/types/enums/hosting-icons';
 import { cast } from '@/lib/types/utils';
 import { hexToRgba } from '@/lib/utils/colors';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
@@ -26,7 +26,7 @@ const HostingFacilities: React.FC<Props> = ({ hosting }) => {
         itemDimension={80}
         data={hosting?.facilities ?? []}
         renderItem={({ item }) => {
-          const Icon = FACILITY_ICONS[cast<keyof typeof FACILITY_ICONS>(item)];
+          const Icon = FACILITY_ICONS[cast<keyof typeof FACILITY_ICONS>(item)] ?? FALLBACK_FACILITY_ICON;
           return (
             <View className="items-center justify-center py-1">
               <View

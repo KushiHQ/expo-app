@@ -9,7 +9,7 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Fonts } from '@/lib/constants/theme';
 import Button from '../atoms/a-button';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import ThemedModal from './m-modal';
 import { useDeleteHostingMutation, HostListingsQuery } from '@/lib/services/graphql/generated';
 import LoadingModal from '../atoms/a-loading-modal';
