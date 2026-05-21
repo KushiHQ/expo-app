@@ -12,7 +12,6 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Send, Mic, Camera, Paperclip } from 'lucide-react-native';
 import { Fonts } from '@/lib/constants/theme';
-import { twMerge } from 'tailwind-merge';
 import * as DocumentPicker from 'expo-document-picker';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCameraScreen } from '@/lib/hooks/camera';
@@ -154,17 +153,14 @@ const ChatInput: React.FC<Props> = ({
         ) : (
           <>
             <View
-              className={twMerge(
-                'flex-row items-center justify-between',
-                inputHeight > minHeight && 'items-end',
-              )}
               style={[
                 styles.inputContainer,
                 {
-                  backgroundColor: hexToRgba(colors.text, 0.05),
-                  height: inputHeight + 10,
-                  paddingBottom: inputHeight > minHeight ? 10 : 0,
+                  backgroundColor: colors['surface-01'],
+                  height: inputHeight + 16,
+                  paddingBottom: inputHeight > minHeight ? 8 : 0,
                 },
+                inputHeight > minHeight ? { alignItems: 'flex-end' } : { alignItems: 'center' },
               ]}
             >
               <TextInput
@@ -179,36 +175,46 @@ const ChatInput: React.FC<Props> = ({
                 className="flex-1"
                 cursorColor={colors.primary}
                 placeholder={placeholder}
-                placeholderTextColor={hexToRgba(colors.text, 0.5)}
+                placeholderTextColor={hexToRgba(colors.text, 0.35)}
                 value={message}
                 onChangeText={setMessage}
                 multiline
                 onContentSizeChange={handleContentSizeChange}
                 textAlignVertical="center"
               />
-              <View className="flex-row items-center gap-4">
-                <Pressable onPress={handleFilePicker}>
-                  <Paperclip size={26} color={colors.text} />
-                </Pressable>
-                <Pressable onPress={handleCamera}>
-                  <Camera size={26} color={colors.text} />
-                </Pressable>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <TouchableOpacity
+                  onPress={handleFilePicker}
+                  style={[styles.iconButton, { backgroundColor: hexToRgba(colors.text, 0.07) }]}
+                >
+                  <Paperclip size={18} color={hexToRgba(colors.text, 0.65)} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleCamera}
+                  style={[styles.iconButton, { backgroundColor: hexToRgba(colors.text, 0.07) }]}
+                >
+                  <Camera size={18} color={hexToRgba(colors.text, 0.65)} />
+                </TouchableOpacity>
               </View>
             </View>
 
             <AnimatedPressable
-              onPressIn={() => (sendScale.value = withSpring(0.9))}
+              onPressIn={() => (sendScale.value = withSpring(0.88))}
               onPressOut={() => (sendScale.value = withSpring(1))}
               onPress={hasMessage ? handleSend : handleVoicePress}
               style={[
                 styles.sendButton,
                 {
-                  backgroundColor: hasMessage ? colors.primary : hexToRgba(colors.text, 0.1),
+                  backgroundColor: hasMessage ? colors.primary : colors['surface-01'],
                 },
                 sendAnimatedStyle,
               ]}
             >
-              {hasMessage ? <Send size={24} color="#fff" /> : <Mic size={24} color={colors.text} />}
+              {hasMessage ? (
+                <Send size={20} color={colors['primary-content']} />
+              ) : (
+                <Mic size={20} color={hexToRgba(colors.text, 0.65)} />
+              )}
             </AnimatedPressable>
           </>
         )}
@@ -222,45 +228,46 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     paddingHorizontal: 12,
-    paddingVertical: 14,
-    paddingBottom: 16,
+    paddingVertical: 10,
+    paddingBottom: 14,
     gap: 8,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
+        shadowOffset: { width: 0, height: -1 },
+        shadowOpacity: 0.04,
+        shadowRadius: 6,
       },
       android: {
-        elevation: 4,
+        elevation: 3,
       },
     }),
   },
-  actionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  inputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    borderRadius: 24,
+    paddingHorizontal: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 46,
+  },
+  iconButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  inputContainer: {
-    flex: 1,
-    borderRadius: 20,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-    minHeight: 30,
-  },
   input: {
-    fontSize: 16,
+    fontSize: 15,
     paddingVertical: 0,
-    paddingTop: Platform.OS === 'ios' ? 8 : 0,
+    paddingTop: Platform.OS === 'ios' ? 2 : 0,
   },
   sendButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 20,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     justifyContent: 'center',
     alignItems: 'center',
   },

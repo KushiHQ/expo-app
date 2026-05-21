@@ -1,6 +1,6 @@
 import ThemedText from '@/components/atoms/a-themed-text';
-import { IconParkOutlineDot } from '@/components/icons/i-circle';
 import Logo from '@/components/icons/i-logo';
+import { Image } from 'expo-image';
 import DetailsLayout from '@/components/layouts/details';
 import ChatInput, { ChatInputData } from '@/components/organisms/o-chat-input';
 import ChatMessageBubble from '@/components/molecules/m-chat-message-bubble';
@@ -201,9 +201,40 @@ export default function ChatDetails() {
     });
   };
 
-  const renderItem = ({ item }: { item: ChatMessagesQuery['chatMessages'][0] }) => (
-    <ChatMessageBubble message={item} />
-  );
+  const GROUP_THRESHOLD_MS = 5 * 60 * 1000;
+
+  const renderItem = ({
+    item,
+    index,
+  }: {
+    item: ChatMessagesQuery['chatMessages'][0] & { sending?: boolean };
+    index: number;
+  }) => {
+    // In an inverted list index+1 is the older (visually above) message,
+    // index-1 is the newer (visually below) message.
+    const above = messages[index + 1];
+    const below = messages[index - 1];
+
+    const isFirstInGroup =
+      !above ||
+      above.isSender !== item.isSender ||
+      new Date(item.createdAt).getTime() - new Date(above.createdAt).getTime() >
+        GROUP_THRESHOLD_MS;
+
+    const isLastInGroup =
+      !below ||
+      below.isSender !== item.isSender ||
+      new Date(below.createdAt).getTime() - new Date(item.createdAt).getTime() >
+        GROUP_THRESHOLD_MS;
+
+    return (
+      <ChatMessageBubble
+        message={item}
+        isFirstInGroup={isFirstInGroup}
+        isLastInGroup={isLastInGroup}
+      />
+    );
+  };
 
   return (
     <DetailsLayout
@@ -237,28 +268,64 @@ export default function ChatDetails() {
           justifyContent: 'flex-end',
         }}
         ListFooterComponent={
-          <View className="mb-8 mt-4">
-            <View className="items-center justify-center">
-              <ThemedText style={{ fontFamily: Fonts.medium }}>
+          <View style={{ marginBottom: 32, marginTop: 16 }}>
+            <View style={{ alignItems: 'center', gap: 8, marginBottom: 24 }}>
+              <View
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: 36,
+                  overflow: 'hidden',
+                  borderWidth: 2,
+                  borderColor: hexToRgba(colors.primary, 0.35),
+                }}
+              >
+                <Image
+                  source={{
+                    uri:
+                      chatData?.hostingChat.recipientUser?.profile?.image?.publicUrl ??
+                      getDefaultProfileImageUrl(
+                        chatData?.hostingChat.recipientUser?.profile.fullName ?? '',
+                      ),
+                  }}
+                  style={{ width: '100%', height: '100%' }}
+                  contentFit="cover"
+                />
+              </View>
+              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 17 }}>
                 {chatData?.hostingChat.recipientUser?.profile.fullName}
               </ThemedText>
-              {onlineRecipient?.online && (
-                <View className="flex-row items-center">
-                  <ThemedText
-                    style={{
-                      color: hexToRgba(colors.text, 0.5),
-                      fontSize: 10,
-                    }}
-                  >
-                    Active Now
-                  </ThemedText>
-                  <IconParkOutlineDot color={colors.success} size={12} />
-                </View>
-              )}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <View
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: 4,
+                    backgroundColor: onlineRecipient?.online
+                      ? colors.success
+                      : hexToRgba(colors.text, 0.25),
+                  }}
+                />
+                <ThemedText
+                  style={{
+                    fontSize: 12,
+                    color: hexToRgba(colors.text, 0.5),
+                    fontFamily: Fonts.regular,
+                  }}
+                >
+                  {onlineRecipient?.online ? 'Active now' : 'Offline'}
+                </ThemedText>
+              </View>
+              <View
+                style={{
+                  width: 40,
+                  height: 1,
+                  backgroundColor: hexToRgba(colors.text, 0.12),
+                  marginTop: 4,
+                }}
+              />
             </View>
-            <View className="mt-8">
-              <HostingChatSummaryCard hosting={chatData?.hostingChat.hosting} />
-            </View>
+            <HostingChatSummaryCard hosting={chatData?.hostingChat.hosting} />
             {messagesFetching && hasNextPage && (
               <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} />
             )}
@@ -266,15 +333,41 @@ export default function ChatDetails() {
         }
         ListEmptyComponent={
           !messagesFetching && !messages.length ? (
-            <View className="mt-8 flex-1 items-center justify-center gap-4">
-              <View
-                className="aspect-square items-center justify-center rounded-full p-8 px-16 opacity-35"
-                style={{ backgroundColor: hexToRgba(colors.text, 0.2) }}
-              >
-                <Logo width={120} height={140} />
+            <View
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingTop: 40,
+                gap: 10,
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <View
+                  style={{
+                    flex: 1,
+                    height: 0.5,
+                    backgroundColor: hexToRgba(colors.text, 0.1),
+                  }}
+                />
+                <Logo width={28} height={32} style={{ opacity: 0.2 }} />
+                <View
+                  style={{
+                    flex: 1,
+                    height: 0.5,
+                    backgroundColor: hexToRgba(colors.text, 0.1),
+                  }}
+                />
               </View>
-              <ThemedText type="semibold" className="opacity-40">
-                Chat is empty
+              <ThemedText
+                style={{
+                  fontSize: 13,
+                  color: hexToRgba(colors.text, 0.3),
+                  fontFamily: Fonts.regular,
+                  letterSpacing: 0.3,
+                }}
+              >
+                Start the conversation
               </ThemedText>
             </View>
           ) : null

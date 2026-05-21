@@ -12,8 +12,9 @@ type Props = {
 };
 
 const WAVEFORM_BARS = [
-  0.3, 0.5, 0.8, 1.0, 0.7, 0.4, 0.5, 0.8, 0.9, 0.6, 0.4, 0.6, 0.8, 1.0, 0.9, 0.7, 0.5, 0.4, 0.6,
-  0.8, 0.7, 0.5, 0.4, 0.6, 0.8, 0.9, 0.7, 0.5, 0.4, 0.3,
+  0.25, 0.45, 0.6, 0.85, 1.0, 0.75, 0.55, 0.7, 0.9, 0.65, 0.4, 0.55, 0.75, 0.95, 1.0, 0.85,
+  0.7, 0.5, 0.4, 0.65, 0.8, 1.0, 0.9, 0.7, 0.5, 0.65, 0.85, 0.95, 0.75, 0.6, 0.45, 0.7, 0.85,
+  0.65, 0.4, 0.25,
 ];
 
 const AudioPlayerBubble: React.FC<Props> = ({ url, isSender }) => {
@@ -55,12 +56,12 @@ const AudioPlayerBubble: React.FC<Props> = ({ url, isSender }) => {
     <View style={styles.container}>
       <Pressable
         onPress={handlePlayPause}
-        style={[styles.playBtn, { backgroundColor: hexToRgba(activeColor, 0.15) }]}
+        style={[styles.playBtn, { backgroundColor: hexToRgba(activeColor, 0.18) }]}
       >
         {isPlaying ? (
-          <Pause size={18} color={activeColor} fill={activeColor} />
+          <Pause size={16} color={activeColor} fill={activeColor} />
         ) : (
-          <Play size={18} color={activeColor} fill={activeColor} />
+          <Play size={16} color={activeColor} fill={activeColor} />
         )}
       </Pressable>
 
@@ -73,8 +74,9 @@ const AudioPlayerBubble: React.FC<Props> = ({ url, isSender }) => {
               style={[
                 styles.bar,
                 {
-                  height: Math.max(3, amp * 20),
+                  height: Math.max(2, amp * 22),
                   backgroundColor: isActive ? activeColor : inactiveColor,
+                  opacity: isActive ? 1 : 0.5,
                 },
               ]}
             />
@@ -82,7 +84,7 @@ const AudioPlayerBubble: React.FC<Props> = ({ url, isSender }) => {
         })}
       </View>
 
-      <Text style={[styles.time, { color: activeColor }]}>
+      <Text style={[styles.time, { color: hexToRgba(activeColor, 0.75) }]}>
         {formatTime(currentTime > 0 && isPlaying ? currentTime : duration)}
       </Text>
     </View>
@@ -98,9 +100,9 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   playBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -109,11 +111,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    height: 24,
+    height: 26,
   },
   bar: {
-    width: 2.5,
-    borderRadius: 1.5,
+    width: 2,
+    borderRadius: 2,
   },
   time: {
     fontSize: 11,

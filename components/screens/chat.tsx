@@ -57,33 +57,50 @@ const ChatListItem = ({ chat, router, colors }: { chat: any; router: any; colors
       style={[
         {
           backgroundColor: colors['surface-01'],
-          borderRadius: 20,
-          marginBottom: 12,
-          padding: 12,
+          borderRadius: 16,
+          marginBottom: 10,
+          padding: 14,
           flexDirection: 'row',
           gap: 12,
           alignItems: 'center',
-          shadowColor: colors.text,
+          borderWidth: 0.5,
+          borderColor:
+            chat.unreadMessageCount > 0
+              ? hexToRgba(colors.primary, 0.3)
+              : hexToRgba(colors.text, 0.07),
+          shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.03,
+          shadowOpacity: 0.06,
           shadowRadius: 8,
           elevation: 2,
+          overflow: 'hidden',
         },
         animatedStyle,
       ]}
     >
-      <View className="relative h-14 w-14">
+      {/* Unread accent strip */}
+      {chat.unreadMessageCount > 0 && (
+        <View
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 10,
+            bottom: 10,
+            width: 3,
+            borderTopRightRadius: 3,
+            borderBottomRightRadius: 3,
+            backgroundColor: colors.primary,
+          }}
+        />
+      )}
+      <View style={{ position: 'relative', width: 52, height: 52 }}>
         <Image
           source={{
             uri:
               chat.recipientUser.profile?.image?.publicUrl ??
               getDefaultProfileImageUrl(chat.recipientUser.profile.fullName ?? ''),
           }}
-          style={{
-            height: '100%',
-            width: '100%',
-            borderRadius: 28,
-          }}
+          style={{ height: 52, width: 52, borderRadius: 26 }}
           contentFit="cover"
           transition={300}
           placeholder={{ blurhash: PROPERTY_BLURHASH }}
@@ -91,33 +108,47 @@ const ChatListItem = ({ chat, router, colors }: { chat: any; router: any; colors
         />
         {chat.recipientUser.onlineUser.online && (
           <View
-            className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2"
             style={{
+              position: 'absolute',
+              bottom: 0,
+              right: 0,
+              width: 13,
+              height: 13,
+              borderRadius: 7,
               backgroundColor: colors.success,
+              borderWidth: 2,
               borderColor: colors['surface-01'],
             }}
           />
         )}
       </View>
-      <View className="flex-1 justify-center gap-1">
-        <View className="flex-row items-center justify-between">
-          <ThemedText numberOfLines={1} style={{ fontFamily: Fonts.semibold, fontSize: 16 }}>
+      <View style={{ flex: 1, gap: 4 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <ThemedText
+            numberOfLines={1}
+            style={{
+              fontFamily: chat.unreadMessageCount > 0 ? Fonts.semibold : Fonts.medium,
+              fontSize: 15,
+              flex: 1,
+              marginRight: 8,
+            }}
+          >
             {chat.recipientUser.profile.fullName}
           </ThemedText>
           <ThemedText
             style={{
               fontSize: 11,
-              fontFamily: Fonts.medium,
-              color: hexToRgba(colors.text, 0.4),
+              fontFamily: Fonts.regular,
+              color: hexToRgba(colors.text, chat.unreadMessageCount > 0 ? 0.55 : 0.38),
             }}
           >
             {moment(chat.lastUpdated).fromNow()}
           </ThemedText>
         </View>
-        <View className="flex-row items-center justify-between gap-2">
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           {(() => {
             const lastMessage = chat.lastMessage;
-            if (!lastMessage) return <View className="flex-1" />;
+            if (!lastMessage) return <View style={{ flex: 1 }} />;
             const audioAsset = lastMessage.assets.find((a: any) => {
               const url = a.asset.publicUrl.toLowerCase();
               return (
@@ -125,18 +156,23 @@ const ChatListItem = ({ chat, router, colors }: { chat: any; router: any; colors
                 AUDIO_EXTENSIONS.some((ext) => url.endsWith(`.${ext}`))
               );
             });
-
             const isAudioOnly =
               audioAsset && (!lastMessage.text || lastMessage.text.trim().length === 0);
-
             return (
-              <View className="flex-1 flex-row items-center gap-1">
-                {isAudioOnly && <Mic size={14} color={hexToRgba(colors.text, 0.5)} />}
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                {isAudioOnly && (
+                  <Mic size={13} color={hexToRgba(colors.text, 0.45)} />
+                )}
                 <ThemedText
                   numberOfLines={1}
                   style={{
                     fontSize: 13,
-                    color: hexToRgba(colors.text, 0.5),
+                    color: hexToRgba(
+                      colors.text,
+                      chat.unreadMessageCount > 0 ? 0.65 : 0.45,
+                    ),
+                    fontFamily:
+                      chat.unreadMessageCount > 0 ? Fonts.medium : Fonts.regular,
                     flex: 1,
                   }}
                 >
@@ -147,17 +183,25 @@ const ChatListItem = ({ chat, router, colors }: { chat: any; router: any; colors
           })()}
           {chat.unreadMessageCount > 0 && (
             <View
-              style={{ backgroundColor: colors.primary }}
-              className="min-w-[20px] items-center justify-center rounded-full px-2 py-0.5"
+              style={{
+                backgroundColor: colors.primary,
+                minWidth: 20,
+                height: 20,
+                borderRadius: 10,
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingHorizontal: 6,
+              }}
             >
               <ThemedText
                 style={{
-                  fontSize: 10,
+                  fontSize: 11,
                   fontFamily: Fonts.bold,
-                  color: '#fff',
+                  color: colors['primary-content'],
+                  lineHeight: 14,
                 }}
               >
-                {chat.unreadMessageCount}
+                {chat.unreadMessageCount > 99 ? '99+' : chat.unreadMessageCount}
               </ThemedText>
             </View>
           )}
