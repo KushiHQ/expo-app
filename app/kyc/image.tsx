@@ -4,14 +4,12 @@ import {
   usePhotoOutput,
   Camera,
 } from 'react-native-vision-camera';
-import type { Face } from 'react-native-vision-camera-face-detector';
-import { useFaceDetectorOutput } from 'react-native-vision-camera-face-detector';
 import Stepper from '@/components/atoms/a-steppter';
 import DetailsLayout from '@/components/layouts/details';
 import { KYC_ONBOARDING_STEPS } from '@/lib/constants/kyc/onboarding';
 import { cast } from '@/lib/types/utils';
 import { Dimensions, View, StyleSheet, ColorValue } from 'react-native';
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import ThemedText from '@/components/atoms/a-themed-text';
 import { hexToRgba } from '@/lib/utils/colors';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
@@ -34,7 +32,7 @@ import { useUser } from '@/lib/hooks/user';
 import LoadingModal from '@/components/atoms/a-loading-modal';
 import { useRouter } from '@/lib/hooks/use-router';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const FRAME_WIDTH = SCREEN_WIDTH * 0.65;
 const FRAME_HEIGHT = 340;
@@ -108,59 +106,16 @@ export default function KycImage() {
   const { updateUser, user } = useUser();
   const device = useCameraDevice('front');
   const colors = useThemeColors();
-  const [faceDetected, setFaceDetected] = React.useState(false);
   const { hasPermission, requestPermission } = useCameraPermission();
   const [kycImage, setKycImage] = React.useState(user.user?.kyc?.image?.publicUrl);
   const [uploading, setUploading] = React.useState(false);
+  const [isCameraReady, setIsCameraReady] = React.useState(false);
 
   const photoOutput = usePhotoOutput({ quality: 0.9 });
 
   useEffect(() => {
     photoOutput.outputOrientation = 'up';
   }, [photoOutput]);
-
-  const onFacesDetected = useCallback((faces: Face[]) => {
-    if (faces.length === 0) {
-      setFaceDetected(false);
-      return;
-    }
-
-    const face = faces[0];
-    const bounds = face.bounds;
-
-    const screenCenterX = SCREEN_WIDTH / 2;
-    const screenCenterY = SCREEN_HEIGHT / 2;
-
-    const faceCenterX = bounds.x + bounds.width / 2;
-    const faceCenterY = bounds.y + bounds.height / 2;
-
-    const xThreshold = SCREEN_WIDTH * 0.2;
-    const yThreshold = SCREEN_HEIGHT * 0.2;
-
-    const isCenteredX = Math.abs(screenCenterX - faceCenterX) < xThreshold;
-    const isCenteredY = Math.abs(screenCenterY - faceCenterY) < yThreshold;
-    const isGoodSize = bounds.width > SCREEN_WIDTH * 0.25;
-
-    setFaceDetected(isCenteredX && isCenteredY && isGoodSize);
-  }, []);
-
-  const faceDetectorOptions = React.useMemo(
-    () => ({
-      performanceMode: 'fast' as const,
-      autoMode: true,
-      windowWidth: SCREEN_WIDTH,
-      windowHeight: SCREEN_HEIGHT,
-      onFacesDetected,
-      onError: (error: Error) => {
-        console.error('Face detection error:', error);
-      },
-    }),
-    [onFacesDetected],
-  );
-
-  const faceOutput = useFaceDetectorOutput(faceDetectorOptions);
-
-  const cameraOutputs = React.useMemo(() => [photoOutput, faceOutput], [photoOutput, faceOutput]);
 
   useEffect(() => {
     if (!hasPermission) {
@@ -279,10 +234,11 @@ export default function KycImage() {
                       style={StyleSheet.absoluteFill}
                       device={device}
                       isActive={true}
-                      outputs={cameraOutputs}
+                      outputs={[photoOutput]}
                       orientationSource="device"
+                      onInitialized={() => setIsCameraReady(true)}
                     />
-                    <CameraFrame borderColor={faceDetected ? colors.success : 'white'} />
+                    <CameraFrame borderColor="white" />
                   </View>
                 )
               )}
@@ -332,7 +288,7 @@ export default function KycImage() {
                 </ThemedText>
                 <Button
                   onPress={handleCapture}
-                  disabled={!faceDetected}
+                  disabled={!isCameraReady}
                   type="primary"
                   className="mt-8 w-full max-w-[300px]"
                 >
