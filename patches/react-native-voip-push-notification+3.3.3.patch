@@ -1,0 +1,48 @@
+diff --git a/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.h b/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.h
+index 054ef59..97c12bf 100644
+--- a/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.h
++++ b/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.h
+@@ -12,7 +12,7 @@
+ #import <React/RCTEventEmitter.h>
+ #import <PushKit/PushKit.h>
+ 
+-@interface RNVoipPushNotificationManager : RCTEventEmitter <RCTBridgeModule>
++@interface RNVoipPushNotificationManager : RCTEventEmitter <RCTBridgeModule, PKPushRegistryDelegate>
+ 
+ typedef void (^RNVoipPushNotificationCompletion)(void);
+ 
+diff --git a/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.m b/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.m
+index f4b3701..a7e440b 100644
+--- a/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.m
++++ b/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.m
+@@ -138,14 +138,28 @@ static NSMutableDictionary<NSString *, RNVoipPushNotificationCompletion> *comple
+         dispatch_async(mainQueue, ^{
+             // --- Create a push registry object
+             PKPushRegistry * voipRegistry = [[PKPushRegistry alloc] initWithQueue: mainQueue];
+-            // --- Set the registry's delegate to AppDelegate
+-            voipRegistry.delegate = (RNVoipPushNotificationManager *)RCTSharedApplication().delegate;
++            // --- Set the registry's delegate to the singleton (Expo Swift AppDelegate lacks PKPushRegistryDelegate)
++            voipRegistry.delegate = [RNVoipPushNotificationManager sharedInstance];
+             // ---  Set the push type to VoIP
+             voipRegistry.desiredPushTypes = [NSSet setWithObject:PKPushTypeVoIP];
+         });
+     }
+ }
+ 
++// --- PKPushRegistryDelegate instance methods (singleton as delegate)
++- (void)pushRegistry:(PKPushRegistry *)registry didUpdatePushCredentials:(PKPushCredentials *)credentials forType:(PKPushType)type
++{
++    [RNVoipPushNotificationManager didUpdatePushCredentials:credentials forType:(NSString *)type];
++}
++
++- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion
++{
++    [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
++    if (completion) {
++        completion();
++    }
++}
++
+ // --- should be called from `AppDelegate.didUpdatePushCredentials`
+ + (void)didUpdatePushCredentials:(PKPushCredentials *)credentials forType:(NSString *)type
+ {
