@@ -38,6 +38,7 @@ export default function ChatDetails() {
   const { id } = useLocalSearchParams();
   const colors = useThemeColors();
   const flatListRef = React.useRef<FlatList>(null);
+  const isNearBottomRef = React.useRef(true);
   const { setActiveChatId } = useNotifications();
   const sendSoundPlayer = useAudioPlayer(require('@/assets/audio/message-send-sound.mp3'));
   const [onlineRecipient, setOnlineRecipeint] =
@@ -85,8 +86,12 @@ export default function ChatDetails() {
         items[itemIndex] = msg;
       } else {
         items.unshift(msg);
+        // Scroll to bottom for incoming messages only when already near the bottom,
+        // so we don't yank the user away while they're reading history.
+        if (isNearBottomRef.current) {
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+        }
       }
-
       return items;
     });
   };
@@ -169,6 +174,9 @@ export default function ChatDetails() {
     } as any;
 
     setMessages((prev) => [optimisticMessage, ...prev]);
+
+    // Scroll to bottom (index 0 in an inverted list = newest message)
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
 
     // Play send sound
     try {
@@ -257,6 +265,11 @@ export default function ChatDetails() {
         inverted
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
+        onScroll={(e) => {
+          // In an inverted list offset 0 = bottom (newest). Track proximity to bottom.
+          isNearBottomRef.current = e.nativeEvent.contentOffset.y < 120;
+        }}
+        scrollEventThrottle={100}
         onEndReached={() => {
           if (hasNextPage) loadMore();
         }}
