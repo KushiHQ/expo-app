@@ -234,3 +234,39 @@ export const GUEST_BOOKING_TENANCY_AGREEMENT_PREVIEW = gql`
     guestBookingTenancyAgreementPreview(bookingId: $bookingId)
   }
 `;
+
+export const CAUTION_CLAIMS_FOR_BOOKING = gql`
+  query CautionClaimsForBooking($bookingId: String!) {
+    cautionClaimsForBooking(bookingId: $bookingId) {
+      id
+      bookingId
+      amountRequested
+      status
+      hostNotes
+      guestResponseNotes
+      adminNotes
+      disputeFeeApplied
+      createdAt
+      resolvedAt
+      lastUpdated
+    }
+  }
+`;
+
+export const CAUTION_REFUND_FOR_BOOKING = gql`
+  query CautionRefundForBooking($bookingId: String!) {
+    cautionRefundForBooking(bookingId: $bookingId) {
+      id
+      bookingId
+      amount
+      status
+      accountNumber
+      accountName
+      bankName
+      bankCode
+      blockedReason
+      createdAt
+      lastUpdated
+    }
+  }
+`;

@@ -18,23 +18,31 @@ type Props = {
   isLastInGroup?: boolean;
 };
 
-// In an inverted FlatList, borderTopRight = visual bottom-right (tail position for sender).
-// isLastInGroup = this is the bottom-most bubble in the group = gets the tail.
-// isFirstInGroup = top-most bubble in the group = connecting corner on top.
+// In an inverted FlatList each item is flipped via scaleY(-1), so:
+//   borderTopRight (code) = visual bottom-right
+//   borderBottomRight (code) = visual top-right
+// isFirstInGroup = topmost bubble in the group (open end, no connecting corner at top)
+// isLastInGroup  = bottommost bubble (tail corner at visual bottom, connecting corner at visual top)
+//
+// Inner-side corner rule (the side with the tail/connecting corners):
+//   solo (first && last): fully round — no connecting corners needed
+//   all other positions:  tail/flat — either a connecting corner or the actual tail
 const getBubbleRadius = (isSender: boolean, isFirst: boolean, isLast: boolean) => {
   const r = 20;
   const tail = 5;
+  const isSolo = isFirst && isLast;
+
   if (isSender) {
     return {
       borderRadius: r,
-      borderTopRightRadius: isLast ? tail : r,
-      borderBottomRightRadius: isFirst ? r : tail,
+      borderTopRightRadius: isSolo ? r : tail,   // visual bottom-right: tail or connecting
+      borderBottomRightRadius: isFirst ? r : tail, // visual top-right: open or connecting
     };
   }
   return {
     borderRadius: r,
-    borderTopLeftRadius: isLast ? tail : r,
-    borderBottomLeftRadius: isFirst ? r : tail,
+    borderTopLeftRadius: isSolo ? r : tail,    // visual bottom-left: tail or connecting
+    borderBottomLeftRadius: isFirst ? r : tail, // visual top-left: open or connecting
   };
 };
 

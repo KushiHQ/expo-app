@@ -19,6 +19,31 @@ export type Scalars = {
   Upload: { input: any; output: any; }
 };
 
+export type AdminFeeConfig = {
+  __typename?: 'AdminFeeConfig';
+  /** Days after tenancy expiry within which the host may file new caution claims. */
+  cautionClaimWindowDays: Scalars['Int']['output'];
+  /** Kushi's escrow custody fee as a % of the caution fee, charged upfront. */
+  cautionCustodyFeePercent: Scalars['Float']['output'];
+  /** Fixed mediation fee deducted from caution pot when a claim is disputed (NGN). */
+  cautionDisputeFee: Scalars['Float']['output'];
+  id: Scalars['String']['output'];
+  /** Platform contribution charged to guests on secure lease bookings (% of total rent). */
+  secureLeaseGuestContributionPercent: Scalars['Float']['output'];
+  /** Platform fee charged to guests on short-let bookings (% of total rent). */
+  shortLetGuestChargesPercent: Scalars['Float']['output'];
+  /** Platform fee charged to hosts on short-let bookings (% of total rent). */
+  shortLetHostChargesPercent: Scalars['Float']['output'];
+  /** Fixed legal fee charged per booking (NGN). */
+  standardLegalFee: Scalars['Float']['output'];
+};
+
+export type AdminFeeConfigResponse = {
+  __typename?: 'AdminFeeConfigResponse';
+  data?: Maybe<AdminFeeConfig>;
+  message: Scalars['String']['output'];
+};
+
 export type AdminLegalConfig = {
   __typename?: 'AdminLegalConfig';
   /** Notice period required before exercising the break clause. */
@@ -122,6 +147,7 @@ export type Booking = {
   __typename?: 'Booking';
   amount: Scalars['Decimal']['output'];
   bookingApplication: BookingApplication;
+  cautionCustodyFee?: Maybe<Scalars['Decimal']['output']>;
   cautionFee?: Maybe<Scalars['Decimal']['output']>;
   commencementDate?: Maybe<Scalars['String']['output']>;
   correspondenceAddress?: Maybe<Scalars['String']['output']>;
@@ -250,6 +276,64 @@ export enum CallType {
   Cancel = 'CANCEL',
   Video = 'VIDEO',
   Voice = 'VOICE'
+}
+
+export type CautionClaim = {
+  __typename?: 'CautionClaim';
+  adminNotes?: Maybe<Scalars['String']['output']>;
+  amountRequested: Scalars['Decimal']['output'];
+  bookingId: Scalars['String']['output'];
+  createdAt: Scalars['String']['output'];
+  disputeFeeApplied: Scalars['Boolean']['output'];
+  guestResponseNotes?: Maybe<Scalars['String']['output']>;
+  hostNotes?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+  resolvedAt?: Maybe<Scalars['String']['output']>;
+  status: CautionClaimStatus;
+};
+
+export type CautionClaimResponse = {
+  __typename?: 'CautionClaimResponse';
+  data?: Maybe<CautionClaim>;
+  message: Scalars['String']['output'];
+};
+
+export enum CautionClaimStatus {
+  AdminApproved = 'ADMIN_APPROVED',
+  AdminDeclined = 'ADMIN_DECLINED',
+  GuestApproved = 'GUEST_APPROVED',
+  GuestDisputed = 'GUEST_DISPUTED',
+  PendingGuestResponse = 'PENDING_GUEST_RESPONSE',
+  Released = 'RELEASED'
+}
+
+export type CautionRefund = {
+  __typename?: 'CautionRefund';
+  accountName: Scalars['String']['output'];
+  accountNumber: Scalars['String']['output'];
+  amount: Scalars['Decimal']['output'];
+  bankCode: Scalars['String']['output'];
+  bankName: Scalars['String']['output'];
+  blockedReason?: Maybe<Scalars['String']['output']>;
+  bookingId: Scalars['String']['output'];
+  createdAt: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+  status: CautionRefundStatus;
+};
+
+export type CautionRefundResponse = {
+  __typename?: 'CautionRefundResponse';
+  data?: Maybe<CautionRefund>;
+  message: Scalars['String']['output'];
+};
+
+export enum CautionRefundStatus {
+  Blocked = 'BLOCKED',
+  Completed = 'COMPLETED',
+  Processing = 'PROCESSING',
+  Requested = 'REQUESTED'
 }
 
 export type CompletePasswordChangeInput = {
@@ -524,6 +608,7 @@ export type HostingCounts = {
 export type HostingFees = {
   __typename?: 'HostingFees';
   baseRent: Scalars['Decimal']['output'];
+  cautionCustodyFee: Scalars['Decimal']['output'];
   cautionFee: Scalars['Decimal']['output'];
   guestServiceCharge: Scalars['Decimal']['output'];
   hostServiceCharge: Scalars['Decimal']['output'];
@@ -803,8 +888,13 @@ export type MessageResponse = {
 
 export type Mutations = {
   __typename?: 'Mutations';
+  /** Mark an admin-approved claim as Released (triggers payout logic externally). */
+  adminReleaseCautionClaim: CautionClaimResponse;
+  /** Approve or decline a disputed caution claim after mediation. */
+  adminResolveCautionClaim: CautionClaimResponse;
   adminReviewHostingVerificationRequest: HostingVerificationRequestResponse;
   adminUpdateBookingApplicationStatus: BookingApplicationResponse;
+  adminUpdateFeeConfig: AdminFeeConfigResponse;
   appleLogin: AuthTokenResponse;
   appleSignUp: AuthTokenResponse;
   cancelBookingApplication: MessageResponse;
@@ -840,10 +930,16 @@ export type Mutations = {
   markAllNotificationsAsRead: MessageResponse;
   markNotificationAsRead: MessageResponse;
   refreshToken: AuthTokenResponse;
+  /** Guest requests a refund of their remaining caution balance after tenancy ends. */
+  requestCautionRefund: CautionRefundResponse;
+  /** Host requests a partial or full release of the caution deposit. */
+  requestCautionRelease: CautionClaimResponse;
   requestHostingVerificationTier: HostingVerificationResponse;
   requestPasswordChange: MessageResponse;
   resendEmailVerificationOtp: MessageResponse;
   resendPasswordChangeOtp: MessageResponse;
+  /** Guest approves or disputes a caution release claim. */
+  respondToCautionClaim: CautionClaimResponse;
   sendChatCallNotification: MessageResponse;
   signUp: UserResponse;
   updateBookingApplication: BookingApplicationResponse;
@@ -860,6 +956,18 @@ export type Mutations = {
 };
 
 
+export type MutationsAdminReleaseCautionClaimArgs = {
+  claimId: Scalars['String']['input'];
+};
+
+
+export type MutationsAdminResolveCautionClaimArgs = {
+  adminNotes?: InputMaybe<Scalars['String']['input']>;
+  approved: Scalars['Boolean']['input'];
+  claimId: Scalars['String']['input'];
+};
+
+
 export type MutationsAdminReviewHostingVerificationRequestArgs = {
   input: AdminReviewHostingVerificationRequestInput;
 };
@@ -867,6 +975,11 @@ export type MutationsAdminReviewHostingVerificationRequestArgs = {
 
 export type MutationsAdminUpdateBookingApplicationStatusArgs = {
   input: BookingApplicationStatusUpdateInput;
+};
+
+
+export type MutationsAdminUpdateFeeConfigArgs = {
+  input: UpdateFeeConfigInput;
 };
 
 
@@ -1032,6 +1145,16 @@ export type MutationsRefreshTokenArgs = {
 };
 
 
+export type MutationsRequestCautionRefundArgs = {
+  input: RequestCautionRefundInput;
+};
+
+
+export type MutationsRequestCautionReleaseArgs = {
+  input: RequestCautionReleaseInput;
+};
+
+
 export type MutationsRequestHostingVerificationTierArgs = {
   hostingId: Scalars['String']['input'];
   targetTier: HostingVerificationTier;
@@ -1050,6 +1173,11 @@ export type MutationsResendEmailVerificationOtpArgs = {
 
 export type MutationsResendPasswordChangeOtpArgs = {
   email: Scalars['String']['input'];
+};
+
+
+export type MutationsRespondToCautionClaimArgs = {
+  input: RespondToCautionClaimInput;
 };
 
 
@@ -1287,6 +1415,7 @@ export enum PublishStatus {
 
 export type Query = {
   __typename?: 'Query';
+  adminFeeConfig: AdminFeeConfig;
   adminHostingVerificationRequests: Array<HostingVerificationRequest>;
   /**
    * Returns the platform-wide legal configuration defaults used to
@@ -1303,6 +1432,10 @@ export type Query = {
   bookingApplicationsCount: Scalars['Int']['output'];
   bookings: Array<Booking>;
   calculateHostingFees: HostingFees;
+  /** All caution claims filed against a booking. */
+  cautionClaimsForBooking: Array<CautionClaim>;
+  /** The guest's caution refund request for a booking, if any. */
+  cautionRefundForBooking?: Maybe<CautionRefund>;
   chatMessages: Array<HostingChatMessage>;
   guestAnalytics: GuestAnalytics;
   guestBookingTenancyAgreementPreview: Scalars['String']['output'];
@@ -1369,6 +1502,16 @@ export type QueryBookingsArgs = {
 export type QueryCalculateHostingFeesArgs = {
   hostingId: Scalars['String']['input'];
   multiplier: Scalars['Int']['input'];
+};
+
+
+export type QueryCautionClaimsForBookingArgs = {
+  bookingId: Scalars['String']['input'];
+};
+
+
+export type QueryCautionRefundForBookingArgs = {
+  bookingId: Scalars['String']['input'];
 };
 
 
@@ -1456,8 +1599,28 @@ export type RefreshTokenInput = {
   refreshToken: Scalars['String']['input'];
 };
 
+export type RequestCautionRefundInput = {
+  accountName: Scalars['String']['input'];
+  accountNumber: Scalars['String']['input'];
+  bankCode: Scalars['String']['input'];
+  bankName: Scalars['String']['input'];
+  bookingId: Scalars['String']['input'];
+};
+
+export type RequestCautionReleaseInput = {
+  amount: Scalars['Decimal']['input'];
+  bookingId: Scalars['String']['input'];
+  notes?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type RequestPasswordChangeInput = {
   email: Scalars['String']['input'];
+};
+
+export type RespondToCautionClaimInput = {
+  approved: Scalars['Boolean']['input'];
+  claimId: Scalars['String']['input'];
+  notes?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SavedHosting = {
@@ -1673,6 +1836,16 @@ export enum TransactionType {
   HostBookingPayment = 'host_booking_payment'
 }
 
+export type UpdateFeeConfigInput = {
+  cautionClaimWindowDays?: InputMaybe<Scalars['Int']['input']>;
+  cautionCustodyFeePercent?: InputMaybe<Scalars['Decimal']['input']>;
+  cautionDisputeFee?: InputMaybe<Scalars['Decimal']['input']>;
+  secureLeaseGuestContributionPercent?: InputMaybe<Scalars['Decimal']['input']>;
+  shortLetGuestChargesPercent?: InputMaybe<Scalars['Decimal']['input']>;
+  shortLetHostChargesPercent?: InputMaybe<Scalars['Decimal']['input']>;
+  standardLegalFee?: InputMaybe<Scalars['Decimal']['input']>;
+};
+
 export type UpdateNotificationTokensInput = {
   fcmToken?: InputMaybe<Scalars['String']['input']>;
   voipToken?: InputMaybe<Scalars['String']['input']>;
@@ -1859,6 +2032,27 @@ export type CancelBookingApplicationMutationVariables = Exact<{
 
 
 export type CancelBookingApplicationMutation = { __typename?: 'Mutations', cancelBookingApplication: { __typename?: 'MessageResponse', message: string } };
+
+export type RequestCautionReleaseMutationVariables = Exact<{
+  input: RequestCautionReleaseInput;
+}>;
+
+
+export type RequestCautionReleaseMutation = { __typename?: 'Mutations', requestCautionRelease: { __typename?: 'CautionClaimResponse', message: string, data?: { __typename?: 'CautionClaim', id: string, bookingId: string, amountRequested: any, status: CautionClaimStatus, hostNotes?: string | null, disputeFeeApplied: boolean, createdAt: string, lastUpdated: string } | null } };
+
+export type RespondToCautionClaimMutationVariables = Exact<{
+  input: RespondToCautionClaimInput;
+}>;
+
+
+export type RespondToCautionClaimMutation = { __typename?: 'Mutations', respondToCautionClaim: { __typename?: 'CautionClaimResponse', message: string, data?: { __typename?: 'CautionClaim', id: string, bookingId: string, amountRequested: any, status: CautionClaimStatus, guestResponseNotes?: string | null, disputeFeeApplied: boolean, createdAt: string, lastUpdated: string } | null } };
+
+export type RequestCautionRefundMutationVariables = Exact<{
+  input: RequestCautionRefundInput;
+}>;
+
+
+export type RequestCautionRefundMutation = { __typename?: 'Mutations', requestCautionRefund: { __typename?: 'CautionRefundResponse', message: string, data?: { __typename?: 'CautionRefund', id: string, bookingId: string, amount: any, status: CautionRefundStatus, accountNumber: string, accountName: string, bankName: string, bankCode: string, createdAt: string, lastUpdated: string } | null } };
 
 export type InitiateHostingChatMutationVariables = Exact<{
   hostingId: Scalars['String']['input'];
@@ -2056,6 +2250,11 @@ export type CompletePhoneNumberVerificationMutationVariables = Exact<{
 
 export type CompletePhoneNumberVerificationMutation = { __typename?: 'Mutations', completePhoneNumberVerification: { __typename?: 'PhoneNumberResponse', message: string, data?: { __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus } | null } };
 
+export type AdminFeeConfigQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AdminFeeConfigQuery = { __typename?: 'Query', adminFeeConfig: { __typename?: 'AdminFeeConfig', id: string, shortLetHostChargesPercent: number, shortLetGuestChargesPercent: number, secureLeaseGuestContributionPercent: number, standardLegalFee: number, cautionCustodyFeePercent: number, cautionDisputeFee: number, cautionClaimWindowDays: number } };
+
 export type AdminLegalConfigQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2112,6 +2311,20 @@ export type GuestBookingTenancyAgreementPreviewQueryVariables = Exact<{
 
 
 export type GuestBookingTenancyAgreementPreviewQuery = { __typename?: 'Query', guestBookingTenancyAgreementPreview: string };
+
+export type CautionClaimsForBookingQueryVariables = Exact<{
+  bookingId: Scalars['String']['input'];
+}>;
+
+
+export type CautionClaimsForBookingQuery = { __typename?: 'Query', cautionClaimsForBooking: Array<{ __typename?: 'CautionClaim', id: string, bookingId: string, amountRequested: any, status: CautionClaimStatus, hostNotes?: string | null, guestResponseNotes?: string | null, adminNotes?: string | null, disputeFeeApplied: boolean, createdAt: string, resolvedAt?: string | null, lastUpdated: string }> };
+
+export type CautionRefundForBookingQueryVariables = Exact<{
+  bookingId: Scalars['String']['input'];
+}>;
+
+
+export type CautionRefundForBookingQuery = { __typename?: 'Query', cautionRefundForBooking?: { __typename?: 'CautionRefund', id: string, bookingId: string, amount: any, status: CautionRefundStatus, accountNumber: string, accountName: string, bankName: string, bankCode: string, blockedReason?: string | null, createdAt: string, lastUpdated: string } | null };
 
 export type UserChatsQueryVariables = Exact<{
   filter?: InputMaybe<HostingChatFilter>;
@@ -2886,6 +3099,71 @@ export const CancelBookingApplicationDocument = gql`
 export function useCancelBookingApplicationMutation() {
   return Urql.useMutation<CancelBookingApplicationMutation, CancelBookingApplicationMutationVariables>(CancelBookingApplicationDocument);
 };
+export const RequestCautionReleaseDocument = gql`
+    mutation RequestCautionRelease($input: RequestCautionReleaseInput!) {
+  requestCautionRelease(input: $input) {
+    message
+    data {
+      id
+      bookingId
+      amountRequested
+      status
+      hostNotes
+      disputeFeeApplied
+      createdAt
+      lastUpdated
+    }
+  }
+}
+    `;
+
+export function useRequestCautionReleaseMutation() {
+  return Urql.useMutation<RequestCautionReleaseMutation, RequestCautionReleaseMutationVariables>(RequestCautionReleaseDocument);
+};
+export const RespondToCautionClaimDocument = gql`
+    mutation RespondToCautionClaim($input: RespondToCautionClaimInput!) {
+  respondToCautionClaim(input: $input) {
+    message
+    data {
+      id
+      bookingId
+      amountRequested
+      status
+      guestResponseNotes
+      disputeFeeApplied
+      createdAt
+      lastUpdated
+    }
+  }
+}
+    `;
+
+export function useRespondToCautionClaimMutation() {
+  return Urql.useMutation<RespondToCautionClaimMutation, RespondToCautionClaimMutationVariables>(RespondToCautionClaimDocument);
+};
+export const RequestCautionRefundDocument = gql`
+    mutation RequestCautionRefund($input: RequestCautionRefundInput!) {
+  requestCautionRefund(input: $input) {
+    message
+    data {
+      id
+      bookingId
+      amount
+      status
+      accountNumber
+      accountName
+      bankName
+      bankCode
+      createdAt
+      lastUpdated
+    }
+  }
+}
+    `;
+
+export function useRequestCautionRefundMutation() {
+  return Urql.useMutation<RequestCautionRefundMutation, RequestCautionRefundMutationVariables>(RequestCautionRefundDocument);
+};
 export const InitiateHostingChatDocument = gql`
     mutation InitiateHostingChat($hostingId: String!) {
   initiateHostingChat(hostingId: $hostingId) {
@@ -3456,6 +3734,24 @@ export const CompletePhoneNumberVerificationDocument = gql`
 export function useCompletePhoneNumberVerificationMutation() {
   return Urql.useMutation<CompletePhoneNumberVerificationMutation, CompletePhoneNumberVerificationMutationVariables>(CompletePhoneNumberVerificationDocument);
 };
+export const AdminFeeConfigDocument = gql`
+    query AdminFeeConfig {
+  adminFeeConfig {
+    id
+    shortLetHostChargesPercent
+    shortLetGuestChargesPercent
+    secureLeaseGuestContributionPercent
+    standardLegalFee
+    cautionCustodyFeePercent
+    cautionDisputeFee
+    cautionClaimWindowDays
+  }
+}
+    `;
+
+export function useAdminFeeConfigQuery(options?: Omit<Urql.UseQueryArgs<AdminFeeConfigQueryVariables>, 'query'>) {
+  return Urql.useQuery<AdminFeeConfigQuery, AdminFeeConfigQueryVariables>({ query: AdminFeeConfigDocument, ...options });
+};
 export const AdminLegalConfigDocument = gql`
     query AdminLegalConfig {
   adminLegalConfig {
@@ -3733,6 +4029,48 @@ export const GuestBookingTenancyAgreementPreviewDocument = gql`
 
 export function useGuestBookingTenancyAgreementPreviewQuery(options: Omit<Urql.UseQueryArgs<GuestBookingTenancyAgreementPreviewQueryVariables>, 'query'>) {
   return Urql.useQuery<GuestBookingTenancyAgreementPreviewQuery, GuestBookingTenancyAgreementPreviewQueryVariables>({ query: GuestBookingTenancyAgreementPreviewDocument, ...options });
+};
+export const CautionClaimsForBookingDocument = gql`
+    query CautionClaimsForBooking($bookingId: String!) {
+  cautionClaimsForBooking(bookingId: $bookingId) {
+    id
+    bookingId
+    amountRequested
+    status
+    hostNotes
+    guestResponseNotes
+    adminNotes
+    disputeFeeApplied
+    createdAt
+    resolvedAt
+    lastUpdated
+  }
+}
+    `;
+
+export function useCautionClaimsForBookingQuery(options: Omit<Urql.UseQueryArgs<CautionClaimsForBookingQueryVariables>, 'query'>) {
+  return Urql.useQuery<CautionClaimsForBookingQuery, CautionClaimsForBookingQueryVariables>({ query: CautionClaimsForBookingDocument, ...options });
+};
+export const CautionRefundForBookingDocument = gql`
+    query CautionRefundForBooking($bookingId: String!) {
+  cautionRefundForBooking(bookingId: $bookingId) {
+    id
+    bookingId
+    amount
+    status
+    accountNumber
+    accountName
+    bankName
+    bankCode
+    blockedReason
+    createdAt
+    lastUpdated
+  }
+}
+    `;
+
+export function useCautionRefundForBookingQuery(options: Omit<Urql.UseQueryArgs<CautionRefundForBookingQueryVariables>, 'query'>) {
+  return Urql.useQuery<CautionRefundForBookingQuery, CautionRefundForBookingQueryVariables>({ query: CautionRefundForBookingDocument, ...options });
 };
 export const UserChatsDocument = gql`
     query UserChats($filter: HostingChatFilter, $pagination: PaginationInput) {

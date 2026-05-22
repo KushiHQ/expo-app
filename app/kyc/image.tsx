@@ -237,6 +237,7 @@ export default function KycImage() {
                       outputs={[photoOutput]}
                       orientationSource="device"
                       onInitialized={() => setIsCameraReady(true)}
+                      onStarted={() => setIsCameraReady(true)}
                     />
                     <CameraFrame borderColor="white" />
                   </View>

@@ -161,3 +161,59 @@ export const CANCEL_BOOKING_APPLICATION = gql`
     }
   }
 `;
+
+export const REQUEST_CAUTION_RELEASE = gql`
+  mutation RequestCautionRelease($input: RequestCautionReleaseInput!) {
+    requestCautionRelease(input: $input) {
+      message
+      data {
+        id
+        bookingId
+        amountRequested
+        status
+        hostNotes
+        disputeFeeApplied
+        createdAt
+        lastUpdated
+      }
+    }
+  }
+`;
+
+export const RESPOND_TO_CAUTION_CLAIM = gql`
+  mutation RespondToCautionClaim($input: RespondToCautionClaimInput!) {
+    respondToCautionClaim(input: $input) {
+      message
+      data {
+        id
+        bookingId
+        amountRequested
+        status
+        guestResponseNotes
+        disputeFeeApplied
+        createdAt
+        lastUpdated
+      }
+    }
+  }
+`;
+
+export const REQUEST_CAUTION_REFUND = gql`
+  mutation RequestCautionRefund($input: RequestCautionRefundInput!) {
+    requestCautionRefund(input: $input) {
+      message
+      data {
+        id
+        bookingId
+        amount
+        status
+        accountNumber
+        accountName
+        bankName
+        bankCode
+        createdAt
+        lastUpdated
+      }
+    }
+  }
+`;
