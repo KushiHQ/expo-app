@@ -62,14 +62,16 @@ if (Platform.OS === 'ios') {
 
   VoipPushNotification.registerVoipToken();
 
-  // User answered the call from the native CallKit UI
+  // User answered the call from the native CallKit UI.
+  // Do NOT call endCall here — that causes "Kushi audio ended" on the lock screen.
+  // The call screen (handleLeave / handleLeft in call.ts) ends the CallKit call
+  // once the actual Daily session is torn down.
   RNCallKeep.addEventListener('answerCall', ({ callUUID }) => {
     const callData = pendingCalls[callUUID];
     if (callData) {
       EventEmitter.emit('callkeep_answer', callData);
       delete pendingCalls[callUUID];
     }
-    RNCallKeep.endCall(callUUID);
   });
 
   // User declined / ended the call from the native CallKit UI

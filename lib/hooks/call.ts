@@ -12,6 +12,7 @@ import Daily, { DailyCall, DailyParticipant } from '@daily-co/react-native-daily
 import notifee from '@notifee/react-native';
 import { stopRingtone } from '../utils/call';
 import { BackHandler, Platform } from 'react-native';
+import RNCallKeep from 'react-native-callkeep';
 import { useLockScreen } from './use-lock-screen';
 
 const callerRingtone = require('@/assets/audio/caller-ringtone.mp3');
@@ -75,12 +76,16 @@ export const useActiveCall = () => {
       console.warn('Error leaving call', e);
     }
 
+    if (Platform.OS === 'ios' && callId) {
+      try { RNCallKeep.endCall(String(callId)); } catch {}
+    }
+
     if (isLockScreenLaunch) {
       BackHandler.exitApp();
     } else {
       router.back();
     }
-  }, [call, id, player, router, isLockScreenLaunch]);
+  }, [call, callId, player, router, isLockScreenLaunch]);
 
   const handleJoin = useCallback(async () => {
     try {
@@ -179,6 +184,9 @@ export const useActiveCall = () => {
 
     const handleLeft = () => {
       setIsRinging(false);
+      if (Platform.OS === 'ios') {
+        try { RNCallKeep.endAllCalls(); } catch {}
+      }
       router.back();
     };
 

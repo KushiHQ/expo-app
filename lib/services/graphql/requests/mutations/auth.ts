@@ -1,4 +1,4 @@
-import { gql } from 'urql';
+import { gql } from "urql";
 
 export const SIGN_UP_MUTATION = gql`
   mutation SignUp($input: SignUpInput!) {
@@ -38,6 +38,8 @@ export const GOOGLE_SIGN_UP = gql`
             appUpdates
             pushNotifications
             specialOffers
+            fcmToken
+            voipToken
           }
           kyc {
             id
@@ -89,6 +91,8 @@ export const REFRESH_TOKEN_MUTATION = gql`
             appUpdates
             pushNotifications
             specialOffers
+            fcmToken
+            voipToken
           }
           kyc {
             id
@@ -156,6 +160,8 @@ export const GOOGLE_LOGIN = gql`
             appUpdates
             pushNotifications
             specialOffers
+            fcmToken
+            voipToken
           }
           kyc {
             id
@@ -207,6 +213,8 @@ export const APPLE_LOGIN = gql`
             appUpdates
             pushNotifications
             specialOffers
+            fcmToken
+            voipToken
           }
           kyc {
             id
@@ -258,6 +266,8 @@ export const APPLE_SIGN_UP = gql`
             appUpdates
             pushNotifications
             specialOffers
+            fcmToken
+            voipToken
           }
           kyc {
             id
@@ -309,6 +319,8 @@ export const LOGIN_MUTATION = gql`
             appUpdates
             pushNotifications
             specialOffers
+            fcmToken
+            voipToken
           }
           kyc {
             id

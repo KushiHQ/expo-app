@@ -1,4 +1,4 @@
-import { gql } from 'urql';
+import { gql } from "urql";
 
 export const ME_QUERY = gql`
   query Me {
@@ -21,6 +21,8 @@ export const ME_QUERY = gql`
         appUpdates
         pushNotifications
         specialOffers
+        fcmToken
+        voipToken
       }
       kyc {
         id
