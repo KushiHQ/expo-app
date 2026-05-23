@@ -10,7 +10,6 @@ import {
   PressableProps,
   StyleProp,
   StyleSheet,
-  View,
   ViewStyle,
 } from 'react-native';
 
@@ -44,7 +43,6 @@ const Button: React.FC<Props> = ({ style, children, loading, variant, type, onPr
   const isSolid = variant !== 'outline';
   const isPrimary = type === 'primary' && isSolid;
   const isError = type === 'error' && isSolid;
-  const showHighlight = isSolid && !!type && type !== 'text';
 
   return (
     <Pressable
@@ -88,7 +86,6 @@ const Button: React.FC<Props> = ({ style, children, loading, variant, type, onPr
       onPress={handlePress}
       {...rest}
     >
-      {showHighlight && <View style={styles.innerHighlight} pointerEvents="none" />}
       {loading ? <ActivityIndicator size="small" color={color} /> : children}
     </Pressable>
   );
@@ -102,17 +99,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 13,
     borderRadius: 14,
-    overflow: 'hidden',
-  },
-  innerHighlight: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '52%',
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.09)',
   },
   primaryShadow: {
     ...Platform.select({
