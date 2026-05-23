@@ -83,6 +83,18 @@ export default ({ config }) => ({
 		},
 		edgeToEdgeEnabled: true,
 		predictiveBackGestureEnabled: false,
+		gradleProperties: [
+			{
+				type: "string",
+				name: "org.gradle.jvmargs",
+				value: "-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError",
+			},
+			{
+				type: "string",
+				name: "org.gradle.daemon",
+				value: "false",
+			},
+		],
 	},
 	web: {
 		bundler: "metro",
