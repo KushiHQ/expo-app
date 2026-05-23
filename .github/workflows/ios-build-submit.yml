@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[ios]') }}
-    runs-on: macos-15
+    runs-on: blacksmith-6vcpu-macos-15
     env:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
