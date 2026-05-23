@@ -129,13 +129,13 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 
     return (
       <Wrapper className="flex-1" style={backgroundStyles}>
-        <SafeAreaView className="flex-1">
+        <SafeAreaView edges={isTablet ? ['top', 'bottom', 'right'] : undefined} className="flex-1">
           <View
             style={{
               flex: 1,
               width: '100%',
               maxWidth: isTablet ? 840 : undefined,
-              alignSelf: 'center',
+              alignSelf: isTablet ? 'flex-start' : 'center',
             }}
           >
             <View className="flex-row items-center justify-between p-5">
