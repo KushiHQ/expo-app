@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, startTransition } from 'react';
 import { View, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+  interpolate,
+} from 'react-native-reanimated';
 import { ChevronDown, CircleQuestionMark } from 'lucide-react-native';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
@@ -46,7 +52,9 @@ const Collapsible: React.FC<CollapsibleProps> = ({
     setExpanded(nextState);
 
     if (!hasMounted && nextState) {
-      setHasMounted(true);
+      // Mark children mount as non-urgent so the press feedback and
+      // animation frame aren't blocked behind a heavy render pass.
+      startTransition(() => setHasMounted(true));
     } else {
       progress.value = withSpring(nextState ? 1 : 0, {
         damping: 20,
@@ -59,7 +67,9 @@ const Collapsible: React.FC<CollapsibleProps> = ({
   const onLayout = (event: LayoutChangeEvent) => {
     const newHeight = event.nativeEvent.layout.height;
     if (newHeight > 0 && contentHeight.value !== newHeight) {
-      contentHeight.value = newHeight;
+      // Animate height changes so nested collapsibles opening don't cause
+      // the parent container to jump instantly to a new size.
+      contentHeight.value = withTiming(newHeight, { duration: 220 });
 
       if (expanded && progress.value === 0) {
         progress.value = withSpring(1, {
@@ -74,7 +84,8 @@ const Collapsible: React.FC<CollapsibleProps> = ({
   const rContentStyle = useAnimatedStyle(() => {
     return {
       height: progress.value * contentHeight.value,
-      opacity: progress.value === 0 ? 0 : 1,
+      // Fade in quickly at the start of the open rather than snapping from 0→1
+      opacity: interpolate(progress.value, [0, 0.25], [0, 1], 'clamp'),
     };
   });
 
