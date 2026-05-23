@@ -236,7 +236,7 @@ export default function BookingApplicationStep2() {
           </View>
         </View>
       </DetailsLayout>
-      <LoadingModal visible={initiatingApplicaiton || updatingBookingApplication} />
+      <LoadingModal visible={updatingBookingApplication} />
     </>
   );
 }
