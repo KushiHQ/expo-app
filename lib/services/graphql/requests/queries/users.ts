@@ -28,6 +28,8 @@ export const ME_QUERY = gql`
         id
         bvnVerified
         ninVerified
+        idDocumentType
+        youverifyReferenceId
         image {
           id
           publicUrl

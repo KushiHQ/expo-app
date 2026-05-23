@@ -45,6 +45,8 @@ export const GOOGLE_SIGN_UP = gql`
             id
             bvnVerified
             ninVerified
+            idDocumentType
+            youverifyReferenceId
             image {
               id
               publicUrl
@@ -98,6 +100,8 @@ export const REFRESH_TOKEN_MUTATION = gql`
             id
             bvnVerified
             ninVerified
+            idDocumentType
+            youverifyReferenceId
             image {
               id
               publicUrl
@@ -167,6 +171,8 @@ export const GOOGLE_LOGIN = gql`
             id
             bvnVerified
             ninVerified
+            idDocumentType
+            youverifyReferenceId
             image {
               id
               publicUrl
@@ -220,6 +226,8 @@ export const APPLE_LOGIN = gql`
             id
             bvnVerified
             ninVerified
+            idDocumentType
+            youverifyReferenceId
             image {
               id
               publicUrl
@@ -273,6 +281,8 @@ export const APPLE_SIGN_UP = gql`
             id
             bvnVerified
             ninVerified
+            idDocumentType
+            youverifyReferenceId
             image {
               id
               publicUrl
@@ -326,6 +336,8 @@ export const LOGIN_MUTATION = gql`
             id
             bvnVerified
             ninVerified
+            idDocumentType
+            youverifyReferenceId
             image {
               id
               publicUrl

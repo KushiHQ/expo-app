@@ -174,6 +174,7 @@ export default function BookingApplicationStep2() {
                         <TenancyAgreementVariableText
                           hosting={hostingData.hosting}
                           application={input}
+                          tenantUser={user.user.user}
                           text={section.preamble}
                         />
                       )}
@@ -194,6 +195,7 @@ export default function BookingApplicationStep2() {
                                 <TenancyAgreementVariableText
                                   hosting={hostingData.hosting}
                                   application={input}
+                                  tenantUser={user.user.user}
                                   providedValues={clause.providedValues}
                                   text={clause.content}
                                 />

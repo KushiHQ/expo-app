@@ -37,16 +37,25 @@ type ApplicationVars = {
   } | null;
 };
 
+type TenantUserVars = {
+  kushiId?: string | null;
+  kyc?: {
+    idDocumentType?: string | null;
+    youverifyReferenceId?: string | null;
+  } | null;
+};
+
 interface Props {
   text: string;
   replace?: boolean;
   providedValues?: SubClauseValueInput[];
   hosting?: HostingQuery['hosting'];
   application?: ApplicationVars | null;
+  tenantUser?: TenantUserVars | null;
 }
 
 const TenancyAgreementVariableText: React.FC<Props> = React.memo(
-  ({ text, providedValues, replace = true, hosting, application }) => {
+  ({ text, providedValues, replace = true, hosting, application, tenantUser }) => {
     const colors = useThemeColors();
 
     const hostingAddress = React.useMemo(() => {
@@ -196,6 +205,17 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
         }
       }
 
+      if (tenantUser) {
+        if (tenantUser.kushiId) {
+          variablesMap['TENANT_KUSHI_ID'] = tenantUser.kushiId;
+          variablesMap['TENANT_ID_NUMBER'] = tenantUser.kushiId;
+        }
+        if (tenantUser.kyc) {
+          variablesMap['TENANT_ID_TYPE'] = tenantUser.kyc.idDocumentType ?? 'Government-issued ID';
+          variablesMap['TENANT_KYC_REFERENCE_ID'] = tenantUser.kyc.youverifyReferenceId ?? 'Pending';
+        }
+      }
+
       if (providedValues && providedValues.length > 0) {
         providedValues.forEach((val) => {
           if (val.value && val.value.trim() !== '') {
@@ -214,7 +234,7 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
         }
         return match;
       });
-    }, [text, replace, hosting, hostingAddress, providedValues, application]);
+    }, [text, replace, hosting, hostingAddress, providedValues, application, tenantUser]);
 
     return (
       <ThemedText>
