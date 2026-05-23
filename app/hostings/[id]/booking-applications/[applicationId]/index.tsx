@@ -1,9 +1,12 @@
 import Button from '@/components/atoms/a-button';
+import DataRow from '@/components/atoms/a-data-row';
 import LoadingModal from '@/components/atoms/a-loading-modal';
 import Skeleton from '@/components/atoms/a-skeleton';
+import StackedRow from '@/components/atoms/a-stacked-row';
 import ThemedText from '@/components/atoms/a-themed-text';
 import DetailsLayout from '@/components/layouts/details';
 import ConfirmationSheet from '@/components/molecules/m-confirmation-sheet';
+import ReviewSection from '@/components/molecules/m-review-section';
 import {
   BOOKING_APPLICATION_INCOME_RANGES,
   BOOKING_APPLICATION_STATUS_COLORS,
@@ -35,77 +38,6 @@ import React from 'react';
 import { Image } from 'expo-image';
 import { View } from 'react-native';
 import { toast } from '@/lib/hooks/use-toast';
-
-// ─── local UI primitives ──────────────────────────────────────────────────────
-
-const SectionDivider: React.FC = () => {
-  const colors = useThemeColors();
-  return (
-    <View style={{ height: 1, backgroundColor: hexToRgba(colors.text, 0.07), marginHorizontal: 16 }} />
-  );
-};
-
-const DataRow: React.FC<{ label: string; value: string; accent?: boolean }> = ({ label, value, accent }) => {
-  const colors = useThemeColors();
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
-      <ThemedText
-        style={{ fontSize: 12, color: hexToRgba(colors.text, 0.4), width: 112, flexShrink: 0, paddingTop: 1 }}
-      >
-        {label}
-      </ThemedText>
-      <ThemedText
-        style={{
-          fontSize: 13,
-          flex: 1,
-          color: accent ? colors.primary : hexToRgba(colors.text, 0.9),
-          fontFamily: accent ? Fonts.semibold : Fonts.regular,
-        }}
-      >
-        {value || '—'}
-      </ThemedText>
-    </View>
-  );
-};
-
-const StackedRow: React.FC<{ label: string; value: string }> = ({ label, value }) => {
-  const colors = useThemeColors();
-  return (
-    <View style={{ gap: 5 }}>
-      <ThemedText
-        style={{
-          fontSize: 10,
-          color: hexToRgba(colors.text, 0.38),
-          letterSpacing: 0.8,
-          fontFamily: Fonts.medium,
-        }}
-      >
-        {label.toUpperCase()}
-      </ThemedText>
-      <ThemedText style={{ fontSize: 13, lineHeight: 20, color: hexToRgba(colors.text, 0.82) }}>
-        {value || '—'}
-      </ThemedText>
-    </View>
-  );
-};
-
-const ReviewSection: React.FC<{ icon: React.ReactNode; title: string; children: React.ReactNode }> = ({
-  icon,
-  title,
-  children,
-}) => {
-  const colors = useThemeColors();
-  return (
-    <View style={{ borderRadius: 16, backgroundColor: colors['surface-01'], overflow: 'hidden' }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 13, gap: 9 }}>
-        {icon}
-        <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 14, flex: 1 }}>{title}</ThemedText>
-      </View>
-      <SectionDivider />
-      <View style={{ padding: 16, gap: 13 }}>{children}</View>
-    </View>
-  );
-};
 
 // ─── screen ──────────────────────────────────────────────────────────────────
 
