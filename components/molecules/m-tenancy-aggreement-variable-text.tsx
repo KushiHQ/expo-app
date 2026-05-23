@@ -2,7 +2,8 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import {
   SubClauseValueInput,
   HostingQuery,
-  BookingApplicationQuery,
+  GuestFormEmploymentStatus,
+  GuestFormGuarantorRelationships,
 } from '@/lib/services/graphql/generated';
 import { formatNaira } from '@/lib/utils/currency';
 import { capitalize, splitVariables } from '@/lib/utils/text';
@@ -21,12 +22,27 @@ import {
 import { Room } from '@/lib/types/enums/hostings';
 import { keyOf } from '@/lib/utils/records';
 
+// Narrow structural type so both BookingApplicationQuery['bookingApplication']
+// and BookingApplicationUpdateInput satisfy it without a cast at call sites.
+type ApplicationVars = {
+  fullName?: string | null;
+  correspondenceAddress?: string | null;
+  email?: string | null;
+  phoneNumber?: string | null;
+  intervalMultiplier?: number | null;
+  commencementDate?: string | null;
+  guestFormData?: {
+    employmentStatus?: GuestFormEmploymentStatus | null;
+    guarantorRelationships?: GuestFormGuarantorRelationships | null;
+  } | null;
+};
+
 interface Props {
   text: string;
   replace?: boolean;
   providedValues?: SubClauseValueInput[];
   hosting?: HostingQuery['hosting'];
-  application?: BookingApplicationQuery['bookingApplication'];
+  application?: ApplicationVars | null;
 }
 
 const TenancyAgreementVariableText: React.FC<Props> = React.memo(
