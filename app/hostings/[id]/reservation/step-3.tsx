@@ -52,7 +52,8 @@ export default function BookingApplicationStep2() {
     initiateApplication({
       hostingId: String(id),
     });
-  }, [id, initiateApplication]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   React.useEffect(() => {
     if (initiateSubmissionError) {
@@ -206,12 +207,7 @@ export default function BookingApplicationStep2() {
         </View>
       </DetailsLayout>
       <LoadingModal
-        visible={
-          initiatingApplicaiton ||
-          updatingBookingApplication ||
-          initiatingSubmission ||
-          completingSubmission
-        }
+        visible={updatingBookingApplication || initiatingSubmission || completingSubmission}
       />
       <PINModal
         label="Enter OTP"
