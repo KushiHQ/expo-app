@@ -5,12 +5,12 @@ import Animated, {
   useSharedValue,
   withSpring,
   withTiming,
+  runOnJS,
 } from 'react-native-reanimated';
 import { Portal } from 'react-native-paper';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import ThemedText from '../atoms/a-themed-text';
 import { hexToRgba } from '@/lib/utils/colors';
-import { scheduleOnRN } from 'react-native-worklets';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -46,7 +46,7 @@ const Tooltip: React.FC<TooltipProps> = ({ title, className, description, childr
   const closeTooltip = () => {
     animation.value = withTiming(0, { duration: 150 }, (finished) => {
       if (finished) {
-        scheduleOnRN(setIsVisible, false);
+        runOnJS(setIsVisible)(false);
       }
     });
   };

@@ -8,12 +8,12 @@ import Animated, {
   interpolate,
   Extrapolation,
   withTiming,
+  runOnJS,
 } from 'react-native-reanimated';
 import { Portal } from 'react-native-paper';
 import { hexToRgba } from '@/lib/utils/colors';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useGradualKeyboardAnimation } from '@/lib/hooks/keyboard';
-import { scheduleOnRN } from 'react-native-worklets';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -48,7 +48,7 @@ const BottomSheet: FC<BottomSheetProps> = ({ scrollable = true, isVisible, onClo
         const dest = sheetHeight.value || SCREEN_HEIGHT;
         translateY.value = withTiming(dest, { duration: 250 }, (finished) => {
           if (finished) {
-            scheduleOnRN(setIsRendered, false);
+            runOnJS(setIsRendered)(false);
           }
         });
       }
@@ -88,8 +88,9 @@ const BottomSheet: FC<BottomSheetProps> = ({ scrollable = true, isVisible, onClo
       }
     })
     .onEnd(() => {
+      'worklet';
       if (translateY.value > sheetHeight.value / 3) {
-        scheduleOnRN(onClose);
+        runOnJS(onClose)();
       } else {
         toggleSheet(true);
       }

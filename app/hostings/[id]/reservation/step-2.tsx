@@ -46,7 +46,8 @@ export default function BookingApplicationStep2() {
     initiateApplication({
       hostingId: String(id),
     });
-  }, [id, initiateApplication]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   React.useEffect(() => {
     if (updateError) {
