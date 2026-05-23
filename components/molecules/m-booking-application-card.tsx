@@ -1,12 +1,16 @@
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from '@/lib/hooks/use-router';
 import ThemedText from '@/components/atoms/a-themed-text';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { BOOKING_APPLICATION_STATUS_COLORS } from '@/lib/constants/booking/application';
+import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
 import { hexToRgba } from '@/lib/utils/colors';
 import { toTitleCase } from '@/lib/utils/text';
 import { BookingApplication } from '@/lib/services/graphql/generated';
+import { Fonts } from '@/lib/constants/theme';
+import { MapPin, ChevronRight } from 'lucide-react-native';
 
 type Props = {
   application: Partial<BookingApplication>;
@@ -18,52 +22,113 @@ const BookingApplicationCard: React.FC<Props> = ({ application }) => {
 
   if (!application) return null;
 
+  const statusColor = application.status
+    ? BOOKING_APPLICATION_STATUS_COLORS[application.status]
+    : hexToRgba(colors.text, 0.4);
+
+  const coverUrl = application.hosting?.coverImage?.asset?.publicUrl;
+  const location = [application.hosting?.city, application.hosting?.state]
+    .filter(Boolean)
+    .join(', ');
+
   return (
     <TouchableOpacity
       onPress={() => router.push(`/users/booking-applications/${application.id}`)}
-      className="mb-4 rounded-2xl border p-4"
+      activeOpacity={0.75}
       style={{
-        borderColor: hexToRgba(colors.text, 0.1),
-        backgroundColor: hexToRgba(colors.text, 0.02),
+        borderRadius: 16,
+        backgroundColor: colors['surface-01'],
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: hexToRgba(colors.text, 0.06),
       }}
     >
-      <View className="mb-2 flex-row items-start justify-between">
-        <View>
-          <ThemedText type="semibold" style={{ fontSize: 16 }}>
-            Application #{application.id?.slice(-6).toUpperCase()}
-          </ThemedText>
+      {/* Cover image */}
+      <Image
+        source={coverUrl ? { uri: coverUrl } : FALLBACK_IMAGE}
+        placeholder={{ blurhash: PROPERTY_BLURHASH }}
+        contentFit="cover"
+        style={{ width: '100%', height: 110 }}
+      />
+
+      {/* Status pill overlay */}
+      {application.status && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            backgroundColor: hexToRgba(statusColor, 0.18),
+            borderRadius: 20,
+            paddingHorizontal: 10,
+            paddingVertical: 4,
+            borderWidth: 1,
+            borderColor: hexToRgba(statusColor, 0.35),
+          }}
+        >
           <ThemedText
-            style={{
-              fontSize: 12,
-              color: hexToRgba(colors.text, 0.6),
-            }}
+            style={{ fontSize: 11, color: statusColor, fontFamily: Fonts.semibold }}
           >
-            Submitted on{' '}
-            {application.createdAt ? new Date(application.createdAt).toLocaleDateString() : ''}
+            {toTitleCase(application.status.replace(/_/g, ' '))}
           </ThemedText>
         </View>
-        {application.status && (
-          <View
-            className="rounded-full px-3 py-1"
+      )}
+
+      {/* Body */}
+      <View style={{ padding: 14, gap: 8 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: 8,
+          }}
+        >
+          <View style={{ flex: 1, gap: 4 }}>
+            <ThemedText
+              numberOfLines={1}
+              style={{ fontSize: 15, fontFamily: Fonts.semibold }}
+            >
+              {application.hosting?.title ?? 'Property Application'}
+            </ThemedText>
+            {location ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <MapPin size={11} color={hexToRgba(colors.text, 0.38)} />
+                <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.38) }}>
+                  {location}
+                </ThemedText>
+              </View>
+            ) : null}
+          </View>
+          <ChevronRight size={16} color={hexToRgba(colors.text, 0.22)} style={{ marginTop: 2 }} />
+        </View>
+
+        <View
+          style={{ height: 1, backgroundColor: hexToRgba(colors.text, 0.06), marginVertical: 2 }}
+        />
+
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <ThemedText
             style={{
-              backgroundColor: hexToRgba(
-                BOOKING_APPLICATION_STATUS_COLORS[application.status],
-                0.1,
-              ),
+              fontSize: 11,
+              color: hexToRgba(colors.text, 0.35),
+              fontFamily: Fonts.medium,
+              letterSpacing: 0.4,
             }}
           >
-            <ThemedText
-              style={{
-                fontSize: 12,
-                color: BOOKING_APPLICATION_STATUS_COLORS[application.status],
-              }}
-            >
-              {toTitleCase(application.status.replace(/_/g, ' '))}
-            </ThemedText>
-          </View>
-        )}
+            REF #{application.id?.slice(-6).toUpperCase()}
+          </ThemedText>
+          <ThemedText style={{ fontSize: 11, color: hexToRgba(colors.text, 0.35) }}>
+            {application.createdAt
+              ? new Date(application.createdAt).toLocaleDateString('en-GB', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })
+              : ''}
+          </ThemedText>
+        </View>
       </View>
-      <ThemedText style={{ fontSize: 14 }}>Guest: {application.fullName}</ThemedText>
     </TouchableOpacity>
   );
 };

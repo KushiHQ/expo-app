@@ -2274,7 +2274,7 @@ export type BookingApplicationsQueryVariables = Exact<{
 }>;
 
 
-export type BookingApplicationsQuery = { __typename?: 'Query', bookingApplications: Array<{ __typename?: 'BookingApplication', commencementDate?: string | null, fullName?: string | null, createdAt: string, status: BookingApplicationStatus, id: string, intervalMultiplier?: number | null, booking?: { __typename?: 'Booking', id: string } | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null } }> };
+export type BookingApplicationsQuery = { __typename?: 'Query', bookingApplications: Array<{ __typename?: 'BookingApplication', commencementDate?: string | null, fullName?: string | null, createdAt: string, status: BookingApplicationStatus, id: string, intervalMultiplier?: number | null, booking?: { __typename?: 'Booking', id: string } | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null } }> };
 
 export type CalculateHostingFeesQueryVariables = Exact<{
   hostingId: Scalars['String']['input'];
@@ -3814,6 +3814,13 @@ export const BookingApplicationsDocument = gql`
       city
       country
       state
+      coverImage {
+        id
+        asset {
+          id
+          publicUrl
+        }
+      }
     }
   }
 }
