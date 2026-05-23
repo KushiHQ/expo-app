@@ -48,8 +48,7 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
   const [addingImagesCount, setAddingImagesCount] = React.useState(0);
   const addingImages = addingImagesCount > 0;
 
-  const loading =
-    deleteingImage || deletingRoom || fetchingHosting || hostingRoomSaving || addingImages;
+  const loading = deleteingImage || deletingRoom || hostingRoomSaving || addingImages;
 
   // Sync rooms from server data whenever hosting updates (data-driven, not focus-driven).
   // hosting is kept fresh by useHostingForm which calls refreshHosting() on every refetch,

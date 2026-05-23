@@ -41,7 +41,7 @@ export default function UserBooking() {
   const [localPdfUri, setLocalPdfUri] = React.useState<string | null>(null);
 
   const booking = data?.booking;
-  const loading = finalizing || fetchingBooking;
+  const loading = finalizing;
 
   React.useEffect(() => {
     if (!booking?.tenancyAgreementAsset?.publicUrl) return;

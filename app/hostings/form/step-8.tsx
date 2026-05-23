@@ -205,7 +205,7 @@ export default function NewHostingStep8() {
   });
   const [success, setSuccess] = React.useState(false);
 
-  const loading = fetchingHosting || mutating;
+  const loading = mutating;
 
   const handleMutate = () => {
     const nextStatus =

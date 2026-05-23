@@ -51,7 +51,7 @@ export default function NewHostingStep6() {
     });
   };
 
-  const loading = verificationMutating || fetchingHosting;
+  const loading = verificationMutating;
 
   return (
     <>

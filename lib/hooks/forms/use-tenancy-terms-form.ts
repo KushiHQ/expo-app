@@ -40,7 +40,7 @@ export const useTenancyTermsForm = (id: string) => {
   const [editOpen, setEditOpen] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
 
-  const loading = fetchingHosting || mutating || uploading || templateFetching;
+  const loading = mutating || uploading;
 
   const activeSectionIds = React.useMemo(() => {
     const ids = new Set<string>();

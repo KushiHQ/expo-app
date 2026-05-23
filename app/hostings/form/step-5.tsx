@@ -128,7 +128,7 @@ export default function NewHostingStep5() {
     });
   };
 
-  const loading = creatingPaymentDetail || resolving || mutating || fetchingHosting;
+  const loading = creatingPaymentDetail || resolving || mutating;
 
   return (
     <>

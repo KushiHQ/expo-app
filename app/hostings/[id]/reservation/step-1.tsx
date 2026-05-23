@@ -59,7 +59,8 @@ export default function BookingApplicationStep1() {
     initiateApplication({
       hostingId: String(id),
     });
-  }, [id, initiateApplication]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   React.useEffect(() => {
     if (initiateData?.initiateBookingApplication.data) {
@@ -224,7 +225,7 @@ export default function BookingApplicationStep1() {
           </View>
         </View>
       </DetailsLayout>
-      <LoadingModal visible={initiatingApplicaiton || updatingBookingApplication} />
+      <LoadingModal visible={updatingBookingApplication} />
     </>
   );
 }

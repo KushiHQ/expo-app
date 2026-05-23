@@ -32,7 +32,7 @@ export default function NewHostingStep3() {
   const [permission, requestPermission] = Location.useForegroundPermissions();
   const { input, mutate, updateInput, mutating, fetching: fetchingHosting } = useHostingForm(id);
 
-  const loading = fetchingHosting || locationFetching || mutating;
+  const loading = locationFetching || mutating;
 
   const fetchLocation = React.useCallback(async () => {
     setLocationFetching(true);

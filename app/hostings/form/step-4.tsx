@@ -27,7 +27,7 @@ export default function NewHostingStep4() {
   const [newFacility, setNewFacility] = React.useState<string | null>(null);
   const { input, mutate, updateInput, mutating, fetching: fetchingHosting } = useHostingForm(id);
 
-  const loading = fetchingHosting || mutating;
+  const loading = mutating;
 
   const facilities = React.useMemo(() => {
     const selected = input.facilities ?? [];
