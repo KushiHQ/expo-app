@@ -27,7 +27,14 @@ const BackButton: React.FC<Omit<PressableProps, 'style'> & { style?: StyleProp<V
 
   return (
     <Pressable
-      style={[{ backgroundColor: hexToRgba(colors['icon'], 0.6) }, style]}
+      style={({ pressed }) => [
+        {
+          backgroundColor: hexToRgba(colors['icon'], 0.6),
+          transform: [{ scale: pressed ? 0.88 : 1 }],
+          opacity: pressed ? 0.85 : 1,
+        },
+        style,
+      ]}
       className={twMerge(
         'absolute left-6 top-16 h-10 w-10 items-center justify-center rounded-xl',
         className,

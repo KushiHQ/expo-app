@@ -4,12 +4,13 @@ import {
   usePhotoOutput,
   Camera,
 } from 'react-native-vision-camera';
+import { useFaceDetectorOutput } from 'react-native-vision-camera-face-detector';
 import Stepper from '@/components/atoms/a-steppter';
 import DetailsLayout from '@/components/layouts/details';
 import { KYC_ONBOARDING_STEPS } from '@/lib/constants/kyc/onboarding';
 import { cast } from '@/lib/types/utils';
 import { Dimensions, View, StyleSheet, ColorValue } from 'react-native';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import ThemedText from '@/components/atoms/a-themed-text';
 import { hexToRgba } from '@/lib/utils/colors';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
@@ -40,60 +41,39 @@ const CORNER_LENGTH = 40;
 const CORNER_THICKNESS = 5;
 const CORNER_RADIUS = 24;
 
+const FACE_DETECTED_COLOR = '#22C55E';
+const FRAME_IDLE_COLOR = 'rgba(255,255,255,0.55)';
+
 const CameraFrame = ({ borderColor }: { borderColor: ColorValue }) => {
   return (
     <View style={styles.frameContainer} pointerEvents="none">
       <View style={styles.frameArea}>
-        {/* Top Left Corner */}
         <View
           style={[
             styles.corner,
             styles.topLeft,
-            {
-              borderColor,
-              borderTopWidth: CORNER_THICKNESS,
-              borderLeftWidth: CORNER_THICKNESS,
-              borderTopLeftRadius: CORNER_RADIUS,
-            },
+            { borderColor, borderTopWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderTopLeftRadius: CORNER_RADIUS },
           ]}
         />
-        {/* Top Right Corner */}
         <View
           style={[
             styles.corner,
             styles.topRight,
-            {
-              borderColor,
-              borderTopWidth: CORNER_THICKNESS,
-              borderRightWidth: CORNER_THICKNESS,
-              borderTopRightRadius: CORNER_RADIUS,
-            },
+            { borderColor, borderTopWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderTopRightRadius: CORNER_RADIUS },
           ]}
         />
-        {/* Bottom Left Corner */}
         <View
           style={[
             styles.corner,
             styles.bottomLeft,
-            {
-              borderColor,
-              borderBottomWidth: CORNER_THICKNESS,
-              borderLeftWidth: CORNER_THICKNESS,
-              borderBottomLeftRadius: CORNER_RADIUS,
-            },
+            { borderColor, borderBottomWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderBottomLeftRadius: CORNER_RADIUS },
           ]}
         />
-        {/* Bottom Right Corner */}
         <View
           style={[
             styles.corner,
             styles.bottomRight,
-            {
-              borderColor,
-              borderBottomWidth: CORNER_THICKNESS,
-              borderRightWidth: CORNER_THICKNESS,
-              borderBottomRightRadius: CORNER_RADIUS,
-            },
+            { borderColor, borderBottomWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderBottomRightRadius: CORNER_RADIUS },
           ]}
         />
       </View>
@@ -110,8 +90,18 @@ export default function KycImage() {
   const [kycImage, setKycImage] = React.useState(user.user?.kyc?.image?.publicUrl);
   const [uploading, setUploading] = React.useState(false);
   const [isCameraReady, setIsCameraReady] = React.useState(false);
+  const [faceDetected, setFaceDetected] = React.useState(false);
 
   const photoOutput = usePhotoOutput({ quality: 0.9 });
+
+  const faceDetectorOutput = useFaceDetectorOutput({
+    onFacesDetected: useCallback((faces: any[]) => {
+      setFaceDetected(faces.length > 0);
+    }, []),
+    onError: useCallback((error: unknown) => {
+      console.warn('Face detector error:', error);
+    }, []),
+  });
 
   useEffect(() => {
     photoOutput.outputOrientation = 'up';
@@ -123,24 +113,23 @@ export default function KycImage() {
     }
   }, [hasPermission, requestPermission]);
 
+  // Reset face detection state when camera becomes inactive (photo taken)
+  useEffect(() => {
+    if (kycImage) {
+      setFaceDetected(false);
+      setIsCameraReady(false);
+    }
+  }, [kycImage]);
+
   const handleCapture = async () => {
     try {
-      const photo = await photoOutput.capturePhoto(
-        {
-          flashMode: 'off',
-        },
-        {},
-      );
+      const photo = await photoOutput.capturePhoto({ flashMode: 'off' }, {});
       const tempPath = await photo.saveToTemporaryFileAsync();
 
       let finalUri = `file://${tempPath}`;
 
       if (photo.orientation !== 'up') {
-        const rotationMap: Record<string, number> = {
-          left: 90,
-          down: 180,
-          right: 270,
-        };
+        const rotationMap: Record<string, number> = { left: 90, down: 180, right: 270 };
         const rotation = rotationMap[photo.orientation];
         if (rotation) {
           const manipulated = await manipulateAsync(finalUri, [{ rotate: rotation }], {
@@ -171,11 +160,7 @@ export default function KycImage() {
         }
         if (res.data) {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          toast.show({
-            type: 'success',
-            text1: 'Success',
-            text2: 'KYC Image uploaded',
-          });
+          toast.show({ type: 'success', text1: 'Success', text2: 'KYC Image uploaded' });
           updateUser({
             user: {
               ...(user.user ?? ({} as User)),
@@ -187,10 +172,11 @@ export default function KycImage() {
           });
         }
       })
-      .finally(() => {
-        setUploading(false);
-      });
+      .finally(() => setUploading(false));
   };
+
+  const frameColor = faceDetected ? FACE_DETECTED_COLOR : FRAME_IDLE_COLOR;
+  const canCapture = isCameraReady && faceDetected;
 
   return (
     <>
@@ -199,10 +185,7 @@ export default function KycImage() {
         footer={
           <View
             className="border-t p-4"
-            style={{
-              backgroundColor: colors.background,
-              borderColor: hexToRgba(colors.text, 0.2),
-            }}
+            style={{ backgroundColor: colors.background, borderColor: hexToRgba(colors.text, 0.2) }}
           >
             <Button
               disabled={!user.user?.kyc?.image?.publicUrl}
@@ -234,16 +217,17 @@ export default function KycImage() {
                       style={StyleSheet.absoluteFill}
                       device={device}
                       isActive={true}
-                      outputs={[photoOutput]}
+                      outputs={[photoOutput, faceDetectorOutput]}
                       orientationSource="device"
                       onInitialized={() => setIsCameraReady(true)}
                       onStarted={() => setIsCameraReady(true)}
                     />
-                    <CameraFrame borderColor="white" />
+                    <CameraFrame borderColor={frameColor} />
                   </View>
                 )
               )}
             </View>
+
             {kycImage ? (
               <View className="mt-8 items-center">
                 <ThemedText
@@ -254,44 +238,46 @@ export default function KycImage() {
                   Please ensure your face is fully visible and well-lit. This image will be used to
                   verify your identity against your NIN and BVN records.
                 </ThemedText>
-                <View className="max-w-[400px]  flex-row gap-4">
+                <View className="max-w-[400px] flex-row gap-4">
                   <Button
                     onPress={() => setKycImage(undefined)}
-                    style={{
-                      borderColor: hexToRgba(colors.accent, 0.5),
-                      borderWidth: 1,
-                    }}
-                    className="mt-8 flex-1"
+                    variant="outline"
+                    className="mt-8 flex-1 py-[14px]"
                   >
-                    <ThemedText style={{ color: colors.accent }}>Retake</ThemedText>
+                    <ThemedText>Retake</ThemedText>
                   </Button>
                   <Button
                     onPress={handleUploadImage}
                     disabled={!kycImage.startsWith('file')}
-                    style={{
-                      borderColor: hexToRgba(colors.primary, 0.7),
-                      borderWidth: 1,
-                    }}
-                    className="mt-8 flex-1"
+                    type="primary"
+                    className="mt-8 flex-1 py-[14px]"
                   >
-                    <ThemedText content="tinted">Confirm</ThemedText>
+                    <ThemedText content="primary">Confirm</ThemedText>
                   </Button>
                 </View>
               </View>
             ) : (
-              <View className="mt-8 items-center">
+              <View className="mt-8 items-center gap-3">
                 <ThemedText
                   type="subtitle"
                   className="max-w-[400px] text-center"
-                  style={{ color: hexToRgba(colors.text, 0.6) }}
+                  style={{ color: hexToRgba(colors.text, faceDetected ? 1 : 0.6) }}
                 >
-                  Please keep your face in center of the screen and facing forward
+                  {faceDetected
+                    ? 'Face detected — ready to capture'
+                    : 'Center your face inside the frame'}
                 </ThemedText>
+                {faceDetected && (
+                  <View style={styles.detectedBadge}>
+                    <View style={styles.detectedDot} />
+                    <ThemedText style={styles.detectedLabel}>Face locked</ThemedText>
+                  </View>
+                )}
                 <Button
                   onPress={handleCapture}
-                  disabled={!isCameraReady}
+                  disabled={!canCapture}
                   type="primary"
-                  className="mt-8 w-full max-w-[300px]"
+                  className="mt-4 w-full max-w-[300px] py-[16px]"
                 >
                   <ThemedText content="primary">Capture</ThemedText>
                 </Button>
@@ -333,4 +319,26 @@ const styles = StyleSheet.create({
   topRight: { top: 0, right: 0 },
   bottomLeft: { bottom: 0, left: 0 },
   bottomRight: { bottom: 0, right: 0 },
+  detectedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    backgroundColor: 'rgba(34,197,94,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(34,197,94,0.3)',
+  },
+  detectedDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: FACE_DETECTED_COLOR,
+  },
+  detectedLabel: {
+    fontSize: 13,
+    color: FACE_DETECTED_COLOR,
+    fontWeight: '500',
+  },
 });

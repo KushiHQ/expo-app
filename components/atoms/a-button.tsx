@@ -5,10 +5,12 @@ import React from 'react';
 import {
   ActivityIndicator,
   GestureResponderEvent,
+  Platform,
   Pressable,
   PressableProps,
   StyleProp,
   StyleSheet,
+  View,
   ViewStyle,
 } from 'react-native';
 
@@ -39,13 +41,18 @@ const Button: React.FC<Props> = ({ style, children, loading, variant, type, onPr
             ? colors.background
             : colors.text;
 
+  const isSolid = variant !== 'outline';
+  const isPrimary = type === 'primary' && isSolid;
+  const isError = type === 'error' && isSolid;
+  const showHighlight = isSolid && !!type && type !== 'text';
+
   return (
     <Pressable
       style={[
         styles.button,
         variant === 'outline'
           ? {
-              borderWidth: variant === 'outline' ? 1 : 0,
+              borderWidth: 1.5,
               borderColor:
                 type === 'primary'
                   ? colors.primary
@@ -62,34 +69,80 @@ const Button: React.FC<Props> = ({ style, children, loading, variant, type, onPr
           : type && {
               backgroundColor:
                 type === 'primary'
-                  ? colors['primary']
+                  ? colors.primary
                   : type === 'shade'
-                    ? colors['shade']
+                    ? colors.shade
                     : type === 'background'
-                      ? colors['background']
+                      ? colors.background
                       : type === 'text'
                         ? colors.text
                         : type === 'error'
                           ? colors.error
-                          : hexToRgba(colors['primary'], 0.2),
+                          : hexToRgba(colors.primary, 0.2),
             },
+        isPrimary && styles.primaryShadow,
+        isError && styles.errorShadow,
         style,
-        rest.disabled && { opacity: 0.6 },
+        rest.disabled && styles.disabled,
       ]}
       onPress={handlePress}
       {...rest}
     >
+      {showHighlight && <View style={styles.innerHighlight} pointerEvents="none" />}
       {loading ? <ActivityIndicator size="small" color={color} /> : children}
     </Pressable>
   );
 };
+
 export default Button;
 
 const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
-    borderRadius: 12,
+    padding: 13,
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  innerHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '52%',
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.09)',
+  },
+  primaryShadow: {
+    ...Platform.select({
+      ios: {
+        shadowColor: '#F59E0B',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.35,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+        shadowColor: '#F59E0B',
+      },
+    }),
+  },
+  errorShadow: {
+    ...Platform.select({
+      ios: {
+        shadowColor: '#EF4444',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.28,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+        shadowColor: '#EF4444',
+      },
+    }),
+  },
+  disabled: {
+    opacity: 0.52,
   },
 });
