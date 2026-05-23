@@ -14,6 +14,7 @@ import { stopRingtone } from '../utils/call';
 import { BackHandler, Platform } from 'react-native';
 import RNCallKeep from 'react-native-callkeep';
 import { useLockScreen } from './use-lock-screen';
+import { EventEmitter } from '../utils/event-emitter';
 
 const callerRingtone = require('@/assets/audio/caller-ringtone.mp3');
 const receiverRingtone = require('@/assets/audio/ringtone.mp3');
@@ -34,6 +35,9 @@ export const useActiveCall = () => {
   const [isRinging, setIsRinging] = useState(true);
   const [isSpeakerOn, setIsSpeakerOn] = useState(isVideoCall);
   const [, sendNotification] = useSendChatCallNotificationMutation();
+
+  const hasLeftRef = useRef(false);
+  const actionHandled = useRef(false);
 
   const [{ data: chatData }] = useHostingChatQuery({
     variables: { chatId: cast(id) },
@@ -63,6 +67,9 @@ export const useActiveCall = () => {
   const player = useAudioPlayer(initiate === 'true' ? callerRingtone : receiverRingtone);
 
   const handleLeave = useCallback(async () => {
+    if (hasLeftRef.current) return;
+    hasLeftRef.current = true;
+
     try {
       player.pause();
     } catch (e) {
@@ -83,7 +90,7 @@ export const useActiveCall = () => {
     if (isLockScreenLaunch) {
       BackHandler.exitApp();
     } else {
-      router.back();
+      try { router.back(); } catch (e) { console.warn('handleLeave navigate:', e); }
     }
   }, [call, callId, player, router, isLockScreenLaunch]);
 
@@ -115,11 +122,16 @@ export const useActiveCall = () => {
   }, [call, isVideoCall, initiate, callId]);
 
   useEffect(() => {
-    const newCall = Daily.createCallObject();
-    setCall(newCall);
-
+    let callObj: DailyCall | null = null;
+    try {
+      callObj = Daily.createCallObject();
+    } catch (e) {
+      console.warn('DailyCall create failed:', e);
+      return;
+    }
+    setCall(callObj);
     return () => {
-      newCall.destroy();
+      callObj?.destroy().catch(console.warn);
     };
   }, []);
 
@@ -183,11 +195,12 @@ export const useActiveCall = () => {
     };
 
     const handleLeft = () => {
-      setIsRinging(false);
+      if (hasLeftRef.current) return;
+      hasLeftRef.current = true;
       if (Platform.OS === 'ios') {
         try { RNCallKeep.endAllCalls(); } catch {}
       }
-      router.back();
+      try { router.back(); } catch (e) { console.warn('handleLeft navigate:', e); }
     };
 
     call.on('joined-meeting', updateParticipants);
@@ -208,7 +221,13 @@ export const useActiveCall = () => {
     };
   }, [call, id, router, isRinging]);
 
-  const actionHandled = useRef(false);
+  // Dismiss call screen when the caller cancels or the remote party declines
+  useEffect(() => {
+    const onCallCancelled = () => { handleLeave(); };
+    EventEmitter.on('call_cancelled', onCallCancelled);
+    return () => { EventEmitter.off('call_cancelled', onCallCancelled); };
+  }, [handleLeave]);
+
   useEffect(() => {
     if (!call || actionHandled.current) return;
 
@@ -229,6 +248,12 @@ export const useActiveCall = () => {
           await handleJoin();
         } else if (accept === 'false') {
           actionHandled.current = true;
+          // Notify the caller immediately so they don't wait for the 45s timeout
+          await sendNotification({
+            chatId: cast(id),
+            callId: String(callId),
+            callType: CallType.Decline,
+          }).catch((err) => console.warn('Failed to send decline signal', err));
           await handleLeave();
         } else {
           if (isVideoCall) {

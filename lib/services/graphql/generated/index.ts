@@ -274,6 +274,7 @@ export type BoolResponse = {
 
 export enum CallType {
   Cancel = 'CANCEL',
+  Decline = 'DECLINE',
   Video = 'VIDEO',
   Voice = 'VOICE'
 }

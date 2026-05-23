@@ -283,8 +283,13 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 		const unsubscribeForeground = onMessage(
 			messagingInstance,
 			async (remoteMessage) => {
-				if (remoteMessage.data?.intent === "cancel_call") {
+				if (
+					remoteMessage.data?.intent === "cancel_call" ||
+					remoteMessage.data?.intent === "decline_call"
+				) {
 					await handleIncomingCall(remoteMessage);
+					// Dismiss the call screen if it's open (caller cancelled or recipient declined)
+					EventEmitter.emit("call_cancelled");
 					return;
 				}
 

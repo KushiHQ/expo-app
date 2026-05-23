@@ -86,7 +86,7 @@ export const handleIncomingCall = async (remoteMessage: any) => {
     });
 
     await playRingtone();
-  } else if (data?.intent === 'cancel_call') {
+  } else if (data?.intent === 'cancel_call' || data?.intent === 'decline_call') {
     await stopRingtone();
     await notifee.cancelNotification(data.chatId);
     await notifee.stopForegroundService();
