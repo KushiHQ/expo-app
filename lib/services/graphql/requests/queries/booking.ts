@@ -47,6 +47,12 @@ export const CALCULATE_HOSTING_FEE = gql`
       stampDuty
       guestServiceCharge
       hostServiceCharge
+      lineItems {
+        key
+        label
+        description
+        amount
+      }
     }
   }
 `;
@@ -123,6 +129,7 @@ export const BOOKINGS_QUERY = gql`
   query Bookings($filter: BookingFilterInput, $pagination: PaginationInput) {
     bookings(filter: $filter, pagination: $pagination) {
       id
+      bookingReference
       hosting {
         id
         coverImage {
@@ -143,6 +150,7 @@ export const BOOKINGS_QUERY = gql`
       paymentStatus
       transaction {
         id
+        reference
       }
       createdAt
       commencementDate
@@ -154,6 +162,12 @@ export const BOOKINGS_QUERY = gql`
       legalFee
       stampDuty
       serviceCharge
+      feeLineItems {
+        key
+        label
+        description
+        amount
+      }
     }
   }
 `;
@@ -162,6 +176,7 @@ export const BOOKING_QUERY = gql`
   query Booking($bookingId: String!) {
     booking(bookingId: $bookingId) {
       id
+      bookingReference
       hosting {
         id
         coverImage {
@@ -188,6 +203,7 @@ export const BOOKING_QUERY = gql`
       transaction {
         id
         status
+        reference
       }
       createdAt
       commencementDate
@@ -232,6 +248,12 @@ export const BOOKING_QUERY = gql`
       serviceCharge
       legalFee
       stampDuty
+      feeLineItems {
+        key
+        label
+        description
+        amount
+      }
     }
   }
 `;

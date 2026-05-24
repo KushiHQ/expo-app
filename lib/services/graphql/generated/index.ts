@@ -147,6 +147,7 @@ export type Booking = {
   __typename?: 'Booking';
   amount: Scalars['Decimal']['output'];
   bookingApplication: BookingApplication;
+  bookingReference: Scalars['String']['output'];
   cautionCustodyFee?: Maybe<Scalars['Decimal']['output']>;
   cautionFee?: Maybe<Scalars['Decimal']['output']>;
   commencementDate?: Maybe<Scalars['String']['output']>;
@@ -156,6 +157,7 @@ export type Booking = {
   email: Scalars['String']['output'];
   expiresAt?: Maybe<Scalars['String']['output']>;
   expiryDate?: Maybe<Scalars['String']['output']>;
+  feeLineItems: Array<FeeLineItem>;
   fullName: Scalars['String']['output'];
   guest: Guest;
   guestServiceCharge: Scalars['Decimal']['output'];
@@ -198,10 +200,12 @@ export type BookingApplication = {
 
 export type BookingApplicationFilter = {
   authGuest?: InputMaybe<Scalars['Boolean']['input']>;
+  authHost?: InputMaybe<Scalars['Boolean']['input']>;
   commencementDate?: InputMaybe<Scalars['String']['input']>;
   excludeStatuses?: InputMaybe<Array<BookingApplicationStatus>>;
   guestEmploymentStatus?: InputMaybe<GuestFormEmploymentStatus>;
   guestId?: InputMaybe<Scalars['String']['input']>;
+  hostId?: InputMaybe<Scalars['String']['input']>;
   hostingId?: InputMaybe<Scalars['String']['input']>;
   incomeRanges?: InputMaybe<GuestFormIncomeRange>;
   intervalMultiplier?: InputMaybe<Scalars['Int']['input']>;
@@ -342,6 +346,14 @@ export type CompletePasswordChangeInput = {
   otp: Scalars['String']['input'];
   password1: Scalars['String']['input'];
   password2: Scalars['String']['input'];
+};
+
+export type FeeLineItem = {
+  __typename?: 'FeeLineItem';
+  amount: Scalars['Decimal']['output'];
+  description: Scalars['String']['output'];
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
 };
 
 export enum GoogleAuthTokenType {
@@ -505,7 +517,7 @@ export type HostResponse = {
 export type Hosting = {
   __typename?: 'Hosting';
   averageRating?: Maybe<Scalars['Float']['output']>;
-  bookingApplicationsCount?: Maybe<Scalars['Int']['output']>;
+  bookingApplicationsCount: Scalars['Int']['output'];
   categories?: Maybe<Array<Scalars['String']['output']>>;
   cautionFee?: Maybe<Scalars['Decimal']['output']>;
   city?: Maybe<Scalars['String']['output']>;
@@ -614,6 +626,7 @@ export type HostingFees = {
   guestServiceCharge: Scalars['Decimal']['output'];
   hostServiceCharge: Scalars['Decimal']['output'];
   legalFee: Scalars['Decimal']['output'];
+  lineItems: Array<FeeLineItem>;
   serviceCharge: Scalars['Decimal']['output'];
   stampDuty: Scalars['Decimal']['output'];
   totalPayableAmount: Scalars['Decimal']['output'];
@@ -889,6 +902,7 @@ export type MessageResponse = {
 
 export type Mutations = {
   __typename?: 'Mutations';
+  acceptBookingApplication: BookingApplicationResponse;
   /** Mark an admin-approved claim as Released (triggers payout logic externally). */
   adminReleaseCautionClaim: CautionClaimResponse;
   /** Approve or decline a disputed caution claim after mediation. */
@@ -898,6 +912,7 @@ export type Mutations = {
   adminUpdateFeeConfig: AdminFeeConfigResponse;
   appleLogin: AuthTokenResponse;
   appleSignUp: AuthTokenResponse;
+  cancelBooking: MessageResponse;
   cancelBookingApplication: MessageResponse;
   clearChatUrnreadMessages: MessageResponse;
   completeBookingApplicationSubmission: BookingApplicationResponse;
@@ -921,8 +936,11 @@ export type Mutations = {
   googleLogin: AuthTokenResponse;
   googleSignUp: AuthTokenResponse;
   hostUpdateBookingApplicationStatus: BookingApplicationResponse;
+  initiateAcceptBookingApplication: MessageResponse;
   initiateBookingApplication: BookingApplicationResponse;
   initiateBookingApplicationSubmission: MessageResponse;
+  initiateCancelBooking: MessageResponse;
+  initiateFinalizeBooking: MessageResponse;
   initiateHostingChat: HostingChat;
   initiateHostingVerification: HostingVerificationResponse;
   initiatePhoneNumberVerification: MessageResponse;
@@ -954,6 +972,12 @@ export type Mutations = {
   verifyEmail: MessageResponse;
   verifyKyc: Kyc;
   verifyTransactionByReference: TransactionResponse;
+};
+
+
+export type MutationsAcceptBookingApplicationArgs = {
+  applicationId: Scalars['String']['input'];
+  otp: Scalars['String']['input'];
 };
 
 
@@ -991,6 +1015,12 @@ export type MutationsAppleLoginArgs = {
 
 export type MutationsAppleSignUpArgs = {
   input: AppleAuthInput;
+};
+
+
+export type MutationsCancelBookingArgs = {
+  bookingId: Scalars['String']['input'];
+  otp: Scalars['String']['input'];
 };
 
 
@@ -1086,6 +1116,7 @@ export type MutationsDeleteSavedHostingArgs = {
 
 export type MutationsFinalizeBookingArgs = {
   bookingId: Scalars['String']['input'];
+  otp: Scalars['String']['input'];
 };
 
 
@@ -1106,6 +1137,11 @@ export type MutationsHostUpdateBookingApplicationStatusArgs = {
 };
 
 
+export type MutationsInitiateAcceptBookingApplicationArgs = {
+  applicationId: Scalars['String']['input'];
+};
+
+
 export type MutationsInitiateBookingApplicationArgs = {
   hostingId: Scalars['String']['input'];
 };
@@ -1113,6 +1149,16 @@ export type MutationsInitiateBookingApplicationArgs = {
 
 export type MutationsInitiateBookingApplicationSubmissionArgs = {
   applicationId: Scalars['String']['input'];
+};
+
+
+export type MutationsInitiateCancelBookingArgs = {
+  bookingId: Scalars['String']['input'];
+};
+
+
+export type MutationsInitiateFinalizeBookingArgs = {
+  bookingId: Scalars['String']['input'];
 };
 
 
@@ -1834,7 +1880,9 @@ export enum TransactionStatus {
 
 export enum TransactionType {
   BookingPayment = 'booking_payment',
-  HostBookingPayment = 'host_booking_payment'
+  GuestCancellationRefund = 'guest_cancellation_refund',
+  HostBookingPayment = 'host_booking_payment',
+  HostCancellationCompensation = 'host_cancellation_compensation'
 }
 
 export type UpdateFeeConfigInput = {
@@ -1999,8 +2047,16 @@ export type VerifyBookingPaymentMutationVariables = Exact<{
 
 export type VerifyBookingPaymentMutation = { __typename?: 'Mutations', verifyBookingPayment: { __typename?: 'BookingResponse', message: string, data?: { __typename?: 'Booking', id: string, paymentStatus: PaymentStatus } | null } };
 
+export type InitiateFinalizeBookingMutationVariables = Exact<{
+  bookingId: Scalars['String']['input'];
+}>;
+
+
+export type InitiateFinalizeBookingMutation = { __typename?: 'Mutations', initiateFinalizeBooking: { __typename?: 'MessageResponse', message: string } };
+
 export type FinalizeBookingMutationVariables = Exact<{
   bookingId: Scalars['String']['input'];
+  otp: Scalars['String']['input'];
 }>;
 
 
@@ -2027,12 +2083,42 @@ export type HostUpdateBookingApplicationStatusMutationVariables = Exact<{
 
 export type HostUpdateBookingApplicationStatusMutation = { __typename?: 'Mutations', hostUpdateBookingApplicationStatus: { __typename?: 'BookingApplicationResponse', message: string } };
 
+export type InitiateCancelBookingMutationVariables = Exact<{
+  bookingId: Scalars['String']['input'];
+}>;
+
+
+export type InitiateCancelBookingMutation = { __typename?: 'Mutations', initiateCancelBooking: { __typename?: 'MessageResponse', message: string } };
+
+export type CancelBookingMutationVariables = Exact<{
+  bookingId: Scalars['String']['input'];
+  otp: Scalars['String']['input'];
+}>;
+
+
+export type CancelBookingMutation = { __typename?: 'Mutations', cancelBooking: { __typename?: 'MessageResponse', message: string } };
+
 export type CancelBookingApplicationMutationVariables = Exact<{
   applicationId: Scalars['String']['input'];
 }>;
 
 
 export type CancelBookingApplicationMutation = { __typename?: 'Mutations', cancelBookingApplication: { __typename?: 'MessageResponse', message: string } };
+
+export type InitiateAcceptBookingApplicationMutationVariables = Exact<{
+  applicationId: Scalars['String']['input'];
+}>;
+
+
+export type InitiateAcceptBookingApplicationMutation = { __typename?: 'Mutations', initiateAcceptBookingApplication: { __typename?: 'MessageResponse', message: string } };
+
+export type AcceptBookingApplicationMutationVariables = Exact<{
+  applicationId: Scalars['String']['input'];
+  otp: Scalars['String']['input'];
+}>;
+
+
+export type AcceptBookingApplicationMutation = { __typename?: 'Mutations', acceptBookingApplication: { __typename?: 'BookingApplicationResponse', message: string, data?: { __typename?: 'BookingApplication', id: string, status: BookingApplicationStatus, statusDetails?: string | null } | null } };
 
 export type RequestCautionReleaseMutationVariables = Exact<{
   input: RequestCautionReleaseInput;
@@ -2097,7 +2183,7 @@ export type CreateOrUpdateHostingMutationVariables = Exact<{
 }>;
 
 
-export type CreateOrUpdateHostingMutation = { __typename?: 'Mutations', createOrUpdateHosting: { __typename?: 'HostingResponse', message: string, data?: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, cautionFee?: any | null, serviceCharge?: any | null, maxOccupants?: number | null, bookingApplicationsCount?: number | null, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, createdAt: string, user: { __typename?: 'User', id: string, email: string, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string } } }, coverImage?: { __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, createdAt: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null }, tenancyAgreementTemplate?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, priority: number, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, verification?: { __typename?: 'HostingVerification', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, titleType?: string | null, titleNumber?: string | null, createdAt: string, lastUpdated: string } | null } | null } };
+export type CreateOrUpdateHostingMutation = { __typename?: 'Mutations', createOrUpdateHosting: { __typename?: 'HostingResponse', message: string, data?: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, cautionFee?: any | null, serviceCharge?: any | null, maxOccupants?: number | null, bookingApplicationsCount: number, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, createdAt: string, user: { __typename?: 'User', id: string, email: string, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string } } }, coverImage?: { __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, createdAt: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null }, tenancyAgreementTemplate?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, priority: number, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, verification?: { __typename?: 'HostingVerification', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, titleType?: string | null, titleNumber?: string | null, createdAt: string, lastUpdated: string } | null } | null } };
 
 export type CreateOrUpdateHostingRoomMutationVariables = Exact<{
   input: HostingRoomInput;
@@ -2282,7 +2368,7 @@ export type CalculateHostingFeesQueryVariables = Exact<{
 }>;
 
 
-export type CalculateHostingFeesQuery = { __typename?: 'Query', calculateHostingFees: { __typename?: 'HostingFees', baseRent: any, totalPayableAmount: any, cautionFee: any, serviceCharge: any, legalFee: any, stampDuty: any, guestServiceCharge: any, hostServiceCharge: any } };
+export type CalculateHostingFeesQuery = { __typename?: 'Query', calculateHostingFees: { __typename?: 'HostingFees', baseRent: any, totalPayableAmount: any, cautionFee: any, serviceCharge: any, legalFee: any, stampDuty: any, guestServiceCharge: any, hostServiceCharge: any, lineItems: Array<{ __typename?: 'FeeLineItem', key: string, label: string, description: string, amount: any }> } };
 
 export type BookingApplicationQueryVariables = Exact<{
   bookingApplicationId: Scalars['String']['input'];
@@ -2297,14 +2383,14 @@ export type BookingsQueryVariables = Exact<{
 }>;
 
 
-export type BookingsQuery = { __typename?: 'Query', bookings: Array<{ __typename?: 'Booking', id: string, expiresAt?: string | null, paymentStatus: PaymentStatus, createdAt: string, commencementDate?: string | null, expiryDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, cautionFee?: any | null, legalFee?: any | null, stampDuty?: any | null, serviceCharge?: any | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string } | null }> };
+export type BookingsQuery = { __typename?: 'Query', bookings: Array<{ __typename?: 'Booking', id: string, bookingReference: string, expiresAt?: string | null, paymentStatus: PaymentStatus, createdAt: string, commencementDate?: string | null, expiryDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, cautionFee?: any | null, legalFee?: any | null, stampDuty?: any | null, serviceCharge?: any | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string, reference?: string | null } | null, feeLineItems: Array<{ __typename?: 'FeeLineItem', key: string, label: string, description: string, amount: any }> }> };
 
 export type BookingQueryVariables = Exact<{
   bookingId: Scalars['String']['input'];
 }>;
 
 
-export type BookingQuery = { __typename?: 'Query', booking: { __typename?: 'Booking', id: string, expiresAt?: string | null, paymentStatus: PaymentStatus, createdAt: string, commencementDate?: string | null, expiryDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, fullName: string, email: string, paymentMethod?: string | null, status?: BookingStatus | null, cautionFee?: any | null, serviceCharge?: any | null, legalFee?: any | null, stampDuty?: any | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, propertyType?: string | null, street?: string | null, landmarks?: string | null, averageRating?: number | null, totalRatings?: number | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string, status: TransactionStatus } | null, tenancyAgreementAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null, userReview?: { __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, checkIn?: number | null, accuracy?: number | null, cleanliness?: number | null, communication?: number | null, value?: number | null, location?: number | null, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } } | null, bookingApplication: { __typename?: 'BookingApplication', id: string, intervalMultiplier?: number | null, commencementDate?: string | null } } };
+export type BookingQuery = { __typename?: 'Query', booking: { __typename?: 'Booking', id: string, bookingReference: string, expiresAt?: string | null, paymentStatus: PaymentStatus, createdAt: string, commencementDate?: string | null, expiryDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, fullName: string, email: string, paymentMethod?: string | null, status?: BookingStatus | null, cautionFee?: any | null, serviceCharge?: any | null, legalFee?: any | null, stampDuty?: any | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, propertyType?: string | null, street?: string | null, landmarks?: string | null, averageRating?: number | null, totalRatings?: number | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string, status: TransactionStatus, reference?: string | null } | null, tenancyAgreementAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null, userReview?: { __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, checkIn?: number | null, accuracy?: number | null, cleanliness?: number | null, communication?: number | null, value?: number | null, location?: number | null, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } } | null, bookingApplication: { __typename?: 'BookingApplication', id: string, intervalMultiplier?: number | null, commencementDate?: string | null }, feeLineItems: Array<{ __typename?: 'FeeLineItem', key: string, label: string, description: string, amount: any }> } };
 
 export type GuestBookingTenancyAgreementPreviewQueryVariables = Exact<{
   bookingId: Scalars['String']['input'];
@@ -2368,7 +2454,7 @@ export type HostingQueryVariables = Exact<{
 }>;
 
 
-export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, cautionFee?: any | null, serviceCharge?: any | null, maxOccupants?: number | null, bookingApplicationsCount?: number | null, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, createdAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, phoneNumber?: string | null, kyc: { __typename?: 'Kyc', idDocumentType?: string | null, youverifyReferenceId?: string | null }, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string, image?: { __typename?: 'Asset', publicUrl: string } | null } }, signature?: { __typename?: 'Asset', id: string, publicUrl: string } | null }, coverImage?: { __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, createdAt: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null, image?: { __typename?: 'Asset', publicUrl: string } | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null }, tenancyAgreementTemplate?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, priority: number, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, verification?: { __typename?: 'HostingVerification', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, titleType?: string | null, titleNumber?: string | null, createdAt: string, lastUpdated: string } | null } };
+export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, cautionFee?: any | null, serviceCharge?: any | null, maxOccupants?: number | null, bookingApplicationsCount: number, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, createdAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, phoneNumber?: string | null, kyc: { __typename?: 'Kyc', idDocumentType?: string | null, youverifyReferenceId?: string | null }, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string, image?: { __typename?: 'Asset', publicUrl: string } | null } }, signature?: { __typename?: 'Asset', id: string, publicUrl: string } | null }, coverImage?: { __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, createdAt: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null, image?: { __typename?: 'Asset', publicUrl: string } | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null }, tenancyAgreementTemplate?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, priority: number, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, verification?: { __typename?: 'HostingVerification', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, titleType?: string | null, titleNumber?: string | null, createdAt: string, lastUpdated: string } | null } };
 
 export type HostingsQueryVariables = Exact<{
   filters?: InputMaybe<HostingFilterInput>;
@@ -2407,7 +2493,7 @@ export type HostListingsQueryVariables = Exact<{
 }>;
 
 
-export type HostListingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, title?: string | null, state?: string | null, city?: string | null, publishStatus?: PublishStatus | null, bookingApplicationsCount?: number | null, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, originalFilename?: string | null } } | null }> };
+export type HostListingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, title?: string | null, state?: string | null, city?: string | null, publishStatus?: PublishStatus | null, bookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, originalFilename?: string | null } } | null }> };
 
 export type NotificationsQueryVariables = Exact<{
   filter?: InputMaybe<NotificationsFilterInput>;
@@ -2472,12 +2558,12 @@ export type RevenueGrowthQuery = { __typename?: 'Query', hostAnalytics: { __type
 export type AuthHostQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type AuthHostQuery = { __typename?: 'Query', authHost: { __typename?: 'Host', id: string, createdAt: string, lastUpdated: string, signature?: { __typename?: 'Asset', id: string, publicUrl: string } | null } };
+export type AuthHostQuery = { __typename?: 'Query', authHost: { __typename?: 'Host', id: string, createdAt: string, lastUpdated: string, signature?: { __typename?: 'Asset', id: string, secureUrl: string, publicUrl: string } | null } };
 
 export type AuthGuestQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type AuthGuestQuery = { __typename?: 'Query', authGuest: { __typename?: 'Guest', id: string, createdAt: string, lastUpdated: string, signature?: { __typename?: 'Asset', id: string, publicUrl: string } | null } };
+export type AuthGuestQuery = { __typename?: 'Query', authGuest: { __typename?: 'Guest', id: string, createdAt: string, lastUpdated: string, signature?: { __typename?: 'Asset', id: string, secureUrl: string, publicUrl: string } | null } };
 
 export type UserPhoneNumersQueryVariables = Exact<{
   pagination?: InputMaybe<PaginationInput>;
@@ -3057,9 +3143,20 @@ export const VerifyBookingPaymentDocument = gql`
 export function useVerifyBookingPaymentMutation() {
   return Urql.useMutation<VerifyBookingPaymentMutation, VerifyBookingPaymentMutationVariables>(VerifyBookingPaymentDocument);
 };
+export const InitiateFinalizeBookingDocument = gql`
+    mutation InitiateFinalizeBooking($bookingId: String!) {
+  initiateFinalizeBooking(bookingId: $bookingId) {
+    message
+  }
+}
+    `;
+
+export function useInitiateFinalizeBookingMutation() {
+  return Urql.useMutation<InitiateFinalizeBookingMutation, InitiateFinalizeBookingMutationVariables>(InitiateFinalizeBookingDocument);
+};
 export const FinalizeBookingDocument = gql`
-    mutation FinalizeBooking($bookingId: String!) {
-  finalizeBooking(bookingId: $bookingId) {
+    mutation FinalizeBooking($bookingId: String!, $otp: String!) {
+  finalizeBooking(bookingId: $bookingId, otp: $otp) {
     id
   }
 }
@@ -3101,6 +3198,28 @@ export const HostUpdateBookingApplicationStatusDocument = gql`
 export function useHostUpdateBookingApplicationStatusMutation() {
   return Urql.useMutation<HostUpdateBookingApplicationStatusMutation, HostUpdateBookingApplicationStatusMutationVariables>(HostUpdateBookingApplicationStatusDocument);
 };
+export const InitiateCancelBookingDocument = gql`
+    mutation InitiateCancelBooking($bookingId: String!) {
+  initiateCancelBooking(bookingId: $bookingId) {
+    message
+  }
+}
+    `;
+
+export function useInitiateCancelBookingMutation() {
+  return Urql.useMutation<InitiateCancelBookingMutation, InitiateCancelBookingMutationVariables>(InitiateCancelBookingDocument);
+};
+export const CancelBookingDocument = gql`
+    mutation CancelBooking($bookingId: String!, $otp: String!) {
+  cancelBooking(bookingId: $bookingId, otp: $otp) {
+    message
+  }
+}
+    `;
+
+export function useCancelBookingMutation() {
+  return Urql.useMutation<CancelBookingMutation, CancelBookingMutationVariables>(CancelBookingDocument);
+};
 export const CancelBookingApplicationDocument = gql`
     mutation cancelBookingApplication($applicationId: String!) {
   cancelBookingApplication(applicationId: $applicationId) {
@@ -3111,6 +3230,33 @@ export const CancelBookingApplicationDocument = gql`
 
 export function useCancelBookingApplicationMutation() {
   return Urql.useMutation<CancelBookingApplicationMutation, CancelBookingApplicationMutationVariables>(CancelBookingApplicationDocument);
+};
+export const InitiateAcceptBookingApplicationDocument = gql`
+    mutation InitiateAcceptBookingApplication($applicationId: String!) {
+  initiateAcceptBookingApplication(applicationId: $applicationId) {
+    message
+  }
+}
+    `;
+
+export function useInitiateAcceptBookingApplicationMutation() {
+  return Urql.useMutation<InitiateAcceptBookingApplicationMutation, InitiateAcceptBookingApplicationMutationVariables>(InitiateAcceptBookingApplicationDocument);
+};
+export const AcceptBookingApplicationDocument = gql`
+    mutation AcceptBookingApplication($applicationId: String!, $otp: String!) {
+  acceptBookingApplication(applicationId: $applicationId, otp: $otp) {
+    message
+    data {
+      id
+      status
+      statusDetails
+    }
+  }
+}
+    `;
+
+export function useAcceptBookingApplicationMutation() {
+  return Urql.useMutation<AcceptBookingApplicationMutation, AcceptBookingApplicationMutationVariables>(AcceptBookingApplicationDocument);
 };
 export const RequestCautionReleaseDocument = gql`
     mutation RequestCautionRelease($input: RequestCautionReleaseInput!) {
@@ -3840,6 +3986,12 @@ export const CalculateHostingFeesDocument = gql`
     stampDuty
     guestServiceCharge
     hostServiceCharge
+    lineItems {
+      key
+      label
+      description
+      amount
+    }
   }
 }
     `;
@@ -3922,6 +4074,7 @@ export const BookingsDocument = gql`
     query Bookings($filter: BookingFilterInput, $pagination: PaginationInput) {
   bookings(filter: $filter, pagination: $pagination) {
     id
+    bookingReference
     hosting {
       id
       coverImage {
@@ -3942,6 +4095,7 @@ export const BookingsDocument = gql`
     paymentStatus
     transaction {
       id
+      reference
     }
     createdAt
     commencementDate
@@ -3953,6 +4107,12 @@ export const BookingsDocument = gql`
     legalFee
     stampDuty
     serviceCharge
+    feeLineItems {
+      key
+      label
+      description
+      amount
+    }
   }
 }
     `;
@@ -3964,6 +4124,7 @@ export const BookingDocument = gql`
     query Booking($bookingId: String!) {
   booking(bookingId: $bookingId) {
     id
+    bookingReference
     hosting {
       id
       coverImage {
@@ -3990,6 +4151,7 @@ export const BookingDocument = gql`
     transaction {
       id
       status
+      reference
     }
     createdAt
     commencementDate
@@ -4034,6 +4196,12 @@ export const BookingDocument = gql`
     serviceCharge
     legalFee
     stampDuty
+    feeLineItems {
+      key
+      label
+      description
+      amount
+    }
   }
 }
     `;
@@ -4830,6 +4998,7 @@ export const AuthHostDocument = gql`
     lastUpdated
     signature {
       id
+      secureUrl
       publicUrl
     }
   }
@@ -4847,6 +5016,7 @@ export const AuthGuestDocument = gql`
     lastUpdated
     signature {
       id
+      secureUrl
       publicUrl
     }
   }

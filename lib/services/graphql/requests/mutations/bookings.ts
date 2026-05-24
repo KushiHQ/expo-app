@@ -122,9 +122,17 @@ export const VERIFY_BOOKING_PAYMENT = gql`
   }
 `;
 
+export const INITIATE_FINALIZE_BOOKING = gql`
+  mutation InitiateFinalizeBooking($bookingId: String!) {
+    initiateFinalizeBooking(bookingId: $bookingId) {
+      message
+    }
+  }
+`;
+
 export const FINALIZE_BOOKING = gql`
-  mutation FinalizeBooking($bookingId: String!) {
-    finalizeBooking(bookingId: $bookingId) {
+  mutation FinalizeBooking($bookingId: String!, $otp: String!) {
+    finalizeBooking(bookingId: $bookingId, otp: $otp) {
       id
     }
   }
@@ -154,10 +162,47 @@ export const HOST_UPDATE_BOOKING_APPLICATION_STATUS = gql`
   }
 `;
 
+export const INITIATE_CANCEL_BOOKING = gql`
+  mutation InitiateCancelBooking($bookingId: String!) {
+    initiateCancelBooking(bookingId: $bookingId) {
+      message
+    }
+  }
+`;
+
+export const CANCEL_BOOKING = gql`
+  mutation CancelBooking($bookingId: String!, $otp: String!) {
+    cancelBooking(bookingId: $bookingId, otp: $otp) {
+      message
+    }
+  }
+`;
+
 export const CANCEL_BOOKING_APPLICATION = gql`
   mutation cancelBookingApplication($applicationId: String!) {
     cancelBookingApplication(applicationId: $applicationId) {
       message
+    }
+  }
+`;
+
+export const INITIATE_ACCEPT_BOOKING_APPLICATION = gql`
+  mutation InitiateAcceptBookingApplication($applicationId: String!) {
+    initiateAcceptBookingApplication(applicationId: $applicationId) {
+      message
+    }
+  }
+`;
+
+export const ACCEPT_BOOKING_APPLICATION = gql`
+  mutation AcceptBookingApplication($applicationId: String!, $otp: String!) {
+    acceptBookingApplication(applicationId: $applicationId, otp: $otp) {
+      message
+      data {
+        id
+        status
+        statusDetails
+      }
     }
   }
 `;

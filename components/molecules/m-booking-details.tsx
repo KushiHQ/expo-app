@@ -80,16 +80,20 @@ const BarcodeSection: React.FC<SubProps> = ({ booking, printing }) => {
           width={400}
           height={100}
           format="CODE128"
-          value={booking.transaction?.id ?? ''}
+          value={booking.transaction?.reference ?? booking.transaction?.id ?? ''}
         />
         <View className="flex-row items-center justify-between p-2">
-          <PrintableLabel printing={printing}>Transaction ID</PrintableLabel>
+          <PrintableLabel printing={printing}>Transaction Ref</PrintableLabel>
           <View className="flex-row items-center gap-2">
             <PrintableText printing={printing} style={{ fontSize: 16 }}>
-              {booking.transaction?.id ?? ''}
+              {booking.transaction?.reference ?? booking.transaction?.id ?? ''}
             </PrintableText>
             {!printing && (
-              <CopyButton text={booking.transaction?.id ?? ''} size={18} color={colors.primary} />
+              <CopyButton
+                text={booking.transaction?.reference ?? booking.transaction?.id ?? ''}
+                size={18}
+                color={colors.primary}
+              />
             )}
           </View>
         </View>
@@ -137,6 +141,7 @@ const DateAndDurationSection: React.FC<SubProps> = ({ booking, printing }) => {
 
 const FeesSection: React.FC<SubProps> = ({ booking, printing }) => {
   const colors = useThemeColors();
+  const total = Number(booking.amount ?? '0') + Number(booking.guestServiceCharge ?? '0');
   return (
     <View
       style={{
@@ -144,72 +149,18 @@ const FeesSection: React.FC<SubProps> = ({ booking, printing }) => {
       }}
       className="mt-4 gap-4 rounded-xl border p-4"
     >
-      <View className="flex-row items-center justify-between">
-        <PrintableLabel printing={printing}>Amount</PrintableLabel>
-        <PrintableText printing={printing}>
-          ₦{Number(booking.amount ?? '0').toLocaleString()}
-        </PrintableText>
-      </View>
-      <View
-        className="flex-row items-center justify-between border-b pb-4"
-        style={{ borderColor: hexToRgba(colors.text, 0.1) }}
-      >
-        <PrintableLabel printing={printing}>Base Rent</PrintableLabel>
-        <PrintableText printing={printing}>
-          ₦
-          {(
-            booking.amount -
-            Number(booking.cautionFee ?? '0') -
-            Number(booking.legalFee ?? '0') -
-            Number(booking.guestServiceCharge ?? '0') -
-            Number(booking.serviceCharge ?? '0')
-          ).toLocaleString()}
-        </PrintableText>
-      </View>
-      {booking.cautionFee && (
+      {booking.feeLineItems?.map((item, index) => (
         <View
+          key={item.key}
           className="flex-row items-center justify-between border-b pb-4"
-          style={{ borderColor: hexToRgba(colors.text, 0.1) }}
+          style={{ borderColor: hexToRgba(printing ? '#000000' : colors.text, 0.1) }}
         >
-          <PrintableLabel printing={printing}>Caution Fee</PrintableLabel>
+          <PrintableLabel printing={printing}>{item.label}</PrintableLabel>
           <PrintableText printing={printing}>
-            ₦{Number(booking.cautionFee ?? '0').toLocaleString()}
+            ₦{Number(item.amount).toLocaleString()}
           </PrintableText>
         </View>
-      )}
-      {booking.serviceCharge && (
-        <View
-          className="flex-row items-center justify-between border-b pb-4"
-          style={{ borderColor: hexToRgba(colors.text, 0.1) }}
-        >
-          <PrintableLabel printing={printing}>Service Fee</PrintableLabel>
-          <PrintableText printing={printing}>
-            ₦{Number(booking.serviceCharge ?? '0').toLocaleString()}
-          </PrintableText>
-        </View>
-      )}
-      {booking.legalFee && (
-        <View
-          className="flex-row items-center justify-between border-b pb-4"
-          style={{ borderColor: hexToRgba(colors.text, 0.1) }}
-        >
-          <PrintableLabel printing={printing}>Legal Fee</PrintableLabel>
-          <PrintableText printing={printing}>
-            ₦{Number(booking.legalFee ?? '0').toLocaleString()}
-          </PrintableText>
-        </View>
-      )}
-      {booking.guestServiceCharge && (
-        <View
-          className="flex-row items-center justify-between border-b pb-4"
-          style={{ borderColor: hexToRgba(colors.text, 0.1) }}
-        >
-          <PrintableLabel printing={printing}>Platform Fee</PrintableLabel>
-          <PrintableText printing={printing}>
-            ₦{Number(booking.guestServiceCharge ?? '0').toLocaleString()}
-          </PrintableText>
-        </View>
-      )}
+      ))}
       <View className="flex-row items-center justify-between">
         <PrintableLabel printing={printing} style={{ fontSize: 16 }}>
           Total
@@ -221,10 +172,7 @@ const FeesSection: React.FC<SubProps> = ({ booking, printing }) => {
             color: colors.primary,
           }}
         >
-          ₦
-          {(
-            Number(booking.amount ?? '0') + Number(booking.guestServiceCharge ?? '0')
-          ).toLocaleString()}
+          ₦{total.toLocaleString()}
         </ThemedText>
       </View>
     </View>
