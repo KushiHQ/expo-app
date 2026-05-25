@@ -160,7 +160,11 @@ export default function KycImage() {
       setKycImage(finalUri);
     } catch (error) {
       console.error('Failed to capture photo:', error);
-      toast.show({ type: 'error', text1: 'Error', text2: 'Failed to capture photo. Please try again.' });
+      toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to capture photo. Please try again.',
+      });
     }
   };
 
