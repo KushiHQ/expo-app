@@ -78,6 +78,15 @@ jobs:
         env:
           DEBUG: expo:*
 
+      - name: Extract build number
+        run: |
+          IPA_TMP=$(mktemp -d)
+          unzip -q "$IPA_PATH" -d "$IPA_TMP"
+          PLIST=$(find "$IPA_TMP/Payload" -maxdepth 2 -name "Info.plist" | head -1)
+          BUILD_NUMBER=$(plutil -extract CFBundleVersion raw "$PLIST" 2>/dev/null | tr -d '\n' || echo "unknown")
+          rm -rf "$IPA_TMP"
+          echo "BUILD_NUMBER=${BUILD_NUMBER:-unknown}" >> "$GITHUB_ENV"
+
       - name: Submit to App Store
         timeout-minutes: 5
         continue-on-error: true
@@ -94,6 +103,7 @@ jobs:
           BRANCH: ${{ github.ref_name }}
           COMMIT_MSG: ${{ github.event.head_commit.message }}
           ACTOR: ${{ github.actor }}
+          BUILD_NUMBER: ${{ env.BUILD_NUMBER }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
@@ -110,11 +120,13 @@ jobs:
             --arg branch "$BRANCH" \
             --arg commit "$COMMIT_MSG" \
             --arg actor "$ACTOR" \
+            --arg build "$BUILD_NUMBER" \
             --arg run_url "$RUN_URL" \
             '{embeds:[{title:$title,color:$color,fields:[
               {name:"Branch",value:$branch,inline:true},
               {name:"Commit",value:$commit,inline:true},
               {name:"Actor",value:$actor,inline:true},
+              {name:"Build",value:$build,inline:true},
               {name:"Run",value:"[\("View logs")](\($run_url))",inline:true}
             ]}]}' \
           | curl -sSf -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK_URL"

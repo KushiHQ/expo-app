@@ -67,6 +67,11 @@ jobs:
           echo "AAB_PATH=$AAB_PATH" >> "$GITHUB_ENV"
           echo "✅ Built AAB: $AAB_PATH"
 
+      - name: Extract build number
+        run: |
+          BUILD_NUMBER=$(grep -oE 'versionCode from [0-9]+ to ([0-9]+)' /tmp/eas-output.txt | grep -oE '[0-9]+$' | tail -1)
+          echo "BUILD_NUMBER=${BUILD_NUMBER:-unknown}" >> "$GITHUB_ENV"
+
       - name: Decode Google Play key
         run: echo "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_BASE64 }}" | base64 --decode > google-play-key.json
 
@@ -80,6 +85,7 @@ jobs:
           BRANCH: ${{ github.ref_name }}
           COMMIT_MSG: ${{ github.event.head_commit.message }}
           ACTOR: ${{ github.actor }}
+          BUILD_NUMBER: ${{ env.BUILD_NUMBER }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
@@ -96,11 +102,13 @@ jobs:
             --arg branch "$BRANCH" \
             --arg commit "$COMMIT_MSG" \
             --arg actor "$ACTOR" \
+            --arg build "$BUILD_NUMBER" \
             --arg run_url "$RUN_URL" \
             '{embeds:[{title:$title,color:$color,fields:[
               {name:"Branch",value:$branch,inline:true},
               {name:"Commit",value:$commit,inline:true},
               {name:"Actor",value:$actor,inline:true},
+              {name:"Build",value:$build,inline:true},
               {name:"Run",value:"[\("View logs")](\($run_url))",inline:true}
             ]}]}' \
           | curl -sSf -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK_URL"
