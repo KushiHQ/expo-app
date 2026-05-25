@@ -1,27 +1,32 @@
-import ThemedText from '@/components/atoms/a-themed-text';
-import DetailsLayout from '@/components/layouts/details';
-import HostingStepper from '@/components/molecules/m-hosting-stepper';
-import { Fonts } from '@/lib/constants/theme';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { hexToRgba } from '@/lib/utils/colors';
-import React from 'react';
-import { RefreshControl, View, FlatList, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import { CircleQuestionMark } from 'lucide-react-native';
-import { PublishStatus } from '@/lib/services/graphql/generated';
-import LoadingModal from '@/components/atoms/a-loading-modal';
-import SignaturePad from '@/components/molecules/m-signature-pad';
-import Collapsible from '@/components/molecules/m-collapsible';
-import BottomSheet from '@/components/atoms/a-bottom-sheet';
-import Button from '@/components/atoms/a-button';
-import { FluentTextBulletListSquareEdit20Regular } from '@/components/icons/i-edit';
-import Skeleton from '@/components/atoms/a-skeleton';
-import TenancyAgreementVariableText from '@/components/molecules/m-tenancy-aggreement-variable-text';
-
-import { useTenancyTermsForm } from '@/lib/hooks/forms/use-tenancy-terms-form';
-import { subClauseConditionMet } from '@/lib/utils/hosting/tenancyAgreement';
-import MemoizedSubClause from '@/components/organisms/o-memoised-sub-clause';
-import { MemoizedEditSection } from '@/components/organisms/o-memoised-edit-sub-clause';
+import ThemedText from "@/components/atoms/a-themed-text";
+import DetailsLayout from "@/components/layouts/details";
+import HostingStepper from "@/components/molecules/m-hosting-stepper";
+import SectionCard from "@/components/molecules/m-section-card";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { hexToRgba } from "@/lib/utils/colors";
+import React from "react";
+import {
+  RefreshControl,
+  View,
+  FlatList,
+  ActivityIndicator,
+} from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { PublishStatus } from "@/lib/services/graphql/generated";
+import LoadingModal from "@/components/atoms/a-loading-modal";
+import SignaturePad from "@/components/molecules/m-signature-pad";
+import Collapsible from "@/components/molecules/m-collapsible";
+import BottomSheet from "@/components/atoms/a-bottom-sheet";
+import Button from "@/components/atoms/a-button";
+import { FluentTextBulletListSquareEdit20Regular } from "@/components/icons/i-edit";
+import Skeleton from "@/components/atoms/a-skeleton";
+import TenancyAgreementVariableText from "@/components/molecules/m-tenancy-aggreement-variable-text";
+import { useTenancyTermsForm } from "@/lib/hooks/forms/use-tenancy-terms-form";
+import { subClauseConditionMet } from "@/lib/utils/hosting/tenancyAgreement";
+import MemoizedSubClause from "@/components/organisms/o-memoised-sub-clause";
+import { MemoizedEditSection } from "@/components/organisms/o-memoised-edit-sub-clause";
+import { FileText, PenLine } from "lucide-react-native";
+import { Fonts } from "@/lib/constants/theme";
 
 export default function NewHostingStep7() {
   const colors = useThemeColors();
@@ -68,73 +73,95 @@ export default function NewHostingStep7() {
             published={hosting?.publishStatus === PublishStatus.Live}
             loading={mutating}
             disabled={
-              !input.tenancyAgreementTemplate || !hostQueryData?.authHost.signature?.publicUrl
+              !input.tenancyAgreementTemplate ||
+              !hostQueryData?.authHost.signature?.publicUrl
             }
             step={7}
           />
         }
       >
-        <View className="mt-2 gap-4">
-          <ThemedText style={{ fontFamily: Fonts.medium }}>{'Tenancy Terms & Rules'}</ThemedText>
-          <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
-            <CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
-            {'  '}
-            Select the restrictions, rules, and clauses that apply to your property. This
-            information will be automatically included in the final digital lease signed by your
-            tenant.
-          </ThemedText>
-          <View className="gap-2">
-            {templateFetching ||
-              (fetchingHosting && (
-                <View className="gap-3">
-                  {Array.from({ length: 7 }).map((_, index) => (
-                    <Skeleton key={index} style={{ height: 50, borderRadius: 12 }} />
-                  ))}
-                </View>
-              ))}
-            <View>
-              {hosting &&
-                input.tenancyAgreementTemplate?.sections.map((section, sIdx) => (
-                  <Collapsible
-                    title={section.title}
-                    description={section.description}
-                    key={section.id}
-                  >
-                    <View className="mt-4">
-                      {section.preamble && (
-                        <TenancyAgreementVariableText hosting={hosting} text={section.preamble} />
-                      )}
-                    </View>
-                    <View className="mt-4">
-                      {section.subClauses
-                        .filter((clause) => subClauseConditionMet(clause.id, hosting))
-                        .map((clause, cIdx) => (
-                          <MemoizedSubClause
-                            key={clause.id}
-                            clause={clause}
-                            sectionIndex={sIdx}
-                            clauseIndex={cIdx}
-                            hosting={hosting}
-                            onUpdateVariable={handleUpdateVariable}
-                          />
-                        ))}
-                    </View>
-                  </Collapsible>
+        <View style={{ gap: 20, paddingBottom: 24 }}>
+          <SectionCard
+            icon={<FileText size={16} color={colors.primary} />}
+            title="Agreement Clauses"
+            subtitle="Select the rules and restrictions that apply to your property"
+          >
+            {(templateFetching || fetchingHosting) && (
+              <View style={{ gap: 10 }}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} style={{ height: 50, borderRadius: 12 }} />
                 ))}
-            </View>
-            <View className="mt-4">
-              <Button type="text" className="self-end" onPress={() => setEditOpen(true)}>
-                <View className="flex-row items-center gap-2">
-                  <FluentTextBulletListSquareEdit20Regular color={colors.background} size={28} />
-                </View>
-              </Button>
-              <SignaturePad
-                existingUrl={hostQueryData?.authHost.signature?.secureUrl}
-                onSave={handleHostSignatureSave}
-                uploading={loading}
-              />
-            </View>
-          </View>
+              </View>
+            )}
+            {hosting &&
+              input.tenancyAgreementTemplate?.sections.map((section, sIdx) => (
+                <Collapsible
+                  title={section.title}
+                  description={section.description}
+                  key={section.id}
+                >
+                  <View style={{ marginTop: 12 }}>
+                    {section.preamble && (
+                      <TenancyAgreementVariableText
+                        hosting={hosting}
+                        text={section.preamble}
+                      />
+                    )}
+                  </View>
+                  <View style={{ marginTop: 12 }}>
+                    {section.subClauses
+                      .filter((clause) =>
+                        subClauseConditionMet(clause.id, hosting),
+                      )
+                      .map((clause, cIdx) => (
+                        <MemoizedSubClause
+                          key={clause.id}
+                          clause={clause}
+                          sectionIndex={sIdx}
+                          clauseIndex={cIdx}
+                          hosting={hosting}
+                          onUpdateVariable={handleUpdateVariable}
+                        />
+                      ))}
+                  </View>
+                </Collapsible>
+              ))}
+            <Button
+              type="text"
+              style={{ alignSelf: "flex-end" }}
+              onPress={() => setEditOpen(true)}
+            >
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+              >
+                <FluentTextBulletListSquareEdit20Regular
+                  color={colors.background}
+                  size={24}
+                />
+                <ThemedText
+                  content="text"
+                  style={{
+                    fontSize: 12,
+                    color: hexToRgba(colors.background, 0.5),
+                  }}
+                >
+                  Edit clauses
+                </ThemedText>
+              </View>
+            </Button>
+          </SectionCard>
+
+          <SectionCard
+            icon={<PenLine size={16} color={colors.primary} />}
+            title="Your Signature"
+            subtitle="Sign to validate the tenancy agreement"
+          >
+            <SignaturePad
+              existingUrl={hostQueryData?.authHost.signature?.secureUrl}
+              onSave={handleHostSignatureSave}
+              uploading={loading}
+            />
+          </SectionCard>
         </View>
       </DetailsLayout>
 
@@ -143,7 +170,10 @@ export default function NewHostingStep7() {
       <BottomSheet isVisible={editOpen} onClose={() => setEditOpen(false)}>
         {editOpen && (
           <View style={{ flex: 1 }}>
-            <ThemedText type="semibold" style={{ fontSize: 18 }} className="mb-8 px-2">
+            <ThemedText
+              type="semibold"
+              style={{ fontSize: 18, marginBottom: 24, paddingHorizontal: 8 }}
+            >
               Edit Clauses
             </ThemedText>
             {hosting && (
@@ -162,7 +192,10 @@ export default function NewHostingStep7() {
                 )}
                 ListFooterComponent={
                   templateFetching ? (
-                    <ActivityIndicator color={colors.primary} style={{ margin: 20 }} />
+                    <ActivityIndicator
+                      color={colors.primary}
+                      style={{ margin: 20 }}
+                    />
                   ) : null
                 }
                 contentContainerStyle={{ paddingBottom: 40 }}

@@ -40,7 +40,10 @@ export default function ResetPassword() {
   };
 
   return (
-    <AuthLayout title="Reset Password" description="Enter and set up a new password">
+    <AuthLayout
+      title="Reset Password"
+      description={`We sent a 6-digit OTP to ${email}. Enter it along with your new password below.`}
+    >
       <View className="mt-10 flex-1">
         <View className="min-h-[500px] gap-4">
           <View className="mb-4 gap-4">

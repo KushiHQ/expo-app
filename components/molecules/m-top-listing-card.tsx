@@ -13,9 +13,10 @@ import { capitalize } from '@/lib/utils/text';
 
 type Props = {
   hosting: HostAnalyticsQuery['hostAnalytics']['topListing'] | HostingQuery['hosting'];
+  onPress?: () => void;
 };
 
-const TopListingCard: React.FC<Props> = ({ hosting }) => {
+const TopListingCard: React.FC<Props> = ({ hosting, onPress }) => {
   const colors = useThemeColors();
   const { failedImages, handleImageError } = useFallbackImages();
 
@@ -23,6 +24,7 @@ const TopListingCard: React.FC<Props> = ({ hosting }) => {
     <Pressable
       className="flex-row items-center gap-4 rounded-xl border p-2"
       style={{ borderColor: hexToRgba(colors.text, 0.1) }}
+      onPress={onPress}
     >
       <View
         className="h-[90px] w-[107px] overflow-hidden rounded-xl border"

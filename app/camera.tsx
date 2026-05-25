@@ -12,6 +12,7 @@ import { getLocationAsync } from '@/lib/utils/locations';
 import { LocationObject } from 'expo-location';
 import { usePhotoGalleryScreen } from '@/lib/hooks/camera';
 import { cast } from '@/lib/types/utils';
+import * as Haptics from 'expo-haptics';
 
 export default function CameraPage() {
   const { images, multiple, redirect } = useLocalSearchParams();
@@ -79,6 +80,7 @@ export default function CameraPage() {
   const takePicture = async () => {
     if (cameraRef.current) {
       try {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         const photo = await cameraRef.current?.takePictureAsync({
           quality: 1,
           exif: true,

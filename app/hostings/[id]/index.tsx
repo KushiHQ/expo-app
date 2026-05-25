@@ -17,6 +17,7 @@ import { MessageSquare } from 'lucide-react-native';
 import React from 'react';
 import { Share, View } from 'react-native';
 import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
+import { useUser } from '@/lib/hooks/user';
 import Skeleton from '@/components/atoms/a-skeleton';
 import DetailsLayout from '@/components/layouts/details';
 import HostingLikeButton from '@/components/atoms/a-hosting-like-button';
@@ -39,6 +40,8 @@ export default function HostingDetails() {
   const { isTablet } = useBreakpoint();
 
   const hosting = data?.hosting;
+  const { user } = useUser();
+  const isHost = !!hosting && hosting.host.user.id === user.user?.id;
 
   const handleShare = async () => {
     const slug = `${slugify(hosting?.title ?? '')}___${id}`;
@@ -74,6 +77,24 @@ export default function HostingDetails() {
               <Skeleton style={{ height: 20, width: 120, borderRadius: 4 }} />
             </View>
             <Skeleton style={{ height: 50, width: 140, borderRadius: 12 }} />
+          </View>
+        ) : isHost ? (
+          <View
+            style={{
+              backgroundColor: colors.background,
+              paddingHorizontal: 16,
+              paddingBottom: 32,
+              paddingTop: 12,
+              borderTopWidth: 1,
+              borderTopColor: hexToRgba(colors.text, 0.08),
+            }}
+          >
+            <Button
+              type="primary"
+              onPress={() => router.push(`/hostings/form/onboarding?id=${hosting?.id}`)}
+            >
+              <ThemedText content="primary">Edit Listing</ThemedText>
+            </Button>
           </View>
         ) : hosting?.listingType === ListingType.Sale ? (
           <View

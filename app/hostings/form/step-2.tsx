@@ -6,6 +6,7 @@ import ThemedText from '@/components/atoms/a-themed-text';
 import DetailsLayout from '@/components/layouts/details';
 import HostingStepper from '@/components/molecules/m-hosting-stepper';
 import ThemedModal from '@/components/molecules/m-modal';
+import SectionCard from '@/components/molecules/m-section-card';
 import RoomItemCard from '@/components/organisms/o-room-item-card';
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
 import { Fonts } from '@/lib/constants/theme';
@@ -17,7 +18,7 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
 import { Room } from '@/lib/types/enums/hostings';
-import { CircleQuestionMark, Layers } from 'lucide-react-native';
+import { Layers } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { RefreshControl, TextInput, View } from 'react-native';
 
@@ -67,79 +68,70 @@ export default function NewHostingStep2() {
           />
         }
       >
-        <View className="mt-2 flex-1 gap-4">
-          <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
-            <CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
-            {'  '}
-            Select a room type, then tap{' '}
-            <ThemedText
-              style={{
-                fontSize: 12,
-                fontFamily: Fonts.semibold,
-                color: hexToRgba(colors.text, 0.75),
-              }}
-            >
-              Add Photos
-            </ThemedText>{' '}
-            to upload images for that space. Use{' '}
-            <ThemedText
-              style={{
-                fontSize: 12,
-                fontFamily: Fonts.semibold,
-                color: hexToRgba(colors.text, 0.75),
-              }}
-            >
-              Details
-            </ThemedText>{' '}
-            to set the room count and description.
-          </ThemedText>
+        <View style={{ gap: 20, paddingBottom: 24 }}>
+          <SectionCard
+            icon={<Layers size={16} color={colors.primary} />}
+            title="Spaces & Photos"
+            subtitle="Add room types and upload media for each space"
+          >
+            {/* Existing room cards */}
+            {rooms.map((room, index) => (
+              <RoomItemCard
+                key={room.id ?? `room-${index}`}
+                index={index}
+                room={room}
+                rooms={rooms}
+                colors={colors}
+                hostingRoomSaving={hostingRoomSaving}
+                handleSaveHostingRoom={handleSaveHostingRoom}
+                handleRoomImageEdit={handleRoomImageEdit}
+                handleDeleteImage={handleDeleteImage}
+                setActiveModalIndex={setActiveModalIndex}
+              />
+            ))}
 
-          {/* Existing room cards */}
-          {rooms.map((room, index) => (
-            <RoomItemCard
-              key={room.id ?? `room-${index}`}
-              index={index}
-              room={room}
-              rooms={rooms}
-              colors={colors}
-              hostingRoomSaving={hostingRoomSaving}
-              handleSaveHostingRoom={handleSaveHostingRoom}
-              handleRoomImageEdit={handleRoomImageEdit}
-              handleDeleteImage={handleDeleteImage}
-              setActiveModalIndex={setActiveModalIndex}
-            />
-          ))}
-
-          {/* Empty state */}
-          {rooms.length === 0 && (
-            <View
-              className="items-center justify-center gap-3 rounded-2xl py-10"
-              style={{ backgroundColor: hexToRgba(colors.text, 0.04) }}
-            >
-              <Layers color={hexToRgba(colors.text, 0.3)} size={28} />
-              <ThemedText
-                style={{ fontSize: 13, color: hexToRgba(colors.text, 0.4), textAlign: 'center' }}
+            {/* Empty state */}
+            {rooms.length === 0 && (
+              <View
+                style={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 10,
+                  borderRadius: 12,
+                  paddingVertical: 32,
+                  backgroundColor: hexToRgba(colors.text, 0.03),
+                }}
               >
-                No rooms added yet.{'\n'}Use the selector below to add your first space.
-              </ThemedText>
-            </View>
-          )}
+                <Layers color={hexToRgba(colors.text, 0.25)} size={28} />
+                <ThemedText
+                  style={{
+                    fontSize: 13,
+                    color: hexToRgba(colors.text, 0.4),
+                    textAlign: 'center',
+                    lineHeight: 20,
+                  }}
+                >
+                  No rooms added yet.{'\n'}Use the selector below to add your first space.
+                </ThemedText>
+              </View>
+            )}
 
-          {/* Add new room card */}
-          {!allRoomTypesUsed && (
-            <RoomItemCard
-              key={`add-room-${rooms.length}`}
-              index={rooms.length}
-              room={undefined}
-              rooms={rooms}
-              colors={colors}
-              hostingRoomSaving={hostingRoomSaving}
-              handleSaveHostingRoom={handleSaveHostingRoom}
-              handleRoomImageEdit={handleRoomImageEdit}
-              handleDeleteImage={handleDeleteImage}
-              setActiveModalIndex={setActiveModalIndex}
-            />
-          )}
+            {/* Add new room card */}
+            {!allRoomTypesUsed && (
+              <RoomItemCard
+                key={`add-room-${rooms.length}`}
+                index={rooms.length}
+                room={undefined}
+                rooms={rooms}
+                colors={colors}
+                hostingRoomSaving={hostingRoomSaving}
+                handleSaveHostingRoom={handleSaveHostingRoom}
+                handleRoomImageEdit={handleRoomImageEdit}
+                handleDeleteImage={handleDeleteImage}
+                setActiveModalIndex={setActiveModalIndex}
+              />
+            )}
+          </SectionCard>
         </View>
       </DetailsLayout>
 
@@ -155,7 +147,6 @@ export default function NewHostingStep2() {
                 {Room[rooms[activeModalIndex].name]}
               </ThemedText>
 
-              {/* Images preview in modal */}
               {rooms[activeModalIndex].images.length > 0 && (
                 <View className="flex-row flex-wrap gap-2">
                   {rooms[activeModalIndex].images.slice(0, 6).map((img, id) => (

@@ -190,7 +190,14 @@ export default function HostAnalytics() {
           ) : !analyticsData?.hostAnalytics.topListing ? (
             <EmptyList message="You have no listings yet" />
           ) : (
-            <TopListingCard hosting={analyticsData?.hostAnalytics.topListing} />
+            <TopListingCard
+              hosting={analyticsData?.hostAnalytics.topListing}
+              onPress={() =>
+                router.push(
+                  `/hostings/form/onboarding?id=${analyticsData?.hostAnalytics.topListing?.id}`,
+                )
+              }
+            />
           )}
         </View>
         <View className="mt-8 gap-3 px-2">

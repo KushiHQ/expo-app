@@ -4,13 +4,14 @@ import {
   usePhotoOutput,
   Camera,
 } from 'react-native-vision-camera';
-import { useFaceDetectorOutput } from 'react-native-vision-camera-face-detector';
+import { createFaceDetectorOutput } from 'react-native-vision-camera-face-detector';
 import Stepper from '@/components/atoms/a-steppter';
 import DetailsLayout from '@/components/layouts/details';
 import { KYC_ONBOARDING_STEPS } from '@/lib/constants/kyc/onboarding';
 import { cast } from '@/lib/types/utils';
 import { Dimensions, View, StyleSheet, ColorValue } from 'react-native';
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
+import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import ThemedText from '@/components/atoms/a-themed-text';
 import { hexToRgba } from '@/lib/utils/colors';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
@@ -111,17 +112,27 @@ export default function KycImage() {
   const [uploading, setUploading] = React.useState(false);
   const [isCameraReady, setIsCameraReady] = React.useState(false);
   const [faceDetected, setFaceDetected] = React.useState(false);
+  // Debounce face-lost to avoid the badge and button flickering when briefly moving out of frame
+  const [faceLocked, setFaceLocked] = React.useState(false);
+  const faceTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const photoOutput = usePhotoOutput({ quality: 0.9, outputOrientation: 'preview' });
+  const photoOutput = usePhotoOutput({ quality: 0.9 });
 
-  const faceDetectorOutput = useFaceDetectorOutput({
-    onFacesDetected: useCallback((faces: any[]) => {
-      setFaceDetected(faces.length > 0);
-    }, []),
-    onError: useCallback((error: unknown) => {
-      console.warn('Face detector error:', error);
-    }, []),
-  });
+  // useFaceDetectorOutput has a bug where `...options` rest spread creates a new {} each render,
+  // causing the output reference to change every render and the camera session to reconfigure constantly.
+  // createFaceDetectorOutput + useMemo([]) creates the output once with stable callbacks.
+  const faceDetectorOutput = useMemo(
+    () =>
+      createFaceDetectorOutput({
+        onFacesDetected(faces: any[]) {
+          setFaceDetected(faces.length > 0);
+        },
+        onError(error: unknown) {
+          console.warn('Face detector error:', error);
+        },
+      }),
+    [],
+  );
 
   useEffect(() => {
     if (!hasPermission) {
@@ -129,9 +140,20 @@ export default function KycImage() {
     }
   }, [hasPermission, requestPermission]);
 
+  useEffect(() => {
+    if (faceDetected) {
+      clearTimeout(faceTimerRef.current);
+      setFaceLocked(true);
+    } else {
+      faceTimerRef.current = setTimeout(() => setFaceLocked(false), 700);
+    }
+    return () => clearTimeout(faceTimerRef.current);
+  }, [faceDetected]);
+
   // Reset face detection when photo is taken or retaken
   useEffect(() => {
     setFaceDetected(false);
+    setFaceLocked(false);
     if (!kycImage) {
       setIsCameraReady(false);
     }
@@ -149,7 +171,7 @@ export default function KycImage() {
         const rotation = rotationMap[photo.orientation];
         if (rotation) {
           const manipulated = await manipulateAsync(finalUri, [{ rotate: rotation }], {
-            compress: 0.9,
+            compress: 1,
             format: SaveFormat.JPEG,
           });
           finalUri = manipulated.uri;
@@ -157,6 +179,7 @@ export default function KycImage() {
       }
 
       photo.dispose();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setKycImage(finalUri);
     } catch (error) {
       console.error('Failed to capture photo:', error);
@@ -227,26 +250,26 @@ export default function KycImage() {
           />
           <View className="mt-8">
             <View className="max-w-[400px] self-center">
-              {kycImage ? (
-                <View style={styles.cameraContainer}>
-                  <Image source={{ uri: kycImage }} style={{ width: '100%', height: '100%' }} />
-                </View>
-              ) : null}
-              {/* Keep Camera mounted to avoid AVCaptureSession teardown/re-attach crash on retake.
-                  isActive=false cleanly stops the session while retaining the component tree. */}
+              {/* Camera stays mounted to avoid AVCaptureSession crash on retake.
+                  Captured image overlays via absoluteFill — never use display:none on a native camera view. */}
               {device && (
-                <View style={[styles.cameraContainer, kycImage ? { display: 'none' } : {}]}>
+                <View style={styles.cameraContainer}>
                   <Camera
                     style={StyleSheet.absoluteFill}
                     device={device}
                     isActive={!kycImage}
                     outputs={[photoOutput, faceDetectorOutput]}
-                    orientationSource="device"
-                    onInitialized={() => setIsCameraReady(true)}
                     onStarted={() => setIsCameraReady(true)}
                     onStopped={() => setIsCameraReady(false)}
                   />
-                  <CameraFrame borderColor={frameColor} />
+                  {!kycImage && <CameraFrame borderColor={frameColor} />}
+                  {kycImage && (
+                    <Image
+                      source={{ uri: kycImage }}
+                      style={StyleSheet.absoluteFill}
+                      contentFit="cover"
+                    />
+                  )}
                 </View>
               )}
             </View>
@@ -280,21 +303,25 @@ export default function KycImage() {
                 </View>
               </View>
             ) : (
-              <View className="mt-8 items-center gap-3">
+              <Animated.View layout={LinearTransition.duration(250)} className="mt-8 items-center gap-3">
                 <ThemedText
                   type="subtitle"
                   className="max-w-[400px] text-center"
-                  style={{ color: hexToRgba(colors.text, faceDetected ? 1 : 0.6) }}
+                  style={{ color: hexToRgba(colors.text, faceLocked ? 1 : 0.6) }}
                 >
-                  {faceDetected
+                  {faceLocked
                     ? 'Face detected — ready to capture'
                     : 'Center your face inside the frame'}
                 </ThemedText>
-                {faceDetected && (
-                  <View style={styles.detectedBadge}>
+                {faceLocked && (
+                  <Animated.View
+                    entering={FadeIn.duration(250)}
+                    exiting={FadeOut.duration(200)}
+                    style={styles.detectedBadge}
+                  >
                     <View style={styles.detectedDot} />
                     <ThemedText style={styles.detectedLabel}>Face locked</ThemedText>
-                  </View>
+                  </Animated.View>
                 )}
                 <Button
                   onPress={handleCapture}
@@ -304,7 +331,7 @@ export default function KycImage() {
                 >
                   <ThemedText content="primary">Capture</ThemedText>
                 </Button>
-              </View>
+              </Animated.View>
             )}
           </View>
         </View>

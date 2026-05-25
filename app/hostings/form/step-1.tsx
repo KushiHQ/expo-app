@@ -1,20 +1,22 @@
-import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
-import ThemedText from '@/components/atoms/a-themed-text';
-import DetailsLayout from '@/components/layouts/details';
-import HostingStepper from '@/components/molecules/m-hosting-stepper';
-import SelectInput, { SelectOption } from '@/components/molecules/m-select-input';
-import { useHostingForm } from '@/lib/hooks/hosting-form';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { ListingType } from '@/lib/services/graphql/generated';
-import { PROPERTY_TYPE } from '@/lib/types/enums/hostings';
-import { cast } from '@/lib/types/utils';
-import { hexToRgba } from '@/lib/utils/colors';
-import { handleError } from '@/lib/utils/error';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { CircleQuestionMark } from 'lucide-react-native';
-import React, { useRef } from 'react';
-import { RefreshControl, TextInput, View } from 'react-native';
-import { toast } from '@/lib/hooks/use-toast';
+import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
+import ThemedText from "@/components/atoms/a-themed-text";
+import DetailsLayout from "@/components/layouts/details";
+import HostingStepper from "@/components/molecules/m-hosting-stepper";
+import SectionCard from "@/components/molecules/m-section-card";
+import SelectInput, {
+  SelectOption,
+} from "@/components/molecules/m-select-input";
+import { useHostingForm } from "@/lib/hooks/hosting-form";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { ListingType } from "@/lib/services/graphql/generated";
+import { PROPERTY_TYPE } from "@/lib/types/enums/hostings";
+import { cast } from "@/lib/types/utils";
+import { handleError } from "@/lib/utils/error";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { AlignLeft, Building2 } from "lucide-react-native";
+import React, { useRef } from "react";
+import { RefreshControl, TextInput, View } from "react-native";
+import { toast } from "@/lib/hooks/use-toast";
 
 export default function NewHostingStep1() {
   const router = useRouter();
@@ -29,16 +31,19 @@ export default function NewHostingStep1() {
     fetching,
     refetch: refetchHosting,
   } = useHostingForm(id);
+
   const handleMutate = () => {
     mutate({ input: input }).then((res) => {
       if (res.error) {
         handleError(res.error);
       }
       if (res.data?.createOrUpdateHosting) {
-        router.replace(`/hostings/form/step-2?id=${res.data?.createOrUpdateHosting.data?.id}`);
+        router.replace(
+          `/hostings/form/step-2?id=${res.data?.createOrUpdateHosting.data?.id}`,
+        );
         toast.show({
-          type: 'success',
-          text1: 'Success',
+          type: "success",
+          text1: "Success",
           text2: res.data.createOrUpdateHosting.message,
         });
       }
@@ -49,7 +54,10 @@ export default function NewHostingStep1() {
     <DetailsLayout
       title="Property Details"
       refreshControl={
-        <RefreshControl refreshing={fetching} onRefresh={() => id && refetchHosting()} />
+        <RefreshControl
+          refreshing={fetching}
+          onRefresh={() => id && refetchHosting()}
+        />
       }
       footer={
         <HostingStepper
@@ -66,71 +74,84 @@ export default function NewHostingStep1() {
         />
       }
     >
-      <View className="mt-2 flex-1 gap-4">
-        <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
-          <CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
-          {'  '}
-          Provide the essential details for your listing, including a catchy Title, a Description,
-          and what Type of property it is (e.g., Residential, Commercial) and how you&apos;re
-          listing it (For Sale or Rent).
-        </ThemedText>
-        <FloatingLabelInput
-          focused
-          label="Title"
-          value={cast(input.title)}
-          placeholder="4 Bedroom Appartment"
-          onChangeText={(v) => updateInput({ title: v })}
-          returnKeyType="next"
-          onSubmitEditing={() => descriptionRef.current?.focus()}
-          blurOnSubmit={false}
-        />
-        <View className="flex-row gap-4">
-          <SelectInput
+      <View style={{ gap: 20, paddingBottom: 24 }}>
+        <SectionCard
+          icon={<Building2 size={16} color={colors.primary} />}
+          title="Property Identity"
+          style={{ minHeight: 180 }}
+          subtitle="Title, property type, and listing style"
+        >
+          <FloatingLabelInput
             focused
-            label="Property Type"
-            placeholder="Residential"
-            defaultValue={
-              input.propertyType
-                ? { label: input.propertyType, value: input.propertyType }
-                : undefined
-            }
-            options={PROPERTY_TYPE.map((v) => ({ label: v, value: v }))}
-            onSelect={(v) => updateInput({ propertyType: v.value })}
-            renderItem={SelectOption}
+            label="Title"
+            value={cast(input.title)}
+            placeholder="4 Bedroom Apartment"
+            onChangeText={(v) => updateInput({ title: v })}
+            returnKeyType="next"
+            onSubmitEditing={() => descriptionRef.current?.focus()}
+            blurOnSubmit={false}
           />
-          <SelectInput
-            focused
-            label="Listing Type"
-            placeholder="Rent"
-            defaultValue={
-              input.listingType ? { label: input.listingType, value: input.listingType } : undefined
-            }
-            options={Object.keys(ListingType).map((v) => ({
-              label: `For ${v}`,
-              value: v,
-            }))}
-            onSelect={(v) =>
-              updateInput({
-                listingType: ListingType[v.value as keyof typeof ListingType],
-              })
-            }
-            renderItem={SelectOption}
-          />
-        </View>
-        <View style={{ minHeight: 200 }}>
+          <View style={{ flexDirection: "row", gap: 12 }}>
+            <View style={{ flex: 1 }}>
+              <SelectInput
+                focused
+                label="Property Type"
+                placeholder="Residential"
+                defaultValue={
+                  input.propertyType
+                    ? { label: input.propertyType, value: input.propertyType }
+                    : undefined
+                }
+                options={PROPERTY_TYPE.map((v) => ({ label: v, value: v }))}
+                onSelect={(v) => updateInput({ propertyType: v.value })}
+                renderItem={SelectOption}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <SelectInput
+                focused
+                label="Listing Type"
+                placeholder="Rent"
+                defaultValue={
+                  input.listingType
+                    ? { label: input.listingType, value: input.listingType }
+                    : undefined
+                }
+                options={Object.keys(ListingType).map((v) => ({
+                  label: `For ${v}`,
+                  value: v,
+                }))}
+                onSelect={(v) =>
+                  updateInput({
+                    listingType:
+                      ListingType[v.value as keyof typeof ListingType],
+                  })
+                }
+                renderItem={SelectOption}
+              />
+            </View>
+          </View>
+        </SectionCard>
+
+        <SectionCard
+          icon={<AlignLeft size={16} color={colors.primary} />}
+          title="Description"
+          style={{ padding: 0, minHeight: 200 }}
+          subtitle="Tell guests what makes your property special"
+        >
           <FloatingLabelInput
             ref={descriptionRef}
             focused
+            className="rounded-t-sm"
             multiline
-            label="Description"
             placeholder="A 4 bedroom bungalow with a spacious compound..."
-            containerStyle={{ minHeight: 200 }}
+            containerStyle={{ minHeight: 200, borderWidth: 0 }}
             numberOfLines={6}
             value={cast(input.description)}
             onChangeText={(v) => updateInput({ description: v })}
             returnKeyType="done"
           />
-        </View>
+        </SectionCard>
       </View>
     </DetailsLayout>
   );

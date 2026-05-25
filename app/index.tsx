@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { useRefreshTokenMutation } from '@/lib/services/graphql/generated';
 import { getAuthTokens, saveAuthTokens } from '@/lib/utils/auth';
 import { useUser } from '@/lib/hooks/user';
+import { useUserStore } from '@/lib/stores/users';
 import { UserType } from '@/lib/types/users';
 
 export default function HomeScreen() {
@@ -15,7 +16,22 @@ export default function HomeScreen() {
   const [, refreshToken] = useRefreshTokenMutation();
   const router = useRouter();
 
+  // Zustand AsyncStorage hydration is async — on first render the store is empty.
+  // We must wait for rehydration before making any navigation decisions, otherwise
+  // user.email is always undefined on mount and the app redirects to onboarding.
+  const [hydrated, setHydrated] = React.useState(() => useUserStore.persist.hasHydrated());
+
   React.useEffect(() => {
+    if (hydrated) return;
+    const unsub = useUserStore.persist.onFinishHydration(() => setHydrated(true));
+    // Guard against the case where hydration completed between the useState init and this effect
+    if (useUserStore.persist.hasHydrated()) setHydrated(true);
+    return unsub;
+  }, [hydrated]);
+
+  React.useEffect(() => {
+    if (!hydrated) return;
+
     const timeoutId = setTimeout(() => {
       router.replace('/auth/sign-in');
     }, 30000);
@@ -45,13 +61,16 @@ export default function HomeScreen() {
         }
 
         if (res?.data?.refreshToken.data) {
-          const tokens = res.data.refreshToken.data;
+          const data = res.data.refreshToken.data;
           await saveAuthTokens({
-            access: tokens.token,
-            refresh: tokens.refreshToken,
+            access: data.token,
+            refresh: data.refreshToken,
           });
 
-          updateUser(tokens.user);
+          updateUser({
+            user: data.user,
+            email: data.user.email,
+          });
 
           if (user.userType === UserType.Host) {
             router.replace('/host/analytics');
@@ -69,7 +88,7 @@ export default function HomeScreen() {
     initializeApp();
 
     return () => clearTimeout(timeoutId);
-  }, [user?.email, user?.userType, refreshToken, router, updateUser]);
+  }, [hydrated, user?.email, user?.userType, refreshToken, router, updateUser]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>

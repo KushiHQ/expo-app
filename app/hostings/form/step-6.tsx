@@ -4,17 +4,16 @@ import ThemedText from '@/components/atoms/a-themed-text';
 import DetailsLayout from '@/components/layouts/details';
 import CheckboxInput from '@/components/molecules/m-checkbox-input';
 import HostingStepper from '@/components/molecules/m-hosting-stepper';
+import SectionCard from '@/components/molecules/m-section-card';
 import SelectInput, { SelectOption } from '@/components/molecules/m-select-input';
 import { HOSTING_VERIFICATION_OPTIONS } from '@/lib/constants/hosting/verification';
-import { Fonts } from '@/lib/constants/theme';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { cast } from '@/lib/types/utils';
-import { hexToRgba } from '@/lib/utils/colors';
 import { handleError } from '@/lib/utils/error';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
-import { CircleQuestionMark } from 'lucide-react-native';
+import { ShieldCheck, UserRound } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { TextInput, View } from 'react-native';
 import { toast } from '@/lib/hooks/use-toast';
@@ -32,7 +31,6 @@ export default function NewHostingStep6() {
     verificationInput,
     updateVerificationInput,
     hosting,
-    fetching: fetchingHosting,
   } = useHostingForm(id);
 
   const handleMutate = () => {
@@ -50,8 +48,6 @@ export default function NewHostingStep6() {
       }
     });
   };
-
-  const loading = verificationMutating;
 
   return (
     <>
@@ -74,120 +70,112 @@ export default function NewHostingStep6() {
           />
         }
       >
-        <View className="min-h-[600px]">
-          <View className="mt-2 gap-4">
-            <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
-              <CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
-              {'  '}
-              Confirm your legal right to list this space. Please provide the landlord&apos;s
-              official details and complete the mandatory legal declarations regarding ownership,
-              litigation, and indemnity.
-            </ThemedText>
-            <ThemedText style={{ fontFamily: Fonts.medium }}>{'Landlord Mandate'}</ThemedText>
-            <View className="gap-4">
-              <FloatingLabelInput
-                focused
-                label="Landlord Full Name"
-                placeholder="Thomas Shelby"
-                value={verificationInput.landlordFullName}
-                onChangeText={(v) => {
-                  updateVerificationInput({ landlordFullName: v });
-                }}
-                returnKeyType="next"
-                onSubmitEditing={() => landlordAddressRef.current?.focus()}
-              />
-              <FloatingLabelInput
-                ref={landlordAddressRef}
-                focused
-                label="Landlord Address"
-                placeholder="Arley Hall & Gardens, Northwich, Cheshire"
-                value={verificationInput.landlordAddress}
-                onChangeText={(v) => {
-                  updateVerificationInput({ landlordAddress: v });
-                }}
-                returnKeyType="next"
-                onSubmitEditing={() => titleTypeRef.current?.focus()}
-                blurOnSubmit={false}
-              />
-              <FloatingLabelInput
-                ref={titleTypeRef}
-                focused
-                label="Title Document Type (Optional)"
-                placeholder="e.g. Certificate of Occupancy"
-                value={verificationInput.titleType ?? undefined}
-                onChangeText={(v) => updateVerificationInput({ titleType: v || null })}
-                returnKeyType="next"
-                onSubmitEditing={() => titleNumberRef.current?.focus()}
-                blurOnSubmit={false}
-              />
-              <FloatingLabelInput
-                ref={titleNumberRef}
-                focused
-                label="Title/Reference Number (Optional)"
-                placeholder="e.g. LG/07/2019/00123"
-                value={verificationInput.titleNumber ?? undefined}
-                onChangeText={(v) => updateVerificationInput({ titleNumber: v || null })}
-                returnKeyType="done"
-              />
-              <View>
-                <SelectInput
-                  focused
-                  description='Select your role in managing this property. Are you the legal owner (Landlord), an appointed representative (Agent), or a current tenant with permission to rent it out (Subletter)?"'
-                  label="Property Relationship"
-                  placeholder="Landlord"
-                  defaultValue={
-                    verificationInput.propertyRelationship
-                      ? {
-                          label: verificationInput.propertyRelationship,
-                          value: verificationInput.propertyRelationship,
-                        }
-                      : undefined
-                  }
-                  onSelect={(v) =>
-                    updateVerificationInput({
-                      propertyRelationship: cast(v.value),
-                    })
-                  }
-                  options={HOSTING_VERIFICATION_OPTIONS}
-                  renderItem={SelectOption}
-                />
-              </View>
-            </View>
-            <View className="mt-4 gap-4">
-              <CheckboxInput
-                checked={verificationInput.declOwnership}
-                onCheckChange={(v) => updateVerificationInput({ declOwnership: v })}
-              >
-                <ThemedText>
-                  I hereby declare that I am the legal owner of this property, or I possess
-                  explicit, documented authorization (such as a mandate, power of attorney, or
-                  landlord&apos;s consent to sublease) to rent out this space
-                </ThemedText>
-              </CheckboxInput>
-              <CheckboxInput
-                checked={verificationInput.declLitigation}
-                onCheckChange={(v) => updateVerificationInput({ declLitigation: v })}
-              >
-                <ThemedText>
-                  I confirm that there are no ongoing court cases, legal disputes, or foreclosures
-                  involving this property that would prevent a tenant from living here peacefully.
-                </ThemedText>
-              </CheckboxInput>
-              <CheckboxInput
-                checked={verificationInput.declIndemnity}
-                onCheckChange={(v) => updateVerificationInput({ declIndemnity: v })}
-              >
-                <ThemedText>
-                  I agree to take full legal and financial responsibility, protecting Kushi from any
-                  claims or lawsuits, if the ownership or litigation information I have provided is
-                  false.
-                </ThemedText>
-              </CheckboxInput>
-            </View>
-          </View>
+        <View style={{ gap: 20, paddingBottom: 24 }}>
+          <SectionCard
+            icon={<UserRound size={16} color={colors.primary} />}
+            title="Landlord Details"
+            subtitle="Official details of the property owner and your role"
+          >
+            <FloatingLabelInput
+              focused
+              label="Landlord Full Name"
+              placeholder="Thomas Shelby"
+              value={verificationInput.landlordFullName}
+              onChangeText={(v) => updateVerificationInput({ landlordFullName: v })}
+              returnKeyType="next"
+              onSubmitEditing={() => landlordAddressRef.current?.focus()}
+              blurOnSubmit={false}
+            />
+            <FloatingLabelInput
+              ref={landlordAddressRef}
+              focused
+              label="Landlord Address"
+              placeholder="Arley Hall & Gardens, Northwich, Cheshire"
+              value={verificationInput.landlordAddress}
+              onChangeText={(v) => updateVerificationInput({ landlordAddress: v })}
+              returnKeyType="next"
+              onSubmitEditing={() => titleTypeRef.current?.focus()}
+              blurOnSubmit={false}
+            />
+            <FloatingLabelInput
+              ref={titleTypeRef}
+              focused
+              label="Title Document Type (Optional)"
+              placeholder="e.g. Certificate of Occupancy"
+              description="The type of legal document proving property ownership — e.g. Certificate of Occupancy (C of O), Deed of Assignment, Governor's Consent, or Right of Occupancy."
+              value={verificationInput.titleType ?? undefined}
+              onChangeText={(v) => updateVerificationInput({ titleType: v || null })}
+              returnKeyType="next"
+              onSubmitEditing={() => titleNumberRef.current?.focus()}
+              blurOnSubmit={false}
+            />
+            <FloatingLabelInput
+              ref={titleNumberRef}
+              focused
+              label="Title / Reference Number (Optional)"
+              placeholder="e.g. LG/07/2019/00123"
+              description="The unique reference number printed on your title document — e.g. a C of O number like LG/07/2019/00123."
+              value={verificationInput.titleNumber ?? undefined}
+              onChangeText={(v) => updateVerificationInput({ titleNumber: v || null })}
+              returnKeyType="done"
+            />
+            <SelectInput
+              focused
+              description='Select your role in managing this property. Are you the legal owner (Landlord), an appointed representative (Agent), or a current tenant with permission to rent it out (Subletter)?'
+              label="Property Relationship"
+              placeholder="Landlord"
+              defaultValue={
+                verificationInput.propertyRelationship
+                  ? {
+                      label: verificationInput.propertyRelationship,
+                      value: verificationInput.propertyRelationship,
+                    }
+                  : undefined
+              }
+              onSelect={(v) => updateVerificationInput({ propertyRelationship: cast(v.value) })}
+              options={HOSTING_VERIFICATION_OPTIONS}
+              renderItem={SelectOption}
+            />
+          </SectionCard>
+
+          <SectionCard
+            icon={<ShieldCheck size={16} color={colors.primary} />}
+            title="Legal Declarations"
+            subtitle="All three declarations are required to list this property"
+          >
+            <CheckboxInput
+              checked={verificationInput.declOwnership}
+              onCheckChange={(v) => updateVerificationInput({ declOwnership: v })}
+            >
+              <ThemedText style={{ fontSize: 13, lineHeight: 20, flex: 1 }}>
+                I hereby declare that I am the legal owner of this property, or I possess explicit,
+                documented authorization (such as a mandate, power of attorney, or landlord's
+                consent to sublease) to rent out this space.
+              </ThemedText>
+            </CheckboxInput>
+            <CheckboxInput
+              checked={verificationInput.declLitigation}
+              onCheckChange={(v) => updateVerificationInput({ declLitigation: v })}
+            >
+              <ThemedText style={{ fontSize: 13, lineHeight: 20, flex: 1 }}>
+                I confirm that there are no ongoing court cases, legal disputes, or foreclosures
+                involving this property that would prevent a tenant from living here peacefully.
+              </ThemedText>
+            </CheckboxInput>
+            <CheckboxInput
+              checked={verificationInput.declIndemnity}
+              onCheckChange={(v) => updateVerificationInput({ declIndemnity: v })}
+            >
+              <ThemedText style={{ fontSize: 13, lineHeight: 20, flex: 1 }}>
+                I agree to take full legal and financial responsibility, protecting Kushi from any
+                claims or lawsuits, if the ownership or litigation information I have provided is
+                false.
+              </ThemedText>
+            </CheckboxInput>
+          </SectionCard>
         </View>
       </DetailsLayout>
-      <LoadingModal visible={loading} />
+      <LoadingModal visible={verificationMutating} />
     </>
   );
 }

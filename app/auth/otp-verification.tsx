@@ -67,7 +67,7 @@ export default function OTPVerification() {
   return (
     <AuthLayout
       title="Enter Your OTP"
-      description="Check your email or phone number and copy the OTP sent to you now"
+      description={`We sent a 6-digit verification code to ${email}. Check your inbox and enter it below.`}
     >
       <View className="mt-10 h-full flex-1 justify-between">
         <View className="gap-4">
