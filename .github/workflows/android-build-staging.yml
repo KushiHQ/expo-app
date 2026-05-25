@@ -1,15 +1,16 @@
-name: Build and Submit Android
+name: Build Android (Staging)
+
 on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - staging
 
 jobs:
   build:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[android]')
     runs-on: blacksmith-4vcpu-ubuntu-2404
-    environment: production
+    environment: staging
     env:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
@@ -57,20 +58,21 @@ jobs:
       - name: Build Android (local)
         run: |
           set -o pipefail
-          eas build --platform android --profile production --local --non-interactive 2>&1 | tee /tmp/eas-output.txt || true
-          AAB_PATH=$(grep -oE '[^[:space:]]+\.aab' /tmp/eas-output.txt | tail -1)
-          if [ -z "$AAB_PATH" ] || [ ! -f "$AAB_PATH" ]; then
-            echo "❌ Could not locate built .aab file"
+          eas build --platform android --profile preview --local --non-interactive 2>&1 | tee /tmp/eas-output.txt || true
+          APK_PATH=$(grep -oE '[^[:space:]]+\.apk' /tmp/eas-output.txt | tail -1)
+          if [ -z "$APK_PATH" ] || [ ! -f "$APK_PATH" ]; then
+            echo "❌ Could not locate built .apk file"
             exit 1
           fi
-          echo "AAB_PATH=$AAB_PATH" >> "$GITHUB_ENV"
-          echo "✅ Built AAB: $AAB_PATH"
+          echo "APK_PATH=$APK_PATH" >> "$GITHUB_ENV"
+          echo "✅ Built APK: $APK_PATH"
 
-      - name: Decode Google Play key
-        run: echo "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_BASE64 }}" | base64 --decode > google-play-key.json
-
-      - name: Submit to Play Store
-        run: eas submit --platform android --profile production --non-interactive --path "$AAB_PATH"
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kushi-android-staging-${{ github.run_number }}
+          path: ${{ env.APK_PATH }}
+          retention-days: 14
 
       - name: Notify Discord
         if: always()
@@ -83,10 +85,10 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           if [ "$JOB_STATUS" = "success" ]; then
-            TITLE="✅ Kushi Android build submitted to Play Store"
-            COLOR=3581519
+            TITLE="🟡 Kushi Android staging build ready"
+            COLOR=15117312
           else
-            TITLE="❌ Kushi Android build failed"
+            TITLE="❌ Kushi Android staging build failed"
             COLOR=13369344
           fi
           jq -n \

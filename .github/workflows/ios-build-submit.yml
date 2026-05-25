@@ -9,6 +9,7 @@ jobs:
   build:
     if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[ios]') }}
     runs-on: blacksmith-6vcpu-macos-15
+    environment: production
     env:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
@@ -86,24 +87,34 @@ jobs:
           # Alternatively store an ASC API key in EAS (eas credentials) and remove this env var.
           EXPO_APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.EXPO_APPLE_APP_SPECIFIC_PASSWORD }}
 
-      - name: Notify Slack
+      - name: Notify Discord
         if: always()
-        uses: slackapi/slack-github-action@v2.1.0
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            {
-              "text": "${{ job.status == 'success' && '✅ Kushi iOS build submitted to App Store' || '❌ Kushi iOS build failed' }}",
-              "attachments": [
-                {
-                  "color": "${{ job.status == 'success' && '#36a64f' || '#cc0000' }}",
-                  "fields": [
-                    { "title": "Branch", "value": "${{ github.ref_name }}", "short": true },
-                    { "title": "Commit", "value": "${{ github.event.head_commit.message }}", "short": true },
-                    { "title": "Actor", "value": "${{ github.actor }}", "short": true },
-                    { "title": "Run", "value": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View logs>", "short": true }
-                  ]
-                }
-              ]
-            }
+        env:
+          JOB_STATUS: ${{ job.status }}
+          BRANCH: ${{ github.ref_name }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ "$JOB_STATUS" = "success" ]; then
+            TITLE="✅ Kushi iOS build submitted to App Store"
+            COLOR=3581519
+          else
+            TITLE="❌ Kushi iOS build failed"
+            COLOR=13369344
+          fi
+          jq -n \
+            --arg title "$TITLE" \
+            --argjson color "$COLOR" \
+            --arg branch "$BRANCH" \
+            --arg commit "$COMMIT_MSG" \
+            --arg actor "$ACTOR" \
+            --arg run_url "$RUN_URL" \
+            '{embeds:[{title:$title,color:$color,fields:[
+              {name:"Branch",value:$branch,inline:true},
+              {name:"Commit",value:$commit,inline:true},
+              {name:"Actor",value:$actor,inline:true},
+              {name:"Run",value:"[\("View logs")](\($run_url))",inline:true}
+            ]}]}' \
+          | curl -sSf -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK_URL"

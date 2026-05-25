@@ -1,15 +1,16 @@
-name: Build and Submit Android
+name: Build iOS (Staging)
+
 on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - staging
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[android]')
-    runs-on: blacksmith-4vcpu-ubuntu-2404
-    environment: production
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[ios]') }}
+    runs-on: blacksmith-6vcpu-macos-15
+    environment: staging
     env:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
@@ -17,11 +18,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
         with:
-          distribution: temurin
-          java-version: '17'
+          xcode-version: latest-stable
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -42,35 +42,40 @@ jobs:
       - name: Create .env file
         run: echo '${{ secrets.ENV_FILE }}' > .env
 
-      - name: Decode Google Services JSON
-        run: echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 --decode > google-services.json
+      - name: Decode Google Services Plist
+        run: echo "${{ secrets.GOOGLE_SERVICES_IOS_BASE64 }}" | base64 --decode > GoogleService-Info.plist
 
-      - name: Cache Gradle
+      - name: Clean native build artifacts
+        run: |
+          rm -rf ios/Pods ios/build
+
+      - name: Cache CocoaPods
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: gradle-
+          path: ~/.cocoapods
+          key: cocoapods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: cocoapods-
 
-      - name: Build Android (local)
+      - name: Build iOS (local)
         run: |
           set -o pipefail
-          eas build --platform android --profile production --local --non-interactive 2>&1 | tee /tmp/eas-output.txt || true
-          AAB_PATH=$(grep -oE '[^[:space:]]+\.aab' /tmp/eas-output.txt | tail -1)
-          if [ -z "$AAB_PATH" ] || [ ! -f "$AAB_PATH" ]; then
-            echo "❌ Could not locate built .aab file"
+          eas build --platform ios --profile preview --local --non-interactive 2>&1 | tee /tmp/eas-output.txt || true
+          IPA_PATH=$(grep -oE '[^[:space:]]+\.ipa' /tmp/eas-output.txt | tail -1)
+          if [ -z "$IPA_PATH" ] || [ ! -f "$IPA_PATH" ]; then
+            echo "❌ Could not locate built .ipa file"
             exit 1
           fi
-          echo "AAB_PATH=$AAB_PATH" >> "$GITHUB_ENV"
-          echo "✅ Built AAB: $AAB_PATH"
+          echo "IPA_PATH=$IPA_PATH" >> "$GITHUB_ENV"
+          echo "✅ Built IPA: $IPA_PATH"
+        env:
+          DEBUG: expo:*
 
-      - name: Decode Google Play key
-        run: echo "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_BASE64 }}" | base64 --decode > google-play-key.json
-
-      - name: Submit to Play Store
-        run: eas submit --platform android --profile production --non-interactive --path "$AAB_PATH"
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kushi-ios-staging-${{ github.run_number }}
+          path: ${{ env.IPA_PATH }}
+          retention-days: 14
 
       - name: Notify Discord
         if: always()
@@ -83,10 +88,10 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           if [ "$JOB_STATUS" = "success" ]; then
-            TITLE="✅ Kushi Android build submitted to Play Store"
-            COLOR=3581519
+            TITLE="🟡 Kushi iOS staging build ready"
+            COLOR=15117312
           else
-            TITLE="❌ Kushi Android build failed"
+            TITLE="❌ Kushi iOS staging build failed"
             COLOR=13369344
           fi
           jq -n \
