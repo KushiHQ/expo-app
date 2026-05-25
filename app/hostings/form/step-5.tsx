@@ -25,10 +25,69 @@ import { hexToRgba } from '@/lib/utils/colors';
 import { handleError } from '@/lib/utils/error';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
-import { CircleQuestionMark } from 'lucide-react-native';
+import { Banknote, Building2, CircleDollarSign, Plus, Wallet } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { TextInput, View } from 'react-native';
 import { toast } from '@/lib/hooks/use-toast';
+
+function SectionCard({
+  icon,
+  title,
+  subtitle,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
+  const colors = useThemeColors();
+  return (
+    <View
+      style={{
+        borderWidth: 1,
+        borderColor: hexToRgba(colors.text, 0.08),
+        borderRadius: 16,
+        overflow: 'hidden',
+      }}
+    >
+      <View
+        style={{
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 10,
+          borderBottomWidth: 1,
+          borderBottomColor: hexToRgba(colors.text, 0.06),
+          backgroundColor: hexToRgba(colors.text, 0.02),
+        }}
+      >
+        <View
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 8,
+            backgroundColor: hexToRgba(colors.primary, 0.12),
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {icon}
+        </View>
+        <View style={{ flex: 1 }}>
+          <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 14 }}>{title}</ThemedText>
+          {subtitle && (
+            <ThemedText style={{ fontSize: 11, color: hexToRgba(colors.text, 0.45), marginTop: 1 }}>
+              {subtitle}
+            </ThemedText>
+          )}
+        </View>
+      </View>
+      <View style={{ padding: 16, gap: 14 }}>{children}</View>
+    </View>
+  );
+}
 
 export default function NewHostingStep5() {
   const router = useRouter();
@@ -64,19 +123,14 @@ export default function NewHostingStep5() {
     if (selectedAccount) {
       const num = selectedAccount.accountNumber;
       const acc = `${num.slice(-3)}***${num.slice(0, 3)}`;
-
       return `${acc} ${selectedAccount.bankDetails?.name}`;
     }
     return null;
   }, [selectedAccount]);
 
   React.useEffect(() => {
-    if (resolveError) {
-      handleError(resolveError);
-    }
-    if (savePaymentDetailsError) {
-      handleError(savePaymentDetailsError);
-    }
+    if (resolveError) handleError(resolveError);
+    if (savePaymentDetailsError) handleError(savePaymentDetailsError);
   }, [resolveError, savePaymentDetailsError]);
 
   React.useEffect(() => {
@@ -93,11 +147,7 @@ export default function NewHostingStep5() {
         }
         if (res.data?.createUpdateHostPaymentDetails.data) {
           const data = res.data.createUpdateHostPaymentDetails;
-          toast.show({
-            type: 'success',
-            text1: 'Success',
-            text2: data.message,
-          });
+          toast.show({ type: 'success', text1: 'Success', text2: data.message });
           setSelectedAcount(res.data?.createUpdateHostPaymentDetails.data);
         }
         refetchPaymentDetails();
@@ -114,9 +164,7 @@ export default function NewHostingStep5() {
   const handleMutate = () => {
     updateInput({ paymentDetailsId: selectedAccount?.id });
     mutate({ input: { ...input, paymentDetailsId: selectedAccount?.id } }).then((res) => {
-      if (res.error) {
-        handleError(res.error);
-      }
+      if (res.error) handleError(res.error);
       if (res.data?.createOrUpdateHosting) {
         router.push(`/hostings/form/step-6?id=${res.data?.createOrUpdateHosting.data?.id}`);
         toast.show({
@@ -129,6 +177,8 @@ export default function NewHostingStep5() {
   };
 
   const loading = creatingPaymentDetail || resolving || mutating;
+  const canSaveNewAccount =
+    !!(newAccountInput.bankCode && newAccountInput.accountNumber) && !resolving;
 
   return (
     <>
@@ -143,181 +193,221 @@ export default function NewHostingStep5() {
           />
         }
       >
-        <View className="min-h-[600px]">
-          <View className="mt-2 gap-4">
-            <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
-              <CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
-              {'  '}
-              Define your property&apos;s Pricing and how often you expect rent (e.g., Annually).
-              Then, link a Bank Account for secure payments, payments will be sent here after
-              booking confirmation, either by selecting a saved account or adding a new one.
-            </ThemedText>
-            <ThemedText style={{ fontFamily: Fonts.medium }}>
-              {'Pricing & Payment Details'}
-            </ThemedText>
-            <View className="flex-row gap-4">
-              <SelectInput
-                focused
-                label="Payment Interval"
-                placeholder="Anually"
-                defaultValue={
-                  input.paymentInterval
-                    ? {
-                        label: input.paymentInterval,
-                        value: input.paymentInterval,
-                      }
-                    : undefined
-                }
-                onSelect={(v) => updateInput({ paymentInterval: v.value })}
-                options={Object.keys(PaymentInterval).map((v) => ({
-                  label: v,
-                  value: PaymentInterval[v as keyof typeof PaymentInterval],
-                }))}
-                renderItem={SelectOption}
-              />
-              <View className="flex-1">
+        <View style={{ gap: 20, paddingBottom: 24 }}>
+          {/* Pricing section */}
+          <SectionCard
+            icon={<CircleDollarSign size={16} color={colors.primary} />}
+            title="Pricing"
+            subtitle="Set the rental price and optional fees"
+          >
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <View style={{ flex: 1 }}>
+                <SelectInput
+                  focused
+                  label="Payment Interval"
+                  placeholder="Annually"
+                  defaultValue={
+                    input.paymentInterval
+                      ? { label: input.paymentInterval, value: input.paymentInterval }
+                      : undefined
+                  }
+                  onSelect={(v) => updateInput({ paymentInterval: v.value })}
+                  options={Object.keys(PaymentInterval).map((v) => ({
+                    label: v,
+                    value: PaymentInterval[v as keyof typeof PaymentInterval],
+                  }))}
+                  renderItem={SelectOption}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
                 <FloatingLabelInput
                   focused
                   inputMode="numeric"
-                  label="Price"
+                  label="Rent Price"
                   value={Number(input.price).toLocaleString()}
                   onChangeText={(v) =>
-                    updateInput({
-                      price: v.replace('₦', '').replaceAll(',', ''),
-                    })
+                    updateInput({ price: v.replace('₦', '').replaceAll(',', '') })
                   }
-                  placeholder="100,000 (₦)"
+                  placeholder="₦ 0"
                   returnKeyType="next"
                   onSubmitEditing={() => serviceChargeRef.current?.focus()}
                   blurOnSubmit={false}
                 />
               </View>
             </View>
-            <View className="flex-row gap-4">
-              <View className="flex-1">
+
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <View style={{ flex: 1 }}>
                 <FloatingLabelInput
                   ref={serviceChargeRef}
                   focused
                   inputMode="numeric"
-                  label="Service Charge (Optional)"
-                  value={
-                    input.serviceCharge ? Number(input.serviceCharge).toLocaleString() : undefined
-                  }
+                  label="Service Charge"
+                  value={input.serviceCharge ? Number(input.serviceCharge).toLocaleString() : undefined}
                   onChangeText={(v) =>
-                    updateInput({
-                      serviceCharge: v.replace('₦', '').replaceAll(',', ''),
-                    })
+                    updateInput({ serviceCharge: v.replace('₦', '').replaceAll(',', '') })
                   }
-                  placeholder="100,000 (₦)"
+                  placeholder="Optional"
                   returnKeyType="next"
                   onSubmitEditing={() => cautionFeeRef.current?.focus()}
                   blurOnSubmit={false}
                 />
               </View>
-              <View className="flex-1">
+              <View style={{ flex: 1 }}>
                 <FloatingLabelInput
                   ref={cautionFeeRef}
                   focused
                   inputMode="numeric"
-                  label="Caution Fee (Optional)"
+                  label="Caution Fee"
                   value={input.cautionFee ? Number(input.cautionFee).toLocaleString() : undefined}
                   onChangeText={(v) =>
-                    updateInput({
-                      cautionFee: v.replace('₦', '').replaceAll(',', ''),
-                    })
+                    updateInput({ cautionFee: v.replace('₦', '').replaceAll(',', '') })
                   }
-                  placeholder="100,000 (₦)"
+                  placeholder="Optional"
                   returnKeyType="next"
                   onSubmitEditing={() => maxOccupantsRef.current?.focus()}
                   blurOnSubmit={false}
                 />
               </View>
-              <View className="flex-1">
-                <FloatingLabelInput
-                  ref={maxOccupantsRef}
-                  focused
-                  inputMode="numeric"
-                  label="Max Occupants (Optional)"
-                  value={input.maxOccupants != null ? String(input.maxOccupants) : undefined}
-                  onChangeText={(v) => {
-                    const parsed = parseInt(v, 10);
-                    updateInput({ maxOccupants: isNaN(parsed) ? undefined : parsed });
-                  }}
-                  placeholder="e.g. 4"
-                  returnKeyType="done"
-                />
-              </View>
             </View>
-            <View>
-              <ThemedText className="mb-4" style={{ fontFamily: Fonts.medium }}>
-                Select account
-              </ThemedText>
-              <View className="h-[68px]">
-                <SelectInput
-                  focused
-                  searchable
-                  searchField="name"
-                  label="Account"
-                  selectedValueString={selectedAccountString ?? undefined}
-                  placeholder="Select account"
-                  defaultValue={selectedAccount ?? undefined}
-                  onSelect={setSelectedAcount}
-                  renderItem={PaymentDetailsSelectOption}
-                  getValueString={(v) => v?.id}
-                  options={hostPaymentDetails?.hostPaymentDetails ?? []}
-                />
-              </View>
-              <View className="mt-4">
-                <Centered>
-                  <ThemedText>Or</ThemedText>
-                </Centered>
-                <ThemedText style={{ fontFamily: Fonts.medium }}>Create New Account</ThemedText>
-              </View>
+
+            <View style={{ width: '50%', paddingRight: 6 }}>
+              <FloatingLabelInput
+                ref={maxOccupantsRef}
+                focused
+                inputMode="numeric"
+                label="Max Occupants"
+                value={input.maxOccupants != null ? String(input.maxOccupants) : undefined}
+                onChangeText={(v) => {
+                  const parsed = parseInt(v, 10);
+                  updateInput({ maxOccupants: isNaN(parsed) ? undefined : parsed });
+                }}
+                placeholder="Optional"
+                returnKeyType="done"
+              />
             </View>
-            <View className="gap-4">
-              <View className="flex-row items-center gap-4">
-                <View className="flex-1">
+          </SectionCard>
+
+          {/* Payout account section */}
+          <SectionCard
+            icon={<Wallet size={16} color={colors.primary} />}
+            title="Payout Account"
+            subtitle="Payments are disbursed here after booking confirmation"
+          >
+            {selectedAccount ? (
+              <View style={{ gap: 12 }}>
+                <SelectedPaymentDetails details={selectedAccount} />
+                <Button
+                  variant="outline"
+                  type="shade"
+                  onPress={() => setSelectedAcount(undefined)}
+                >
+                  <ThemedText style={{ fontSize: 13, color: hexToRgba(colors.text, 0.6) }}>
+                    Change Account
+                  </ThemedText>
+                </Button>
+              </View>
+            ) : (
+              <View style={{ gap: 16 }}>
+                {/* Saved accounts */}
+                {(hostPaymentDetails?.hostPaymentDetails ?? []).length > 0 && (
+                  <View style={{ gap: 8 }}>
+                    <ThemedText
+                      style={{
+                        fontSize: 12,
+                        fontFamily: Fonts.medium,
+                        color: hexToRgba(colors.text, 0.5),
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.8,
+                      }}
+                    >
+                      Saved Accounts
+                    </ThemedText>
+                    <SelectInput
+                      focused
+                      searchable
+                      searchField="name"
+                      label="Select a saved account"
+                      selectedValueString={selectedAccountString ?? undefined}
+                      placeholder="Choose account"
+                      defaultValue={selectedAccount ?? undefined}
+                      onSelect={setSelectedAcount}
+                      renderItem={PaymentDetailsSelectOption}
+                      getValueString={(v) => v?.id}
+                      options={hostPaymentDetails?.hostPaymentDetails ?? []}
+                    />
+                  </View>
+                )}
+
+                {/* Divider */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <View
+                    style={{ flex: 1, height: 1, backgroundColor: hexToRgba(colors.text, 0.08) }}
+                  />
+                  <ThemedText
+                    style={{ fontSize: 11, color: hexToRgba(colors.text, 0.35), fontFamily: Fonts.medium }}
+                  >
+                    {(hostPaymentDetails?.hostPaymentDetails ?? []).length > 0 ? 'OR ADD NEW' : 'ADD ACCOUNT'}
+                  </ThemedText>
+                  <View
+                    style={{ flex: 1, height: 1, backgroundColor: hexToRgba(colors.text, 0.08) }}
+                  />
+                </View>
+
+                {/* New account form */}
+                <View style={{ gap: 12 }}>
+                  <ThemedText
+                    style={{
+                      fontSize: 12,
+                      fontFamily: Fonts.medium,
+                      color: hexToRgba(colors.text, 0.5),
+                      textTransform: 'uppercase',
+                      letterSpacing: 0.8,
+                    }}
+                  >
+                    New Account
+                  </ThemedText>
                   <FloatingLabelInput
                     focused
                     inputMode="numeric"
                     label="Account Number"
-                    onChangeText={(v) => setNewAccountInput((c) => ({ ...c, accountNumber: v }))}
-                    placeholder="Payments will be transfered here"
+                    onChangeText={(v) =>
+                      setNewAccountInput((c) => ({ ...c, accountNumber: v }))
+                    }
+                    placeholder="10-digit account number"
                   />
+                  <SelectInput
+                    focused
+                    searchable
+                    searchField="name"
+                    label="Bank"
+                    placeholder="Select your bank"
+                    onSelect={(v) => setNewAccountInput((c) => ({ ...c, bankCode: v.code }))}
+                    getLabelString={(v) => v?.name ?? ''}
+                    renderItem={BankSelectOption}
+                    getValueString={(v: Bank) => v?.name}
+                    options={data ?? []}
+                  />
+                  <Button
+                    type="primary"
+                    onPress={() => {
+                      setSelectedAcount(undefined);
+                      verifyAccount({ requestPolicy: 'network-only' });
+                    }}
+                    disabled={!canSaveNewAccount}
+                    loading={resolving}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <Plus size={16} color="#fff" />
+                      <ThemedText content="primary" style={{ fontFamily: Fonts.medium }}>
+                        Verify & Save Account
+                      </ThemedText>
+                    </View>
+                  </Button>
                 </View>
-                <SelectInput
-                  focused
-                  searchable
-                  searchField="name"
-                  label="Bank"
-                  placeholder="Select bank"
-                  onSelect={(v) => {
-                    setNewAccountInput((c) => ({ ...c, bankCode: v.code }));
-                  }}
-                  getLabelString={(v) => v?.name ?? ''}
-                  renderItem={BankSelectOption}
-                  getValueString={(v: Bank) => v?.name}
-                  options={data ?? []}
-                />
-              </View>
-              <Button
-                type="text"
-                onPress={() => {
-                  setSelectedAcount(undefined);
-                  verifyAccount({ requestPolicy: 'network-only' });
-                }}
-                disabled={!newAccountInput.bankCode || !newAccountInput.accountNumber || resolving}
-                loading={resolving}
-              >
-                <ThemedText content="text">Save</ThemedText>
-              </Button>
-            </View>
-            {selectedAccount && (
-              <View className="mt-4">
-                <SelectedPaymentDetails details={selectedAccount} />
               </View>
             )}
-          </View>
+          </SectionCard>
         </View>
       </DetailsLayout>
       <LoadingModal visible={loading} />

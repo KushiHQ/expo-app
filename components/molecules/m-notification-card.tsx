@@ -34,19 +34,23 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
 
     if (!id) return null;
 
-    // Chat intent — route to the chat regardless of subject
-    if (intent === NotificationIntent.NewMessage) {
-      return `/chats/${id}/`;
+    // Subject-based routing takes priority over intent
+    if (subject === NotificationSubject.Booking) {
+      return `/bookings/${id}`;
     }
-
+    if (subject === NotificationSubject.BookingApplication) {
+      return `/users/booking-applications/${id}`;
+    }
     if (subject === NotificationSubject.Hosting) {
       return `/hostings/${id}`;
     }
     if (subject === NotificationSubject.Chat) {
       return `/chats/${id}/`;
     }
-    if (subject === NotificationSubject.BookingApplication) {
-      return `/users/booking-applications/${id}`;
+
+    // Fall back to intent only when no subject is set
+    if (intent === NotificationIntent.NewMessage) {
+      return `/chats/${id}/`;
     }
 
     return null;
@@ -72,13 +76,13 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
   const isUnread = !notification.isRead;
 
   const getActionLabel = () => {
-    if (notification.type === NotificationType.System) return 'Update';
     const subject = notification.data?.subject;
     const intent = notification.data?.intent;
-    if (intent === NotificationIntent.NewMessage) return 'Open Chat';
+    if (subject === NotificationSubject.Booking) return 'View Booking';
+    if (subject === NotificationSubject.BookingApplication) return 'View Application';
     if (subject === NotificationSubject.Hosting) return 'View Listing';
     if (subject === NotificationSubject.Chat) return 'Open Chat';
-    if (subject === NotificationSubject.BookingApplication) return 'View';
+    if (intent === NotificationIntent.NewMessage) return 'Open Chat';
     return 'View';
   };
 

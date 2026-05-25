@@ -5,7 +5,7 @@ import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
 import { Fonts } from '@/lib/constants/theme';
 import { useFallbackImages } from '@/lib/hooks/images';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useHostingQuery } from '@/lib/services/graphql/generated';
+import { ListingType, useHostingQuery } from '@/lib/services/graphql/generated';
 import { cast } from '@/lib/types/utils';
 import { hexToRgba } from '@/lib/utils/colors';
 import { handleError } from '@/lib/utils/error';
@@ -13,6 +13,7 @@ import { capitalize, slugify } from '@/lib/utils/text';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
+import { MessageSquare } from 'lucide-react-native';
 import React from 'react';
 import { Share, View } from 'react-native';
 import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
@@ -73,6 +74,46 @@ export default function HostingDetails() {
               <Skeleton style={{ height: 20, width: 120, borderRadius: 4 }} />
             </View>
             <Skeleton style={{ height: 50, width: 140, borderRadius: 12 }} />
+          </View>
+        ) : hosting?.listingType === ListingType.Sale ? (
+          <View
+            style={{
+              backgroundColor: colors.background,
+              paddingHorizontal: 16,
+              paddingBottom: 32,
+              paddingTop: 12,
+              gap: 10,
+              borderTopWidth: 1,
+              borderTopColor: hexToRgba(colors.text, 0.08),
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: hexToRgba(colors.primary, 0.06),
+                borderWidth: 1,
+                borderColor: hexToRgba(colors.primary, 0.15),
+                borderRadius: 12,
+                padding: 14,
+                gap: 6,
+              }}
+            >
+              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 13 }}>
+                Sale — Coming Soon
+              </ThemedText>
+              <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55) }}>
+                Online purchase processing for sale listings isn't available yet. Contact the host
+                directly to discuss and arrange the sale.
+              </ThemedText>
+            </View>
+            <Button
+              type="primary"
+              onPress={() => router.push(`/chats?hostingId=${hosting?.id}`)}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <MessageSquare size={16} color="#fff" />
+                <ThemedText content="primary">Message Host</ThemedText>
+              </View>
+            </Button>
           </View>
         ) : (
           <View

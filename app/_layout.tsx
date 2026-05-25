@@ -35,7 +35,11 @@ import '../global.css';
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   environment: __DEV__ ? 'development' : 'production',
-  tracesSampleRate: 1.0,
+  // Capture 100% of transactions in dev so you see everything locally.
+  // In production 10% is plenty — full sampling at scale is expensive.
+  tracesSampleRate: __DEV__ ? 1.0 : 0.1,
+  // Only enable verbose Sentry debug logs in dev (and not on Android where
+  // they clutter the Metro output).
   debug: __DEV__ && Platform.OS !== 'android',
 });
 
