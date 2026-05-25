@@ -59,7 +59,7 @@ jobs:
       - name: Build iOS (local)
         run: |
           set -o pipefail
-          eas build --platform ios --profile preview --local --non-interactive 2>&1 | tee /tmp/eas-output.txt || true
+          eas build --platform ios --profile staging --local --non-interactive 2>&1 | tee /tmp/eas-output.txt || true
           IPA_PATH=$(grep -oE '[^[:space:]]+\.ipa' /tmp/eas-output.txt | tail -1)
           if [ -z "$IPA_PATH" ] || [ ! -f "$IPA_PATH" ]; then
             echo "❌ Could not locate built .ipa file"
@@ -70,12 +70,10 @@ jobs:
         env:
           DEBUG: expo:*
 
-      - name: Upload IPA artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: kushi-ios-staging-${{ github.run_number }}
-          path: ${{ env.IPA_PATH }}
-          retention-days: 14
+      - name: Submit to TestFlight
+        run: eas submit --platform ios --profile staging --non-interactive --path "$IPA_PATH"
+        env:
+          EXPO_APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.EXPO_APPLE_APP_SPECIFIC_PASSWORD }}
 
       - name: Notify Discord
         if: always()

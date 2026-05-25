@@ -11,6 +11,15 @@
 		"preview": {
 			"distribution": "internal"
 		},
+		"staging": {
+			"autoIncrement": true,
+			"android": {
+				"buildType": "app-bundle"
+			},
+			"ios": {
+				"buildConfiguration": "Release"
+			}
+		},
 		"production": {
 			"node": "22.14.0",
 			"autoIncrement": true,
@@ -24,6 +33,18 @@
 		}
 	},
 	"submit": {
+		"staging": {
+			"android": {
+				"serviceAccountKeyPath": "./google-play-key.json",
+				"track": "internal",
+				"releaseStatus": "draft"
+			},
+			"ios": {
+				"appleId": "ezkielvictor2700@gmail.com",
+				"ascAppId": "6768449564",
+				"appleTeamId": "63GVNP37V2"
+			}
+		},
 		"production": {
 			"android": {
 				"serviceAccountKeyPath": "./google-play-key.json",

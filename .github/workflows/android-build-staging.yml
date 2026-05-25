@@ -58,21 +58,20 @@ jobs:
       - name: Build Android (local)
         run: |
           set -o pipefail
-          eas build --platform android --profile preview --local --non-interactive 2>&1 | tee /tmp/eas-output.txt || true
-          APK_PATH=$(grep -oE '[^[:space:]]+\.apk' /tmp/eas-output.txt | tail -1)
-          if [ -z "$APK_PATH" ] || [ ! -f "$APK_PATH" ]; then
-            echo "❌ Could not locate built .apk file"
+          eas build --platform android --profile staging --local --non-interactive 2>&1 | tee /tmp/eas-output.txt || true
+          AAB_PATH=$(grep -oE '[^[:space:]]+\.aab' /tmp/eas-output.txt | tail -1)
+          if [ -z "$AAB_PATH" ] || [ ! -f "$AAB_PATH" ]; then
+            echo "❌ Could not locate built .aab file"
             exit 1
           fi
-          echo "APK_PATH=$APK_PATH" >> "$GITHUB_ENV"
-          echo "✅ Built APK: $APK_PATH"
+          echo "AAB_PATH=$AAB_PATH" >> "$GITHUB_ENV"
+          echo "✅ Built AAB: $AAB_PATH"
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: kushi-android-staging-${{ github.run_number }}
-          path: ${{ env.APK_PATH }}
-          retention-days: 14
+      - name: Decode Google Play key
+        run: echo "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_BASE64 }}" | base64 --decode > google-play-key.json
+
+      - name: Submit to Play Store (internal)
+        run: eas submit --platform android --profile staging --non-interactive --path "$AAB_PATH"
 
       - name: Notify Discord
         if: always()
