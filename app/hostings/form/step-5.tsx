@@ -243,7 +243,9 @@ export default function NewHostingStep5() {
                   focused
                   inputMode="numeric"
                   label="Service Charge"
-                  value={input.serviceCharge ? Number(input.serviceCharge).toLocaleString() : undefined}
+                  value={
+                    input.serviceCharge ? Number(input.serviceCharge).toLocaleString() : undefined
+                  }
                   onChangeText={(v) =>
                     updateInput({ serviceCharge: v.replace('₦', '').replaceAll(',', '') })
                   }
@@ -297,11 +299,7 @@ export default function NewHostingStep5() {
             {selectedAccount ? (
               <View style={{ gap: 12 }}>
                 <SelectedPaymentDetails details={selectedAccount} />
-                <Button
-                  variant="outline"
-                  type="shade"
-                  onPress={() => setSelectedAcount(undefined)}
-                >
+                <Button variant="outline" type="shade" onPress={() => setSelectedAcount(undefined)}>
                   <ThemedText style={{ fontSize: 13, color: hexToRgba(colors.text, 0.6) }}>
                     Change Account
                   </ThemedText>
@@ -345,9 +343,15 @@ export default function NewHostingStep5() {
                     style={{ flex: 1, height: 1, backgroundColor: hexToRgba(colors.text, 0.08) }}
                   />
                   <ThemedText
-                    style={{ fontSize: 11, color: hexToRgba(colors.text, 0.35), fontFamily: Fonts.medium }}
+                    style={{
+                      fontSize: 11,
+                      color: hexToRgba(colors.text, 0.35),
+                      fontFamily: Fonts.medium,
+                    }}
                   >
-                    {(hostPaymentDetails?.hostPaymentDetails ?? []).length > 0 ? 'OR ADD NEW' : 'ADD ACCOUNT'}
+                    {(hostPaymentDetails?.hostPaymentDetails ?? []).length > 0
+                      ? 'OR ADD NEW'
+                      : 'ADD ACCOUNT'}
                   </ThemedText>
                   <View
                     style={{ flex: 1, height: 1, backgroundColor: hexToRgba(colors.text, 0.08) }}
@@ -371,9 +375,7 @@ export default function NewHostingStep5() {
                     focused
                     inputMode="numeric"
                     label="Account Number"
-                    onChangeText={(v) =>
-                      setNewAccountInput((c) => ({ ...c, accountNumber: v }))
-                    }
+                    onChangeText={(v) => setNewAccountInput((c) => ({ ...c, accountNumber: v }))}
                     placeholder="10-digit account number"
                   />
                   <SelectInput

@@ -105,10 +105,7 @@ export default function HostingDetails() {
                 directly to discuss and arrange the sale.
               </ThemedText>
             </View>
-            <Button
-              type="primary"
-              onPress={() => router.push(`/chats?hostingId=${hosting?.id}`)}
-            >
+            <Button type="primary" onPress={() => router.push(`/chats?hostingId=${hosting?.id}`)}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <MessageSquare size={16} color="#fff" />
                 <ThemedText content="primary">Message Host</ThemedText>
