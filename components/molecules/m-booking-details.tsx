@@ -156,9 +156,7 @@ const FeesSection: React.FC<SubProps> = ({ booking, printing }) => {
           style={{ borderColor: hexToRgba(printing ? '#000000' : colors.text, 0.1) }}
         >
           <PrintableLabel printing={printing}>{item.label}</PrintableLabel>
-          <PrintableText printing={printing}>
-            ₦{Number(item.amount).toLocaleString()}
-          </PrintableText>
+          <PrintableText printing={printing}>₦{Number(item.amount).toLocaleString()}</PrintableText>
         </View>
       ))}
       <View className="flex-row items-center justify-between">

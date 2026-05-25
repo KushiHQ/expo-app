@@ -1,10 +1,10 @@
-import { PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { Fonts } from "@/lib/constants/theme";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
-import { Image } from "expo-image";
-import { PenLine, RotateCcw } from "lucide-react-native";
-import React from "react";
+import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { Fonts } from '@/lib/constants/theme';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
+import { Image } from 'expo-image';
+import { PenLine, RotateCcw } from 'lucide-react-native';
+import React from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -16,18 +16,10 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from "react-native-gesture-handler";
-import Animated, {
-  runOnJS,
-  useAnimatedProps,
-  useSharedValue,
-} from "react-native-reanimated";
-import { Path, Rect, Svg } from "react-native-svg";
+} from 'react-native';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated, { runOnJS, useAnimatedProps, useSharedValue } from 'react-native-reanimated';
+import { Path, Rect, Svg } from 'react-native-svg';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -58,7 +50,7 @@ function chaikin(pts: Point[], iterations = 2): Point[] {
 }
 
 function pointsToPath(pts: Point[]): string {
-  if (pts.length === 0) return "";
+  if (pts.length === 0) return '';
   if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y} l 0.5 0.5`;
   let d = `M ${pts[0].x} ${pts[0].y}`;
   for (let i = 1; i < pts.length - 1; i++) {
@@ -86,7 +78,7 @@ const SignaturePad: React.FC<Props> = ({ onSave, existingUrl, uploading }) => {
   const rawPoints = React.useRef<Point[]>([]);
 
   // Current in-progress stroke runs entirely on the UI thread via worklet
-  const currentD = useSharedValue("");
+  const currentD = useSharedValue('');
   const prevX = useSharedValue(0);
   const prevY = useSharedValue(0);
 
@@ -109,14 +101,14 @@ const SignaturePad: React.FC<Props> = ({ onSave, existingUrl, uploading }) => {
   const pan = Gesture.Pan()
     .minDistance(0)
     .onStart((e) => {
-      "worklet";
+      'worklet';
       currentD.value = `M ${e.x} ${e.y}`;
       prevX.value = e.x;
       prevY.value = e.y;
       runOnJS(startStroke)(e.x, e.y);
     })
     .onUpdate((e) => {
-      "worklet";
+      'worklet';
       // Skip micro-movements under 3px — eliminates finger jitter
       const dx = e.x - prevX.value;
       const dy = e.y - prevY.value;
@@ -130,14 +122,14 @@ const SignaturePad: React.FC<Props> = ({ onSave, existingUrl, uploading }) => {
       runOnJS(pushPoint)(e.x, e.y);
     })
     .onEnd(() => {
-      "worklet";
-      currentD.value = "";
+      'worklet';
+      currentD.value = '';
       runOnJS(commitSmoothed)();
     })
     .onFinalize(() => {
-      "worklet";
+      'worklet';
       // Safety net for gesture cancellation (finger lifted outside bounds, etc.)
-      currentD.value = "";
+      currentD.value = '';
       runOnJS(commitSmoothed)();
     });
 
@@ -147,7 +139,7 @@ const SignaturePad: React.FC<Props> = ({ onSave, existingUrl, uploading }) => {
 
   const handleClear = () => {
     setCompletedPaths([]);
-    currentD.value = "";
+    currentD.value = '';
     rawPoints.current = [];
   };
 
@@ -175,12 +167,7 @@ const SignaturePad: React.FC<Props> = ({ onSave, existingUrl, uploading }) => {
 
         {existingUrl ? (
           <View style={styles.previewWrap}>
-            <View
-              style={[
-                styles.previewCanvas,
-                { borderColor: hexToRgba(colors.primary, 0.3) },
-              ]}
-            >
+            <View style={[styles.previewCanvas, { borderColor: hexToRgba(colors.primary, 0.3) }]}>
               <Image
                 source={{ uri: existingUrl }}
                 style={StyleSheet.absoluteFillObject}
@@ -190,26 +177,13 @@ const SignaturePad: React.FC<Props> = ({ onSave, existingUrl, uploading }) => {
                 priority="high"
               />
             </View>
-            <TouchableOpacity
-              style={styles.retakeBtn}
-              onPress={handleOpen}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.retakeBtn} onPress={handleOpen} activeOpacity={0.7}>
               {uploading ? (
                 <ActivityIndicator size="small" color={colors.primary} />
               ) : (
                 <>
-                  <RotateCcw
-                    size={13}
-                    color={hexToRgba(colors.text, 0.5)}
-                    strokeWidth={2}
-                  />
-                  <Text
-                    style={[
-                      styles.retakeText,
-                      { color: hexToRgba(colors.text, 0.5) },
-                    ]}
-                  >
+                  <RotateCcw size={13} color={hexToRgba(colors.text, 0.5)} strokeWidth={2} />
+                  <Text style={[styles.retakeText, { color: hexToRgba(colors.text, 0.5) }]}>
                     Retake signature
                   </Text>
                 </>
@@ -233,22 +207,12 @@ const SignaturePad: React.FC<Props> = ({ onSave, existingUrl, uploading }) => {
             ) : (
               <>
                 <View
-                  style={[
-                    styles.ctaIconWrap,
-                    { backgroundColor: hexToRgba(colors.primary, 0.12) },
-                  ]}
+                  style={[styles.ctaIconWrap, { backgroundColor: hexToRgba(colors.primary, 0.12) }]}
                 >
                   <PenLine size={20} color={colors.primary} strokeWidth={2} />
                 </View>
-                <Text style={[styles.ctaLabel, { color: colors.primary }]}>
-                  Draw Signature
-                </Text>
-                <Text
-                  style={[
-                    styles.ctaSub,
-                    { color: hexToRgba(colors.text, 0.4) },
-                  ]}
-                >
+                <Text style={[styles.ctaLabel, { color: colors.primary }]}>Draw Signature</Text>
+                <Text style={[styles.ctaSub, { color: hexToRgba(colors.text, 0.4) }]}>
                   Tap to open signature pad
                 </Text>
               </>
@@ -266,76 +230,33 @@ const SignaturePad: React.FC<Props> = ({ onSave, existingUrl, uploading }) => {
       >
         {/* GestureHandlerRootView is required for GestureDetector inside a Modal */}
         <GestureHandlerRootView style={{ flex: 1 }}>
-          <SafeAreaView
-            style={[styles.modalRoot, { backgroundColor: colors.background }]}
-          >
+          <SafeAreaView style={[styles.modalRoot, { backgroundColor: colors.background }]}>
             <StatusBar barStyle="light-content" />
 
-            <View
-              style={[
-                styles.modalHeader,
-                { borderBottomColor: hexToRgba(colors.text, 0.08) },
-              ]}
-            >
-              <TouchableOpacity
-                onPress={() => setModalOpen(false)}
-                hitSlop={12}
-              >
-                <Text
-                  style={[
-                    styles.cancelText,
-                    { color: hexToRgba(colors.text, 0.5) },
-                  ]}
-                >
+            <View style={[styles.modalHeader, { borderBottomColor: hexToRgba(colors.text, 0.08) }]}>
+              <TouchableOpacity onPress={() => setModalOpen(false)} hitSlop={12}>
+                <Text style={[styles.cancelText, { color: hexToRgba(colors.text, 0.5) }]}>
                   Cancel
                 </Text>
               </TouchableOpacity>
-              <Text style={[styles.modalTitle, { color: colors.text }]}>
-                Draw Signature
-              </Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Draw Signature</Text>
               <TouchableOpacity onPress={handleClear} hitSlop={12}>
-                <Text
-                  style={[
-                    styles.clearText,
-                    { color: hexToRgba(colors.text, 0.5) },
-                  ]}
-                >
+                <Text style={[styles.clearText, { color: hexToRgba(colors.text, 0.5) }]}>
                   Clear
                 </Text>
               </TouchableOpacity>
             </View>
 
-            <Text
-              style={[
-                styles.instruction,
-                { color: hexToRgba(colors.text, 0.45) },
-              ]}
-            >
+            <Text style={[styles.instruction, { color: hexToRgba(colors.text, 0.45) }]}>
               Sign your name using your finger in the area below
             </Text>
 
             <GestureDetector gesture={pan}>
-              <View
-                style={[
-                  styles.canvasOuter,
-                  { borderColor: hexToRgba(colors.primary, 0.2) },
-                ]}
-              >
+              <View style={[styles.canvasOuter, { borderColor: hexToRgba(colors.primary, 0.2) }]}>
                 <View style={styles.canvasInner}>
-                  <Svg
-                    ref={svgRef}
-                    width="100%"
-                    height="100%"
-                    style={styles.svg}
-                  >
+                  <Svg ref={svgRef} width="100%" height="100%" style={styles.svg}>
                     {/* White fill ensures the exported PNG has a white background, not transparent */}
-                    <Rect
-                      x="0"
-                      y="0"
-                      width="100%"
-                      height="100%"
-                      fill="#ffffff"
-                    />
+                    <Rect x="0" y="0" width="100%" height="100%" fill="#ffffff" />
                     {completedPaths.map((d, i) => (
                       <Path
                         key={i}
@@ -360,11 +281,7 @@ const SignaturePad: React.FC<Props> = ({ onSave, existingUrl, uploading }) => {
 
                   {isEmpty && (
                     <View style={styles.placeholder} pointerEvents="none">
-                      <PenLine
-                        size={28}
-                        color="rgba(0,0,0,0.18)"
-                        strokeWidth={1.5}
-                      />
+                      <PenLine size={28} color="rgba(0,0,0,0.18)" strokeWidth={1.5} />
                       <Text style={styles.placeholderText}>Sign here</Text>
                     </View>
                   )}
@@ -377,9 +294,7 @@ const SignaturePad: React.FC<Props> = ({ onSave, existingUrl, uploading }) => {
                 style={({ pressed }) => [
                   styles.saveBtn,
                   {
-                    backgroundColor: isEmpty
-                      ? hexToRgba(colors.primary, 0.35)
-                      : colors.primary,
+                    backgroundColor: isEmpty ? hexToRgba(colors.primary, 0.35) : colors.primary,
                     opacity: pressed ? 0.85 : 1,
                   },
                 ]}
@@ -415,15 +330,15 @@ const styles = StyleSheet.create({
   previewCanvas: {
     height: 120,
     borderRadius: 12,
-    backgroundColor: "#ffffff",
+    backgroundColor: '#ffffff',
     borderWidth: 1,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   retakeBtn: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 5,
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
   },
   retakeText: {
     fontFamily: Fonts.regular,
@@ -433,17 +348,17 @@ const styles = StyleSheet.create({
     height: 110,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderStyle: "dashed",
-    alignItems: "center",
-    justifyContent: "center",
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
   },
   ctaIconWrap: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 2,
   },
   ctaLabel: {
@@ -456,12 +371,12 @@ const styles = StyleSheet.create({
   },
   modalRoot: {
     flex: 1,
-    paddingTop: Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) : 0,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0,
   },
   modalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: 1,
@@ -481,7 +396,7 @@ const styles = StyleSheet.create({
   instruction: {
     fontFamily: Fonts.regular,
     fontSize: 13,
-    textAlign: "center",
+    textAlign: 'center',
     marginTop: 16,
     marginBottom: 12,
     paddingHorizontal: 24,
@@ -491,25 +406,25 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 16,
     borderWidth: 1,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   canvasInner: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: '#ffffff',
   },
   svg: {
     flex: 1,
   },
   placeholder: {
     ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
   },
   placeholderText: {
     fontFamily: Fonts.regular,
     fontSize: 14,
-    color: "rgba(0,0,0,0.2)",
+    color: 'rgba(0,0,0,0.2)',
   },
   modalFooter: {
     padding: 20,
@@ -518,13 +433,13 @@ const styles = StyleSheet.create({
   saveBtn: {
     height: 52,
     borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   saveBtnText: {
     fontFamily: Fonts.semibold,
     fontSize: 16,
-    color: "#ffffff",
+    color: '#ffffff',
   },
 });
 

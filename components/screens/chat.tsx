@@ -123,7 +123,9 @@ const ChatListItem = ({ chat, router, colors }: { chat: any; router: any; colors
         )}
       </View>
       <View style={{ flex: 1, gap: 4 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+        >
           <ThemedText
             numberOfLines={1}
             style={{
@@ -160,19 +162,13 @@ const ChatListItem = ({ chat, router, colors }: { chat: any; router: any; colors
               audioAsset && (!lastMessage.text || lastMessage.text.trim().length === 0);
             return (
               <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                {isAudioOnly && (
-                  <Mic size={13} color={hexToRgba(colors.text, 0.45)} />
-                )}
+                {isAudioOnly && <Mic size={13} color={hexToRgba(colors.text, 0.45)} />}
                 <ThemedText
                   numberOfLines={1}
                   style={{
                     fontSize: 13,
-                    color: hexToRgba(
-                      colors.text,
-                      chat.unreadMessageCount > 0 ? 0.65 : 0.45,
-                    ),
-                    fontFamily:
-                      chat.unreadMessageCount > 0 ? Fonts.medium : Fonts.regular,
+                    color: hexToRgba(colors.text, chat.unreadMessageCount > 0 ? 0.65 : 0.45),
+                    fontFamily: chat.unreadMessageCount > 0 ? Fonts.medium : Fonts.regular,
                     flex: 1,
                   }}
                 >

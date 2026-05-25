@@ -226,14 +226,12 @@ export default function ChatDetails() {
     const isFirstInGroup =
       !above ||
       above.isSender !== item.isSender ||
-      new Date(item.createdAt).getTime() - new Date(above.createdAt).getTime() >
-        GROUP_THRESHOLD_MS;
+      new Date(item.createdAt).getTime() - new Date(above.createdAt).getTime() > GROUP_THRESHOLD_MS;
 
     const isLastInGroup =
       !below ||
       below.isSender !== item.isSender ||
-      new Date(below.createdAt).getTime() - new Date(item.createdAt).getTime() >
-        GROUP_THRESHOLD_MS;
+      new Date(below.createdAt).getTime() - new Date(item.createdAt).getTime() > GROUP_THRESHOLD_MS;
 
     return (
       <ChatMessageBubble

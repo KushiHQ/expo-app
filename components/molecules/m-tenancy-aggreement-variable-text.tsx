@@ -214,7 +214,8 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
         }
         if (tenantUser.kyc) {
           variablesMap['TENANT_ID_TYPE'] = tenantUser.kyc.idDocumentType ?? 'Government-issued ID';
-          variablesMap['TENANT_KYC_REFERENCE_ID'] = tenantUser.kyc.youverifyReferenceId ?? 'Pending';
+          variablesMap['TENANT_KYC_REFERENCE_ID'] =
+            tenantUser.kyc.youverifyReferenceId ?? 'Pending';
         }
       }
 

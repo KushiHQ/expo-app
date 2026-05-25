@@ -1,17 +1,17 @@
-import Skeleton from "@/components/atoms/a-skeleton";
-import DetailsLayout from "@/components/layouts/details";
-import BookingCard from "@/components/molecules/m-booking-card";
-import EmptyList from "@/components/molecules/m-empty-list";
-import TextPill from "@/components/molecules/m-text-pill-pill";
+import Skeleton from '@/components/atoms/a-skeleton';
+import DetailsLayout from '@/components/layouts/details';
+import BookingCard from '@/components/molecules/m-booking-card';
+import EmptyList from '@/components/molecules/m-empty-list';
+import TextPill from '@/components/molecules/m-text-pill-pill';
 import {
   BookingApplicationStatus,
   PaymentStatus,
   useBookingApplicationsQuery,
   useBookingsQuery,
-} from "@/lib/services/graphql/generated";
-import { cast } from "@/lib/types/utils";
-import { useInfiniteQuery } from "@/lib/hooks/use-infinite-query";
-import React from "react";
+} from '@/lib/services/graphql/generated';
+import { cast } from '@/lib/types/utils';
+import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
+import React from 'react';
 import {
   FlatList,
   LayoutChangeEvent,
@@ -21,10 +21,10 @@ import {
   ScrollView,
   TouchableOpacity,
   View,
-} from "react-native";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import ThemedText from "@/components/atoms/a-themed-text";
-import { hexToRgba } from "@/lib/utils/colors";
+} from 'react-native';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import ThemedText from '@/components/atoms/a-themed-text';
+import { hexToRgba } from '@/lib/utils/colors';
 import Animated, {
   runOnUI,
   scrollTo,
@@ -32,20 +32,20 @@ import Animated, {
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
-} from "react-native-reanimated";
-import BookingApplicationCard from "@/components/molecules/m-booking-application-card";
-import { useLocalSearchParams, useRouter } from "expo-router";
+} from 'react-native-reanimated';
+import BookingApplicationCard from '@/components/molecules/m-booking-application-card';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
-const MAIN_TABS = ["Bookings", "Applications"] as const;
+const MAIN_TABS = ['Bookings', 'Applications'] as const;
 
 export default function UserBookings() {
   const router = useRouter();
   const colors = useThemeColors();
   const params = useLocalSearchParams();
 
-  const initialIndex = params.tab === "applications" ? 1 : 0;
+  const initialIndex = params.tab === 'applications' ? 1 : 0;
   const [mainTab, setMainTab] = React.useState<(typeof MAIN_TABS)[number]>(
-    params.tab === "applications" ? "Applications" : "Bookings",
+    params.tab === 'applications' ? 'Applications' : 'Bookings',
   );
   const [pagerHeight, setPagerHeight] = React.useState(0);
   const [pageContainerWidth, setPageContainerWidth] = React.useState(0);
@@ -99,9 +99,7 @@ export default function UserBookings() {
     transform: [
       {
         translateX:
-          pageWidthSv.value > 0
-            ? (scrollX.value / pageWidthSv.value) * tabWidth.value
-            : 0,
+          pageWidthSv.value > 0 ? (scrollX.value / pageWidthSv.value) * tabWidth.value : 0,
       },
     ],
     width: tabWidth.value,
@@ -114,25 +112,21 @@ export default function UserBookings() {
     })();
   };
 
-  const handleMomentumScrollEnd = (
-    e: NativeSyntheticEvent<NativeScrollEvent>,
-  ) => {
+  const handleMomentumScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (pageContainerWidth === 0) return;
-    const index = Math.round(
-      e.nativeEvent.contentOffset.x / pageContainerWidth,
-    );
+    const index = Math.round(e.nativeEvent.contentOffset.x / pageContainerWidth);
     setMainTab(MAIN_TABS[index]);
   };
 
   const bookingsQuery = useInfiniteQuery(useBookingsQuery, {
-    queryKey: "bookings",
+    queryKey: 'bookings',
     initialVariables: {
       filter: {},
     },
   });
 
   const appsQuery = useInfiniteQuery(useBookingApplicationsQuery, {
-    queryKey: "bookingApplications",
+    queryKey: 'bookingApplications',
     initialVariables: {
       filter: { authGuest: true },
     },
@@ -154,12 +148,9 @@ export default function UserBookings() {
               className="flex-1 items-center justify-center py-4"
             >
               <ThemedText
-                type={mainTab === tab ? "semibold" : "default"}
+                type={mainTab === tab ? 'semibold' : 'default'}
                 style={{
-                  color:
-                    mainTab === tab
-                      ? colors.primary
-                      : hexToRgba(colors.text, 0.4),
+                  color: mainTab === tab ? colors.primary : hexToRgba(colors.text, 0.4),
                 }}
               >
                 {tab}
@@ -168,70 +159,57 @@ export default function UserBookings() {
           ))}
           <Animated.View
             className="absolute bottom-0 h-[2px]"
-            style={[
-              animatedIndicatorStyle,
-              { backgroundColor: colors.primary },
-            ]}
+            style={[animatedIndicatorStyle, { backgroundColor: colors.primary }]}
           />
         </View>
 
         {/* Filter pills — outside the pager so horizontal scroll doesn't conflict with swipe */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ flexGrow: 0 }}
-        >
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
           <View
             style={{
-              flexDirection: "row",
-              alignItems: "center",
+              flexDirection: 'row',
+              alignItems: 'center',
               gap: 8,
               paddingHorizontal: 20,
               paddingVertical: 11,
             }}
           >
-            {mainTab === "Bookings"
-              ? [
-                PaymentStatus.Paid,
-                PaymentStatus.Pending,
-                PaymentStatus.Failed,
-              ].map((v) => (
-                <TextPill
-                  selected={
-                    bookingsQuery.variables.filter?.paymentStatus === v
-                  }
-                  key={v}
-                  onSelect={(val) =>
-                    bookingsQuery.setVariables((c) => ({
-                      ...c,
-                      filter: { ...c.filter, paymentStatus: cast(val) },
-                    }))
-                  }
-                >
-                  {v}
-                </TextPill>
-              ))
-              : ["ALL", ...Object.values(BookingApplicationStatus)].map((v) => (
-                <TextPill
-                  selected={
-                    v === "ALL"
-                      ? !appsQuery.variables.filter?.status
-                      : appsQuery.variables.filter?.status === v
-                  }
-                  key={v}
-                  onSelect={(val) =>
-                    appsQuery.setVariables((c) => ({
-                      ...c,
-                      filter: {
-                        ...c.filter,
-                        status: val === "ALL" ? undefined : cast(val),
-                      },
-                    }))
-                  }
-                >
-                  {v}
-                </TextPill>
-              ))}
+            {mainTab === 'Bookings'
+              ? [PaymentStatus.Paid, PaymentStatus.Pending, PaymentStatus.Failed].map((v) => (
+                  <TextPill
+                    selected={bookingsQuery.variables.filter?.paymentStatus === v}
+                    key={v}
+                    onSelect={(val) =>
+                      bookingsQuery.setVariables((c) => ({
+                        ...c,
+                        filter: { ...c.filter, paymentStatus: cast(val) },
+                      }))
+                    }
+                  >
+                    {v}
+                  </TextPill>
+                ))
+              : ['ALL', ...Object.values(BookingApplicationStatus)].map((v) => (
+                  <TextPill
+                    selected={
+                      v === 'ALL'
+                        ? !appsQuery.variables.filter?.status
+                        : appsQuery.variables.filter?.status === v
+                    }
+                    key={v}
+                    onSelect={(val) =>
+                      appsQuery.setVariables((c) => ({
+                        ...c,
+                        filter: {
+                          ...c.filter,
+                          status: val === 'ALL' ? undefined : cast(val),
+                        },
+                      }))
+                    }
+                  >
+                    {v}
+                  </TextPill>
+                ))}
           </View>
         </ScrollView>
 
@@ -265,33 +243,26 @@ export default function UserBookings() {
                     </View>
                   )}
                   ListEmptyComponent={
-                    !bookingsQuery.fetching &&
-                      bookingsQuery.items.length === 0 ? (
+                    !bookingsQuery.fetching && bookingsQuery.items.length === 0 ? (
                       <View className="mt-20">
                         <EmptyList
                           message="No bookings found"
                           buttonTitle="Explore Hostings"
-                          onButtonPress={() => router.replace("/guest/home")}
+                          onButtonPress={() => router.replace('/guest/home')}
                         />
                       </View>
                     ) : null
                   }
                   ListHeaderComponent={
-                    bookingsQuery.fetching &&
-                      bookingsQuery.items.length === 0 ? (
+                    bookingsQuery.fetching && bookingsQuery.items.length === 0 ? (
                       <View className="mt-4 gap-6">
                         {Array.from({ length: 4 }).map((_, i) => (
-                          <Skeleton
-                            key={i}
-                            style={{ height: 140, borderRadius: 16 }}
-                          />
+                          <Skeleton key={i} style={{ height: 140, borderRadius: 16 }} />
                         ))}
                       </View>
                     ) : null
                   }
-                  onEndReached={() =>
-                    bookingsQuery.hasNextPage && bookingsQuery.loadMore()
-                  }
+                  onEndReached={() => bookingsQuery.hasNextPage && bookingsQuery.loadMore()}
                   onEndReachedThreshold={0.5}
                   refreshControl={
                     <RefreshControl
@@ -323,7 +294,7 @@ export default function UserBookings() {
                         <EmptyList
                           message="No applications found"
                           buttonTitle="Explore Hostings"
-                          onButtonPress={() => router.replace("/guest/home")}
+                          onButtonPress={() => router.replace('/guest/home')}
                         />
                       </View>
                     ) : null
@@ -332,17 +303,12 @@ export default function UserBookings() {
                     appsQuery.fetching && appsQuery.items.length === 0 ? (
                       <View className="mt-4 gap-6">
                         {Array.from({ length: 4 }).map((_, i) => (
-                          <Skeleton
-                            key={i}
-                            style={{ height: 140, borderRadius: 16 }}
-                          />
+                          <Skeleton key={i} style={{ height: 140, borderRadius: 16 }} />
                         ))}
                       </View>
                     ) : null
                   }
-                  onEndReached={() =>
-                    appsQuery.hasNextPage && appsQuery.loadMore()
-                  }
+                  onEndReached={() => appsQuery.hasNextPage && appsQuery.loadMore()}
                   onEndReachedThreshold={0.5}
                   refreshControl={
                     <RefreshControl

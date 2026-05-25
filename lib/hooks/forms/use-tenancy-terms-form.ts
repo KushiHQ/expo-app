@@ -109,9 +109,7 @@ export const useTenancyTermsForm = (id: string) => {
   const handleHostSignatureSave = async (base64DataUrl: string) => {
     setUploading(true);
     try {
-      const pureBase64 = base64DataUrl.includes(',')
-        ? base64DataUrl.split(',')[1]
-        : base64DataUrl;
+      const pureBase64 = base64DataUrl.includes(',') ? base64DataUrl.split(',')[1] : base64DataUrl;
       const uri = `${FileSystem.cacheDirectory}signature_${Date.now()}.png`;
       await FileSystem.writeAsStringAsync(uri, pureBase64, {
         encoding: FileSystem.EncodingType.Base64,

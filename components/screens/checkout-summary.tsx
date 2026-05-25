@@ -53,10 +53,7 @@ const CheckoutSummaryScreen: React.FC<Props> = ({ title, booking, footer, header
               borderRadius: 16,
             }}
           >
-            <CheckoutSummaryItem
-              label="Duration"
-              value={toTitleCase(duration.metric)}
-            />
+            <CheckoutSummaryItem label="Duration" value={toTitleCase(duration.metric)} />
             {calculated?.lineItems?.map((item) => (
               <CheckoutSummaryItem
                 key={item.key}

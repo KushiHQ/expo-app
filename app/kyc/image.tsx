@@ -52,28 +52,48 @@ const CameraFrame = ({ borderColor }: { borderColor: ColorValue }) => {
           style={[
             styles.corner,
             styles.topLeft,
-            { borderColor, borderTopWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderTopLeftRadius: CORNER_RADIUS },
+            {
+              borderColor,
+              borderTopWidth: CORNER_THICKNESS,
+              borderLeftWidth: CORNER_THICKNESS,
+              borderTopLeftRadius: CORNER_RADIUS,
+            },
           ]}
         />
         <View
           style={[
             styles.corner,
             styles.topRight,
-            { borderColor, borderTopWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderTopRightRadius: CORNER_RADIUS },
+            {
+              borderColor,
+              borderTopWidth: CORNER_THICKNESS,
+              borderRightWidth: CORNER_THICKNESS,
+              borderTopRightRadius: CORNER_RADIUS,
+            },
           ]}
         />
         <View
           style={[
             styles.corner,
             styles.bottomLeft,
-            { borderColor, borderBottomWidth: CORNER_THICKNESS, borderLeftWidth: CORNER_THICKNESS, borderBottomLeftRadius: CORNER_RADIUS },
+            {
+              borderColor,
+              borderBottomWidth: CORNER_THICKNESS,
+              borderLeftWidth: CORNER_THICKNESS,
+              borderBottomLeftRadius: CORNER_RADIUS,
+            },
           ]}
         />
         <View
           style={[
             styles.corner,
             styles.bottomRight,
-            { borderColor, borderBottomWidth: CORNER_THICKNESS, borderRightWidth: CORNER_THICKNESS, borderBottomRightRadius: CORNER_RADIUS },
+            {
+              borderColor,
+              borderBottomWidth: CORNER_THICKNESS,
+              borderRightWidth: CORNER_THICKNESS,
+              borderBottomRightRadius: CORNER_RADIUS,
+            },
           ]}
         />
       </View>

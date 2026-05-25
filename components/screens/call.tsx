@@ -101,8 +101,7 @@ const CallScreen: React.FC<Props> = ({ callData }) => {
 
   const recipientName = callData?.recipient?.profile.fullName ?? '';
   const recipientImage =
-    callData?.recipient?.profile?.image?.publicUrl ??
-    getDefaultProfileImageUrl(recipientName);
+    callData?.recipient?.profile?.image?.publicUrl ?? getDefaultProfileImageUrl(recipientName);
 
   const answerPulse = useSharedValue(1);
   useEffect(() => {
@@ -229,9 +228,7 @@ const CallScreen: React.FC<Props> = ({ callData }) => {
                 style={[
                   styles.pillBtn,
                   {
-                    backgroundColor: callData?.isSpeakerOn
-                      ? '#fff'
-                      : hexToRgba('#ffffff', 0.13),
+                    backgroundColor: callData?.isSpeakerOn ? '#fff' : hexToRgba('#ffffff', 0.13),
                   },
                 ]}
               >
@@ -259,9 +256,7 @@ const CallScreen: React.FC<Props> = ({ callData }) => {
                 style={[
                   styles.pillBtn,
                   {
-                    backgroundColor: !callData?.micEnabled
-                      ? '#fff'
-                      : hexToRgba('#ffffff', 0.13),
+                    backgroundColor: !callData?.micEnabled ? '#fff' : hexToRgba('#ffffff', 0.13),
                   },
                 ]}
               >

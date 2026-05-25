@@ -75,12 +75,12 @@ const createClient = (ws: ReturnType<typeof createWSClientInstance>) => {
               useUserStore.getState().reset();
               return;
             }
-            const result = await utils.mutate<
-              RefreshTokenMutation,
-              RefreshTokenMutationVariables
-            >(REFRESH_TOKEN_MUTATION, {
-              input: { refreshToken: storedTokens.refresh },
-            });
+            const result = await utils.mutate<RefreshTokenMutation, RefreshTokenMutationVariables>(
+              REFRESH_TOKEN_MUTATION,
+              {
+                input: { refreshToken: storedTokens.refresh },
+              },
+            );
             if (result.data?.refreshToken.data) {
               const data = result.data.refreshToken.data;
               tokens = { access: data.token, refresh: data.refreshToken };

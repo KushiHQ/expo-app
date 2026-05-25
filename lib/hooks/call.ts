@@ -84,13 +84,19 @@ export const useActiveCall = () => {
     }
 
     if (Platform.OS === 'ios' && callId) {
-      try { RNCallKeep.endCall(String(callId)); } catch {}
+      try {
+        RNCallKeep.endCall(String(callId));
+      } catch {}
     }
 
     if (isLockScreenLaunch) {
       BackHandler.exitApp();
     } else {
-      try { router.back(); } catch (e) { console.warn('handleLeave navigate:', e); }
+      try {
+        router.back();
+      } catch (e) {
+        console.warn('handleLeave navigate:', e);
+      }
     }
   }, [call, callId, player, router, isLockScreenLaunch]);
 
@@ -198,9 +204,15 @@ export const useActiveCall = () => {
       if (hasLeftRef.current) return;
       hasLeftRef.current = true;
       if (Platform.OS === 'ios') {
-        try { RNCallKeep.endAllCalls(); } catch {}
+        try {
+          RNCallKeep.endAllCalls();
+        } catch {}
       }
-      try { router.back(); } catch (e) { console.warn('handleLeft navigate:', e); }
+      try {
+        router.back();
+      } catch (e) {
+        console.warn('handleLeft navigate:', e);
+      }
     };
 
     call.on('joined-meeting', updateParticipants);
@@ -223,9 +235,13 @@ export const useActiveCall = () => {
 
   // Dismiss call screen when the caller cancels or the remote party declines
   useEffect(() => {
-    const onCallCancelled = () => { handleLeave(); };
+    const onCallCancelled = () => {
+      handleLeave();
+    };
     EventEmitter.on('call_cancelled', onCallCancelled);
-    return () => { EventEmitter.off('call_cancelled', onCallCancelled); };
+    return () => {
+      EventEmitter.off('call_cancelled', onCallCancelled);
+    };
   }, [handleLeave]);
 
   useEffect(() => {

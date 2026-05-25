@@ -35,13 +35,13 @@ const getBubbleRadius = (isSender: boolean, isFirst: boolean, isLast: boolean) =
   if (isSender) {
     return {
       borderRadius: r,
-      borderTopRightRadius: isSolo ? r : tail,   // visual bottom-right: tail or connecting
+      borderTopRightRadius: isSolo ? r : tail, // visual bottom-right: tail or connecting
       borderBottomRightRadius: isFirst ? r : tail, // visual top-right: open or connecting
     };
   }
   return {
     borderRadius: r,
-    borderTopLeftRadius: isSolo ? r : tail,    // visual bottom-left: tail or connecting
+    borderTopLeftRadius: isSolo ? r : tail, // visual bottom-left: tail or connecting
     borderBottomLeftRadius: isFirst ? r : tail, // visual top-left: open or connecting
   };
 };
@@ -120,9 +120,7 @@ const ChatMessageBubble: React.FC<Props> = ({
             paddingHorizontal: 14,
             paddingVertical: 10,
             backgroundColor: isSender ? colors.primary : colors['surface-01'],
-            ...(isSender
-              ? {}
-              : { borderWidth: 0.5, borderColor: hexToRgba(colors.text, 0.12) }),
+            ...(isSender ? {} : { borderWidth: 0.5, borderColor: hexToRgba(colors.text, 0.12) }),
           },
         ]}
       >

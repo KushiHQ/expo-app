@@ -62,14 +62,11 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
   const isActive = !!(callData && !callData.isRinging);
   const hasRemoteVideo = !!(isActive && callData.remoteParticipant?.tracks.video.track);
   const isRemoteMuted =
-    isActive &&
-    callData.remoteParticipant &&
-    !callData.remoteParticipant.tracks.audio.track;
+    isActive && callData.remoteParticipant && !callData.remoteParticipant.tracks.audio.track;
 
   const recipientName = callData?.recipient?.profile.fullName ?? '';
   const recipientImage =
-    callData?.recipient?.profile?.image?.publicUrl ??
-    getDefaultProfileImageUrl(recipientName);
+    callData?.recipient?.profile?.image?.publicUrl ?? getDefaultProfileImageUrl(recipientName);
 
   const answerPulse = useSharedValue(1);
   useEffect(() => {
@@ -153,7 +150,10 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
 
       {/* ── Top scrim + header ── */}
       <View
-        style={[styles.topGradient, { paddingTop: insets.top, backgroundColor: 'rgba(2,6,23,0.75)' }]}
+        style={[
+          styles.topGradient,
+          { paddingTop: insets.top, backgroundColor: 'rgba(2,6,23,0.75)' },
+        ]}
         pointerEvents="box-none"
       >
         <View style={styles.header} pointerEvents="box-none">
@@ -261,7 +261,10 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
 
       {/* ── Bottom scrim + controls ── */}
       <View
-        style={[styles.bottomGradient, { paddingBottom: insets.bottom + 20, backgroundColor: 'rgba(2,6,23,0.85)' }]}
+        style={[
+          styles.bottomGradient,
+          { paddingBottom: insets.bottom + 20, backgroundColor: 'rgba(2,6,23,0.85)' },
+        ]}
         onLayout={(e) => setControlsHeight(e.nativeEvent.layout.height)}
       >
         {isIncoming ? (
