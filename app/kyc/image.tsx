@@ -112,7 +112,7 @@ export default function KycImage() {
   const [isCameraReady, setIsCameraReady] = React.useState(false);
   const [faceDetected, setFaceDetected] = React.useState(false);
 
-  const photoOutput = usePhotoOutput({ quality: 0.9 });
+  const photoOutput = usePhotoOutput({ quality: 0.9, outputOrientation: 'preview' });
 
   const faceDetectorOutput = useFaceDetectorOutput({
     onFacesDetected: useCallback((faces: any[]) => {
@@ -124,19 +124,15 @@ export default function KycImage() {
   });
 
   useEffect(() => {
-    photoOutput.outputOrientation = 'up';
-  }, [photoOutput]);
-
-  useEffect(() => {
     if (!hasPermission) {
       requestPermission();
     }
   }, [hasPermission, requestPermission]);
 
-  // Reset face detection state when camera becomes inactive (photo taken)
+  // Reset face detection when photo is taken or retaken
   useEffect(() => {
-    if (kycImage) {
-      setFaceDetected(false);
+    setFaceDetected(false);
+    if (!kycImage) {
       setIsCameraReady(false);
     }
   }, [kycImage]);
@@ -164,6 +160,7 @@ export default function KycImage() {
       setKycImage(finalUri);
     } catch (error) {
       console.error('Failed to capture photo:', error);
+      toast.show({ type: 'error', text1: 'Error', text2: 'Failed to capture photo. Please try again.' });
     }
   };
 
@@ -230,21 +227,23 @@ export default function KycImage() {
                 <View style={styles.cameraContainer}>
                   <Image source={{ uri: kycImage }} style={{ width: '100%', height: '100%' }} />
                 </View>
-              ) : (
-                device && (
-                  <View style={styles.cameraContainer}>
-                    <Camera
-                      style={StyleSheet.absoluteFill}
-                      device={device}
-                      isActive={true}
-                      outputs={[photoOutput, faceDetectorOutput]}
-                      orientationSource="device"
-                      onInitialized={() => setIsCameraReady(true)}
-                      onStarted={() => setIsCameraReady(true)}
-                    />
-                    <CameraFrame borderColor={frameColor} />
-                  </View>
-                )
+              ) : null}
+              {/* Keep Camera mounted to avoid AVCaptureSession teardown/re-attach crash on retake.
+                  isActive=false cleanly stops the session while retaining the component tree. */}
+              {device && (
+                <View style={[styles.cameraContainer, kycImage ? { display: 'none' } : {}]}>
+                  <Camera
+                    style={StyleSheet.absoluteFill}
+                    device={device}
+                    isActive={!kycImage}
+                    outputs={[photoOutput, faceDetectorOutput]}
+                    orientationSource="device"
+                    onInitialized={() => setIsCameraReady(true)}
+                    onStarted={() => setIsCameraReady(true)}
+                    onStopped={() => setIsCameraReady(false)}
+                  />
+                  <CameraFrame borderColor={frameColor} />
+                </View>
               )}
             </View>
 
