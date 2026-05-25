@@ -1,6 +1,11 @@
 import { useWindowDimensions } from 'react-native';
 
 export const useBreakpoint = () => {
-  const { width } = useWindowDimensions();
-  return { isTablet: width >= 768 };
+  const { width, height } = useWindowDimensions();
+  return {
+    isTablet: width >= 768,
+    isLandscape: width > height,
+    screenWidth: width,
+    screenHeight: height,
+  };
 };

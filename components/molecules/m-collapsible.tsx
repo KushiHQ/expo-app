@@ -127,7 +127,7 @@ const Collapsible: React.FC<CollapsibleProps> = ({
           borderColor: hexToRgba(colors.text, 0.1),
         }}
       >
-        <View className="flex-row items-center gap-2">
+        <View className="flex-1 flex-row items-center gap-2 min-w-0">
           <ThemedText numberOfLines={1} ellipsizeMode="tail" type="semibold" style={styles.title}>
             {title}
           </ThemedText>

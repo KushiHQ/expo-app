@@ -1,7 +1,7 @@
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, View, Platform } from 'react-native';
 import Logo from '../icons/i-logo';
 import ThemedText from '../atoms/a-themed-text';
 import { Fonts } from '@/lib/constants/theme';
@@ -15,6 +15,7 @@ import {
 } from '@/lib/services/graphql/generated';
 import { useRouter } from 'expo-router';
 import moment from 'moment';
+import notifee from '@notifee/react-native';
 
 type Props = {
   notification: NotificationsQuery['notifications'][number];
@@ -55,6 +56,9 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
     // Mark as read on any press if not already read
     if (!notification.isRead) {
       await markAsRead({ notificationId: notification.id });
+      if (Platform.OS === 'ios') {
+        await notifee.decrementBadgeCount(1);
+      }
       onRead?.();
     }
 

@@ -111,6 +111,7 @@ export const AUTH_HOST = gql`
       lastUpdated
       signature {
         id
+        secureUrl
         publicUrl
       }
     }
@@ -125,6 +126,7 @@ export const AUTH_GUEST = gql`
       lastUpdated
       signature {
         id
+        secureUrl
         publicUrl
       }
     }

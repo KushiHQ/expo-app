@@ -70,3 +70,25 @@ jobs:
 
       - name: Submit to Play Store
         run: eas submit --platform android --profile production --non-interactive --path "$AAB_PATH"
+
+      - name: Notify Slack
+        if: always()
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "${{ job.status == 'success' && '✅ Kushi Android build submitted to Play Store' || '❌ Kushi Android build failed' }}",
+              "attachments": [
+                {
+                  "color": "${{ job.status == 'success' && '#36a64f' || '#cc0000' }}",
+                  "fields": [
+                    { "title": "Branch", "value": "${{ github.ref_name }}", "short": true },
+                    { "title": "Commit", "value": "${{ github.event.head_commit.message }}", "short": true },
+                    { "title": "Actor", "value": "${{ github.actor }}", "short": true },
+                    { "title": "Run", "value": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View logs>", "short": true }
+                  ]
+                }
+              ]
+            }

@@ -48,7 +48,9 @@ const createClient = (ws: ReturnType<typeof createWSClientInstance>) => {
     exchanges: [
       cacheExchange,
       authExchange(async (utils) => {
-        const tokens = await getAuthTokens();
+        // Mutable reference so addAuthToOperation always uses the latest token
+        // after a mid-session refresh — a const closure would keep the stale token.
+        let tokens = await getAuthTokens();
 
         return {
           addAuthToOperation(operation) {
@@ -65,25 +67,28 @@ const createClient = (ws: ReturnType<typeof createWSClientInstance>) => {
             );
           },
           async refreshAuth() {
-            if (!tokens?.refresh) {
+            // Read fresh from storage — the closure value may already be stale.
+            const storedTokens = await getAuthTokens();
+            if (!storedTokens?.refresh) {
+              tokens = null;
               clearAuthTokens();
+              useUserStore.getState().reset();
+              return;
+            }
+            const result = await utils.mutate<
+              RefreshTokenMutation,
+              RefreshTokenMutationVariables
+            >(REFRESH_TOKEN_MUTATION, {
+              input: { refreshToken: storedTokens.refresh },
+            });
+            if (result.data?.refreshToken.data) {
+              const data = result.data.refreshToken.data;
+              tokens = { access: data.token, refresh: data.refreshToken };
+              await saveAuthTokens(tokens);
             } else {
-              const result = await utils.mutate<
-                RefreshTokenMutation,
-                RefreshTokenMutationVariables
-              >(REFRESH_TOKEN_MUTATION, {
-                input: {
-                  refreshToken: tokens?.refresh,
-                },
-              });
-              if (result.data?.refreshToken.data) {
-                saveAuthTokens({
-                  access: result.data.refreshToken.data.token,
-                  refresh: result.data.refreshToken.data.refreshToken,
-                });
-              } else {
-                clearAuthTokens();
-              }
+              tokens = null;
+              clearAuthTokens();
+              useUserStore.getState().reset();
             }
           },
         };

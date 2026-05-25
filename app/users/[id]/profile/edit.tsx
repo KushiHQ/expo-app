@@ -12,9 +12,8 @@ import React from 'react';
 import { View } from 'react-native';
 import { toast } from '@/lib/hooks/use-toast';
 import * as ImagePicker from 'expo-image-picker';
-import { formMutation } from '@/lib/services/graphql/utils/fetch';
+import { formMutation , generateRNFile } from '@/lib/services/graphql/utils/fetch';
 import { UPDATE_USER_PROFILE } from '@/lib/services/graphql/requests/mutations/users';
-import { generateRNFile } from '@/lib/services/graphql/utils/fetch';
 
 export default function UserProfileEdit() {
   const { user, updateUser } = useUser();

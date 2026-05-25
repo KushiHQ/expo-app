@@ -4,7 +4,6 @@ import { Image } from 'expo-image';
 import React from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 import ThemedText from '../atoms/a-themed-text';
 import { CuidaBuildingOutline } from '../icons/i-home';
 import { TablerMessage2 } from '../icons/i-message';
@@ -18,6 +17,7 @@ import { handleError } from '@/lib/utils/error';
 import { useRouter } from 'expo-router';
 import { buildCallURL } from '@/lib/utils/call';
 import * as Haptics from 'expo-haptics';
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 type Props = {
   hosting?: HostingQuery['hosting'];

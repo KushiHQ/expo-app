@@ -118,14 +118,16 @@ export default function UserBookings() {
     e: NativeSyntheticEvent<NativeScrollEvent>,
   ) => {
     if (pageContainerWidth === 0) return;
-    const index = Math.round(e.nativeEvent.contentOffset.x / pageContainerWidth);
+    const index = Math.round(
+      e.nativeEvent.contentOffset.x / pageContainerWidth,
+    );
     setMainTab(MAIN_TABS[index]);
   };
 
   const bookingsQuery = useInfiniteQuery(useBookingsQuery, {
     queryKey: "bookings",
     initialVariables: {
-      filter: { paymentStatus: PaymentStatus.Paid },
+      filter: {},
     },
   });
 
@@ -179,11 +181,25 @@ export default function UserBookings() {
           showsHorizontalScrollIndicator={false}
           style={{ flexGrow: 0 }}
         >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 20, paddingVertical: 11 }}>
-          {mainTab === "Bookings"
-            ? [PaymentStatus.Paid, PaymentStatus.Pending, PaymentStatus.Failed].map((v) => (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 8,
+              paddingHorizontal: 20,
+              paddingVertical: 11,
+            }}
+          >
+            {mainTab === "Bookings"
+              ? [
+                PaymentStatus.Paid,
+                PaymentStatus.Pending,
+                PaymentStatus.Failed,
+              ].map((v) => (
                 <TextPill
-                  selected={bookingsQuery.variables.filter?.paymentStatus === v}
+                  selected={
+                    bookingsQuery.variables.filter?.paymentStatus === v
+                  }
                   key={v}
                   onSelect={(val) =>
                     bookingsQuery.setVariables((c) => ({
@@ -195,7 +211,7 @@ export default function UserBookings() {
                   {v}
                 </TextPill>
               ))
-            : ["ALL", ...Object.values(BookingApplicationStatus)].map((v) => (
+              : ["ALL", ...Object.values(BookingApplicationStatus)].map((v) => (
                 <TextPill
                   selected={
                     v === "ALL"
@@ -220,10 +236,7 @@ export default function UserBookings() {
         </ScrollView>
 
         {/* Pager — only FlatLists, full swipe area */}
-        <View
-          style={{ flex: 1 }}
-          onLayout={onPagerContainerLayout}
-        >
+        <View style={{ flex: 1 }} onLayout={onPagerContainerLayout}>
           {pagerHeight > 0 && pageContainerWidth > 0 && (
             <Animated.ScrollView
               ref={pagerRef}
@@ -253,7 +266,7 @@ export default function UserBookings() {
                   )}
                   ListEmptyComponent={
                     !bookingsQuery.fetching &&
-                    bookingsQuery.items.length === 0 ? (
+                      bookingsQuery.items.length === 0 ? (
                       <View className="mt-20">
                         <EmptyList
                           message="No bookings found"
@@ -265,7 +278,7 @@ export default function UserBookings() {
                   }
                   ListHeaderComponent={
                     bookingsQuery.fetching &&
-                    bookingsQuery.items.length === 0 ? (
+                      bookingsQuery.items.length === 0 ? (
                       <View className="mt-4 gap-6">
                         {Array.from({ length: 4 }).map((_, i) => (
                           <Skeleton

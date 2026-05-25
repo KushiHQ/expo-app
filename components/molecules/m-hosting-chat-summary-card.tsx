@@ -4,13 +4,13 @@ import { Image } from 'expo-image';
 import React from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 import ThemedText from '../atoms/a-themed-text';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Fonts } from '@/lib/constants/theme';
 import { useRouter } from '@/lib/hooks/use-router';
 import { HostingChatQuery } from '@/lib/services/graphql/generated';
 import { capitalize } from '@/lib/utils/text';
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 type Props = {
   hosting?: HostingChatQuery['hostingChat']['hosting'];

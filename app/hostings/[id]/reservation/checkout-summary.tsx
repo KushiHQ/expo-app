@@ -106,39 +106,14 @@ export default function CheckoutSummary() {
               borderRadius: 16,
             }}
           >
-            <CheckoutSummaryItem
-              label="Base Rent"
-              description="The core rental cost for the property for your selected duration. This money is held securely in Kushi's escrow until you move in."
-              value={formatNaira(calculated?.baseRent ?? 0).formated}
-            />
-            {calculated?.cautionFee && (
+            {calculated?.lineItems?.map((item) => (
               <CheckoutSummaryItem
-                label="Caution Fee"
-                description="A refundable security deposit held against potential property damage or unpaid bills. This will be refunded to you at the end of your tenancy if the property is kept in good condition."
-                value={formatNaira(calculated?.cautionFee ?? 0).formated}
+                key={item.key}
+                label={item.label}
+                description={item.description}
+                value={formatNaira(item.amount).formated}
               />
-            )}
-            {calculated?.serviceCharge && (
-              <CheckoutSummaryItem
-                label="Service Charge"
-                description="A mandatory fee set by the landlord or estate management to cover shared amenities like security, cleaning, waste disposal, or common area maintenance."
-                value={formatNaira(calculated?.serviceCharge ?? 0).formated}
-              />
-            )}
-            {calculated?.legalFee && (
-              <CheckoutSummaryItem
-                label="Legal Fee"
-                description="Covers the preparation, execution, and digital stamping of your legally binding Tenancy Agreement. This ensures your rights as a tenant are fully protected under the law."
-                value={formatNaira(calculated?.legalFee ?? 0).formated}
-              />
-            )}
-            {calculated?.guestServiceCharge && (
-              <CheckoutSummaryItem
-                label="Platform Fee"
-                description="Replaces traditional real estate agency fees. This covers 24/7 customer support, secure escrow payment protection, and platform maintenance to ensure a scam-free rental experience."
-                value={formatNaira(calculated?.guestServiceCharge ?? 0).formated}
-              />
-            )}
+            ))}
             <CheckoutSummaryItem
               extraLarge
               bordered={false}

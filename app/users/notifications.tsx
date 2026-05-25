@@ -1,5 +1,5 @@
 import DetailsLayout from '@/components/layouts/details';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, View, Platform } from 'react-native';
 import NotificationBell from '@/assets/vectors/notification-bell.svg';
 import ThemedText from '@/components/atoms/a-themed-text';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
@@ -15,6 +15,7 @@ import {
   useNotificationsQuery,
 } from '@/lib/services/graphql/generated';
 import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
+import notifee from '@notifee/react-native';
 
 // Filter tabs: null means "All"
 const FILTER_TABS: { label: string; value: NotificationType | null }[] = [
@@ -79,6 +80,9 @@ export default function UserNotifications() {
 
   const handleMarkAllAsRead = async () => {
     await markAllAsRead({});
+    if (Platform.OS === 'ios') {
+      await notifee.setBadgeCount(0);
+    }
     refresh();
   };
 

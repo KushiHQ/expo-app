@@ -3,7 +3,9 @@ import { LinkIcon } from '@/components/icons/i-link';
 import { FluentAppsList24Filled, FluentAppsList24Regular } from '@/components/icons/i-list';
 import { TablerMessage2, TablerMessage2Filled } from '@/components/icons/i-message';
 import { MingcuteUser3Fill, MingcuteUser3Line } from '@/components/icons/i-user';
+import SidebarNav, { type SidebarNavItem } from '@/components/organisms/o-sidebar-nav';
 import { Fonts } from '@/lib/constants/theme';
+import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useUser } from '@/lib/hooks/user';
 import { UserType } from '@/lib/types/users';
@@ -12,11 +14,39 @@ import { Tabs, useRouter, useSegments } from 'expo-router';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+const SIDEBAR_ITEMS: SidebarNavItem[] = [
+  {
+    name: 'analytics',
+    label: 'Analytics',
+    route: '/host/analytics',
+    renderIcon: (color) => <MajesticonsAnalyticsLine color={color} size={22} />,
+  },
+  {
+    name: 'listings',
+    label: 'Listings',
+    route: '/host/listings',
+    renderIcon: (color) => <FluentAppsList24Regular color={color} size={22} />,
+  },
+  {
+    name: 'chat',
+    label: 'Chat',
+    route: '/host/chat',
+    renderIcon: (color) => <TablerMessage2 color={color} size={22} />,
+  },
+  {
+    name: 'profile',
+    label: 'Profile',
+    route: '/host/profile',
+    renderIcon: (color) => <MingcuteUser3Line color={color} size={22} />,
+  },
+];
+
 export default function Layout() {
   const colors = useThemeColors();
   const router = useRouter();
   const segments = useSegments();
   const { updateUser } = useUser();
+  const { isTablet } = useBreakpoint();
 
   const currentTab = segments[1];
 
@@ -29,16 +59,23 @@ export default function Layout() {
     }
   };
 
-  return (
+  const handleSwitchToGuest = () => {
+    updateUser({ userType: UserType.Guest });
+    router.replace('/guest/home');
+  };
+
+  const tabs = (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: colors['primary'],
-        tabBarStyle: {
-          height: 80 + insets.bottom,
-          backgroundColor: colors['background'],
-          borderTopColor: '#0000',
-          borderTopWidth: 1,
-        },
+        tabBarStyle: isTablet
+          ? { display: 'none' }
+          : {
+              height: 80 + insets.bottom,
+              backgroundColor: colors['background'],
+              borderTopColor: '#0000',
+              borderTopWidth: 1,
+            },
         tabBarLabelStyle: {
           fontSize: 14,
           paddingTop: 2,
@@ -48,9 +85,7 @@ export default function Layout() {
     >
       <Tabs.Screen
         name="analytics"
-        listeners={{
-          tabPress: handleTabPress('analytics'),
-        }}
+        listeners={{ tabPress: handleTabPress('analytics') }}
         options={{
           headerShown: false,
           tabBarLabel: 'Analytics',
@@ -64,9 +99,7 @@ export default function Layout() {
       />
       <Tabs.Screen
         name="listings"
-        listeners={{
-          tabPress: handleTabPress('listings'),
-        }}
+        listeners={{ tabPress: handleTabPress('listings') }}
         options={{
           headerShown: false,
           tabBarLabel: 'Listings',
@@ -83,18 +116,13 @@ export default function Layout() {
         listeners={{
           tabPress: (e) => {
             e.preventDefault();
-            updateUser({ userType: UserType.Guest });
-            router.replace('/guest/home');
+            handleSwitchToGuest();
           },
         }}
         options={{
           headerShown: false,
           tabBarLabel: () => null,
-          tabBarLabelStyle: {
-            fontFamily: Fonts.semibold,
-            fontSize: 16,
-            paddingTop: 8,
-          },
+          tabBarLabelStyle: { fontFamily: Fonts.semibold, fontSize: 16, paddingTop: 8 },
           tabBarIcon: () => (
             <View style={{ backgroundColor: colors['text'] }} className="mt-6 rounded-full p-[5px]">
               <LinkIcon size={28} color={colors['background']} />
@@ -104,9 +132,7 @@ export default function Layout() {
       />
       <Tabs.Screen
         name="chat"
-        listeners={{
-          tabPress: handleTabPress('chat'),
-        }}
+        listeners={{ tabPress: handleTabPress('chat') }}
         options={{
           headerShown: false,
           tabBarLabel: 'Chat',
@@ -120,9 +146,7 @@ export default function Layout() {
       />
       <Tabs.Screen
         name="profile"
-        listeners={{
-          tabPress: handleTabPress('profile'),
-        }}
+        listeners={{ tabPress: handleTabPress('profile') }}
         options={{
           headerShown: false,
           tabBarLabel: 'Profile',
@@ -136,4 +160,15 @@ export default function Layout() {
       />
     </Tabs>
   );
+
+  if (isTablet) {
+    return (
+      <View style={{ flex: 1, flexDirection: 'row' }}>
+        <SidebarNav items={SIDEBAR_ITEMS} mode="host" onModeSwitch={handleSwitchToGuest} />
+        <View style={{ flex: 1 }}>{tabs}</View>
+      </View>
+    );
+  }
+
+  return tabs;
 }

@@ -10,7 +10,7 @@ export default ({ config }) => ({
 	name: "Kushi",
 	slug: "kushi",
 	version: "1.0.0",
-	orientation: "portrait",
+	orientation: "default",
 	icon: "./assets/icons/adaptive-icon.png",
 	scheme: "kushi",
 	userInterfaceStyle: "automatic",

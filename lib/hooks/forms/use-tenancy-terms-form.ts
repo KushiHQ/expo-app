@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import {
   SubClause,
@@ -12,11 +12,10 @@ import {
 } from '@/lib/services/graphql/generated';
 import { handleError } from '@/lib/utils/error';
 import { useToast } from '@/lib/hooks/use-toast';
-import { useGalleryStore } from '@/lib/stores/gallery';
-import { formMutation } from '@/lib/services/graphql/utils/fetch';
+import { formMutation, generateRNFile } from '@/lib/services/graphql/utils/fetch';
 import { UPDATE_HOST } from '@/lib/services/graphql/requests/mutations/users';
-import { generateRNFile } from '@/lib/utils/file';
 import { cleanupAgreementTemplateInput } from '@/lib/utils/hosting/tenancyAgreement';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export const useTenancyTermsForm = (id: string) => {
   const router = useRouter();
@@ -30,7 +29,6 @@ export const useTenancyTermsForm = (id: string) => {
     updateInput,
     fetching: fetchingHosting,
   } = useHostingForm(id);
-  const { gallery } = useGalleryStore();
   const [{ data: hostQueryData, fetching: hostFetching }, refetchHost] = useAuthHostQuery();
   const [{ data: templateData, fetching: templateFetching }, refetchTemplate] =
     useTenancyAgreementTemplateQuery();
@@ -108,29 +106,29 @@ export const useTenancyTermsForm = (id: string) => {
     initialize();
   }, [allTemplateSections, input, updateInput, fetchingHosting, isReadyToInitialize]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      let signature = gallery.at(0);
-      if (signature && !hostQueryData?.authHost.signature?.publicUrl && !hostFetching) {
-        setUploading(true);
-        formMutation<UpdateHostMutation, UpdateHostMutationVariables>(UPDATE_HOST, {
-          input: { signature: generateRNFile(signature) },
-        })
-          .then((res) => {
-            if (res.error) handleError(res.error);
-            if (res.data) {
-              refetchHost({ requestPolicy: 'network-only' });
-              show({
-                type: 'success',
-                text1: 'Success',
-                text2: res.data.updateHost.message,
-              });
-            }
-          })
-          .finally(() => setUploading(false));
+  const handleHostSignatureSave = async (base64DataUrl: string) => {
+    setUploading(true);
+    try {
+      const pureBase64 = base64DataUrl.includes(',')
+        ? base64DataUrl.split(',')[1]
+        : base64DataUrl;
+      const uri = `${FileSystem.cacheDirectory}signature_${Date.now()}.png`;
+      await FileSystem.writeAsStringAsync(uri, pureBase64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      const file = generateRNFile(uri);
+      const res = await formMutation<UpdateHostMutation, UpdateHostMutationVariables>(UPDATE_HOST, {
+        input: { signature: file },
+      });
+      if (res.error) handleError(res.error);
+      if (res.data) {
+        refetchHost({ requestPolicy: 'network-only' });
+        show({ type: 'success', text1: 'Success', text2: res.data.updateHost.message });
       }
-    }, [gallery, hostFetching, hostQueryData?.authHost.signature?.publicUrl, refetchHost]),
-  );
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleMutate = () => {
     for (const section of input.tenancyAgreementTemplate?.sections ?? []) {
@@ -288,6 +286,7 @@ export const useTenancyTermsForm = (id: string) => {
     refetch,
     refetchTemplate,
     handleMutate,
+    handleHostSignatureSave,
     handleUpdateVariable,
     toggleSection,
     toggleSubClause,

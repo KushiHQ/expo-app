@@ -1,32 +1,37 @@
-import Button from '@/components/atoms/a-button';
-import LoadingModal from '@/components/atoms/a-loading-modal';
-import ThemedText from '@/components/atoms/a-themed-text';
-import DetailsLayout from '@/components/layouts/details';
-import Collapsible from '@/components/molecules/m-collapsible';
-import TenancyAgreementVariableText from '@/components/molecules/m-tenancy-aggreement-variable-text';
-import PINModal from '@/components/organisms/o-pin-modal';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useUser } from '@/lib/hooks/user';
+import Button from "@/components/atoms/a-button";
+import LoadingModal from "@/components/atoms/a-loading-modal";
+import ThemedText from "@/components/atoms/a-themed-text";
+import DetailsLayout from "@/components/layouts/details";
+import Collapsible from "@/components/molecules/m-collapsible";
+import SignaturePad from "@/components/molecules/m-signature-pad";
+import TenancyAgreementVariableText from "@/components/molecules/m-tenancy-aggreement-variable-text";
+import PINModal from "@/components/organisms/o-pin-modal";
+import { useSignatureUpload } from "@/lib/hooks/use-signature-upload";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { useUser } from "@/lib/hooks/user";
 import {
   BookingApplicationUpdateInput,
+  useAuthGuestQuery,
+  useCalculateHostingFeesQuery,
   useCompleteBookingApplicationSubmissionMutation,
   useHostingQuery,
   useInitiateBookingApplicationMutation,
   useInitiateBookingApplicationSubmissionMutation,
   useUpdateBookingApplicationMutation,
-} from '@/lib/services/graphql/generated';
-import { hexToRgba } from '@/lib/utils/colors';
-import { handleError } from '@/lib/utils/error';
-import { removeTypenames } from '@/lib/utils/graphql/cleanup';
-import { subClauseConditionMet } from '@/lib/utils/hosting/tenancyAgreement';
-import { useBookingApplicationStore } from '@/lib/stores/bookings';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { CircleQuestionMark } from 'lucide-react-native';
-import React from 'react';
-import { RefreshControl, View } from 'react-native';
-import { toast } from '@/lib/hooks/use-toast';
+} from "@/lib/services/graphql/generated";
+import { UPDATE_GUEST } from "@/lib/services/graphql/requests/mutations/users";
+import { hexToRgba } from "@/lib/utils/colors";
+import { handleError } from "@/lib/utils/error";
+import { removeTypenames } from "@/lib/utils/graphql/cleanup";
+import { subClauseConditionMet } from "@/lib/utils/hosting/tenancyAgreement";
+import { useBookingApplicationStore } from "@/lib/stores/bookings";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { CircleQuestionMark } from "lucide-react-native";
+import React from "react";
+import { RefreshControl, View } from "react-native";
+import { toast } from "@/lib/hooks/use-toast";
 
-import SuccessModal from '@/components/organisms/o-success-modal';
+import SuccessModal from "@/components/organisms/o-success-modal";
 
 export default function BookingApplicationStep2() {
   const user = useUser();
@@ -36,17 +41,34 @@ export default function BookingApplicationStep2() {
   const [otpOpen, setOtpOpen] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
   const { id } = useLocalSearchParams();
-  const [{ fetching: initiatingApplicaiton, data: initiateData }, initiateApplication] =
-    useInitiateBookingApplicationMutation();
+  const [
+    { fetching: initiatingApplicaiton, data: initiateData },
+    initiateApplication,
+  ] = useInitiateBookingApplicationMutation();
   const [{ fetching: updatingBookingApplication, error: updateError }, mutate] =
     useUpdateBookingApplicationMutation();
   const [{ data: hostingData }] = useHostingQuery({
     variables: { hostingId: String(id) },
   });
-  const [{ fetching: initiatingSubmission, error: initiateSubmissionError }, initiateSubmission] =
-    useInitiateBookingApplicationSubmissionMutation();
-  const [{ fetching: completingSubmission, error: completionError }, completeSubmission] =
-    useCompleteBookingApplicationSubmissionMutation();
+  const [{ data: feesData }] = useCalculateHostingFeesQuery({
+    variables: {
+      hostingId: String(id),
+      multiplier: input.intervalMultiplier ?? 1,
+    },
+  });
+  const [
+    { fetching: initiatingSubmission, error: initiateSubmissionError },
+    initiateSubmission,
+  ] = useInitiateBookingApplicationSubmissionMutation();
+  const [
+    { fetching: completingSubmission, error: completionError },
+    completeSubmission,
+  ] = useCompleteBookingApplicationSubmissionMutation();
+  const [{ data: guestData }, refetchGuest] = useAuthGuestQuery();
+  const { upload: uploadSignature, uploading: signatureUploading } =
+    useSignatureUpload(UPDATE_GUEST, () =>
+      refetchGuest({ requestPolicy: "network-only" }),
+    );
 
   React.useEffect(() => {
     initiateApplication({
@@ -67,11 +89,16 @@ export default function BookingApplicationStep2() {
 
   React.useEffect(() => {
     if (initiateData?.initiateBookingApplication.data) {
-      const cleanedUp = removeTypenames(initiateData.initiateBookingApplication.data);
-      const { status, statusDetails, createdAt, lastUpdated, ...rest } = cleanedUp;
+      const cleanedUp = removeTypenames(
+        initiateData.initiateBookingApplication.data,
+      );
+      const { status, statusDetails, createdAt, lastUpdated, ...rest } =
+        cleanedUp;
       setInput({
         ...rest,
-        bookingAggrement: removeTypenames(hostingData?.hosting.tenancyAgreementTemplate),
+        bookingAggrement: removeTypenames(
+          hostingData?.hosting.tenancyAgreementTemplate,
+        ),
       });
     }
   }, [initiateData, hostingData?.hosting.tenancyAgreementTemplate]);
@@ -86,8 +113,8 @@ export default function BookingApplicationStep2() {
       }).then((res) => {
         if (res.data?.completeBookingApplicationSubmission) {
           toast.show({
-            type: 'success',
-            text1: 'Success',
+            type: "success",
+            text1: "Success",
             text2: res.data.completeBookingApplicationSubmission.message,
           });
           setOtpOpen(false);
@@ -99,7 +126,7 @@ export default function BookingApplicationStep2() {
   const handleClose = () => {
     setSuccess(false);
     clear();
-    router.replace('/bookings?tab=applications');
+    router.replace("/bookings?tab=applications");
   };
 
   const handleMutate = () => {
@@ -115,8 +142,8 @@ export default function BookingApplicationStep2() {
         }).then((res) => {
           if (res.data?.initiateBookingApplicationSubmission) {
             toast.show({
-              type: 'success',
-              text1: 'Success',
+              type: "success",
+              text1: "Success",
               text2: res.data.initiateBookingApplicationSubmission.message,
             });
             setOtpOpen(true);
@@ -137,7 +164,10 @@ export default function BookingApplicationStep2() {
           />
         }
         footer={
-          <View className="flex-row gap-4 px-6 pb-4" style={{ backgroundColor: colors.background }}>
+          <View
+            className="flex-row gap-4 px-6 pb-4"
+            style={{ backgroundColor: colors.background }}
+          >
             <Button
               onPress={() => router.back()}
               className="flex-1"
@@ -146,15 +176,24 @@ export default function BookingApplicationStep2() {
             >
               <ThemedText content="tinted">Go Back</ThemedText>
             </Button>
-            <Button onPress={handleMutate} type="primary" className="flex-1">
+            <Button
+              onPress={handleMutate}
+              type="primary"
+              className="flex-1"
+              disabled={
+                !guestData?.authGuest.signature?.publicUrl || signatureUploading
+              }
+            >
               <ThemedText content="primary">Submit</ThemedText>
             </Button>
           </View>
         }
       >
         <View className="mt-2">
-          <ThemedText>{'Tenancy Terms & Conditions'}</ThemedText>
-          <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
+          <ThemedText>{"Tenancy Terms & Conditions"}</ThemedText>
+          <ThemedText
+            style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}
+          >
             <CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
             {
               "  Please review the landlord's rules and lease terms below. By submitting this application, you agree to these conditions. If you have questions or wish to discuss a specific clause, please contact the host before submitting."
@@ -163,7 +202,9 @@ export default function BookingApplicationStep2() {
           <View className="mt-8 min-h-[500px] gap-4">
             <View>
               {hostingData &&
-                (hostingData?.hosting.tenancyAgreementTemplate?.sections ?? []).map((section) => (
+                (
+                  hostingData?.hosting.tenancyAgreementTemplate?.sections ?? []
+                ).map((section) => (
                   <Collapsible
                     title={section.title}
                     description={section.description}
@@ -175,6 +216,7 @@ export default function BookingApplicationStep2() {
                           hosting={hostingData.hosting}
                           application={input}
                           tenantUser={user.user.user}
+                          fees={feesData?.calculateHostingFees}
                           text={section.preamble}
                         />
                       )}
@@ -182,7 +224,11 @@ export default function BookingApplicationStep2() {
                     <View className="mt-4">
                       {section?.subClauses
                         .filter((clause) =>
-                          subClauseConditionMet(clause.id, hostingData.hosting, input),
+                          subClauseConditionMet(
+                            clause.id,
+                            hostingData.hosting,
+                            input,
+                          ),
                         )
                         .map((clause) => (
                           <Collapsible
@@ -196,6 +242,7 @@ export default function BookingApplicationStep2() {
                                   hosting={hostingData.hosting}
                                   application={input}
                                   tenantUser={user.user.user}
+                                  fees={feesData?.calculateHostingFees}
                                   providedValues={clause.providedValues}
                                   text={clause.content}
                                 />
@@ -207,11 +254,34 @@ export default function BookingApplicationStep2() {
                   </Collapsible>
                 ))}
             </View>
+            <View
+              style={{
+                borderTopWidth: 1,
+                borderTopColor: hexToRgba(colors.text, 0.1),
+                paddingTop: 16,
+              }}
+            >
+              <ThemedText
+                style={{ fontSize: 12, color: hexToRgba(colors.text, 0.5) }}
+              >
+                By signing below you confirm that you have read and agree to the
+                tenancy terms above.
+              </ThemedText>
+              <SignaturePad
+                existingUrl={guestData?.authGuest.signature?.secureUrl}
+                onSave={uploadSignature}
+                uploading={signatureUploading}
+              />
+            </View>
           </View>
         </View>
       </DetailsLayout>
       <LoadingModal
-        visible={updatingBookingApplication || initiatingSubmission || completingSubmission}
+        visible={
+          updatingBookingApplication ||
+          initiatingSubmission ||
+          completingSubmission
+        }
       />
       <PINModal
         label="Enter OTP"

@@ -4,6 +4,7 @@ import {
   HostingQuery,
   GuestFormEmploymentStatus,
   GuestFormGuarantorRelationships,
+  CalculateHostingFeesQuery,
 } from '@/lib/services/graphql/generated';
 import { formatNaira } from '@/lib/utils/currency';
 import { capitalize, splitVariables } from '@/lib/utils/text';
@@ -52,10 +53,11 @@ interface Props {
   hosting?: HostingQuery['hosting'];
   application?: ApplicationVars | null;
   tenantUser?: TenantUserVars | null;
+  fees?: CalculateHostingFeesQuery['calculateHostingFees'] | null;
 }
 
 const TenancyAgreementVariableText: React.FC<Props> = React.memo(
-  ({ text, providedValues, replace = true, hosting, application, tenantUser }) => {
+  ({ text, providedValues, replace = true, hosting, application, tenantUser, fees }) => {
     const colors = useThemeColors();
 
     const hostingAddress = React.useMemo(() => {
@@ -216,6 +218,15 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
         }
       }
 
+      if (fees) {
+        const legalFeeNum = Number(fees.legalFee ?? 0);
+        const totalPayable = Number(fees.totalPayableAmount ?? 0);
+        variablesMap['LEGAL_FEE_AMOUNT'] = formatNaira(legalFeeNum).formated;
+        variablesMap['LEGAL_FEE_PERCENTAGE'] =
+          totalPayable > 0 ? `${((legalFeeNum / totalPayable) * 100).toFixed(1)}%` : 'N/A';
+        variablesMap['STAMP_DUTY_AMOUNT'] = formatNaira(Number(fees.stampDuty ?? 0)).formated;
+      }
+
       if (providedValues && providedValues.length > 0) {
         providedValues.forEach((val) => {
           if (val.value && val.value.trim() !== '') {
@@ -234,7 +245,7 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
         }
         return match;
       });
-    }, [text, replace, hosting, hostingAddress, providedValues, application, tenantUser]);
+    }, [text, replace, hosting, hostingAddress, providedValues, application, tenantUser, fees]);
 
     return (
       <ThemedText>
