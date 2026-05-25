@@ -7,7 +7,10 @@ import "dotenv/config";
 export default ({ config }) => ({
 	// Custom Expo configuration for Kushi App (v1.0.0)
 	...config,
-	name: "Kushi",
+	name:
+		process.env.APP_ENV === "staging"
+			? "Kushi Housing (Staging)"
+			: "Kushi Housing",
 	slug: "kushi",
 	version: "1.0.0",
 	orientation: "default",
@@ -112,10 +115,7 @@ export default ({ config }) => ({
 				},
 				ios: {
 					useFrameworks: "static",
-					forceStaticLinking: [
-						"RNFBApp",
-						"RNFBMessaging",
-					],
+					forceStaticLinking: ["RNFBApp", "RNFBMessaging"],
 					deploymentTarget: "15.5",
 					clangAllowNonModularInFrameworkModules: true,
 				},
@@ -129,7 +129,8 @@ export default ({ config }) => ({
 				for (const key in buildConfigurations) {
 					const cfg = buildConfigurations[key];
 					if (typeof cfg === "object" && cfg.buildSettings) {
-						cfg.buildSettings["CLANG_ALLOW_NON_MODULAR_IN_FRAMEWORK_MODULES"] = "YES";
+						cfg.buildSettings["CLANG_ALLOW_NON_MODULAR_IN_FRAMEWORK_MODULES"] =
+							"YES";
 						cfg.buildSettings["BITCODE_ENABLED"] = "NO";
 					}
 				}
@@ -139,7 +140,9 @@ export default ({ config }) => ({
 		(config) => {
 			if (!config.ios) config.ios = {};
 			if (!config.ios.entitlements) config.ios.entitlements = {};
-			config.ios.entitlements["com.apple.developer.usernotifications.communication"] = true;
+			config.ios.entitlements[
+				"com.apple.developer.usernotifications.communication"
+			] = true;
 			// Required for APNs to deliver remote notifications to this app
 			config.ios.entitlements["aps-environment"] = "production";
 			return config;

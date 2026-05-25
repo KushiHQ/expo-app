@@ -13,6 +13,9 @@
 		},
 		"staging": {
 			"autoIncrement": true,
+			"env": {
+				"APP_ENV": "staging"
+			},
 			"android": {
 				"buildType": "app-bundle"
 			},
