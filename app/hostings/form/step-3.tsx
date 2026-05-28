@@ -1,27 +1,27 @@
-import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
-import LoadingModal from "@/components/atoms/a-loading-modal";
-import LocationCard from "@/components/atoms/a-location-card";
-import Skeleton from "@/components/atoms/a-skeleton";
-import ThemedText from "@/components/atoms/a-themed-text";
-import DetailsLayout from "@/components/layouts/details";
-import HostingStepper from "@/components/molecules/m-hosting-stepper";
-import SectionCard from "@/components/molecules/m-section-card";
-import { Fonts } from "@/lib/constants/theme";
-import { useHostingForm } from "@/lib/hooks/hosting-form";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { cast } from "@/lib/types/utils";
-import { hexToRgba } from "@/lib/utils/colors";
-import { handleError } from "@/lib/utils/error";
-import { getAddressFromCoords, getLocationAsync } from "@/lib/utils/locations";
-import * as Location from "expo-location";
-import { useLocalSearchParams } from "expo-router";
-import { useRouter } from "@/lib/hooks/use-router";
-import { MapPin, Phone } from "lucide-react-native";
-import React, { useRef } from "react";
-import { TextInput, View } from "react-native";
-import { RefreshControl } from "react-native-gesture-handler";
-import { toast } from "@/lib/hooks/use-toast";
-import PhoneNumberSelectInput from "@/components/organisms/o-phone-number-select-input";
+import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
+import LoadingModal from '@/components/atoms/a-loading-modal';
+import LocationCard from '@/components/atoms/a-location-card';
+import Skeleton from '@/components/atoms/a-skeleton';
+import ThemedText from '@/components/atoms/a-themed-text';
+import DetailsLayout from '@/components/layouts/details';
+import HostingStepper from '@/components/molecules/m-hosting-stepper';
+import SectionCard from '@/components/molecules/m-section-card';
+import { Fonts } from '@/lib/constants/theme';
+import { useHostingForm } from '@/lib/hooks/hosting-form';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { cast } from '@/lib/types/utils';
+import { hexToRgba } from '@/lib/utils/colors';
+import { handleError } from '@/lib/utils/error';
+import { getAddressFromCoords, getLocationAsync } from '@/lib/utils/locations';
+import * as Location from 'expo-location';
+import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
+import { MapPin, Phone } from 'lucide-react-native';
+import React, { useRef } from 'react';
+import { TextInput, View } from 'react-native';
+import { RefreshControl } from 'react-native-gesture-handler';
+import { toast } from '@/lib/hooks/use-toast';
+import PhoneNumberSelectInput from '@/components/organisms/o-phone-number-select-input';
 
 export default function NewHostingStep3() {
   const router = useRouter();
@@ -39,10 +39,7 @@ export default function NewHostingStep3() {
     try {
       const loc = await getLocationAsync();
       if (loc) {
-        const addreses = await getAddressFromCoords(
-          loc?.coords.latitude,
-          loc?.coords.longitude,
-        );
+        const addreses = await getAddressFromCoords(loc?.coords.latitude, loc?.coords.longitude);
         const address = addreses?.at(0);
         updateInput({
           latitude: loc.coords.latitude.toString(),
@@ -55,7 +52,7 @@ export default function NewHostingStep3() {
         });
       }
     } catch (err) {
-      console.error("Failed", { err });
+      console.error('Failed', { err });
     } finally {
       setLocationFetching(false);
     }
@@ -67,13 +64,7 @@ export default function NewHostingStep3() {
     } else if (!input.longitude || !input.latitude) {
       fetchLocation();
     }
-  }, [
-    permission,
-    input.latitude,
-    input.longitude,
-    fetchLocation,
-    requestPermission,
-  ]);
+  }, [permission, input.latitude, input.longitude, fetchLocation, requestPermission]);
 
   const handleMutate = () => {
     mutate({ input: input }).then((res) => {
@@ -81,12 +72,10 @@ export default function NewHostingStep3() {
         handleError(res.error);
       }
       if (res.data?.createOrUpdateHosting) {
-        router.push(
-          `/hostings/form/step-4?id=${res.data?.createOrUpdateHosting.data?.id}`,
-        );
+        router.push(`/hostings/form/step-4?id=${res.data?.createOrUpdateHosting.data?.id}`);
         toast.show({
-          type: "success",
-          text1: "Success",
+          type: 'success',
+          text1: 'Success',
           text2: res.data.createOrUpdateHosting.message,
         });
       }
@@ -96,19 +85,12 @@ export default function NewHostingStep3() {
   return (
     <>
       <DetailsLayout
-        refreshControl={
-          <RefreshControl
-            onRefresh={fetchLocation}
-            refreshing={locationFetching}
-          />
-        }
+        refreshControl={<RefreshControl onRefresh={fetchLocation} refreshing={locationFetching} />}
         title="Hosting"
         footer={
           <HostingStepper
             onPress={handleMutate}
-            disabled={
-              mutating || !input.contact || !input.longitude || !input.latitude
-            }
+            disabled={mutating || !input.contact || !input.longitude || !input.latitude}
             loading={mutating}
             step={3}
           />
@@ -144,9 +126,7 @@ export default function NewHostingStep3() {
                   borderColor: hexToRgba(colors.primary, 0.1),
                 }}
               >
-                <ThemedText
-                  style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55) }}
-                >
+                <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55) }}>
                   {input?.street}, {input?.city} {input?.postalCode}
                 </ThemedText>
                 <ThemedText
@@ -172,7 +152,7 @@ export default function NewHostingStep3() {
                 borderWidth: 1,
                 borderColor: hexToRgba(colors.text, 0.1),
                 borderRadius: 12,
-                overflow: "hidden",
+                overflow: 'hidden',
               }}
             >
               <PhoneNumberSelectInput

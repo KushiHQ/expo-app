@@ -43,7 +43,8 @@ export default function ReservationCheckout() {
     variables: { reference: activeRef },
   });
 
-  const transactionFailed = referenceData?.transactionByReference.status === TransactionStatus.Failed;
+  const transactionFailed =
+    referenceData?.transactionByReference.status === TransactionStatus.Failed;
 
   React.useEffect(() => {
     if (error) handleError(error);

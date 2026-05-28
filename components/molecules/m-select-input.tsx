@@ -1,7 +1,14 @@
 import React from 'react';
 import { FloatingLabelInputProps } from '../atoms/a-floating-label-input';
 import BottomSheet from '../atoms/a-bottom-sheet';
-import { Dimensions, FlatList, GestureResponderEvent, ListRenderItem, Pressable, View } from 'react-native';
+import {
+  Dimensions,
+  FlatList,
+  GestureResponderEvent,
+  ListRenderItem,
+  Pressable,
+  View,
+} from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
 import { Check, ChevronDown } from 'lucide-react-native';
 import { hexToRgba } from '@/lib/utils/colors';
@@ -107,7 +114,8 @@ const SelectInput = <T extends object>(props: Props<T>) => {
       const fieldB = rest.searchable
         ? String(cast<Record<string, string>>(b)[rest.searchField])
         : valueStringFunc(b);
-      if ((a as any).sequence && (b as any).sequence) return (a as any).sequence - (b as any).sequence;
+      if ((a as any).sequence && (b as any).sequence)
+        return (a as any).sequence - (b as any).sequence;
       return fieldA.localeCompare(fieldB);
     });
   }, [rest, search, options, valueStringFunc]);
@@ -174,10 +182,12 @@ const SelectInput = <T extends object>(props: Props<T>) => {
             {props.label}
           </Animated.Text>
         )}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+        >
           {/* Only show text when label is floated (shouldFloat=true) or a value is picked.
               When shouldFloat=false and no value, the large animated label IS the placeholder. */}
-          {(value || shouldFloat) ? (
+          {value || shouldFloat ? (
             <ThemedText
               numberOfLines={1}
               ellipsizeMode="tail"
@@ -284,9 +294,7 @@ export const SelectOption: React.FC<SelectOptionType & SelectionDetails> = ({
           {capitalize(label)}
         </ThemedText>
         {description && (
-          <ThemedText
-            style={{ fontSize: 12, color: hexToRgba(colors.text, 0.5), lineHeight: 17 }}
-          >
+          <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.5), lineHeight: 17 }}>
             {description}
           </ThemedText>
         )}

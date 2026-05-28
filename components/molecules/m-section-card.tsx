@@ -1,9 +1,9 @@
-import ThemedText from "@/components/atoms/a-themed-text";
-import { Fonts } from "@/lib/constants/theme";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
-import React from "react";
-import { StyleProp, View, ViewStyle } from "react-native";
+import ThemedText from '@/components/atoms/a-themed-text';
+import { Fonts } from '@/lib/constants/theme';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
+import React from 'react';
+import { StyleProp, View, ViewStyle } from 'react-native';
 
 type Props = {
   icon: React.ReactNode;
@@ -13,13 +13,7 @@ type Props = {
   style?: StyleProp<ViewStyle>;
 };
 
-export default function SectionCard({
-  icon,
-  title,
-  subtitle,
-  children,
-  style,
-}: Props) {
+export default function SectionCard({ icon, title, subtitle, children, style }: Props) {
   const colors = useThemeColors();
   return (
     <View
@@ -27,15 +21,15 @@ export default function SectionCard({
         borderWidth: 1,
         borderColor: hexToRgba(colors.text, 0.08),
         borderRadius: 16,
-        overflow: "hidden",
+        overflow: 'hidden',
       }}
     >
       <View
         style={{
           paddingHorizontal: 16,
           paddingVertical: 14,
-          flexDirection: "row",
-          alignItems: "center",
+          flexDirection: 'row',
+          alignItems: 'center',
           gap: 10,
           borderBottomWidth: 1,
           borderBottomColor: hexToRgba(colors.text, 0.06),
@@ -48,16 +42,14 @@ export default function SectionCard({
             height: 32,
             borderRadius: 8,
             backgroundColor: hexToRgba(colors.primary, 0.12),
-            alignItems: "center",
-            justifyContent: "center",
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           {icon}
         </View>
         <View style={{ flex: 1 }}>
-          <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 14 }}>
-            {title}
-          </ThemedText>
+          <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 14 }}>{title}</ThemedText>
           {subtitle && (
             <ThemedText
               style={{

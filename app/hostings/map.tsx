@@ -54,19 +54,22 @@ export default function HostingDiscoveryMap() {
     })();
   }, [isFocusedMode]);
 
-  const focusedMarker: MapHosting[] = isFocusedMode && latitude && longitude
-    ? [{
-        id: hostingId!,
-        latitude: Number(latitude),
-        longitude: Number(longitude),
-        price: Number(price ?? 0),
-        title: decodeURIComponent(title ?? ''),
-      }]
-    : [];
+  const focusedMarker: MapHosting[] =
+    isFocusedMode && latitude && longitude
+      ? [
+          {
+            id: hostingId!,
+            latitude: Number(latitude),
+            longitude: Number(longitude),
+            price: Number(price ?? 0),
+            title: decodeURIComponent(title ?? ''),
+          },
+        ]
+      : [];
 
   const mapHostings: MapHosting[] = isFocusedMode
     ? focusedMarker
-    : data?.hostings
+    : (data?.hostings
         ?.map((h) => ({
           id: h.id,
           latitude: Number(h.latitude),
@@ -74,7 +77,7 @@ export default function HostingDiscoveryMap() {
           price: Number(h.price),
           title: h.title ?? '',
         }))
-        .filter((h) => !isNaN(h.latitude) && !isNaN(h.longitude)) ?? [];
+        .filter((h) => !isNaN(h.latitude) && !isNaN(h.longitude)) ?? []);
 
   const handleMarkerSelect = (mapH: MapHosting) => {
     if (isFocusedMode) return;
@@ -85,7 +88,7 @@ export default function HostingDiscoveryMap() {
   const focusCoordinates =
     isFocusedMode && latitude && longitude
       ? { latitude: Number(latitude), longitude: Number(longitude) }
-      : userLocation ?? undefined;
+      : (userLocation ?? undefined);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>

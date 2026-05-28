@@ -1,22 +1,20 @@
-import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
-import ThemedText from "@/components/atoms/a-themed-text";
-import DetailsLayout from "@/components/layouts/details";
-import HostingStepper from "@/components/molecules/m-hosting-stepper";
-import SectionCard from "@/components/molecules/m-section-card";
-import SelectInput, {
-  SelectOption,
-} from "@/components/molecules/m-select-input";
-import { useHostingForm } from "@/lib/hooks/hosting-form";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { ListingType } from "@/lib/services/graphql/generated";
-import { PROPERTY_TYPE } from "@/lib/types/enums/hostings";
-import { cast } from "@/lib/types/utils";
-import { handleError } from "@/lib/utils/error";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { AlignLeft, Building2 } from "lucide-react-native";
-import React, { useRef } from "react";
-import { RefreshControl, TextInput, View } from "react-native";
-import { toast } from "@/lib/hooks/use-toast";
+import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
+import ThemedText from '@/components/atoms/a-themed-text';
+import DetailsLayout from '@/components/layouts/details';
+import HostingStepper from '@/components/molecules/m-hosting-stepper';
+import SectionCard from '@/components/molecules/m-section-card';
+import SelectInput, { SelectOption } from '@/components/molecules/m-select-input';
+import { useHostingForm } from '@/lib/hooks/hosting-form';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { ListingType } from '@/lib/services/graphql/generated';
+import { PROPERTY_TYPE } from '@/lib/types/enums/hostings';
+import { cast } from '@/lib/types/utils';
+import { handleError } from '@/lib/utils/error';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { AlignLeft, Building2 } from 'lucide-react-native';
+import React, { useRef } from 'react';
+import { RefreshControl, TextInput, View } from 'react-native';
+import { toast } from '@/lib/hooks/use-toast';
 
 export default function NewHostingStep1() {
   const router = useRouter();
@@ -38,12 +36,10 @@ export default function NewHostingStep1() {
         handleError(res.error);
       }
       if (res.data?.createOrUpdateHosting) {
-        router.replace(
-          `/hostings/form/step-2?id=${res.data?.createOrUpdateHosting.data?.id}`,
-        );
+        router.replace(`/hostings/form/step-2?id=${res.data?.createOrUpdateHosting.data?.id}`);
         toast.show({
-          type: "success",
-          text1: "Success",
+          type: 'success',
+          text1: 'Success',
           text2: res.data.createOrUpdateHosting.message,
         });
       }
@@ -54,10 +50,7 @@ export default function NewHostingStep1() {
     <DetailsLayout
       title="Property Details"
       refreshControl={
-        <RefreshControl
-          refreshing={fetching}
-          onRefresh={() => id && refetchHosting()}
-        />
+        <RefreshControl refreshing={fetching} onRefresh={() => id && refetchHosting()} />
       }
       footer={
         <HostingStepper
@@ -91,7 +84,7 @@ export default function NewHostingStep1() {
             onSubmitEditing={() => descriptionRef.current?.focus()}
             blurOnSubmit={false}
           />
-          <View style={{ flexDirection: "row", gap: 12 }}>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
             <View style={{ flex: 1 }}>
               <SelectInput
                 focused
@@ -123,8 +116,7 @@ export default function NewHostingStep1() {
                 }))}
                 onSelect={(v) =>
                   updateInput({
-                    listingType:
-                      ListingType[v.value as keyof typeof ListingType],
+                    listingType: ListingType[v.value as keyof typeof ListingType],
                   })
                 }
                 renderItem={SelectOption}

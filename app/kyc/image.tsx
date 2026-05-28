@@ -303,7 +303,10 @@ export default function KycImage() {
                 </View>
               </View>
             ) : (
-              <Animated.View layout={LinearTransition.duration(250)} className="mt-8 items-center gap-3">
+              <Animated.View
+                layout={LinearTransition.duration(250)}
+                className="mt-8 items-center gap-3"
+              >
                 <ThemedText
                   type="subtitle"
                   className="max-w-[400px] text-center"
