@@ -29,13 +29,15 @@ export default function ReservationCheckout() {
   const colors = useThemeColors();
   const { bkId, ref } = useLocalSearchParams();
   const [activeRef, setActiveRef] = React.useState(String(ref));
+  const [pendingOpen, setPendingOpen] = React.useState(false);
+  const flutterwaveOpen = React.useRef<(() => void) | null>(null);
 
   const [{ data: bookingData }] = useBookingQuery({
     variables: { bookingId: String(bkId) },
   });
   const [success, setSuccess] = React.useState(false);
   const [{ fetching: verifying, error }, verifyPayment] = useVerifyTransactionByReferenceMutation();
-  const [{ fetching: retrying }, retryPayment] = useMutation<
+  const [{ fetching: refreshing }, refreshPayment] = useMutation<
     { retryBookingPayment: { message: string; data?: { reference?: string } } },
     { bookingId: string }
   >(RETRY_BOOKING_PAYMENT);
@@ -43,12 +45,17 @@ export default function ReservationCheckout() {
     variables: { reference: activeRef },
   });
 
-  const transactionFailed =
-    referenceData?.transactionByReference.status === TransactionStatus.Failed;
-
   React.useEffect(() => {
     if (error) handleError(error);
   }, [error]);
+
+  // Once activeRef updates and we're waiting to open, trigger Flutterwave
+  React.useEffect(() => {
+    if (pendingOpen && flutterwaveOpen.current) {
+      flutterwaveOpen.current();
+      setPendingOpen(false);
+    }
+  }, [activeRef, pendingOpen]);
 
   function handleVerifyPayment() {
     verifyPayment({ reference: activeRef }).then((res) => {
@@ -67,15 +74,21 @@ export default function ReservationCheckout() {
     });
   }
 
-  function handleRetryPayment() {
-    retryPayment({ bookingId: String(bkId) }).then((res) => {
+  // Called when user taps Pay Now — always fetch a fresh reference first
+  function handlePayNow(openFlutterwave: () => void) {
+    flutterwaveOpen.current = openFlutterwave;
+    refreshPayment({ bookingId: String(bkId) }).then((res) => {
       if (res.error) {
         handleError(res.error);
         return;
       }
-      const newRef = res.data?.retryBookingPayment.data?.reference;
-      if (newRef) {
-        setActiveRef(newRef);
+      const freshRef = res.data?.retryBookingPayment.data?.reference;
+      if (!freshRef) return;
+      if (freshRef !== activeRef) {
+        setActiveRef(freshRef);
+        setPendingOpen(true); // effect will open Flutterwave after re-render with new ref
+      } else {
+        openFlutterwave(); // ref unchanged, open immediately
       }
     });
   }
@@ -96,48 +109,36 @@ export default function ReservationCheckout() {
         }
         footer={
           <View className="p-4 py-8">
-            <View>
-              {transactionFailed ? (
+            <PayWithFlutterwave
+              onRedirect={handleVerifyPayment}
+              options={{
+                authorization: process.env.EXPO_PUBLIC_FLUTTERWAVE_PUBLIC_KEY ?? '',
+                amount: Number(referenceData?.transactionByReference.amount ?? '0'),
+                tx_ref: activeRef,
+                currency: 'NGN',
+                customer: {
+                  email: user.user.email ?? '',
+                  phonenumber: bookingData?.booking.phoneNumber,
+                  name: user.user.user?.profile.fullName,
+                },
+                customizations: {
+                  title: 'Kushi Booking',
+                  description: `Payment for ${bookingData?.booking.hosting?.title}`,
+                  logo: 'https://res.cloudinary.com/dev-media/image/upload/v1772369352/logo_miq5eq.png',
+                },
+              }}
+              customButton={(props) => (
                 <Button
-                  onPress={handleRetryPayment}
-                  disabled={retrying}
+                  onPress={() => handlePayNow(props.onPress)}
+                  disabled={props.disabled || refreshing}
                   style={{ borderRadius: 14, backgroundColor: colors.accent }}
                 >
                   <ThemedText style={{ color: 'white' }}>
-                    {retrying ? 'Refreshing...' : 'Retry Payment'}
+                    {refreshing ? 'Preparing...' : 'Pay Now'}
                   </ThemedText>
                 </Button>
-              ) : (
-                <PayWithFlutterwave
-                  onRedirect={handleVerifyPayment}
-                  options={{
-                    authorization: process.env.EXPO_PUBLIC_FLUTTERWAVE_PUBLIC_KEY ?? '',
-                    amount: Number(referenceData?.transactionByReference.amount ?? '0'),
-                    tx_ref: activeRef,
-                    currency: 'NGN',
-                    customer: {
-                      email: user.user.email ?? '',
-                      phonenumber: bookingData?.booking.phoneNumber,
-                      name: user.user.user?.profile.fullName,
-                    },
-                    customizations: {
-                      title: 'Kushi Booking',
-                      description: `Payment for ${bookingData?.booking.hosting?.title}`,
-                      logo: 'https://res.cloudinary.com/dev-media/image/upload/v1772369352/logo_miq5eq.png',
-                    },
-                  }}
-                  customButton={(props) => (
-                    <Button
-                      onPress={props.onPress}
-                      disabled={props.disabled}
-                      style={{ borderRadius: 14, backgroundColor: colors.accent }}
-                    >
-                      <ThemedText style={{ color: 'white' }}>Pay Now</ThemedText>
-                    </Button>
-                  )}
-                />
               )}
-            </View>
+            />
           </View>
         }
       />
@@ -155,7 +156,7 @@ export default function ReservationCheckout() {
           </Button>
         }
       />
-      <LoadingModal visible={verifying || retrying} />
+      <LoadingModal visible={verifying || refreshing} />
     </>
   );
 }
