@@ -29,7 +29,15 @@ export default function ReservationCheckout() {
   const { bkId, ref } = useLocalSearchParams();
   const [activeRef, setActiveRef] = React.useState(String(ref));
   const [pendingOpen, setPendingOpen] = React.useState(false);
+
+  // Always kept in sync with activeRef so handleVerifyPayment never uses a stale closure
+  const activeRefRef = React.useRef(activeRef);
+  // Always updated on each customButton render so useEffect always calls the latest onPress
   const flutterwaveOpen = React.useRef<(() => void) | null>(null);
+
+  React.useEffect(() => {
+    activeRefRef.current = activeRef;
+  }, [activeRef]);
 
   const [{ data: bookingData }] = useBookingQuery({
     variables: { bookingId: String(bkId) },
@@ -45,7 +53,8 @@ export default function ReservationCheckout() {
     if (error) handleError(error);
   }, [error]);
 
-  // Once activeRef updates and we're waiting to open, trigger Flutterwave
+  // After activeRef state update causes re-render, customButton fires again and updates
+  // flutterwaveOpen.current to a props.onPress that uses the new tx_ref — then we open.
   React.useEffect(() => {
     if (pendingOpen && flutterwaveOpen.current) {
       flutterwaveOpen.current();
@@ -54,7 +63,8 @@ export default function ReservationCheckout() {
   }, [activeRef, pendingOpen]);
 
   function handleVerifyPayment() {
-    verifyPayment({ reference: activeRef }).then((res) => {
+    // Use ref so this always verifies with the latest reference regardless of closure age
+    verifyPayment({ reference: activeRefRef.current }).then((res) => {
       if (res.data?.verifyTransactionByReference) {
         toast.show({
           type: 'success',
@@ -70,9 +80,7 @@ export default function ReservationCheckout() {
     });
   }
 
-  // Called when user taps Pay Now — always fetch a fresh reference first
-  function handlePayNow(openFlutterwave: () => void) {
-    flutterwaveOpen.current = openFlutterwave;
+  function handlePayNow() {
     refreshPayment({ bookingId: String(bkId) }).then((res) => {
       if (res.error) {
         handleError(res.error);
@@ -80,11 +88,11 @@ export default function ReservationCheckout() {
       }
       const freshRef = res.data?.retryBookingPayment?.data?.reference;
       if (!freshRef) return;
-      if (freshRef !== activeRef) {
+      if (freshRef !== activeRefRef.current) {
         setActiveRef(freshRef);
-        setPendingOpen(true); // effect will open Flutterwave after re-render with new ref
+        setPendingOpen(true); // useEffect opens after re-render with updated tx_ref
       } else {
-        openFlutterwave(); // ref unchanged, open immediately
+        flutterwaveOpen.current?.(); // same ref, open immediately
       }
     });
   }
@@ -123,17 +131,21 @@ export default function ReservationCheckout() {
                   logo: 'https://res.cloudinary.com/dev-media/image/upload/v1772369352/logo_miq5eq.png',
                 },
               }}
-              customButton={(props) => (
-                <Button
-                  onPress={() => handlePayNow(props.onPress)}
-                  disabled={props.disabled || refreshing}
-                  style={{ borderRadius: 14, backgroundColor: colors.accent }}
-                >
-                  <ThemedText style={{ color: 'white' }}>
-                    {refreshing ? 'Preparing...' : 'Pay Now'}
-                  </ThemedText>
-                </Button>
-              )}
+              customButton={(props) => {
+                // Update on every render so flutterwaveOpen.current always has the latest tx_ref
+                flutterwaveOpen.current = props.onPress;
+                return (
+                  <Button
+                    onPress={handlePayNow}
+                    disabled={props.disabled || refreshing}
+                    style={{ borderRadius: 14, backgroundColor: colors.accent }}
+                  >
+                    <ThemedText style={{ color: 'white' }}>
+                      {refreshing ? 'Preparing...' : 'Pay Now'}
+                    </ThemedText>
+                  </Button>
+                );
+              }}
             />
           </View>
         }
