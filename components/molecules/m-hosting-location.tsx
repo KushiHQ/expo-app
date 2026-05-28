@@ -33,6 +33,8 @@ const HostingLocation: React.FC<Props> = ({ hosting }) => {
             : undefined
         }
         title={hosting?.title}
+        hostingId={hosting?.id}
+        price={hosting?.price ? Number(hosting.price) : undefined}
       />
     </View>
   );

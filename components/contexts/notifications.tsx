@@ -14,7 +14,7 @@ import {
 import notifee, { EventType } from '@notifee/react-native';
 import { handleIncomingCall, handleNotifeeEvent } from '@/lib/utils/call';
 import { handleIncomingChatMessage } from '@/lib/utils/notifications';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import { CALL_TYPE_VALUE } from '@/lib/types/enums/hoting-chat';
 import { AppState, AppStateStatus, Platform } from 'react-native';
 import { useAudioPlayer } from 'expo-audio';

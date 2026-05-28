@@ -14,16 +14,17 @@ import moment from 'moment';
 import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
 import LoadingModal from '../atoms/a-loading-modal';
 import { handleError } from '@/lib/utils/error';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import { buildCallURL } from '@/lib/utils/call';
 import * as Haptics from 'expo-haptics';
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 type Props = {
   hosting?: HostingQuery['hosting'];
+  isHost?: boolean;
 };
 
-const HostingHost: React.FC<Props> = ({ hosting }) => {
+const HostingHost: React.FC<Props> = ({ hosting, isHost = false }) => {
   const router = useRouter();
   const colors = useThemeColors();
   const [{ fetching: chatInitiating }, initiateChat] = useInitiateHostingChatMutation();
@@ -109,7 +110,7 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
               <ThemedText>{moment(hosting?.host.createdAt).fromNow()}</ThemedText>
             </View>
           </View>
-          <View className="mt-4 flex-row items-center gap-4">
+          {!isHost && <View className="mt-4 flex-row items-center gap-4">
             <AnimatedPressable
               onPressIn={() => (messageScale.value = withSpring(0.96))}
               onPressOut={() => (messageScale.value = withSpring(1))}
@@ -164,7 +165,7 @@ const HostingHost: React.FC<Props> = ({ hosting }) => {
                 Call
               </ThemedText>
             </AnimatedPressable>
-          </View>
+          </View>}
         </View>
       </View>
       <LoadingModal visible={chatInitiating} />

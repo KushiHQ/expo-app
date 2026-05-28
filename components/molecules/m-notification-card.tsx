@@ -13,7 +13,7 @@ import {
   NotificationType,
   useMarkNotificationAsReadMutation,
 } from '@/lib/services/graphql/generated';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import moment from 'moment';
 import notifee from '@notifee/react-native';
 

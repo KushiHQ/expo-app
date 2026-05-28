@@ -8,8 +8,9 @@ import {
   useBookingQuery,
   useTransactionByReferenceQuery,
   useVerifyTransactionByReferenceMutation,
-  useRetryBookingPaymentMutation,
 } from '@/lib/services/graphql/generated';
+import { useMutation } from 'urql';
+import { RETRY_BOOKING_PAYMENT } from '@/lib/services/graphql/requests/mutations/payments';
 import HostingSummaryCard from '@/components/molecules/m-hosting-summary-card';
 import Skeleton from '@/components/atoms/a-skeleton';
 import Button from '@/components/atoms/a-button';
@@ -34,7 +35,10 @@ export default function ReservationCheckout() {
   });
   const [success, setSuccess] = React.useState(false);
   const [{ fetching: verifying, error }, verifyPayment] = useVerifyTransactionByReferenceMutation();
-  const [{ fetching: retrying }, retryPayment] = useRetryBookingPaymentMutation();
+  const [{ fetching: retrying }, retryPayment] = useMutation<
+    { retryBookingPayment: { message: string; data?: { reference?: string } } },
+    { bookingId: string }
+  >(RETRY_BOOKING_PAYMENT);
   const [{ data: referenceData }] = useTransactionByReferenceQuery({
     variables: { reference: activeRef },
   });

@@ -28,7 +28,7 @@ import {
   useAiHostingSearchPredictionsQuery,
 } from '@/lib/services/graphql/generated';
 import Skeleton from '../atoms/a-skeleton';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 
 type Props = {
   isMapView?: boolean;

@@ -1,7 +1,7 @@
 import Button from '@/components/atoms/a-button';
 import ThemedText from '@/components/atoms/a-themed-text';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import React from 'react';
 import { View } from 'react-native';
 

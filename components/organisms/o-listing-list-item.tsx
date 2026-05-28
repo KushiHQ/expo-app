@@ -10,7 +10,7 @@ import { EllipsisVertical } from 'lucide-react-native';
 import { hexToRgba } from '@/lib/utils/colors';
 import { IconParkOutlineDot } from '../icons/i-circle';
 import ListingOptions from '../molecules/m-listing-options';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import { HostListingsQuery, PublishStatus } from '@/lib/services/graphql/generated';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';

@@ -5,7 +5,7 @@ import React from 'react';
 import { openGoogleMaps } from '@/lib/utils/urls';
 import { PhCompassRoseDuotone } from '../icons/i-map';
 import { MaterialSymbolsExpandContentRounded } from '../icons/i-fullscreen';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 
 type Props = {
   location?: {
@@ -14,9 +14,11 @@ type Props = {
   };
   title?: string | null;
   zoom?: number;
+  hostingId?: string;
+  price?: number;
 };
 
-const LocationCard: React.FC<Props> = ({ location, title, zoom }) => {
+const LocationCard: React.FC<Props> = ({ location, title, zoom, hostingId, price }) => {
   const router = useRouter();
   const colors = useThemeColors();
 
@@ -39,7 +41,7 @@ const LocationCard: React.FC<Props> = ({ location, title, zoom }) => {
         <Pressable
           onPress={() =>
             router.push(
-              `/hostings/map?latitude=${location?.latitude}&longitude=${location?.longitude}&zoom=${zoom ?? 6}`,
+              `/hostings/map?latitude=${location?.latitude}&longitude=${location?.longitude}&zoom=${zoom ?? 6}${hostingId ? `&hostingId=${hostingId}&title=${encodeURIComponent(title ?? '')}&price=${price ?? 0}` : ''}`,
             )
           }
           className="h-8 w-8 items-center justify-center rounded-full"

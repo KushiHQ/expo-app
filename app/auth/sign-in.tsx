@@ -92,7 +92,7 @@ export default function Login() {
     if (Platform.OS === 'android') {
       try {
         const redirectUri = Linking.createURL('/auth/sign-in');
-        const authUrl = `https://kushicorp.com/auth/signin?redirect_uri=${encodeURIComponent(redirectUri)}`;
+        const authUrl = `https://kushicorp.com/api/auth/apple/authorize?redirect_uri=${encodeURIComponent(redirectUri)}`;
 
         const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri, {
           preferEphemeralSession: true,

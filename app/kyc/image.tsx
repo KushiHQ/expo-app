@@ -114,7 +114,7 @@ export default function KycImage() {
   const [faceDetected, setFaceDetected] = React.useState(false);
   // Debounce face-lost to avoid the badge and button flickering when briefly moving out of frame
   const [faceLocked, setFaceLocked] = React.useState(false);
-  const faceTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const faceTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const photoOutput = usePhotoOutput({ quality: 0.9 });
 

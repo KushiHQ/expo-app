@@ -5,7 +5,7 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import Button from '../atoms/a-button';
 import ThemedText from '../atoms/a-themed-text';
 import React from 'react';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 
 type Props = {
   onPress?: () => void;

@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { Pressable, Text, View } from 'react-native';
 import ListingOptions from '../molecules/m-listing-options';
 import React from 'react';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import { useFallbackImages } from '@/lib/hooks/images';
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
 import ThemedText from '../atoms/a-themed-text';

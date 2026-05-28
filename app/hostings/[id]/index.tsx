@@ -236,7 +236,7 @@ export default function HostingDetails() {
                 </ThemedText>
               </View>
             </View>
-            <HostingHost hosting={hosting} />
+            <HostingHost hosting={hosting} isHost={isHost} />
             <HostingFacilities hosting={hosting} />
             <HostingGalleryComponent hosting={hosting} />
             <HostingReviews hosting={hosting} />

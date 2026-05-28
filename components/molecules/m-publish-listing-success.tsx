@@ -4,7 +4,7 @@ import { Fonts } from '@/lib/constants/theme';
 import { View } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
 import Button from '../atoms/a-button';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 
 type Props = {
   show: boolean;
