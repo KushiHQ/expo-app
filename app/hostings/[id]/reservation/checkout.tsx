@@ -30,14 +30,8 @@ export default function ReservationCheckout() {
   const [activeRef, setActiveRef] = React.useState(String(ref));
   const [pendingOpen, setPendingOpen] = React.useState(false);
 
-  // Always kept in sync with activeRef so handleVerifyPayment never uses a stale closure
-  const activeRefRef = React.useRef(activeRef);
   // Always updated on each customButton render so useEffect always calls the latest onPress
   const flutterwaveOpen = React.useRef<(() => void) | null>(null);
-
-  React.useEffect(() => {
-    activeRefRef.current = activeRef;
-  }, [activeRef]);
 
   const [{ data: bookingData }] = useBookingQuery({
     variables: { bookingId: String(bkId) },
@@ -62,9 +56,13 @@ export default function ReservationCheckout() {
     }
   }, [activeRef, pendingOpen]);
 
-  function handleVerifyPayment() {
-    // Use ref so this always verifies with the latest reference regardless of closure age
-    verifyPayment({ reference: activeRefRef.current }).then((res) => {
+  function handleVerifyPayment(data: { status: string; tx_ref: string }) {
+    // User cancelled — don't verify
+    if (data.status === 'cancelled') return;
+
+    // Use the tx_ref Flutterwave gives us directly — it's the ground truth
+    // for which transaction was actually processed, regardless of any state
+    verifyPayment({ reference: data.tx_ref }).then((res) => {
       if (res.data?.verifyTransactionByReference) {
         toast.show({
           type: 'success',
@@ -88,7 +86,7 @@ export default function ReservationCheckout() {
       }
       const freshRef = res.data?.retryBookingPayment?.data?.reference;
       if (!freshRef) return;
-      if (freshRef !== activeRefRef.current) {
+      if (freshRef !== activeRef) {
         setActiveRef(freshRef);
         setPendingOpen(true); // useEffect opens after re-render with updated tx_ref
       } else {
