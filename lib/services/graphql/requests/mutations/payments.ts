@@ -24,6 +24,20 @@ export const CREATE_UPDATE_HOST_PAYMENT_DETAILS = gql`
   }
 `;
 
+export const RETRY_BOOKING_PAYMENT = gql`
+  mutation RetryBookingPayment($bookingId: String!) {
+    retryBookingPayment(bookingId: $bookingId) {
+      message
+      data {
+        id
+        reference
+        amount
+        status
+      }
+    }
+  }
+`;
+
 export const VERIFY_TRANSACTION_BY_REFERENCE = gql`
   mutation VerifyTransactionByReference($reference: String!) {
     verifyTransactionByReference(reference: $reference) {

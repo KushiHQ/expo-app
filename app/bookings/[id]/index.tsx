@@ -90,7 +90,9 @@ export default function UserBooking() {
     : hexToRgba(colors.text, 0.4);
 
   const isPaymentPending =
-    booking?.transaction?.status === TransactionStatus.Pending && !!booking.transaction.reference;
+    (booking?.transaction?.status === TransactionStatus.Pending ||
+      booking?.transaction?.status === TransactionStatus.Failed) &&
+    !!booking.transaction.reference;
 
   const canFinalize =
     booking?.status !== BookingStatus.Completed &&
