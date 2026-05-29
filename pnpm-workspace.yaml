@@ -1,4 +1,13 @@
+allowBuilds:
+  '@firebase/util': false
+  '@sentry/cli': false
+  core-js: false
+  protobufjs: false
+  unrs-resolver: false
+
 nodeLinker: hoisted
 
 patchedDependencies:
   react-native-callkeep: patches/react-native-callkeep.patch
+
+storeDir: /home/eazy/.local/share/pnpm/store/v10

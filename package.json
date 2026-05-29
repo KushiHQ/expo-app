@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "codegen": "graphql-codegen --config codegen.ts",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "test": "jest"
   },
   "dependencies": {
     "@config-plugins/react-native-webrtc": "^13.0.0",
@@ -140,7 +141,10 @@
     "prettier-plugin-tailwindcss": "^0.5.14",
     "react-native-svg-transformer": "^1.5.3",
     "tailwindcss": "^3.4.19",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "jest-expo": "^0.3.0",
+    "@testing-library/react-native": "^13.2.1",
+    "@types/jest": "^29.5.14"
   },
   "private": true
 }
