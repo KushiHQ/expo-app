@@ -1,12 +1,7 @@
 import { BookingStatus, PaymentStatus } from '../lib/services/graphql/generated';
 import { getBookingStatus } from '../lib/utils/bookings';
 
-// Helper to create a minimal mock booking
-function createMockBooking(overrides: {
-  status?: BookingStatus | null;
-  paymentStatus?: PaymentStatus;
-  expiresAt?: string | null;
-}): any {
+function createMockBooking(overrides) {
   return {
     id: 'test-booking-id',
     bookingReference: 'KUS-12345',
@@ -49,7 +44,7 @@ describe('getBookingStatus', () => {
 
   it('returns "active" when payment is paid and not expired', () => {
     const futureDate = new Date();
-    futureDate.setFullYear(futureDate.getFullYear() + 1); // 1 year in the future
+    futureDate.setFullYear(futureDate.getFullYear() + 1);
     const booking = createMockBooking({
       status: BookingStatus.Paid,
       paymentStatus: PaymentStatus.Paid,
