@@ -26,7 +26,7 @@ export default function CheckoutSummary() {
   const [{ data: hostingData, fetching: hostingFetching }] = useHostingQuery({
     variables: { hostingId: String(id) },
   });
-  const [{ data }] = useCalculateHostingFeesQuery({
+  const [{ data, fetching: feesFetching }] = useCalculateHostingFeesQuery({
     variables: {
       hostingId: String(id),
       multiplier: input.intervalMultiplier ?? 1,
@@ -96,7 +96,7 @@ export default function CheckoutSummary() {
             </View>
           </View>
         )}
-        {hostingFetching ? (
+        {hostingFetching || feesFetching ? (
           <Skeleton style={{ height: 500, borderRadius: 18 }} />
         ) : (
           <View

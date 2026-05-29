@@ -148,6 +148,7 @@ export const BOOKINGS_QUERY = gql`
       }
       expiresAt
       paymentStatus
+      status
       transaction {
         id
         reference

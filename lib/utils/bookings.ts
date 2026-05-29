@@ -1,6 +1,9 @@
-import { BookingsQuery, PaymentStatus } from '../services/graphql/generated';
+import { BookingStatus, BookingsQuery, PaymentStatus } from '../services/graphql/generated';
 
 export function getBookingStatus(booking: BookingsQuery['bookings'][number]) {
+  if (booking.status === BookingStatus.Canceled) {
+    return 'cancelled';
+  }
   if (booking.paymentStatus === PaymentStatus.Pending) {
     return 'pending';
   } else if (booking.paymentStatus === PaymentStatus.Failed) {
