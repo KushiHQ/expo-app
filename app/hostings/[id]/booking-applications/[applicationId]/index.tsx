@@ -136,7 +136,10 @@ export default function BookingApplicationDetails() {
         title="Booking Application"
         footer={
           app?.status === BookingApplicationStatus.Submited ? (
-            <View className="flex-row gap-4 p-4 pb-8" style={{ backgroundColor: colors.background }}>
+            <View
+              className="flex-row gap-4 p-4 pb-8"
+              style={{ backgroundColor: colors.background }}
+            >
               <Button
                 className="flex-1"
                 variant="outline"

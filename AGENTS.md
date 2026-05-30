@@ -7,13 +7,13 @@
 
 ## Key Commands
 
-| Command | Purpose |
-|---|---|
-| `pnpm start` | Start Expo dev server |
-| `pnpm run ios` / `pnpm run android` | Local native build |
-| `pnpm run lint` | ESLint (expo lint) |
-| `pnpm run codegen` | GraphQL codegen — generates types + Urql hooks from `lib/services/graphql/requests/` |
-| `pnpm run postinstall` | Applies `patch-package` patches (3 patches in `patches/`) |
+| Command                             | Purpose                                                                              |
+| ----------------------------------- | ------------------------------------------------------------------------------------ |
+| `pnpm start`                        | Start Expo dev server                                                                |
+| `pnpm run ios` / `pnpm run android` | Local native build                                                                   |
+| `pnpm run lint`                     | ESLint (expo lint)                                                                   |
+| `pnpm run codegen`                  | GraphQL codegen — generates types + Urql hooks from `lib/services/graphql/requests/` |
+| `pnpm run postinstall`              | Applies `patch-package` patches (3 patches in `patches/`)                            |
 
 There is **no test setup** — no test runner, no jest config, no test script.
 
@@ -30,6 +30,7 @@ There is **no test setup** — no test runner, no jest config, no test script.
 ## Component Conventions
 
 Atomic Design with filename prefixes:
+
 - `a-` (atoms), `m-` (molecules), `o-` (organisms)
 
 ## GraphQL Codegen
