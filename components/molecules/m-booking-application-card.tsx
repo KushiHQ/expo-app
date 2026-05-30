@@ -1,16 +1,17 @@
-import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
-import { Image } from 'expo-image';
-import { useRouter } from '@/lib/hooks/use-router';
-import ThemedText from '@/components/atoms/a-themed-text';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { BOOKING_APPLICATION_STATUS_COLORS } from '@/lib/constants/booking/application';
-import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
-import { hexToRgba } from '@/lib/utils/colors';
-import { toTitleCase } from '@/lib/utils/text';
-import { BookingApplication } from '@/lib/services/graphql/generated';
-import { Fonts } from '@/lib/constants/theme';
-import { MapPin, ChevronRight } from 'lucide-react-native';
+import React from "react";
+import { TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
+import { useRouter } from "@/lib/hooks/use-router";
+import ThemedText from "@/components/atoms/a-themed-text";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { BOOKING_APPLICATION_STATUS_COLORS } from "@/lib/constants/booking/application";
+import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
+import { hexToRgba } from "@/lib/utils/colors";
+import { toTitleCase } from "@/lib/utils/text";
+import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
+import { BookingApplication } from "@/lib/services/graphql/generated";
+import { Fonts } from "@/lib/constants/theme";
+import { MapPin, ChevronRight } from "lucide-react-native";
 
 type Props = {
   host?: boolean;
@@ -30,7 +31,7 @@ const BookingApplicationCard: React.FC<Props> = ({ application, host }) => {
   const coverUrl = application.hosting?.coverImage?.asset?.publicUrl;
   const location = [application.hosting?.city, application.hosting?.state]
     .filter(Boolean)
-    .join(', ');
+    .join(", ");
 
   return (
     <TouchableOpacity
@@ -46,8 +47,8 @@ const BookingApplicationCard: React.FC<Props> = ({ application, host }) => {
       activeOpacity={0.75}
       style={{
         borderRadius: 16,
-        backgroundColor: colors['surface-01'],
-        overflow: 'hidden',
+        backgroundColor: colors["surface-01"],
+        overflow: "hidden",
         borderWidth: 1,
         borderColor: hexToRgba(colors.text, 0.06),
       }}
@@ -57,33 +58,37 @@ const BookingApplicationCard: React.FC<Props> = ({ application, host }) => {
         source={coverUrl ? { uri: coverUrl } : FALLBACK_IMAGE}
         placeholder={{ blurhash: PROPERTY_BLURHASH }}
         contentFit="cover"
-        style={{ width: '100%', height: 110 }}
+        style={{ width: "100%", height: 110 }}
       />
 
       {/* Status pill overlay */}
       {application.status && (
         <View
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 10,
             right: 10,
-            backgroundColor: hexToRgba(statusColor, 0.3),
-            backdropFilter: 'blur(10px)',
+            backgroundColor: hexToRgba(colors["surface-01"], 0.8),
             borderRadius: 20,
             paddingHorizontal: 10,
             paddingVertical: 4,
             borderWidth: 1,
-            borderColor: hexToRgba(statusColor, 0.35),
+            borderColor: hexToRgba(statusColor, 0.6),
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 3,
+            elevation: 4,
           }}
         >
           <ThemedText
             style={{
               fontSize: 11,
               color: statusColor,
-              fontFamily: Fonts.semibold,
+              fontFamily: Fonts.bold, // Thicker font for better legibility
             }}
           >
-            {toTitleCase(application.status.replace(/_/g, ' '))}
+            {toTitleCase(application.status.replace(/_/g, " "))}
           </ThemedText>
         </View>
       )}
@@ -92,27 +97,82 @@ const BookingApplicationCard: React.FC<Props> = ({ application, host }) => {
       <View style={{ padding: 14, gap: 8 }}>
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
+            flexDirection: "row",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
             gap: 8,
           }}
         >
           <View style={{ flex: 1, gap: 4 }}>
-            <ThemedText numberOfLines={1} style={{ fontSize: 15, fontFamily: Fonts.semibold }}>
-              {application.hosting?.title ?? 'Property Application'}
+            <ThemedText
+              numberOfLines={1}
+              style={{ fontSize: 15, fontFamily: Fonts.semibold }}
+            >
+              {application.hosting?.title ?? "Property Application"}
             </ThemedText>
             {location ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+              >
                 <MapPin size={11} color={hexToRgba(colors.text, 0.38)} />
-                <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.38) }}>
+                <ThemedText
+                  style={{ fontSize: 12, color: hexToRgba(colors.text, 0.38) }}
+                >
                   {location}
                 </ThemedText>
               </View>
             ) : null}
           </View>
-          <ChevronRight size={16} color={hexToRgba(colors.text, 0.22)} style={{ marginTop: 2 }} />
+          <ChevronRight
+            size={16}
+            color={hexToRgba(colors.text, 0.22)}
+            style={{ marginTop: 2 }}
+          />
         </View>
+
+        {host && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 8,
+              marginTop: 4,
+              backgroundColor: hexToRgba(colors.text, 0.04),
+              padding: 8,
+              borderRadius: 16,
+            }}
+          >
+            <Image
+              source={{
+                uri:
+                  application.guest?.user?.profile?.image?.publicUrl ||
+                  getDefaultProfileImageUrl(
+                    application.guest?.user?.profile?.fullName ??
+                    application.fullName ??
+                    "Guest",
+                  ),
+              }}
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 10,
+                backgroundColor: hexToRgba(colors.text, 0.1),
+              }}
+            />
+            <View style={{ flex: 1, gap: 2 }}>
+              <ThemedText
+                style={{
+                  fontSize: 13,
+                  fontFamily: Fonts.semibold,
+                  color: hexToRgba(colors.text, 0.9),
+                }}
+              >
+                {application.guest?.user?.profile?.fullName ??
+                  application.fullName}
+              </ThemedText>
+            </View>
+          </View>
+        )}
 
         <View
           style={{
@@ -124,9 +184,9 @@ const BookingApplicationCard: React.FC<Props> = ({ application, host }) => {
 
         <View
           style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
           <ThemedText
@@ -139,14 +199,16 @@ const BookingApplicationCard: React.FC<Props> = ({ application, host }) => {
           >
             REF #{application.id?.slice(-6).toUpperCase()}
           </ThemedText>
-          <ThemedText style={{ fontSize: 11, color: hexToRgba(colors.text, 0.35) }}>
+          <ThemedText
+            style={{ fontSize: 11, color: hexToRgba(colors.text, 0.35) }}
+          >
             {application.createdAt
-              ? new Date(application.createdAt).toLocaleDateString('en-GB', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                })
-              : ''}
+              ? new Date(application.createdAt).toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })
+              : ""}
           </ThemedText>
         </View>
       </View>

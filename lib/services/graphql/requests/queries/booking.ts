@@ -1,4 +1,4 @@
-import { gql } from 'urql';
+import { gql } from "urql";
 
 export const BOOKING_APPLICATIONS_COUNT = gql`
   query BookingApplicationsCount($filter: BookingApplicationFilter) {
@@ -29,6 +29,16 @@ export const BOOKING_APPLICATIONS = gql`
           asset {
             id
             publicUrl
+          }
+        }
+      }
+      guest {
+        user {
+          profile {
+            fullName
+            image {
+              publicUrl
+            }
           }
         }
       }
@@ -71,6 +81,16 @@ export const BOOKING_APPLICATION = gql`
       statusDetails
       createdAt
       lastUpdated
+      guest {
+        user {
+          profile {
+            fullName
+            image {
+              publicUrl
+            }
+          }
+        }
+      }
       guestFormData {
         employmentStatus
         incomeRanges
