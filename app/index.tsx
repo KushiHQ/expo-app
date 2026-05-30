@@ -5,15 +5,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import LoadingDots from '@/components/atoms/a-loading-dots';
 import React from 'react';
 import { useRouter } from 'expo-router';
-import { useRefreshTokenMutation } from '@/lib/services/graphql/generated';
-import { getAuthTokens, saveAuthTokens } from '@/lib/utils/auth';
 import { useUser } from '@/lib/hooks/user';
 import { useUserStore } from '@/lib/stores/users';
 import { UserType } from '@/lib/types/users';
 
 export default function HomeScreen() {
-  const { user, updateUser } = useUser();
-  const [, refreshToken] = useRefreshTokenMutation();
+  const { user } = useUser();
   const router = useRouter();
 
   // Zustand AsyncStorage hydration is async — on first render the store is empty.
@@ -29,20 +26,16 @@ export default function HomeScreen() {
     return unsub;
   }, [hydrated]);
 
+  const isInitializing = React.useRef(false);
+
   React.useEffect(() => {
     if (!hydrated) return;
+    if (isInitializing.current) return;
+    isInitializing.current = true;
 
     const timeoutId = setTimeout(() => {
       router.replace('/auth/sign-in');
     }, 30000);
-
-    const handleRefreshToken = async () => {
-      const tokens = await getAuthTokens();
-      if (!tokens?.refresh) {
-        return null;
-      }
-      return refreshToken({ input: { refreshToken: tokens.refresh } });
-    };
 
     const initializeApp = async () => {
       try {
@@ -52,31 +45,12 @@ export default function HomeScreen() {
           return;
         }
 
-        const res = await handleRefreshToken();
         clearTimeout(timeoutId);
 
-        if (!res || res?.error) {
-          router.replace('/auth/sign-in');
-          return;
-        }
-
-        if (res?.data?.refreshToken.data) {
-          const data = res.data.refreshToken.data;
-          await saveAuthTokens({
-            access: data.token,
-            refresh: data.refreshToken,
-          });
-
-          updateUser({
-            user: data.user,
-            email: data.user.email,
-          });
-
-          if (user.userType === UserType.Host) {
-            router.replace('/host/analytics');
-          } else {
-            router.replace('/guest/home');
-          }
+        if (user.userType === UserType.Host) {
+          router.replace('/host/analytics');
+        } else {
+          router.replace('/guest/home');
         }
       } catch (error) {
         console.error('Initialization failed:', error);
@@ -88,7 +62,7 @@ export default function HomeScreen() {
     initializeApp();
 
     return () => clearTimeout(timeoutId);
-  }, [hydrated, user?.email, user?.userType, refreshToken, router, updateUser]);
+  }, [hydrated, user?.email, user?.userType, router]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
