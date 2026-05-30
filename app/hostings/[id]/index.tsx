@@ -173,7 +173,7 @@ export default function HostingDetails() {
                 {(hosting?.rooms.map((r) => r.images).flat() ?? []).map((img, index) => (
                   <Image
                     source={{
-                      uri: failedImages.has(index) ? FALLBACK_IMAGE : img.asset.publicUrl,
+                      uri: failedImages.has(index) ? FALLBACK_IMAGE : img.asset?.publicUrl,
                     }}
                     style={{ height: '100%', width: '100%' }}
                     contentFit="cover"
@@ -210,10 +210,10 @@ export default function HostingDetails() {
                 <View className="flex-row items-center gap-1">
                   <MynauiStarSolid size={14} color={colors.accent} />
                   <ThemedText style={{ fontSize: 14 }}>
-                    {hosting?.averageRating?.toFixed(2) ?? '0.0'}
+                    {Number(hosting?.averageRating ?? '0').toFixed(1)}
                   </ThemedText>
                   <ThemedText style={{ fontSize: 12, fontFamily: Fonts.light }}>
-                    ({hosting?.totalRatings ?? 0} Reviews)
+                    ({Number(hosting?.totalRatings ?? '0').toFixed(1)} Reviews)
                   </ThemedText>
                 </View>
               </View>

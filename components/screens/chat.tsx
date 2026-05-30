@@ -230,7 +230,8 @@ const ChatScreen: React.FC<Props> = ({ variant = 'guest' }) => {
   useFocusEffect(
     React.useCallback(() => {
       refresh();
-    }, [refresh]),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
   );
 
   React.useEffect(() => {

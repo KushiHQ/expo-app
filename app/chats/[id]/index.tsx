@@ -1,12 +1,12 @@
-import ThemedText from '@/components/atoms/a-themed-text';
-import Logo from '@/components/icons/i-logo';
-import { Image } from 'expo-image';
-import DetailsLayout from '@/components/layouts/details';
-import ChatInput, { ChatInputData } from '@/components/organisms/o-chat-input';
-import ChatMessageBubble from '@/components/molecules/m-chat-message-bubble';
-import HostingChatSummaryCard from '@/components/molecules/m-hosting-chat-summary-card';
-import { Fonts } from '@/lib/constants/theme';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import ThemedText from "@/components/atoms/a-themed-text";
+import Logo from "@/components/icons/i-logo";
+import { Image } from "expo-image";
+import DetailsLayout from "@/components/layouts/details";
+import ChatInput, { ChatInputData } from "@/components/organisms/o-chat-input";
+import ChatMessageBubble from "@/components/molecules/m-chat-message-bubble";
+import HostingChatSummaryCard from "@/components/molecules/m-hosting-chat-summary-card";
+import { Fonts } from "@/lib/constants/theme";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import {
   ChatMessagesQuery,
   CreateUpdateMessageMutation,
@@ -18,21 +18,21 @@ import {
   useHostingChatQuery,
   useLatestHostingChatMessageSubscription,
   useOnlineUserSubscription,
-} from '@/lib/services/graphql/generated';
-import { CREATE_UPDATE_MESSAGE } from '@/lib/services/graphql/requests/mutations/hosting-chat';
-import { formMutation } from '@/lib/services/graphql/utils/fetch';
-import { cast } from '@/lib/types/utils';
-import { hexToRgba } from '@/lib/utils/colors';
-import * as Sentry from '@sentry/react-native';
-import { handleError } from '@/lib/utils/error';
-import { generateRNFile } from '@/lib/utils/file';
-import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
-import { useLocalSearchParams } from 'expo-router';
-import React from 'react';
-import { FlatList, View, ActivityIndicator } from 'react-native';
-import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
-import { useAudioPlayer } from 'expo-audio';
-import { useNotifications } from '@/components/contexts/notifications';
+} from "@/lib/services/graphql/generated";
+import { CREATE_UPDATE_MESSAGE } from "@/lib/services/graphql/requests/mutations/hosting-chat";
+import { formMutation } from "@/lib/services/graphql/utils/fetch";
+import { cast } from "@/lib/types/utils";
+import { hexToRgba } from "@/lib/utils/colors";
+import * as Sentry from "@sentry/react-native";
+import { handleError } from "@/lib/utils/error";
+import { generateRNFile } from "@/lib/utils/file";
+import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
+import { useLocalSearchParams } from "expo-router";
+import React from "react";
+import { FlatList, View, ActivityIndicator } from "react-native";
+import { useInfiniteQuery } from "@/lib/hooks/use-infinite-query";
+import { useAudioPlayer } from "expo-audio";
+import { useNotifications } from "@/components/contexts/notifications";
 
 export default function ChatDetails() {
   const { id } = useLocalSearchParams();
@@ -40,12 +40,12 @@ export default function ChatDetails() {
   const flatListRef = React.useRef<FlatList>(null);
   const isNearBottomRef = React.useRef(true);
   const { setActiveChatId } = useNotifications();
-  const sendSoundPlayer = useAudioPlayer(require('@/assets/audio/message-send-sound.mp3'));
+  const sendSoundPlayer = useAudioPlayer(
+    require("@/assets/audio/message-send-sound.mp3"),
+  );
   const [onlineRecipient, setOnlineRecipeint] =
-    React.useState<OnlineUserSubscription['onlineUser']>();
+    React.useState<OnlineUserSubscription["onlineUser"]>();
 
-  // Register this chat as active so the notification provider doesn't show
-  // a banner when a message arrives while the user is already viewing it
   React.useEffect(() => {
     setActiveChatId(String(id));
     return () => setActiveChatId(null);
@@ -58,24 +58,24 @@ export default function ChatDetails() {
     loadMore,
     hasNextPage,
   } = useInfiniteQuery(useChatMessagesQuery, {
-    queryKey: 'chatMessages',
+    queryKey: "chatMessages",
     initialVariables: { chatId: cast(id) },
     limit: 20,
-    requestPolicy: 'network-only',
+    requestPolicy: "network-only",
   });
 
-  const [{ fetching: chatFetching, data: chatData }] = useHostingChatQuery({
+  const [{ data: chatData }] = useHostingChatQuery({
     variables: { chatId: cast(id) },
   });
 
   const [messages, setMessages] = React.useState<
-    (ChatMessagesQuery['chatMessages'][0] & { sending?: boolean })[]
+    (ChatMessagesQuery["chatMessages"][0] & { sending?: boolean })[]
   >([]);
 
   const [, clearUnread] = useClearChatUrnreadMessagesMutation();
 
   const handleNewMessage = (
-    msg: LatestHostingChatMessageSubscription['latestHostingChatMessage'],
+    msg: LatestHostingChatMessageSubscription["latestHostingChatMessage"],
   ) => {
     setMessages((prev) => {
       const items = [...prev];
@@ -86,8 +86,6 @@ export default function ChatDetails() {
         items[itemIndex] = msg;
       } else {
         items.unshift(msg);
-        // Scroll to bottom for incoming messages only when already near the bottom,
-        // so we don't yank the user away while they're reading history.
         if (isNearBottomRef.current) {
           flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
         }
@@ -100,7 +98,10 @@ export default function ChatDetails() {
     {
       variables: { chatId: cast(id) },
     },
-    (prev: LatestHostingChatMessageSubscription['latestHostingChatMessage'][] = [], curr) => {
+    (
+      prev: LatestHostingChatMessageSubscription["latestHostingChatMessage"][] = [],
+      curr,
+    ) => {
       handleNewMessage(curr.latestHostingChatMessage);
       return [curr.latestHostingChatMessage, ...(prev ?? [])];
     },
@@ -109,14 +110,14 @@ export default function ChatDetails() {
   React.useEffect(() => {
     if (subError) {
       Sentry.captureException(subError, {
-        tags: { area: 'chat-subscription', chatId: String(id) },
+        tags: { area: "chat-subscription", chatId: String(id) },
         extra: {
           graphQLErrors: subError.graphQLErrors,
           networkError: subError.networkError?.message,
         },
       });
       console.error(
-        '[Chat subscription error]',
+        "[Chat subscription error]",
         subError.message,
         subError.graphQLErrors,
         subError.networkError,
@@ -142,7 +143,9 @@ export default function ChatDetails() {
         const subscriptionMessages = prev.filter((m) => !existingIds.has(m.id));
 
         return [...subscriptionMessages, ...pagedMessages].sort((a, b) => {
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
         });
       });
     }
@@ -151,11 +154,11 @@ export default function ChatDetails() {
   useOnlineUserSubscription(
     {
       variables: {
-        userId: chatData?.hostingChat.recipientUser?.id ?? '',
+        userId: chatData?.hostingChat.recipientUser?.id ?? "",
       },
       pause: !chatData?.hostingChat.recipientUser?.id,
     },
-    (prev: OnlineUserSubscription['onlineUser'][] = [], curr) => {
+    (prev: OnlineUserSubscription["onlineUser"][] = [], curr) => {
       setOnlineRecipeint(curr.onlineUser);
       return [curr.onlineUser, ...prev];
     },
@@ -175,30 +178,28 @@ export default function ChatDetails() {
 
     setMessages((prev) => [optimisticMessage, ...prev]);
 
-    // Scroll to bottom (index 0 in an inverted list = newest message)
     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
 
-    // Play send sound
     try {
       sendSoundPlayer.play();
     } catch (error) {
-      console.error('Failed to play send sound', error);
+      console.error("Failed to play send sound", error);
     }
 
-    formMutation<CreateUpdateMessageMutation, CreateUpdateMessageMutationVariables>(
-      CREATE_UPDATE_MESSAGE,
-      {
-        input: {
-          text: input.text,
-          assets: [
-            ...input.documents.map((doc) => generateRNFile(doc.uri)),
-            ...input.images.map((uri) => generateRNFile(uri)),
-            ...(input.audio ? [generateRNFile(input.audio)] : []),
-          ],
-          chatId: cast(id),
-        },
+    formMutation<
+      CreateUpdateMessageMutation,
+      CreateUpdateMessageMutationVariables
+    >(CREATE_UPDATE_MESSAGE, {
+      input: {
+        text: input.text,
+        assets: [
+          ...input.documents.map((doc) => generateRNFile(doc.uri)),
+          ...input.images.map((uri) => generateRNFile(uri)),
+          ...(input.audio ? [generateRNFile(input.audio)] : []),
+        ],
+        chatId: cast(id),
       },
-    ).then((res) => {
+    }).then((res) => {
       if (res.error) {
         handleError(res.error);
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
@@ -215,23 +216,23 @@ export default function ChatDetails() {
     item,
     index,
   }: {
-    item: ChatMessagesQuery['chatMessages'][0] & { sending?: boolean };
+    item: ChatMessagesQuery["chatMessages"][0] & { sending?: boolean };
     index: number;
   }) => {
-    // In an inverted list index+1 is the older (visually above) message,
-    // index-1 is the newer (visually below) message.
     const above = messages[index + 1];
     const below = messages[index - 1];
 
     const isFirstInGroup =
       !above ||
       above.isSender !== item.isSender ||
-      new Date(item.createdAt).getTime() - new Date(above.createdAt).getTime() > GROUP_THRESHOLD_MS;
+      new Date(item.createdAt).getTime() - new Date(above.createdAt).getTime() >
+      GROUP_THRESHOLD_MS;
 
     const isLastInGroup =
       !below ||
       below.isSender !== item.isSender ||
-      new Date(below.createdAt).getTime() - new Date(item.createdAt).getTime() > GROUP_THRESHOLD_MS;
+      new Date(below.createdAt).getTime() - new Date(item.createdAt).getTime() >
+      GROUP_THRESHOLD_MS;
 
     return (
       <ChatMessageBubble
@@ -248,7 +249,9 @@ export default function ChatDetails() {
       avatar={{
         image:
           chatData?.hostingChat.recipientUser?.profile?.image?.publicUrl ??
-          getDefaultProfileImageUrl(chatData?.hostingChat.recipientUser?.profile.fullName ?? ''),
+          getDefaultProfileImageUrl(
+            chatData?.hostingChat.recipientUser?.profile.fullName ?? "",
+          ),
         online: onlineRecipient?.online,
         lastSeen: onlineRecipient?.lastSeen,
       }}
@@ -276,17 +279,17 @@ export default function ChatDetails() {
           paddingHorizontal: 20,
           paddingBottom: 20,
           flexGrow: 1,
-          justifyContent: 'flex-end',
+          justifyContent: "flex-end",
         }}
         ListFooterComponent={
           <View style={{ marginBottom: 32, marginTop: 16 }}>
-            <View style={{ alignItems: 'center', gap: 8, marginBottom: 24 }}>
+            <View style={{ alignItems: "center", gap: 8, marginBottom: 24 }}>
               <View
                 style={{
                   width: 72,
                   height: 72,
                   borderRadius: 36,
-                  overflow: 'hidden',
+                  overflow: "hidden",
                   borderWidth: 2,
                   borderColor: hexToRgba(colors.primary, 0.35),
                 }}
@@ -294,19 +297,23 @@ export default function ChatDetails() {
                 <Image
                   source={{
                     uri:
-                      chatData?.hostingChat.recipientUser?.profile?.image?.publicUrl ??
+                      chatData?.hostingChat.recipientUser?.profile?.image
+                        ?.publicUrl ??
                       getDefaultProfileImageUrl(
-                        chatData?.hostingChat.recipientUser?.profile.fullName ?? '',
+                        chatData?.hostingChat.recipientUser?.profile.fullName ??
+                        "",
                       ),
                   }}
-                  style={{ width: '100%', height: '100%' }}
+                  style={{ width: "100%", height: "100%" }}
                   contentFit="cover"
                 />
               </View>
               <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 17 }}>
                 {chatData?.hostingChat.recipientUser?.profile.fullName}
               </ThemedText>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+              >
                 <View
                   style={{
                     width: 7,
@@ -324,7 +331,7 @@ export default function ChatDetails() {
                     fontFamily: Fonts.regular,
                   }}
                 >
-                  {onlineRecipient?.online ? 'Active now' : 'Offline'}
+                  {onlineRecipient?.online ? "Active now" : "Offline"}
                 </ThemedText>
               </View>
               <View
@@ -338,7 +345,10 @@ export default function ChatDetails() {
             </View>
             <HostingChatSummaryCard hosting={chatData?.hostingChat.hosting} />
             {messagesFetching && hasNextPage && (
-              <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} />
+              <ActivityIndicator
+                style={{ marginTop: 20 }}
+                color={colors.primary}
+              />
             )}
           </View>
         }
@@ -347,13 +357,15 @@ export default function ChatDetails() {
             <View
               style={{
                 flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
+                alignItems: "center",
+                justifyContent: "center",
                 paddingTop: 40,
                 gap: 10,
               }}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
+              >
                 <View
                   style={{
                     flex: 1,

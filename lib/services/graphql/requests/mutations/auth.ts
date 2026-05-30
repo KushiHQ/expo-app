@@ -49,7 +49,7 @@ export const GOOGLE_SIGN_UP = gql`
             youverifyReferenceId
             image {
               id
-              publicUrl
+              secureUrl
             }
           }
           phoneNumbers {
@@ -104,7 +104,7 @@ export const REFRESH_TOKEN_MUTATION = gql`
             youverifyReferenceId
             image {
               id
-              publicUrl
+              secureUrl
             }
           }
           phoneNumbers {
@@ -175,7 +175,7 @@ export const GOOGLE_LOGIN = gql`
             youverifyReferenceId
             image {
               id
-              publicUrl
+              secureUrl
             }
           }
           phoneNumbers {
@@ -230,7 +230,7 @@ export const APPLE_LOGIN = gql`
             youverifyReferenceId
             image {
               id
-              publicUrl
+              secureUrl
             }
           }
           phoneNumbers {
@@ -285,7 +285,7 @@ export const APPLE_SIGN_UP = gql`
             youverifyReferenceId
             image {
               id
-              publicUrl
+              secureUrl
             }
           }
           phoneNumbers {
@@ -340,7 +340,7 @@ export const LOGIN_MUTATION = gql`
             youverifyReferenceId
             image {
               id
-              publicUrl
+              secureUrl
             }
           }
           phoneNumbers {

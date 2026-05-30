@@ -23,9 +23,9 @@ const KycStepButton: React.FC<Props> = ({ step }) => {
         (n) => n.verificationStatus === PhoneNumberVerificationStatus.Verified,
       );
     } else if (step === 'Verify NIN') {
-      return !user.user?.kyc?.image?.publicUrl;
+      return !user.user?.kyc?.image?.secureUrl;
     } else if (step === 'Verify BVN') {
-      return !user.user?.kyc?.image?.publicUrl || !user.user.kyc.ninVerified;
+      return !user.user?.kyc?.image?.secureUrl || !user.user.kyc.ninVerified;
     }
     return false;
   }, [step, user]);
@@ -36,7 +36,7 @@ const KycStepButton: React.FC<Props> = ({ step }) => {
         (n) => n.verificationStatus === PhoneNumberVerificationStatus.Verified,
       );
     } else if (step === 'Take A Selfie') {
-      return !!user.user?.kyc?.image?.publicUrl;
+      return !!user.user?.kyc?.image?.secureUrl;
     } else if (step === 'Verify BVN') {
       return !!user.user?.kyc?.bvnVerified;
     } else if (step === 'Verify NIN') {

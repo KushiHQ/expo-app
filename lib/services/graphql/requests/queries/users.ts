@@ -32,7 +32,7 @@ export const ME_QUERY = gql`
         youverifyReferenceId
         image {
           id
-          publicUrl
+          secureUrl
         }
       }
       phoneNumbers {

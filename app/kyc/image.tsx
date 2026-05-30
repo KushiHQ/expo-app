@@ -108,7 +108,7 @@ export default function KycImage() {
   const device = useCameraDevice('front');
   const colors = useThemeColors();
   const { hasPermission, requestPermission } = useCameraPermission();
-  const [kycImage, setKycImage] = React.useState(user.user?.kyc?.image?.publicUrl);
+  const [kycImage, setKycImage] = React.useState(user.user?.kyc?.image?.secureUrl);
   const [uploading, setUploading] = React.useState(false);
   const [isCameraReady, setIsCameraReady] = React.useState(false);
   const [faceDetected, setFaceDetected] = React.useState(false);
@@ -232,7 +232,7 @@ export default function KycImage() {
             style={{ backgroundColor: colors.background, borderColor: hexToRgba(colors.text, 0.2) }}
           >
             <Button
-              disabled={!user.user?.kyc?.image?.publicUrl}
+              disabled={!user.user?.kyc?.image?.secureUrl}
               onPress={() => router.push('/kyc/nin')}
               type="primary"
               className="py-[18px]"

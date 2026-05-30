@@ -66,7 +66,7 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
           {images.map((img, index) => (
             <Image
               source={{
-                uri: failedImages.has(index) ? FALLBACK_IMAGE : img.asset.publicUrl,
+                uri: failedImages.has(index) ? FALLBACK_IMAGE : img.asset?.publicUrl,
               }}
               style={{ height: '100%', width: '100%' }}
               contentFit="cover"
@@ -142,7 +142,7 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
                     color: colors.text,
                   }}
                 >
-                  {hosting.averageRating?.toFixed(1) ?? '0.0'}
+                  {Number(hosting.averageRating ?? '0').toFixed(1)}
                 </ThemedText>
                 <ThemedText
                   style={{
@@ -151,7 +151,7 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
                     color: hexToRgba(colors.text, 0.5),
                   }}
                 >
-                  ({hosting.totalRatings ?? '0'})
+                  ({Number(hosting.totalRatings ?? '0').toFixed(1)})
                 </ThemedText>
               </View>
             </View>

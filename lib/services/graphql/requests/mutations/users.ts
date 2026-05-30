@@ -75,7 +75,7 @@ export const UPLOAD_KYC_IMAGE = gql`
       id
       image {
         id
-        publicUrl
+        secureUrl
       }
     }
   }
@@ -89,7 +89,7 @@ export const VERIFY_KYC = gql`
       ninVerified
       image {
         id
-        publicUrl
+        secureUrl
       }
     }
   }

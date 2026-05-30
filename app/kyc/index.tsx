@@ -29,7 +29,7 @@ export default function KycHome() {
     if (!isPhoneVerified) {
       return 'Verify Phone Number';
     }
-    if (!user.user?.kyc?.image?.publicUrl) {
+    if (!user.user?.kyc?.image?.secureUrl) {
       return 'Take A Selfie';
     }
     if (!user.user?.kyc?.ninVerified) {

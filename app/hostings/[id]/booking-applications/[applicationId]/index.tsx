@@ -135,20 +135,22 @@ export default function BookingApplicationDetails() {
       <DetailsLayout
         title="Booking Application"
         footer={
-          <View className="flex-row gap-4 p-4 pb-8" style={{ backgroundColor: colors.background }}>
-            <Button
-              className="flex-1"
-              variant="outline"
-              type="error"
-              style={{ borderColor: hexToRgba(colors.error, 0.6) }}
-              onPress={() => setRejectOpen(true)}
-            >
-              <ThemedText style={{ color: hexToRgba(colors.error, 0.9) }}>Reject</ThemedText>
-            </Button>
-            <Button type="primary" className="flex-1" onPress={() => setAcceptConfirmOpen(true)}>
-              <ThemedText content="primary">Accept</ThemedText>
-            </Button>
-          </View>
+          app?.status === BookingApplicationStatus.Submited ? (
+            <View className="flex-row gap-4 p-4 pb-8" style={{ backgroundColor: colors.background }}>
+              <Button
+                className="flex-1"
+                variant="outline"
+                type="error"
+                style={{ borderColor: hexToRgba(colors.error, 0.6) }}
+                onPress={() => setRejectOpen(true)}
+              >
+                <ThemedText style={{ color: hexToRgba(colors.error, 0.9) }}>Reject</ThemedText>
+              </Button>
+              <Button type="primary" className="flex-1" onPress={() => setAcceptConfirmOpen(true)}>
+                <ThemedText content="primary">Accept</ThemedText>
+              </Button>
+            </View>
+          ) : undefined
         }
       >
         {fetching ? (

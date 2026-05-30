@@ -1956,14 +1956,14 @@ export type GoogleSignUpMutationVariables = Exact<{
 }>;
 
 
-export type GoogleSignUpMutation = { __typename?: 'Mutations', googleSignUp: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
+export type GoogleSignUpMutation = { __typename?: 'Mutations', googleSignUp: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
 
 export type RefreshTokenMutationVariables = Exact<{
   input: RefreshTokenInput;
 }>;
 
 
-export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
+export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
 
 export type VerifyEmailMutationVariables = Exact<{
   input: Otpinput;
@@ -1984,28 +1984,28 @@ export type GoogleLoginMutationVariables = Exact<{
 }>;
 
 
-export type GoogleLoginMutation = { __typename?: 'Mutations', googleLogin: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
+export type GoogleLoginMutation = { __typename?: 'Mutations', googleLogin: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
 
 export type AppleLoginMutationVariables = Exact<{
   input: AppleAuthInput;
 }>;
 
 
-export type AppleLoginMutation = { __typename?: 'Mutations', appleLogin: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
+export type AppleLoginMutation = { __typename?: 'Mutations', appleLogin: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
 
 export type AppleSignUpMutationVariables = Exact<{
   input: AppleAuthInput;
 }>;
 
 
-export type AppleSignUpMutation = { __typename?: 'Mutations', appleSignUp: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
+export type AppleSignUpMutation = { __typename?: 'Mutations', appleSignUp: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
 
 export type LoginMutationVariables = Exact<{
   input: LoginInput;
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutations', login: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
+export type LoginMutation = { __typename?: 'Mutations', login: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
 
 export type RequestPasswordChangeMutationVariables = Exact<{
   input: RequestPasswordChangeInput;
@@ -2328,14 +2328,14 @@ export type UploadKycImageMutationVariables = Exact<{
 }>;
 
 
-export type UploadKycImageMutation = { __typename?: 'Mutations', uploadKycImage: { __typename?: 'Kyc', id: string, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } };
+export type UploadKycImageMutation = { __typename?: 'Mutations', uploadKycImage: { __typename?: 'Kyc', id: string, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null } };
 
 export type VerifyKycMutationVariables = Exact<{
   input: KycInput;
 }>;
 
 
-export type VerifyKycMutation = { __typename?: 'Mutations', verifyKyc: { __typename?: 'Kyc', bvnVerified?: boolean | null, id: string, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null } };
+export type VerifyKycMutation = { __typename?: 'Mutations', verifyKyc: { __typename?: 'Kyc', bvnVerified?: boolean | null, id: string, ninVerified?: boolean | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null } };
 
 export type InitiatePhoneNumberVerificationMutationVariables = Exact<{
   phoneNumber: Scalars['String']['input'];
@@ -2552,7 +2552,7 @@ export type TransactionsQuery = { __typename?: 'Query', transactions: Array<{ __
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, publicUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } };
+export type MeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } };
 
 export type HostAnalyticsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2653,7 +2653,7 @@ export const GoogleSignUpDocument = gql`
           youverifyReferenceId
           image {
             id
-            publicUrl
+            secureUrl
           }
         }
         phoneNumbers {
@@ -2711,7 +2711,7 @@ export const RefreshTokenDocument = gql`
           youverifyReferenceId
           image {
             id
-            publicUrl
+            secureUrl
           }
         }
         phoneNumbers {
@@ -2791,7 +2791,7 @@ export const GoogleLoginDocument = gql`
           youverifyReferenceId
           image {
             id
-            publicUrl
+            secureUrl
           }
         }
         phoneNumbers {
@@ -2849,7 +2849,7 @@ export const AppleLoginDocument = gql`
           youverifyReferenceId
           image {
             id
-            publicUrl
+            secureUrl
           }
         }
         phoneNumbers {
@@ -2907,7 +2907,7 @@ export const AppleSignUpDocument = gql`
           youverifyReferenceId
           image {
             id
-            publicUrl
+            secureUrl
           }
         }
         phoneNumbers {
@@ -2965,7 +2965,7 @@ export const LoginDocument = gql`
           youverifyReferenceId
           image {
             id
-            publicUrl
+            secureUrl
           }
         }
         phoneNumbers {
@@ -3871,7 +3871,7 @@ export const UploadKycImageDocument = gql`
     id
     image {
       id
-      publicUrl
+      secureUrl
     }
   }
 }
@@ -3888,7 +3888,7 @@ export const VerifyKycDocument = gql`
     ninVerified
     image {
       id
-      publicUrl
+      secureUrl
     }
   }
 }
@@ -4942,7 +4942,7 @@ export const MeDocument = gql`
       youverifyReferenceId
       image {
         id
-        publicUrl
+        secureUrl
       }
     }
     phoneNumbers {
