@@ -60,8 +60,10 @@ export default function KycHome() {
               else if (pendingStep === 'Verify BVN') router.push('/kyc/bvn');
               else {
                 if (user.userType === UserType.Host) {
+                  router.dismissAll();
                   router.replace('/host/analytics');
                 } else {
+                  router.dismissAll();
                   router.replace('/guest/home');
                 }
               }

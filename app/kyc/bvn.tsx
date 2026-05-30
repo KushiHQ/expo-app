@@ -49,8 +49,10 @@ export default function KycBVN() {
           },
         });
         if (user.userType === UserType.Host) {
+          router.dismissAll();
           router.replace('/host/analytics');
         } else {
+          router.dismissAll();
           router.replace('/guest/home');
         }
       }
@@ -74,8 +76,10 @@ export default function KycBVN() {
               onPress={() => {
                 if (user.user?.kyc.bvnVerified) {
                   if (user.userType === UserType.Host) {
+                    router.dismissAll();
                     router.replace('/host/analytics');
                   } else {
+                    router.dismissAll();
                     router.replace('/guest/home');
                   }
                 } else {

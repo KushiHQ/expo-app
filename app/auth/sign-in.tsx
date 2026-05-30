@@ -41,6 +41,7 @@ export default function Login() {
   const [, appleLogin] = useAppleLoginMutation();
 
   const handlePostLogin = (userType?: UserType) => {
+    router.dismissAll();
     if (returnUrl) {
       const destination = returnUrl;
       setReturnUrl(null);

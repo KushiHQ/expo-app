@@ -32,6 +32,7 @@ export default function Logout() {
         toast.show({ type: 'error', text2: 'Server logout failed' });
       }
     });
+    router.dismissAll();
     router.replace('/onboarding');
   }, [setSecuritySettings, reset, logout]);
 
