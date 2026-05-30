@@ -1,29 +1,34 @@
-import { Image } from 'expo-image';
-import { Pressable, Text, View } from 'react-native';
-import ListingOptions from '../molecules/m-listing-options';
-import React from 'react';
-import { useRouter } from '@/lib/hooks/use-router';
-import { useFallbackImages } from '@/lib/hooks/images';
-import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
-import ThemedText from '../atoms/a-themed-text';
-import { EllipsisVertical } from 'lucide-react-native';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { Fonts } from '@/lib/constants/theme';
-import { hexToRgba } from '@/lib/utils/colors';
-import { IconParkOutlineDot } from '../icons/i-circle';
-import { HostListingsQuery, PublishStatus } from '@/lib/services/graphql/generated';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { Image } from "expo-image";
+import { Pressable, Text, View } from "react-native";
+import ListingOptions from "../molecules/m-listing-options";
+import React from "react";
+import { useRouter } from "@/lib/hooks/use-router";
+import { PROPERTY_BLURHASH } from "@/lib/constants/images";
+import ThemedText from "../atoms/a-themed-text";
+import { EllipsisVertical } from "lucide-react-native";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { Fonts } from "@/lib/constants/theme";
+import { hexToRgba } from "@/lib/utils/colors";
+import { IconParkOutlineDot } from "../icons/i-circle";
+import {
+  HostListingsQuery,
+  PublishStatus,
+} from "@/lib/services/graphql/generated";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 
 type Props = {
-  hosting: HostListingsQuery['hostings'][number];
+  hosting: HostListingsQuery["hostings"][number];
 };
 
 const ListingCard: React.FC<Props> = ({ hosting }) => {
   const router = useRouter();
   const colors = useThemeColors();
   const [optionsOpen, setOptionsOpen] = React.useState(false);
-  const { failedImages, handleImageError } = useFallbackImages();
 
   const scale = useSharedValue(1);
 
@@ -55,8 +60,15 @@ const ListingCard: React.FC<Props> = ({ hosting }) => {
 
   return (
     <Animated.View style={[animatedStyle, { gap: 8 }]}>
-      <Pressable onPress={handlePress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
-        <View className="gap-4 rounded-2xl p-4" style={{ backgroundColor: colors['surface-01'] }}>
+      <Pressable
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+      >
+        <View
+          className="gap-4 rounded-2xl p-4"
+          style={{ backgroundColor: colors["surface-01"] }}
+        >
           <View>
             <View className="flex-row items-start justify-between">
               <ThemedText
@@ -93,11 +105,11 @@ const ListingCard: React.FC<Props> = ({ hosting }) => {
           <View className="aspect-[140/80] w-full overflow-hidden rounded-xl">
             <Image
               source={{
-                uri: failedImages.has(0) ? FALLBACK_IMAGE : hosting.coverImage?.asset.publicUrl,
+                uri: hosting.coverImage?.asset.publicUrl,
               }}
               style={{
-                height: '100%',
-                width: '100%',
+                height: "100%",
+                width: "100%",
               }}
               contentFit="cover"
               transition={400}
@@ -105,7 +117,6 @@ const ListingCard: React.FC<Props> = ({ hosting }) => {
               placeholderContentFit="cover"
               cachePolicy="memory-disk"
               priority="high"
-              onError={() => handleImageError(0)}
             />
           </View>
         </View>
@@ -117,7 +128,7 @@ const ListingCard: React.FC<Props> = ({ hosting }) => {
                 fontSize: 11,
                 color: statusColor,
                 fontFamily: Fonts.semibold,
-                textTransform: 'capitalize',
+                textTransform: "capitalize",
               }}
             >
               {hosting.publishStatus}
@@ -134,7 +145,11 @@ const ListingCard: React.FC<Props> = ({ hosting }) => {
           </ThemedText>
         </View>
       </Pressable>
-      <ListingOptions open={optionsOpen} onClose={() => setOptionsOpen(false)} hosting={hosting} />
+      <ListingOptions
+        open={optionsOpen}
+        onClose={() => setOptionsOpen(false)}
+        hosting={hosting}
+      />
     </Animated.View>
   );
 };

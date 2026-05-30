@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -6,30 +6,29 @@ import {
   useWindowDimensions,
   useColorScheme,
   Pressable,
-} from 'react-native';
-import Button from '@/components/atoms/a-button';
-import ThemedText from '@/components/atoms/a-themed-text';
-import { StatusBar } from 'expo-status-bar';
-import { useGalleryStore } from '@/lib/stores/gallery';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import ImagePicker from 'react-native-image-crop-picker';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { FluentImageEdit24Regular } from '@/components/icons/i-edit';
-import { Check, ChevronLeft } from 'lucide-react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { cast } from '@/lib/types/utils';
-import { useFallbackImages } from '@/lib/hooks/images';
-import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
-import { Image } from 'expo-image';
+} from "react-native";
+import Button from "@/components/atoms/a-button";
+import ThemedText from "@/components/atoms/a-themed-text";
+import { StatusBar } from "expo-status-bar";
+import { useGalleryStore } from "@/lib/stores/gallery";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import ImagePicker from "react-native-image-crop-picker";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { FluentImageEdit24Regular } from "@/components/icons/i-edit";
+import { Check, ChevronLeft } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { cast } from "@/lib/types/utils";
+import { PROPERTY_BLURHASH } from "@/lib/constants/images";
+import { Image } from "expo-image";
 
 export default function PhotoGalleryScreen() {
   const router = useRouter();
   const { width, height } = useWindowDimensions();
   const { redirect, fromCamera, viewOnly } = useLocalSearchParams();
-  const { gallery, activeIndex, setActiveIndex, updateActiveImage } = useGalleryStore();
+  const { gallery, activeIndex, setActiveIndex, updateActiveImage } =
+    useGalleryStore();
   const colors = useThemeColors();
-  const colorScheme = useColorScheme() ?? 'light';
-  const { failedImages, handleImageError } = useFallbackImages();
+  const colorScheme = useColorScheme() ?? "light";
   const insets = useSafeAreaInsets();
 
   const flatListRef = useRef<FlatList>(null);
@@ -86,9 +85,9 @@ export default function PhotoGalleryScreen() {
       const croppedImage = await ImagePicker.openCropper({
         path: currentPhotoUri,
         cropping: true,
-        mediaType: 'photo',
+        mediaType: "photo",
         cropperActiveWidgetColor: colors.primary,
-        cropperStatusBarLight: colorScheme === 'light',
+        cropperStatusBarLight: colorScheme === "light",
         cropperToolbarColor: colors.background,
         cropperToolbarWidgetColor: colors.text,
         freeStyleCropEnabled: true,
@@ -97,9 +96,9 @@ export default function PhotoGalleryScreen() {
 
       updateActiveImage(croppedImage.path);
     } catch (error: any) {
-      if (error.code !== 'E_PICKER_CANCELLED') {
-        console.error('Error cropping photo: ', error);
-        alert('Could not crop photo.');
+      if (error.code !== "E_PICKER_CANCELLED") {
+        console.error("Error cropping photo: ", error);
+        alert("Could not crop photo.");
       }
     }
   };
@@ -125,16 +124,16 @@ export default function PhotoGalleryScreen() {
       <Pressable
         onPress={router.back}
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: insets.top + 12,
           left: 20,
           zIndex: 10,
-          backgroundColor: 'rgba(0,0,0,0.45)',
+          backgroundColor: "rgba(0,0,0,0.45)",
           borderRadius: 12,
           width: 40,
           height: 40,
-          alignItems: 'center',
-          justifyContent: 'center',
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
         <ChevronLeft color="#fff" size={22} />
@@ -147,10 +146,10 @@ export default function PhotoGalleryScreen() {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <Image
             source={{
-              uri: failedImages.has(index) ? FALLBACK_IMAGE : item,
+              uri: item,
             }}
             transition={300}
             style={{ width: width, height: height }}
@@ -159,26 +158,29 @@ export default function PhotoGalleryScreen() {
             contentFit="contain"
             cachePolicy="memory-disk"
             priority="high"
-            onError={() => handleImageError(index)}
           />
         )}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
-        getItemLayout={(data, index) => ({
+        getItemLayout={(_, index) => ({
           length: width,
           offset: width * index,
           index,
         })}
         onScrollToIndexFailed={handleScrollToIndexFailed}
-        initialScrollIndex={activeIndex >= 0 && activeIndex < gallery.length ? activeIndex : 0}
+        initialScrollIndex={
+          activeIndex >= 0 && activeIndex < gallery.length ? activeIndex : 0
+        }
       />
 
-      {viewOnly !== 'true' && (
+      {viewOnly !== "true" && (
         <View style={styles.actions}>
           <Button onPress={handleEditPhoto} className="flex-1">
             <View className="flex-row gap-2">
               <FluentImageEdit24Regular color="#fff" size={20} />
-              <ThemedText style={{ fontSize: 14, color: '#fff' }}>Edit</ThemedText>
+              <ThemedText style={{ fontSize: 14, color: "#fff" }}>
+                Edit
+              </ThemedText>
             </View>
           </Button>
           <Button onPress={onUsePhotos} className="flex-1">
@@ -198,14 +200,14 @@ export default function PhotoGalleryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: "black",
   },
   actions: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 40,
     left: 20,
     right: 20,
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 16,
   },
 });

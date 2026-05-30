@@ -1,33 +1,31 @@
-import Button from '@/components/atoms/a-button';
-import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
-import HostingRoomImage from '@/components/atoms/a-hosting-room-image';
-import LoadingModal from '@/components/atoms/a-loading-modal';
-import ThemedText from '@/components/atoms/a-themed-text';
-import DetailsLayout from '@/components/layouts/details';
-import HostingStepper from '@/components/molecules/m-hosting-stepper';
-import ThemedModal from '@/components/molecules/m-modal';
-import SectionCard from '@/components/molecules/m-section-card';
-import RoomItemCard from '@/components/organisms/o-room-item-card';
-import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
-import { Fonts } from '@/lib/constants/theme';
-import { useHostingFormRoomUtils } from '@/lib/hooks/forms/use-hosting-form-room-utils';
-import { useFallbackImages } from '@/lib/hooks/images';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { hexToRgba } from '@/lib/utils/colors';
-import { Image } from 'expo-image';
-import { useLocalSearchParams } from 'expo-router';
-import { useRouter } from '@/lib/hooks/use-router';
-import { Room } from '@/lib/types/enums/hostings';
-import { Layers } from 'lucide-react-native';
-import React, { useRef } from 'react';
-import { RefreshControl, TextInput, View } from 'react-native';
+import Button from "@/components/atoms/a-button";
+import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
+import HostingRoomImage from "@/components/atoms/a-hosting-room-image";
+import LoadingModal from "@/components/atoms/a-loading-modal";
+import ThemedText from "@/components/atoms/a-themed-text";
+import DetailsLayout from "@/components/layouts/details";
+import HostingStepper from "@/components/molecules/m-hosting-stepper";
+import ThemedModal from "@/components/molecules/m-modal";
+import SectionCard from "@/components/molecules/m-section-card";
+import RoomItemCard from "@/components/organisms/o-room-item-card";
+import { PROPERTY_BLURHASH } from "@/lib/constants/images";
+import { Fonts } from "@/lib/constants/theme";
+import { useHostingFormRoomUtils } from "@/lib/hooks/forms/use-hosting-form-room-utils";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { hexToRgba } from "@/lib/utils/colors";
+import { Image } from "expo-image";
+import { useLocalSearchParams } from "expo-router";
+import { useRouter } from "@/lib/hooks/use-router";
+import { Room } from "@/lib/types/enums/hostings";
+import { Layers } from "lucide-react-native";
+import React, { useRef } from "react";
+import { RefreshControl, TextInput, View } from "react-native";
 
 export default function NewHostingStep2() {
   const router = useRouter();
   const colors = useThemeColors();
   const { id } = useLocalSearchParams();
   const descriptionRef = useRef<TextInput>(null);
-  const { failedImages, handleImageError } = useFallbackImages();
 
   const {
     rooms,
@@ -56,7 +54,10 @@ export default function NewHostingStep2() {
       <DetailsLayout
         title="Hosting"
         refreshControl={
-          <RefreshControl refreshing={fetchingHosting} onRefresh={() => refetchHosting()} />
+          <RefreshControl
+            refreshing={fetchingHosting}
+            onRefresh={() => refetchHosting()}
+          />
         }
         footer={
           <HostingStepper
@@ -94,8 +95,8 @@ export default function NewHostingStep2() {
             {rooms.length === 0 && (
               <View
                 style={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  alignItems: "center",
+                  justifyContent: "center",
                   gap: 10,
                   borderRadius: 12,
                   paddingVertical: 32,
@@ -107,11 +108,12 @@ export default function NewHostingStep2() {
                   style={{
                     fontSize: 13,
                     color: hexToRgba(colors.text, 0.4),
-                    textAlign: 'center',
+                    textAlign: "center",
                     lineHeight: 20,
                   }}
                 >
-                  No rooms added yet.{'\n'}Use the selector below to add your first space.
+                  No rooms added yet.{"\n"}Use the selector below to add your
+                  first space.
                 </ThemedText>
               </View>
             )}
@@ -169,7 +171,9 @@ export default function NewHostingStep2() {
                       value={rooms.at(activeIndex)?.count?.toString()}
                       label="Count"
                       inputMode="numeric"
-                      onChangeText={(v) => updateActiveRoom({ count: Number(v) })}
+                      onChangeText={(v) =>
+                        updateActiveRoom({ count: Number(v) })
+                      }
                       placeholder="How many of this room"
                       returnKeyType="next"
                       onSubmitEditing={() => descriptionRef.current?.focus()}
@@ -178,10 +182,15 @@ export default function NewHostingStep2() {
                   </View>
                   <Button
                     onPress={() => handleRoomImageEdit(activeModalIndex)}
-                    style={{ backgroundColor: hexToRgba(colors.text, 0.08), borderRadius: 10 }}
+                    style={{
+                      backgroundColor: hexToRgba(colors.text, 0.08),
+                      borderRadius: 10,
+                    }}
                     className="items-center justify-center px-4"
                   >
-                    <ThemedText style={{ fontSize: 12 }}>Add{'\n'}Photos</ThemedText>
+                    <ThemedText style={{ fontSize: 12 }}>
+                      Add{"\n"}Photos
+                    </ThemedText>
                   </Button>
                 </View>
                 <FloatingLabelInput
@@ -193,7 +202,9 @@ export default function NewHostingStep2() {
                   placeholder="Brief description of this space"
                   containerStyle={{ minHeight: 80 }}
                   numberOfLines={4}
-                  onChangeText={(description) => updateActiveRoom({ description })}
+                  onChangeText={(description) =>
+                    updateActiveRoom({ description })
+                  }
                   returnKeyType="done"
                 />
               </View>
@@ -235,7 +246,10 @@ export default function NewHostingStep2() {
             <View className="gap-6">
               <ThemedText style={{ fontFamily: Fonts.medium }}>
                 Delete this room
-                {rooms[deleteModalIndex]?.images.length ? ' and all its photos' : ''}?
+                {rooms[deleteModalIndex]?.images.length
+                  ? " and all its photos"
+                  : ""}
+                ?
               </ThemedText>
               <View className="items-center gap-3">
                 <View className="h-28 w-32">
@@ -243,24 +257,25 @@ export default function NewHostingStep2() {
                     source={
                       rooms[deleteModalIndex]?.images.length
                         ? {
-                            uri: failedImages.has(0)
-                              ? FALLBACK_IMAGE
-                              : rooms[deleteModalIndex].images[0],
-                          }
-                        : require('@/assets/images/room-image.jpg')
+                          uri: rooms[deleteModalIndex].images[0],
+                        }
+                        : require("@/assets/images/room-image.jpg")
                     }
-                    style={{ height: '100%', width: '100%', borderRadius: 10 }}
+                    style={{ height: "100%", width: "100%", borderRadius: 10 }}
                     contentFit="cover"
                     transition={300}
                     placeholder={{ blurhash: PROPERTY_BLURHASH }}
                     placeholderContentFit="cover"
                     cachePolicy="memory-disk"
                     priority="high"
-                    onError={() => handleImageError(0)}
                   />
                 </View>
-                <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
-                  {rooms[deleteModalIndex] ? Room[rooms[deleteModalIndex].name] : ''}
+                <ThemedText
+                  style={{ fontFamily: Fonts.semibold, fontSize: 18 }}
+                >
+                  {rooms[deleteModalIndex]
+                    ? Room[rooms[deleteModalIndex].name]
+                    : ""}
                 </ThemedText>
               </View>
               <View className="flex-row items-center gap-2">
@@ -271,7 +286,11 @@ export default function NewHostingStep2() {
                 >
                   <ThemedText content="shade">Cancel</ThemedText>
                 </Button>
-                <Button type="error" className="flex-1" onPress={handleDeleteActiveRoom}>
+                <Button
+                  type="error"
+                  className="flex-1"
+                  onPress={handleDeleteActiveRoom}
+                >
                   <ThemedText content="error">Delete</ThemedText>
                 </Button>
               </View>

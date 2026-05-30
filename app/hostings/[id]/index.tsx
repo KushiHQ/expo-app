@@ -1,33 +1,32 @@
-import Button from '@/components/atoms/a-button';
-import Carousel from '@/components/atoms/a-carousel';
-import { HostingDetailsSkeleton } from '@/components/molecules/m-hosting-card';
-import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
-import { Fonts } from '@/lib/constants/theme';
-import { useFallbackImages } from '@/lib/hooks/images';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { ListingType, useHostingQuery } from '@/lib/services/graphql/generated';
-import { cast } from '@/lib/types/utils';
-import { hexToRgba } from '@/lib/utils/colors';
-import { handleError } from '@/lib/utils/error';
-import { capitalize, slugify } from '@/lib/utils/text';
-import { Image } from 'expo-image';
-import { useLocalSearchParams } from 'expo-router';
-import { useRouter } from '@/lib/hooks/use-router';
-import { MessageSquare } from 'lucide-react-native';
-import React from 'react';
-import { Share, View } from 'react-native';
-import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
-import { useUser } from '@/lib/hooks/user';
-import Skeleton from '@/components/atoms/a-skeleton';
-import DetailsLayout from '@/components/layouts/details';
-import HostingLikeButton from '@/components/atoms/a-hosting-like-button';
-import ThemedText from '@/components/atoms/a-themed-text';
-import { MynauiStarSolid } from '@/components/icons/i-star';
-import HostingHost from '@/components/molecules/m-hosting-host';
-import HostingFacilities from '@/components/molecules/m-hosting-facilities';
-import HostingGalleryComponent from '@/components/molecules/m-hosting-gallery';
-import HostingReviews from '@/components/organisms/o-hosting-reviews';
-import HostingLocation from '@/components/molecules/m-hosting-location';
+import Button from "@/components/atoms/a-button";
+import Carousel from "@/components/atoms/a-carousel";
+import { HostingDetailsSkeleton } from "@/components/molecules/m-hosting-card";
+import { PROPERTY_BLURHASH } from "@/lib/constants/images";
+import { Fonts } from "@/lib/constants/theme";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { ListingType, useHostingQuery } from "@/lib/services/graphql/generated";
+import { cast } from "@/lib/types/utils";
+import { hexToRgba } from "@/lib/utils/colors";
+import { handleError } from "@/lib/utils/error";
+import { capitalize, slugify } from "@/lib/utils/text";
+import { Image } from "expo-image";
+import { useLocalSearchParams } from "expo-router";
+import { useRouter } from "@/lib/hooks/use-router";
+import { MessageSquare } from "lucide-react-native";
+import React from "react";
+import { Share, View } from "react-native";
+import { useBreakpoint } from "@/lib/hooks/use-breakpoint";
+import { useUser } from "@/lib/hooks/user";
+import Skeleton from "@/components/atoms/a-skeleton";
+import DetailsLayout from "@/components/layouts/details";
+import HostingLikeButton from "@/components/atoms/a-hosting-like-button";
+import ThemedText from "@/components/atoms/a-themed-text";
+import { MynauiStarSolid } from "@/components/icons/i-star";
+import HostingHost from "@/components/molecules/m-hosting-host";
+import HostingFacilities from "@/components/molecules/m-hosting-facilities";
+import HostingGalleryComponent from "@/components/molecules/m-hosting-gallery";
+import HostingReviews from "@/components/organisms/o-hosting-reviews";
+import HostingLocation from "@/components/molecules/m-hosting-location";
 
 export default function HostingDetails() {
   const router = useRouter();
@@ -36,7 +35,6 @@ export default function HostingDetails() {
     variables: { hostingId: cast(id) },
   });
   const colors = useThemeColors();
-  const { handleImageError, failedImages } = useFallbackImages();
   const { isTablet } = useBreakpoint();
 
   const hosting = data?.hosting;
@@ -44,13 +42,16 @@ export default function HostingDetails() {
   const isHost = !!hosting && hosting.host.user.id === user.user?.id;
 
   const handleShare = async () => {
-    const slug = `${slugify(hosting?.title ?? '')}___${id}`;
-    const shareUrl = (process.env.EXPO_PUBLIC_SHARE_PROPERTY_URL ?? '').replace('<slug>', slug);
+    const slug = `${slugify(hosting?.title ?? "")}___${id}`;
+    const shareUrl = (process.env.EXPO_PUBLIC_SHARE_PROPERTY_URL ?? "").replace(
+      "<slug>",
+      slug,
+    );
     try {
       await Share.share({
         title: hosting?.title ?? undefined,
         message: `Check out this amazing property on Kushi: ${hosting?.title}\n\n${shareUrl}`,
-        url: shareUrl, // Keep for iOS support
+        url: shareUrl,
       });
     } catch (error: any) {
       handleError(error);
@@ -91,7 +92,9 @@ export default function HostingDetails() {
           >
             <Button
               type="primary"
-              onPress={() => router.push(`/hostings/form/onboarding?id=${hosting?.id}`)}
+              onPress={() =>
+                router.push(`/hostings/form/onboarding?id=${hosting?.id}`)
+              }
             >
               <ThemedText content="primary">Edit Listing</ThemedText>
             </Button>
@@ -121,13 +124,20 @@ export default function HostingDetails() {
               <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 13 }}>
                 Sale — Coming Soon
               </ThemedText>
-              <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55) }}>
-                Online purchase processing for sale listings isn't available yet. Contact the host
-                directly to discuss and arrange the sale.
+              <ThemedText
+                style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55) }}
+              >
+                Online purchase processing for sale listings isn't available
+                yet. Contact the host directly to discuss and arrange the sale.
               </ThemedText>
             </View>
-            <Button type="primary" onPress={() => router.push(`/chats?hostingId=${hosting?.id}`)}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Button
+              type="primary"
+              onPress={() => router.push(`/chats?hostingId=${hosting?.id}`)}
+            >
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+              >
                 <MessageSquare size={16} color="#fff" />
                 <ThemedText content="primary">Message Host</ThemedText>
               </View>
@@ -139,20 +149,26 @@ export default function HostingDetails() {
             style={{ backgroundColor: colors.background }}
           >
             <View className="gap-1">
-              <ThemedText style={{ fontSize: 15, color: hexToRgba(colors.text, 0.6) }}>
+              <ThemedText
+                style={{ fontSize: 15, color: hexToRgba(colors.text, 0.6) }}
+              >
                 Total Payment
               </ThemedText>
               <View className="flex-row items-center gap-2">
-                <ThemedText>₦{Number(hosting?.price).toLocaleString()}</ThemedText>
+                <ThemedText>
+                  ₦{Number(hosting?.price).toLocaleString()}
+                </ThemedText>
                 <ThemedText style={{ color: hexToRgba(colors.text, 0.5) }}>
-                  {capitalize(hosting?.paymentInterval ?? '')}
+                  {capitalize(hosting?.paymentInterval ?? "")}
                 </ThemedText>
               </View>
             </View>
             <View className="flex-1 items-end">
               <Button
                 onPress={() => {
-                  router.push(`/hostings/${hosting?.id}/reservation/checkout-summary/`);
+                  router.push(
+                    `/hostings/${hosting?.id}/reservation/checkout-summary/`,
+                  );
                 }}
                 type="primary"
               >
@@ -168,24 +184,28 @@ export default function HostingDetails() {
           <HostingDetailsSkeleton />
         ) : (
           <>
-            <View style={{ height: isTablet ? 420 : 290 }} className="overflow-hidden rounded-xl">
-              <Carousel autoplay style={{ height: '100%', width: '100%' }}>
-                {(hosting?.rooms.map((r) => r.images).flat() ?? []).map((img, index) => (
-                  <Image
-                    source={{
-                      uri: failedImages.has(index) ? FALLBACK_IMAGE : img.asset?.publicUrl,
-                    }}
-                    style={{ height: '100%', width: '100%' }}
-                    contentFit="cover"
-                    transition={300}
-                    placeholder={{ blurhash: PROPERTY_BLURHASH }}
-                    placeholderContentFit="cover"
-                    cachePolicy="memory-disk"
-                    priority="high"
-                    onError={() => handleImageError(index)}
-                    key={index}
-                  />
-                ))}
+            <View
+              style={{ height: isTablet ? 420 : 290 }}
+              className="overflow-hidden rounded-xl"
+            >
+              <Carousel autoplay style={{ height: "100%", width: "100%" }}>
+                {(hosting?.rooms.map((r) => r.images).flat() ?? []).map(
+                  (img, index) => (
+                    <Image
+                      source={{
+                        uri: img.asset?.publicUrl,
+                      }}
+                      style={{ height: "100%", width: "100%" }}
+                      contentFit="cover"
+                      transition={300}
+                      placeholder={{ blurhash: PROPERTY_BLURHASH }}
+                      placeholderContentFit="cover"
+                      cachePolicy="memory-disk"
+                      priority="high"
+                      key={index}
+                    />
+                  ),
+                )}
               </Carousel>
             </View>
             <View className="mt-8">
@@ -201,7 +221,10 @@ export default function HostingDetails() {
                     {hosting?.title}
                   </ThemedText>
                   {hosting && (
-                    <HostingLikeButton saved={hosting?.saved ?? false} id={hosting?.id ?? ''} />
+                    <HostingLikeButton
+                      saved={hosting?.saved ?? false}
+                      id={hosting?.id ?? ""}
+                    />
                   )}
                 </View>
                 <ThemedText style={{ fontSize: 14, fontFamily: Fonts.light }}>
@@ -210,10 +233,10 @@ export default function HostingDetails() {
                 <View className="flex-row items-center gap-1">
                   <MynauiStarSolid size={14} color={colors.accent} />
                   <ThemedText style={{ fontSize: 14 }}>
-                    {Number(hosting?.averageRating ?? '0').toFixed(1)}
+                    {Number(hosting?.averageRating ?? "0").toFixed(1)}
                   </ThemedText>
                   <ThemedText style={{ fontSize: 12, fontFamily: Fonts.light }}>
-                    ({Number(hosting?.totalRatings ?? '0').toFixed(1)} Reviews)
+                    ({Number(hosting?.totalRatings ?? "0").toFixed(1)} Reviews)
                   </ThemedText>
                 </View>
               </View>

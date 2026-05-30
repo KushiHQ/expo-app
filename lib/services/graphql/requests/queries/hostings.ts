@@ -1,4 +1,4 @@
-import { gql } from 'urql';
+import { gql } from "urql";
 
 export const AI_HOSTING_CHAT_PREDICTIONS = gql`
   query AiHostingSearchPredictions($userInput: String!) {
@@ -294,6 +294,14 @@ export const SAVED_HOSTINGS_QUERY = gql`
         id
         title
         saved
+        coverImage {
+          id
+          asset {
+            id
+            publicUrl
+            originalFilename
+          }
+        }
       }
     }
   }
