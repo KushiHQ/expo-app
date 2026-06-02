@@ -19,6 +19,14 @@ export type Scalars = {
   Upload: { input: any; output: any; }
 };
 
+export type AdminDashboardStats = {
+  __typename?: 'AdminDashboardStats';
+  activeBookings: Scalars['Int']['output'];
+  activeListings: Scalars['Int']['output'];
+  disputedClaims: Scalars['Int']['output'];
+  pendingVerifications: Scalars['Int']['output'];
+};
+
 export type AdminFeeConfig = {
   __typename?: 'AdminFeeConfig';
   /** Days after tenancy expiry within which the host may file new caution claims. */
@@ -42,6 +50,16 @@ export type AdminFeeConfigResponse = {
   __typename?: 'AdminFeeConfigResponse';
   data?: Maybe<AdminFeeConfig>;
   message: Scalars['String']['output'];
+};
+
+export type AdminKyc = {
+  __typename?: 'AdminKyc';
+  bvnVerified?: Maybe<Scalars['Boolean']['output']>;
+  id: Scalars['String']['output'];
+  idDocumentType?: Maybe<Scalars['String']['output']>;
+  lastUpdated: Scalars['String']['output'];
+  ninVerified?: Maybe<Scalars['Boolean']['output']>;
+  youverifyReferenceId?: Maybe<Scalars['String']['output']>;
 };
 
 export type AdminLegalConfig = {
@@ -75,6 +93,18 @@ export type AdminReviewHostingVerificationRequestInput = {
   details?: InputMaybe<Scalars['String']['input']>;
   requestId: Scalars['String']['input'];
   status: HostingVerificationStatus;
+};
+
+export type AdminUser = {
+  __typename?: 'AdminUser';
+  createdAt: Scalars['String']['output'];
+  email: Scalars['String']['output'];
+  emailVerified: Scalars['Boolean']['output'];
+  id: Scalars['String']['output'];
+  isArchived: Scalars['Boolean']['output'];
+  isDisabled: Scalars['Boolean']['output'];
+  kushiId: Scalars['String']['output'];
+  kyc?: Maybe<AdminKyc>;
 };
 
 export type AiSearchPrediction = {
@@ -923,6 +953,7 @@ export type Mutations = {
   createOrUpdateHosting: HostingResponse;
   createOrUpdateHostingReview: HostingReviewResponse;
   createOrUpdateHostingRoom: HostingRoomResponse;
+  createSupportChat: SupportChat;
   createUpdateHostPaymentDetails: HostAccountDetailsResponse;
   createUpdateMessage: HostingChatMessage;
   createUpdateSavedHosting: SavedHostingResponse;
@@ -962,12 +993,14 @@ export type Mutations = {
   respondToCautionClaim: CautionClaimResponse;
   retryBookingPayment: TransactionResponse;
   sendChatCallNotification: MessageResponse;
+  sendSupportMessage: SupportChatMessage;
   signUp: UserResponse;
   updateBookingApplication: BookingApplicationResponse;
   updateGuest: GuestResponse;
   updateHost: HostResponse;
   updateProfile: ProfileResponse;
   updatePushNotificationToken: NotificationSettingsResponse;
+  updateSupportChatStatus: SupportChat;
   updateUserNotificationSettings: NotificationSettingsResponse;
   uploadKycImage: Kyc;
   verifyBookingPayment: BookingResponse;
@@ -1068,6 +1101,11 @@ export type MutationsCreateOrUpdateHostingReviewArgs = {
 
 export type MutationsCreateOrUpdateHostingRoomArgs = {
   input: HostingRoomInput;
+};
+
+
+export type MutationsCreateSupportChatArgs = {
+  initialMessage: Scalars['String']['input'];
 };
 
 
@@ -1242,6 +1280,12 @@ export type MutationsSendChatCallNotificationArgs = {
 };
 
 
+export type MutationsSendSupportMessageArgs = {
+  chatId: Scalars['String']['input'];
+  text: Scalars['String']['input'];
+};
+
+
 export type MutationsSignUpArgs = {
   input: SignUpInput;
 };
@@ -1269,6 +1313,12 @@ export type MutationsUpdateProfileArgs = {
 
 export type MutationsUpdatePushNotificationTokenArgs = {
   tokens: UpdateNotificationTokensInput;
+};
+
+
+export type MutationsUpdateSupportChatStatusArgs = {
+  chatId: Scalars['String']['input'];
+  status: SupportChatStatus;
 };
 
 
@@ -1470,13 +1520,21 @@ export enum PublishStatus {
 
 export type Query = {
   __typename?: 'Query';
+  adminBookingApplications: Array<BookingApplication>;
+  adminCautionClaim: CautionClaim;
+  adminCautionClaims: Array<CautionClaim>;
+  adminDashboardStats: AdminDashboardStats;
   adminFeeConfig: AdminFeeConfig;
+  adminHostingVerificationRequest: HostingVerificationRequest;
   adminHostingVerificationRequests: Array<HostingVerificationRequest>;
   /**
    * Returns the platform-wide legal configuration defaults used to
    * pre-populate tenancy agreement fields.
    */
   adminLegalConfig: AdminLegalConfig;
+  adminSupportChats: Array<SupportChat>;
+  adminTransactions: Array<Transaction>;
+  adminUsers: Array<AdminUser>;
   aiHostingSearchPredictions: Array<AiSearchPrediction>;
   authGuest: Guest;
   authHost: Host;
@@ -1502,12 +1560,14 @@ export type Query = {
   hostings: Array<Hosting>;
   landlordMandateOptions: LandlordMandateConfig;
   me: User;
+  mySupportChats: Array<SupportChat>;
   notifications: Array<Notification>;
   resolveBankAccount: Scalars['String']['output'];
   savedHosting: SavedHosting;
   savedHostingFolder: SavedHostingFolder;
   savedHostingFolders: Array<SavedHostingFolder>;
   savedHostings: Array<SavedHosting>;
+  supportChat: SupportChat;
   tenancyAgreementTemplate: TenancyTemplate;
   tenantMandateOptions: TenantMandateConfig;
   transactionByReference: Transaction;
@@ -1516,9 +1576,47 @@ export type Query = {
 };
 
 
+export type QueryAdminBookingApplicationsArgs = {
+  pagination?: InputMaybe<PaginationInput>;
+  status?: InputMaybe<BookingApplicationStatus>;
+};
+
+
+export type QueryAdminCautionClaimArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryAdminCautionClaimsArgs = {
+  pagination?: InputMaybe<PaginationInput>;
+  status?: InputMaybe<CautionClaimStatus>;
+};
+
+
+export type QueryAdminHostingVerificationRequestArgs = {
+  id: Scalars['String']['input'];
+};
+
+
 export type QueryAdminHostingVerificationRequestsArgs = {
   pagination?: InputMaybe<PaginationInput>;
   status?: InputMaybe<HostingVerificationStatus>;
+};
+
+
+export type QueryAdminSupportChatsArgs = {
+  pagination?: InputMaybe<PaginationInput>;
+  status?: InputMaybe<SupportChatStatus>;
+};
+
+
+export type QueryAdminTransactionsArgs = {
+  pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QueryAdminUsersArgs = {
+  pagination?: InputMaybe<PaginationInput>;
 };
 
 
@@ -1602,6 +1700,11 @@ export type QueryHostingsArgs = {
 };
 
 
+export type QueryMySupportChatsArgs = {
+  pagination?: InputMaybe<PaginationInput>;
+};
+
+
 export type QueryNotificationsArgs = {
   filter?: InputMaybe<NotificationsFilterInput>;
   pagination?: InputMaybe<PaginationInput>;
@@ -1631,6 +1734,11 @@ export type QuerySavedHostingFoldersArgs = {
 export type QuerySavedHostingsArgs = {
   filters?: InputMaybe<SavedHostingFilterInput>;
   pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QuerySupportChatArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -1784,6 +1892,7 @@ export type Subscriptions = {
   __typename?: 'Subscriptions';
   latestHostingChatMessage: HostingChatMessage;
   onlineUser: OnlineUser;
+  supportChatMessageAdded: SupportChatMessage;
 };
 
 
@@ -1795,6 +1904,43 @@ export type SubscriptionsLatestHostingChatMessageArgs = {
 export type SubscriptionsOnlineUserArgs = {
   userId: Scalars['String']['input'];
 };
+
+
+export type SubscriptionsSupportChatMessageAddedArgs = {
+  chatId: Scalars['String']['input'];
+};
+
+export type SupportChat = {
+  __typename?: 'SupportChat';
+  createdAt: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+  messages: Array<SupportChatMessage>;
+  status: SupportChatStatus;
+  user: User;
+};
+
+
+export type SupportChatMessagesArgs = {
+  pagination?: InputMaybe<PaginationInput>;
+};
+
+export type SupportChatMessage = {
+  __typename?: 'SupportChatMessage';
+  chatId: Scalars['String']['output'];
+  createdAt: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  isReadByAdmin: Scalars['Boolean']['output'];
+  isReadByUser: Scalars['Boolean']['output'];
+  sender?: Maybe<User>;
+  text: Scalars['String']['output'];
+};
+
+export enum SupportChatStatus {
+  Closed = 'CLOSED',
+  Open = 'OPEN',
+  Resolved = 'RESOLVED'
+}
 
 export type TenancySection = {
   __typename?: 'TenancySection';
@@ -1913,11 +2059,13 @@ export type User = {
   createdAt: Scalars['String']['output'];
   email: Scalars['String']['output'];
   id: Scalars['String']['output'];
+  isStaff: Scalars['Boolean']['output'];
   kushiId: Scalars['String']['output'];
   kyc: Kyc;
   lastUpdated: Scalars['String']['output'];
   notificationSettings: NotificationSettings;
   onlineUser: OnlineUser;
+  permissions: Array<Scalars['String']['output']>;
   phoneNumber?: Maybe<Scalars['String']['output']>;
   phoneNumberVerified: Scalars['Boolean']['output'];
   phoneNumbers: Array<PhoneNumber>;
@@ -2289,6 +2437,21 @@ export type VerifyTransactionByReferenceMutationVariables = Exact<{
 
 export type VerifyTransactionByReferenceMutation = { __typename?: 'Mutations', verifyTransactionByReference: { __typename?: 'TransactionResponse', message: string, data?: { __typename?: 'Transaction', id: string, status: TransactionStatus } | null } };
 
+export type CreateSupportChatMutationVariables = Exact<{
+  initialMessage: Scalars['String']['input'];
+}>;
+
+
+export type CreateSupportChatMutation = { __typename?: 'Mutations', createSupportChat: { __typename?: 'SupportChat', id: string, status: SupportChatStatus, createdAt: string, lastUpdated: string, messages: Array<{ __typename?: 'SupportChatMessage', id: string }> } };
+
+export type SendSupportMessageMutationVariables = Exact<{
+  chatId: Scalars['String']['input'];
+  text: Scalars['String']['input'];
+}>;
+
+
+export type SendSupportMessageMutation = { __typename?: 'Mutations', sendSupportMessage: { __typename?: 'SupportChatMessage', id: string, chatId: string, text: string, createdAt: string, isReadByUser: boolean, sender?: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string } } | null } };
+
 export type UpdateHostMutationVariables = Exact<{
   input: HostInput;
 }>;
@@ -2550,6 +2713,21 @@ export type TransactionsQueryVariables = Exact<{
 
 export type TransactionsQuery = { __typename?: 'Query', transactions: Array<{ __typename?: 'Transaction', id: string, amount: any, type: TransactionType, createdAt: string, lastUpdated: string, reference?: string | null, status: TransactionStatus, booking?: { __typename?: 'Booking', id: string, hosting: { __typename?: 'Hosting', id: string, title?: string | null } } | null }> };
 
+export type MySupportChatsQueryVariables = Exact<{
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type MySupportChatsQuery = { __typename?: 'Query', mySupportChats: Array<{ __typename?: 'SupportChat', id: string, status: SupportChatStatus, createdAt: string, lastUpdated: string, messages: Array<{ __typename?: 'SupportChatMessage', id: string, text: string, createdAt: string, isReadByUser: boolean }> }> };
+
+export type SupportChatQueryVariables = Exact<{
+  id: Scalars['String']['input'];
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type SupportChatQuery = { __typename?: 'Query', supportChat: { __typename?: 'SupportChat', id: string, status: SupportChatStatus, createdAt: string, lastUpdated: string, messages: Array<{ __typename?: 'SupportChatMessage', id: string, text: string, createdAt: string, isReadByUser: boolean, sender?: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string } } | null }> } };
+
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -2600,6 +2778,13 @@ export type OnlineUserSubscriptionVariables = Exact<{
 
 
 export type OnlineUserSubscription = { __typename?: 'Subscriptions', onlineUser: { __typename?: 'OnlineUser', online: boolean, lastUpdated: string, id: string, lastSeen: string } };
+
+export type SupportChatMessageAddedSubscriptionVariables = Exact<{
+  chatId: Scalars['String']['input'];
+}>;
+
+
+export type SupportChatMessageAddedSubscription = { __typename?: 'Subscriptions', supportChatMessageAdded: { __typename?: 'SupportChatMessage', id: string, chatId: string, text: string, createdAt: string, isReadByUser: boolean, sender?: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string } } | null } };
 
 
 export const SignUpDocument = gql`
@@ -3782,6 +3967,44 @@ export const VerifyTransactionByReferenceDocument = gql`
 export function useVerifyTransactionByReferenceMutation() {
   return Urql.useMutation<VerifyTransactionByReferenceMutation, VerifyTransactionByReferenceMutationVariables>(VerifyTransactionByReferenceDocument);
 };
+export const CreateSupportChatDocument = gql`
+    mutation CreateSupportChat($initialMessage: String!) {
+  createSupportChat(initialMessage: $initialMessage) {
+    id
+    status
+    createdAt
+    lastUpdated
+    messages(pagination: {offset: 0, limit: 1}) {
+      id
+    }
+  }
+}
+    `;
+
+export function useCreateSupportChatMutation() {
+  return Urql.useMutation<CreateSupportChatMutation, CreateSupportChatMutationVariables>(CreateSupportChatDocument);
+};
+export const SendSupportMessageDocument = gql`
+    mutation SendSupportMessage($chatId: String!, $text: String!) {
+  sendSupportMessage(chatId: $chatId, text: $text) {
+    id
+    chatId
+    text
+    createdAt
+    isReadByUser
+    sender {
+      id
+      profile {
+        fullName
+      }
+    }
+  }
+}
+    `;
+
+export function useSendSupportMessageMutation() {
+  return Urql.useMutation<SendSupportMessageMutation, SendSupportMessageMutationVariables>(SendSupportMessageDocument);
+};
 export const UpdateHostDocument = gql`
     mutation UpdateHost($input: HostInput!) {
   updateHost(input: $input) {
@@ -4939,6 +5162,52 @@ export const TransactionsDocument = gql`
 export function useTransactionsQuery(options?: Omit<Urql.UseQueryArgs<TransactionsQueryVariables>, 'query'>) {
   return Urql.useQuery<TransactionsQuery, TransactionsQueryVariables>({ query: TransactionsDocument, ...options });
 };
+export const MySupportChatsDocument = gql`
+    query MySupportChats($pagination: PaginationInput) {
+  mySupportChats(pagination: $pagination) {
+    id
+    status
+    createdAt
+    lastUpdated
+    messages(pagination: {offset: 0, limit: 1}) {
+      id
+      text
+      createdAt
+      isReadByUser
+    }
+  }
+}
+    `;
+
+export function useMySupportChatsQuery(options?: Omit<Urql.UseQueryArgs<MySupportChatsQueryVariables>, 'query'>) {
+  return Urql.useQuery<MySupportChatsQuery, MySupportChatsQueryVariables>({ query: MySupportChatsDocument, ...options });
+};
+export const SupportChatDocument = gql`
+    query SupportChat($id: String!, $pagination: PaginationInput) {
+  supportChat(id: $id) {
+    id
+    status
+    createdAt
+    lastUpdated
+    messages(pagination: $pagination) {
+      id
+      text
+      createdAt
+      isReadByUser
+      sender {
+        id
+        profile {
+          fullName
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useSupportChatQuery(options: Omit<Urql.UseQueryArgs<SupportChatQueryVariables>, 'query'>) {
+  return Urql.useQuery<SupportChatQuery, SupportChatQueryVariables>({ query: SupportChatDocument, ...options });
+};
 export const MeDocument = gql`
     query Me {
   me {
@@ -5150,4 +5419,25 @@ export const OnlineUserDocument = gql`
 
 export function useOnlineUserSubscription<TData = OnlineUserSubscription>(options: Omit<Urql.UseSubscriptionArgs<OnlineUserSubscriptionVariables>, 'query'>, handler?: Urql.SubscriptionHandler<OnlineUserSubscription, TData>) {
   return Urql.useSubscription<OnlineUserSubscription, TData, OnlineUserSubscriptionVariables>({ query: OnlineUserDocument, ...options }, handler);
+};
+export const SupportChatMessageAddedDocument = gql`
+    subscription SupportChatMessageAdded($chatId: String!) {
+  supportChatMessageAdded(chatId: $chatId) {
+    id
+    chatId
+    text
+    createdAt
+    isReadByUser
+    sender {
+      id
+      profile {
+        fullName
+      }
+    }
+  }
+}
+    `;
+
+export function useSupportChatMessageAddedSubscription<TData = SupportChatMessageAddedSubscription>(options: Omit<Urql.UseSubscriptionArgs<SupportChatMessageAddedSubscriptionVariables>, 'query'>, handler?: Urql.SubscriptionHandler<SupportChatMessageAddedSubscription, TData>) {
+  return Urql.useSubscription<SupportChatMessageAddedSubscription, TData, SupportChatMessageAddedSubscriptionVariables>({ query: SupportChatMessageAddedDocument, ...options }, handler);
 };

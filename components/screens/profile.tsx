@@ -1,3 +1,4 @@
+import { TablerMessage2 } from "@/components/icons/i-message";
 import moment from 'moment';
 import BottomSheet from '@/components/atoms/a-bottom-sheet';
 import Button from '@/components/atoms/a-button';
@@ -95,6 +96,11 @@ const ProfileScreen = () => {
       icon: HugeiconsShieldUser,
       href: '/kyc',
       label: 'KYC',
+    },
+    {
+      icon: TablerMessage2,
+      href: '/support',
+      label: 'Help & Support',
     },
   ];
 
