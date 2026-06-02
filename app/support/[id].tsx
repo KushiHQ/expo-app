@@ -40,8 +40,6 @@ export default function SupportChatScreen() {
     <DetailsLayout title="Kushi Support" scrollable={false} footer={
       <ChatInput 
         onSend={(data) => handleSendMessage(data.text)} 
-        disabled={fetching && !messages.length} 
-        hideAttachments={true}
       />
     }>
       {fetching && !messages.length ? (
@@ -56,19 +54,26 @@ export default function SupportChatScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 4, paddingBottom: 10 }}
           renderItem={({ item }) => {
-            const isMe = item.sender.id === user.user?.id;
+            const isMe = item.sender?.id === user.user?.id;
             return (
               <ChatMessageBubble
                 message={{
                   id: item.id,
-                  text: item.text,
+                  text: item.text ?? "",
                   createdAt: item.createdAt,
+                  lastUpdated: item.createdAt,
+                  isSender: isMe,
+                  isDeleted: false,
+                  assets: [],
                   sender: {
-                    id: item.sender.id,
-                    name: isMe ? "Me" : "Kushi Support",
-                  }
-                }}
-                isSender={isMe}
+                    id: item.sender?.id ?? "",
+                    profile: {
+                      id: "",
+                      fullName: isMe ? "Me" : (item.sender?.profile.fullName ?? "Kushi Support"),
+                    }
+                  } as any
+                } as any}
+                isFirstInGroup={true}
                 isLastInGroup={true}
               />
             );
