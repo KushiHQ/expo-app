@@ -10,6 +10,7 @@ export const SUPPORT_CHAT_MESSAGE_ADDED_SUBSCRIPTION = gql`
       isReadByUser
       sender {
         id
+        isStaff
         profile {
           fullName
         }

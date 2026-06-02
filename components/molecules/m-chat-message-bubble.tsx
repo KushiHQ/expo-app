@@ -16,6 +16,10 @@ type Props = {
   message: ChatMessagesQuery['chatMessages'][number] & { sending?: boolean };
   isFirstInGroup?: boolean;
   isLastInGroup?: boolean;
+  /** Whether the message sender is a staff/admin member */
+  isStaffMessage?: boolean;
+  /** Display name for the sender on non-user messages */
+  senderName?: string;
 };
 
 // In an inverted FlatList each item is flipped via scaleY(-1), so:
@@ -50,6 +54,8 @@ const ChatMessageBubble: React.FC<Props> = ({
   message,
   isFirstInGroup = true,
   isLastInGroup = true,
+  isStaffMessage = false,
+  senderName,
 }) => {
   const colors = useThemeColors();
 
@@ -67,6 +73,10 @@ const ChatMessageBubble: React.FC<Props> = ({
   const radius = getBubbleRadius(isSender, isFirstInGroup, isLastInGroup);
   const nonAudioAssets = message.assets.filter((a) => a.id !== audioAsset?.id);
 
+  const displayName = isSender
+    ? 'You'
+    : (senderName ?? (isStaffMessage ? 'Kushi Support' : 'User'));
+
   return (
     <View
       style={{
@@ -76,6 +86,22 @@ const ChatMessageBubble: React.FC<Props> = ({
         opacity: message.sending ? 0.7 : 1,
       }}
     >
+      {/* Sender name label on non-user messages */}
+      {!isSender && displayName && (
+        <ThemedText
+          style={{
+            fontSize: 11,
+            color: isStaffMessage ? colors.primary : hexToRgba(colors.text, 0.45),
+            fontFamily: Fonts.semibold,
+            marginBottom: 3,
+            paddingHorizontal: 4,
+            textTransform: 'capitalize',
+          }}
+        >
+          {displayName}
+        </ThemedText>
+      )}
+
       {nonAudioAssets.length > 0 && (
         <View
           style={{

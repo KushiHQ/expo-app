@@ -221,7 +221,7 @@ export default function HostingDetails() {
 									>
 										{hosting?.title}
 									</ThemedText>
-									{hosting && (
+									{hosting && !isHost && (
 										<HostingLikeButton
 											saved={hosting?.saved ?? false}
 											id={hosting?.id ?? ""}

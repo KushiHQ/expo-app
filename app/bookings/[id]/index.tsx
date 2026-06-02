@@ -1,23 +1,23 @@
-import Button from '@/components/atoms/a-button';
-import DataRow from '@/components/atoms/a-data-row';
-import LoadingModal from '@/components/atoms/a-loading-modal';
-import ErrorModal from '@/components/organisms/o-error-modal';
-import PINModal from '@/components/organisms/o-pin-modal';
-import Skeleton from '@/components/atoms/a-skeleton';
-import ThemedText from '@/components/atoms/a-themed-text';
-import DetailsLayout from '@/components/layouts/details';
-import BookingDetailsSheet from '@/components/molecules/m-booking-details';
-import ConfirmationSheet from '@/components/molecules/m-confirmation-sheet';
-import HostingReviewCard from '@/components/molecules/m-hosting-review-card';
-import ReviewItem from '@/components/molecules/m-review-item';
-import ReviewSection from '@/components/molecules/m-review-section';
-import LeaveAReviewButton from '@/components/organisms/o-leave-a-review-button';
-import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
-import { REVIEW_METRICS } from '@/lib/constants/reviews';
-import { Fonts } from '@/lib/constants/theme';
-import { useDownlods } from '@/lib/hooks/downloads';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useUser } from '@/lib/hooks/user';
+import Button from "@/components/atoms/a-button";
+import DataRow from "@/components/atoms/a-data-row";
+import LoadingModal from "@/components/atoms/a-loading-modal";
+import ErrorModal from "@/components/organisms/o-error-modal";
+import PINModal from "@/components/organisms/o-pin-modal";
+import Skeleton from "@/components/atoms/a-skeleton";
+import ThemedText from "@/components/atoms/a-themed-text";
+import DetailsLayout from "@/components/layouts/details";
+import BookingDetailsSheet from "@/components/molecules/m-booking-details";
+import ConfirmationSheet from "@/components/molecules/m-confirmation-sheet";
+import HostingReviewCard from "@/components/molecules/m-hosting-review-card";
+import ReviewItem from "@/components/molecules/m-review-item";
+import ReviewSection from "@/components/molecules/m-review-section";
+import LeaveAReviewButton from "@/components/organisms/o-leave-a-review-button";
+import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
+import { REVIEW_METRICS } from "@/lib/constants/reviews";
+import { Fonts } from "@/lib/constants/theme";
+import { useDownlods } from "@/lib/hooks/downloads";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { useUser } from "@/lib/hooks/user";
 import {
   BookingStatus,
   TransactionStatus,
@@ -26,17 +26,17 @@ import {
   useFinalizeBookingMutation,
   useInitiateCancelBookingMutation,
   useInitiateFinalizeBookingMutation,
-} from '@/lib/services/graphql/generated';
-import { cast } from '@/lib/types/utils';
-import { hexToRgba } from '@/lib/utils/colors';
-import { formatNaira } from '@/lib/utils/currency';
-import { handleError } from '@/lib/utils/error';
-import { openLocalFile } from '@/lib/utils/file';
-import { calculateBookingDuration } from '@/lib/utils/time';
-import { toTitleCase } from '@/lib/utils/text';
-import { toast } from '@/lib/hooks/use-toast';
-import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+} from "@/lib/services/graphql/generated";
+import { cast } from "@/lib/types/utils";
+import { hexToRgba } from "@/lib/utils/colors";
+import { formatNaira } from "@/lib/utils/currency";
+import { handleError } from "@/lib/utils/error";
+import { openLocalFile } from "@/lib/utils/file";
+import { calculateBookingDuration } from "@/lib/utils/time";
+import { toTitleCase } from "@/lib/utils/text";
+import { toast } from "@/lib/hooks/use-toast";
+import { Image } from "expo-image";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Building2,
   CalendarDays,
@@ -49,15 +49,15 @@ import {
   ShieldCheck,
   Star,
   User,
-} from 'lucide-react-native';
-import React from 'react';
-import { View } from 'react-native';
-import Pdf from 'react-native-pdf';
+} from "lucide-react-native";
+import React from "react";
+import { Pressable, View } from "react-native";
+import Pdf from "react-native-pdf";
 
 const BOOKING_STATUS_COLORS: Record<string, string> = {
-  [BookingStatus.Paid]: '#10B981',
-  [BookingStatus.Completed]: '#3B82F6',
-  [BookingStatus.Canceled]: '#94A3B8',
+  [BookingStatus.Paid]: "#10B981",
+  [BookingStatus.Completed]: "#3B82F6",
+  [BookingStatus.Canceled]: "#94A3B8",
 };
 
 export default function UserBooking() {
@@ -68,9 +68,12 @@ export default function UserBooking() {
   const [{ data, fetching: fetchingBooking }] = useBookingQuery({
     variables: { bookingId: cast(id) },
   });
-  const [{ fetching: initiatingFinalize }, initiateFinalize] = useInitiateFinalizeBookingMutation();
-  const [{ fetching: finalizing }, finanlizeBooking] = useFinalizeBookingMutation();
-  const [{ fetching: initiatingCancel }, initiateCancel] = useInitiateCancelBookingMutation();
+  const [{ fetching: initiatingFinalize }, initiateFinalize] =
+    useInitiateFinalizeBookingMutation();
+  const [{ fetching: finalizing }, finanlizeBooking] =
+    useFinalizeBookingMutation();
+  const [{ fetching: initiatingCancel }, initiateCancel] =
+    useInitiateCancelBookingMutation();
   const [{ fetching: canceling }, cancelBooking] = useCancelBookingMutation();
   const [localPdfUri, setLocalPdfUri] = React.useState<string | null>(null);
   const [receiptOpen, setReceiptOpen] = React.useState(false);
@@ -81,10 +84,13 @@ export default function UserBooking() {
 
   const user = useUser();
   const booking = data?.booking;
-  const loading = initiatingFinalize || finalizing || initiatingCancel || canceling;
+  const loading =
+    initiatingFinalize || finalizing || initiatingCancel || canceling;
 
   const coverUrl = booking?.hosting?.coverImage?.asset?.publicUrl;
-  const location = [booking?.hosting?.city, booking?.hosting?.state].filter(Boolean).join(', ');
+  const location = [booking?.hosting?.city, booking?.hosting?.state]
+    .filter(Boolean)
+    .join(", ");
   const statusColor = booking?.status
     ? (BOOKING_STATUS_COLORS[booking.status] ?? hexToRgba(colors.text, 0.4))
     : hexToRgba(colors.text, 0.4);
@@ -99,7 +105,8 @@ export default function UserBooking() {
     booking?.status !== BookingStatus.Canceled &&
     booking?.transaction?.status === TransactionStatus.Success;
 
-  const total = Number(booking?.amount ?? 0) + Number(booking?.guestServiceCharge ?? 0);
+  const total =
+    Number(booking?.amount ?? 0) + Number(booking?.guestServiceCharge ?? 0);
 
   React.useEffect(() => {
     if (!booking?.tenancyAgreementAsset?.publicUrl) return;
@@ -115,7 +122,7 @@ export default function UserBooking() {
         }
         setLocalPdfUri(localUri);
       } catch (err) {
-        console.error('PDF preload failed:', err);
+        console.error("PDF preload failed:", err);
       }
     })();
   }, [
@@ -141,12 +148,14 @@ export default function UserBooking() {
     cancelBooking({ bookingId: cast(id), otp }).then((res) => {
       if (res.error) {
         setCancelOtpOpen(false);
-        setCancelError(res.error.message ?? 'Something went wrong. Please try again.');
+        setCancelError(
+          res.error.message ?? "Something went wrong. Please try again.",
+        );
       } else if (res.data) {
         setCancelOtpOpen(false);
         toast.show({
-          type: 'success',
-          text1: 'Booking Cancelled',
+          type: "success",
+          text1: "Booking Cancelled",
           text2: res.data.cancelBooking.message,
         });
       }
@@ -171,9 +180,9 @@ export default function UserBooking() {
       }
       setFinalizeOtpOpen(false);
       toast.show({
-        type: 'success',
-        text1: 'Booking Finalized',
-        text2: 'Your Tenancy Agreement has been sent to your email.',
+        type: "success",
+        text1: "Booking Finalized",
+        text2: "Your Tenancy Agreement has been sent to your email.",
       });
     });
   };
@@ -181,7 +190,7 @@ export default function UserBooking() {
   const handleCompletePayment = () => {
     if (!booking?.transaction?.reference) return;
     router.push({
-      pathname: '/hostings/[id]/reservation/checkout',
+      pathname: "/hostings/[id]/reservation/checkout",
       params: {
         id: booking.hosting.id,
         bkId: booking.id,
@@ -198,14 +207,19 @@ export default function UserBooking() {
   };
 
   const footer = isPaymentPending ? (
-    <View className="flex-row gap-4 p-4 pb-8" style={{ backgroundColor: colors.background }}>
+    <View
+      className="flex-row gap-4 p-4 pb-8"
+      style={{ backgroundColor: colors.background }}
+    >
       <Button
         onPress={handleCompletePayment}
         type="primary"
         className="flex-1"
         style={{ backgroundColor: colors.accent }}
       >
-        <ThemedText style={{ color: 'white', fontWeight: '600' }}>Complete Payment</ThemedText>
+        <ThemedText style={{ color: "white", fontWeight: "600" }}>
+          Complete Payment
+        </ThemedText>
       </Button>
     </View>
   ) : canFinalize ? (
@@ -218,13 +232,15 @@ export default function UserBooking() {
         gap: 12,
       }}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6 }}>
+      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 6 }}>
         <CircleQuestionMark
           color={hexToRgba(colors.text, 0.4)}
           size={12}
           style={{ marginTop: 2 }}
         />
-        <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.5), flex: 1 }}>
+        <ThemedText
+          style={{ fontSize: 12, color: hexToRgba(colors.text, 0.5), flex: 1 }}
+        >
           Bookings will be automatically finalized within 2 weeks of payment.
         </ThemedText>
       </View>
@@ -236,9 +252,15 @@ export default function UserBooking() {
           style={{ borderColor: hexToRgba(colors.error, 0.6) }}
           onPress={() => setCancelOpen(true)}
         >
-          <ThemedText style={{ color: hexToRgba(colors.error, 0.9) }}>Cancel</ThemedText>
+          <ThemedText style={{ color: hexToRgba(colors.error, 0.9) }}>
+            Cancel
+          </ThemedText>
         </Button>
-        <Button onPress={handleInitiateFinalize} type="primary" className="flex-1">
+        <Button
+          onPress={handleInitiateFinalize}
+          type="primary"
+          className="flex-1"
+        >
           <ThemedText content="primary">Finalize</ThemedText>
         </Button>
       </View>
@@ -247,7 +269,11 @@ export default function UserBooking() {
 
   return (
     <>
-      <DetailsLayout title={booking?.hosting?.title ?? 'My Booking'} footer={footer} withSupport={true}>
+      <DetailsLayout
+        title={booking?.hosting?.title ?? "My Booking"}
+        footer={footer}
+        withSupport={true}
+      >
         {fetchingBooking && !booking ? (
           <View style={{ gap: 14, paddingTop: 8 }}>
             <Skeleton style={{ height: 160, borderRadius: 16 }} />
@@ -264,21 +290,29 @@ export default function UserBooking() {
               title="Property"
             >
               <View style={{ gap: 10 }}>
-                <Image
-                  source={coverUrl ? { uri: coverUrl } : FALLBACK_IMAGE}
-                  placeholder={{ blurhash: PROPERTY_BLURHASH }}
-                  contentFit="cover"
-                  style={{ width: '100%', height: 140, borderRadius: 10 }}
-                />
+                <Pressable
+                  onPress={() =>
+                    router.push(`/hostings/${booking?.hosting.id}`)
+                  }
+                >
+                  <Image
+                    source={coverUrl ? { uri: coverUrl } : FALLBACK_IMAGE}
+                    placeholder={{ blurhash: PROPERTY_BLURHASH }}
+                    contentFit="cover"
+                    style={{ width: "100%", height: 140, borderRadius: 10 }}
+                  />
+                </Pressable>
                 <View style={{ gap: 4 }}>
-                  <ThemedText style={{ fontSize: 14, fontFamily: Fonts.semibold }}>
-                    {booking?.hosting?.title ?? '—'}
+                  <ThemedText
+                    style={{ fontSize: 14, fontFamily: Fonts.semibold }}
+                  >
+                    {booking?.hosting?.title ?? "—"}
                   </ThemedText>
                   {location ? (
                     <View
                       style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
+                        flexDirection: "row",
+                        alignItems: "center",
                         gap: 5,
                       }}
                     >
@@ -313,7 +347,9 @@ export default function UserBooking() {
               title="Booking Status"
             >
               {booking?.status && (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                >
                   <ThemedText
                     style={{
                       fontSize: 12,
@@ -341,46 +377,49 @@ export default function UserBooking() {
                         fontFamily: Fonts.semibold,
                       }}
                     >
-                      {toTitleCase(booking.status.replaceAll('_', ' '))}
+                      {toTitleCase(booking.status.replaceAll("_", " "))}
                     </ThemedText>
                   </View>
                 </View>
               )}
-              <DataRow label="Ref #" value={booking?.bookingReference ?? '—'} />
+              <DataRow label="Ref #" value={booking?.bookingReference ?? "—"} />
               <DataRow
                 label="Booked"
                 value={
                   booking?.createdAt
-                    ? new Date(booking.createdAt).toLocaleDateString('en-GB', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })
-                    : '—'
+                    ? new Date(booking.createdAt).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })
+                    : "—"
                 }
               />
               {isPaymentPending && (
                 <View
                   style={{
-                    backgroundColor: hexToRgba('#F59E0B', 0.08),
+                    backgroundColor: hexToRgba("#F59E0B", 0.08),
                     borderRadius: 10,
                     padding: 12,
                     gap: 4,
                     borderWidth: 1,
-                    borderColor: hexToRgba('#F59E0B', 0.25),
+                    borderColor: hexToRgba("#F59E0B", 0.25),
                   }}
                 >
                   <ThemedText
                     style={{
                       fontSize: 13,
                       fontFamily: Fonts.semibold,
-                      color: '#F59E0B',
+                      color: "#F59E0B",
                     }}
                   >
                     Payment Pending
                   </ThemedText>
-                  <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
-                    Your application was approved. Complete payment to secure the property.
+                  <ThemedText
+                    style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}
+                  >
+                    Your application was approved. Complete payment to secure
+                    the property.
                   </ThemedText>
                 </View>
               )}
@@ -394,31 +433,43 @@ export default function UserBooking() {
               >
                 <DataRow
                   label="Commencement"
-                  value={new Date(booking.commencementDate).toLocaleDateString('en-GB', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
+                  value={new Date(booking.commencementDate).toLocaleDateString(
+                    "en-GB",
+                    {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    },
+                  )}
                   accent
                 />
                 {booking.expiryDate && (
                   <DataRow
                     label="Expiry"
-                    value={new Date(booking.expiryDate).toLocaleDateString('en-GB', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
+                    value={new Date(booking.expiryDate).toLocaleDateString(
+                      "en-GB",
+                      {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      },
+                    )}
                   />
                 )}
                 {booking.expiryDate && (
                   <DataRow
                     label="Duration"
-                    value={calculateBookingDuration(booking.commencementDate, booking.expiryDate)}
+                    value={calculateBookingDuration(
+                      booking.commencementDate,
+                      booking.expiryDate,
+                    )}
                   />
                 )}
                 {booking.hosting?.paymentInterval && (
-                  <DataRow label="Interval" value={toTitleCase(booking.hosting.paymentInterval)} />
+                  <DataRow
+                    label="Interval"
+                    value={toTitleCase(booking.hosting.paymentInterval)}
+                  />
                 )}
                 {booking.bookingApplication?.intervalMultiplier != null && (
                   <DataRow
@@ -434,9 +485,9 @@ export default function UserBooking() {
               icon={<User size={15} color={colors.primary} />}
               title="Personal Information"
             >
-              <DataRow label="Full Name" value={booking?.fullName ?? '—'} />
-              <DataRow label="Email" value={booking?.email ?? '—'} />
-              <DataRow label="Phone" value={booking?.phoneNumber ?? '—'} />
+              <DataRow label="Full Name" value={booking?.fullName ?? "—"} />
+              <DataRow label="Email" value={booking?.email ?? "—"} />
+              <DataRow label="Phone" value={booking?.phoneNumber ?? "—"} />
             </ReviewSection>
 
             {/* Payment Summary */}
@@ -460,12 +511,14 @@ export default function UserBooking() {
               />
               <View
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
-                <ThemedText style={{ fontSize: 13, color: hexToRgba(colors.text, 0.5) }}>
+                <ThemedText
+                  style={{ fontSize: 13, color: hexToRgba(colors.text, 0.5) }}
+                >
                   Total
                 </ThemedText>
                 <ThemedText
@@ -484,7 +537,9 @@ export default function UserBooking() {
                 className="mt-1"
                 onPress={() => setReceiptOpen(true)}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+                >
                   <Receipt size={14} color={colors.primary} />
                   <ThemedText content="tinted" style={{ fontSize: 13 }}>
                     View Receipt
@@ -495,7 +550,10 @@ export default function UserBooking() {
 
             {/* Review */}
             {booking?.userReview ? (
-              <ReviewSection icon={<Star size={15} color={colors.primary} />} title="Your Review">
+              <ReviewSection
+                icon={<Star size={15} color={colors.primary} />}
+                title="Your Review"
+              >
                 <ReviewItem
                   value={booking.userReview.cleanliness ?? 0}
                   title={REVIEW_METRICS.cleanliness.label}
@@ -546,7 +604,7 @@ export default function UserBooking() {
                 {!localPdfUri ? (
                   <Skeleton style={{ height: 640, borderRadius: 12 }} />
                 ) : (
-                  <View style={{ position: 'relative' }}>
+                  <View style={{ position: "relative" }}>
                     <Pdf
                       scrollEnabled={false}
                       enablePaging
@@ -554,7 +612,7 @@ export default function UserBooking() {
                       source={{ uri: localPdfUri, cache: false }}
                       style={{
                         height: 640,
-                        width: '100%',
+                        width: "100%",
                         borderColor: hexToRgba(colors.text, 0.15),
                         borderWidth: 1,
                         borderRadius: 12,
@@ -564,16 +622,19 @@ export default function UserBooking() {
                       onPress={openTenancyAgreement}
                       variant="outline"
                       type="tinted"
-                      style={{ position: 'absolute', right: 8, top: 8 }}
+                      style={{ position: "absolute", right: 8, top: 8 }}
                     >
                       <View
                         style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
+                          flexDirection: "row",
+                          alignItems: "center",
                           gap: 6,
                         }}
                       >
-                        <Download color={hexToRgba(colors.primary, 0.6)} size={16} />
+                        <Download
+                          color={hexToRgba(colors.primary, 0.6)}
+                          size={16}
+                        />
                         <ThemedText content="tinted">Open</ThemedText>
                       </View>
                     </Button>

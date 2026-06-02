@@ -35,8 +35,10 @@ import { Fonts } from "@/lib/constants/theme";
 
 import * as Haptics from "expo-haptics";
 import { Support } from "../icons/i-support";
-import { useInitiateSupportChatMutation, SupportItemType } from "@/lib/services/graphql/generated";
-
+import {
+	useInitiateSupportChatMutation,
+	SupportItemType,
+} from "@/lib/services/graphql/generated";
 
 type Props = {
 	children?: React.ReactNode;
@@ -99,7 +101,8 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 		const { height: keyboardHeight } = useGradualKeyboardAnimation();
 		const { id, transactionId } = useLocalSearchParams();
 		const { user } = useUser();
-		const [initiateSupportChatResult, initiateSupportChat] = useInitiateSupportChatMutation();
+		const [initiateSupportChatResult, initiateSupportChat] =
+			useInitiateSupportChatMutation();
 
 		React.useImperativeHandle(ref, () => scrollViewRef.current as ScrollView);
 
@@ -133,10 +136,10 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 
 		const handleSupportPress = async () => {
 			Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-			
+
 			let itemType: SupportItemType = SupportItemType.Hosting;
 			let itemId = String(id);
-			
+
 			if (path.includes("/hostings/")) {
 				itemType = SupportItemType.Hosting;
 			} else if (path.includes("/bookings/")) {
@@ -147,9 +150,9 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 					itemId = String(transactionId);
 				}
 			}
-			
+
 			const result = await initiateSupportChat({ itemType, itemId });
-			
+
 			if (result.data?.initiateSupportChat?.id) {
 				router.push(`/support/${result.data.initiateSupportChat.id}`);
 			}
@@ -270,7 +273,11 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 											opacity: initiateSupportChatResult.fetching ? 0.7 : 1,
 										}}
 									>
-										{initiateSupportChatResult.fetching ? <ActivityIndicator size="small" color={colors.primary} /> : <Support size={20} color={colors.primary} />}
+										{initiateSupportChatResult.fetching ? (
+											<ActivityIndicator size="small" color={colors.primary} />
+										) : (
+											<Support size={20} color={colors.primary} />
+										)}
 									</Pressable>
 								)}
 								{withShare && (

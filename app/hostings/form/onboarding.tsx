@@ -133,7 +133,7 @@ export default function HostingOnboarding() {
           Resume your setup, edit your property details, or preview your listing
           before it reaches future tenants.
         </ThemedText>
-        <TopListingCard hosting={hosting} />
+        <TopListingCard onPress={() => router.push(`/hostings/${hosting?.id}`)} hosting={hosting} />
         <View
           className="border-b py-4"
           style={{ borderColor: hexToRgba(colors.text, 0.15) }}

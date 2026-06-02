@@ -2465,7 +2465,7 @@ export type SendSupportMessageMutationVariables = Exact<{
 }>;
 
 
-export type SendSupportMessageMutation = { __typename?: 'Mutations', sendSupportMessage: { __typename?: 'SupportChatMessage', id: string, chatId: string, text: string, createdAt: string, isReadByUser: boolean, sender?: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string } } | null } };
+export type SendSupportMessageMutation = { __typename?: 'Mutations', sendSupportMessage: { __typename?: 'SupportChatMessage', id: string, chatId: string, text: string, createdAt: string, isReadByUser: boolean, sender?: { __typename?: 'User', id: string, isStaff: boolean, profile: { __typename?: 'Profile', fullName: string } } | null } };
 
 export type UpdateHostMutationVariables = Exact<{
   input: HostInput;
@@ -2738,15 +2738,22 @@ export type MySupportChatsQueryVariables = Exact<{
 }>;
 
 
-export type MySupportChatsQuery = { __typename?: 'Query', mySupportChats: Array<{ __typename?: 'SupportChat', id: string, status: SupportChatStatus, createdAt: string, lastUpdated: string, messages: Array<{ __typename?: 'SupportChatMessage', id: string, text: string, createdAt: string, isReadByUser: boolean }> }> };
+export type MySupportChatsQuery = { __typename?: 'Query', mySupportChats: Array<{ __typename?: 'SupportChat', id: string, status: SupportChatStatus, createdAt: string, lastUpdated: string, itemType?: SupportItemType | null, messages: Array<{ __typename?: 'SupportChatMessage', id: string, text: string, createdAt: string, isReadByUser: boolean }> }> };
 
 export type SupportChatQueryVariables = Exact<{
+  id: Scalars['String']['input'];
+}>;
+
+
+export type SupportChatQuery = { __typename?: 'Query', supportChat: { __typename?: 'SupportChat', id: string, status: SupportChatStatus, createdAt: string, lastUpdated: string, itemType?: SupportItemType | null, user: { __typename?: 'User', id: string, isStaff: boolean, profile: { __typename?: 'Profile', fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } }, hosting?: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null } | null, booking?: { __typename?: 'Booking', id: string, bookingReference: string, commencementDate?: string | null, durationDescription?: string | null, status?: BookingStatus | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null } } | null, transaction?: { __typename?: 'Transaction', id: string, amount: any, status: TransactionStatus, createdAt: string } | null } };
+
+export type SupportChatMessagesQueryVariables = Exact<{
   id: Scalars['String']['input'];
   pagination?: InputMaybe<PaginationInput>;
 }>;
 
 
-export type SupportChatQuery = { __typename?: 'Query', supportChat: { __typename?: 'SupportChat', id: string, status: SupportChatStatus, createdAt: string, lastUpdated: string, messages: Array<{ __typename?: 'SupportChatMessage', id: string, text: string, createdAt: string, isReadByUser: boolean, sender?: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string } } | null }> } };
+export type SupportChatMessagesQuery = { __typename?: 'Query', supportChat: { __typename?: 'SupportChat', id: string, messages: Array<{ __typename?: 'SupportChatMessage', id: string, text: string, createdAt: string, isReadByUser: boolean, sender?: { __typename?: 'User', id: string, isStaff: boolean, profile: { __typename?: 'Profile', fullName: string } } | null }> } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2804,7 +2811,7 @@ export type SupportChatMessageAddedSubscriptionVariables = Exact<{
 }>;
 
 
-export type SupportChatMessageAddedSubscription = { __typename?: 'Subscriptions', supportChatMessageAdded: { __typename?: 'SupportChatMessage', id: string, chatId: string, text: string, createdAt: string, isReadByUser: boolean, sender?: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string } } | null } };
+export type SupportChatMessageAddedSubscription = { __typename?: 'Subscriptions', supportChatMessageAdded: { __typename?: 'SupportChatMessage', id: string, chatId: string, text: string, createdAt: string, isReadByUser: boolean, sender?: { __typename?: 'User', id: string, isStaff: boolean, profile: { __typename?: 'Profile', fullName: string } } | null } };
 
 
 export const SignUpDocument = gql`
@@ -4018,6 +4025,7 @@ export const SendSupportMessageDocument = gql`
     isReadByUser
     sender {
       id
+      isStaff
       profile {
         fullName
       }
@@ -5205,6 +5213,7 @@ export const MySupportChatsDocument = gql`
     status
     createdAt
     lastUpdated
+    itemType
     messages(pagination: {offset: 0, limit: 1}) {
       id
       text
@@ -5219,12 +5228,77 @@ export function useMySupportChatsQuery(options?: Omit<Urql.UseQueryArgs<MySuppor
   return Urql.useQuery<MySupportChatsQuery, MySupportChatsQueryVariables>({ query: MySupportChatsDocument, ...options });
 };
 export const SupportChatDocument = gql`
-    query SupportChat($id: String!, $pagination: PaginationInput) {
+    query SupportChat($id: String!) {
   supportChat(id: $id) {
     id
     status
     createdAt
     lastUpdated
+    itemType
+    user {
+      id
+      isStaff
+      profile {
+        fullName
+        image {
+          publicUrl
+        }
+      }
+    }
+    hosting {
+      id
+      title
+      city
+      state
+      price
+      paymentInterval
+      coverImage {
+        id
+        asset {
+          id
+          publicUrl
+        }
+      }
+    }
+    booking {
+      id
+      bookingReference
+      commencementDate
+      durationDescription
+      status
+      hosting {
+        id
+        title
+        city
+        state
+        price
+        paymentInterval
+        coverImage {
+          id
+          asset {
+            id
+            publicUrl
+          }
+        }
+      }
+    }
+    transaction {
+      id
+      amount
+      status
+      createdAt
+    }
+  }
+}
+    `;
+
+export function useSupportChatQuery(options: Omit<Urql.UseQueryArgs<SupportChatQueryVariables>, 'query'>) {
+  return Urql.useQuery<SupportChatQuery, SupportChatQueryVariables>({ query: SupportChatDocument, ...options });
+};
+export const SupportChatMessagesDocument = gql`
+    query SupportChatMessages($id: String!, $pagination: PaginationInput) {
+  supportChat(id: $id) {
+    id
     messages(pagination: $pagination) {
       id
       text
@@ -5232,6 +5306,7 @@ export const SupportChatDocument = gql`
       isReadByUser
       sender {
         id
+        isStaff
         profile {
           fullName
         }
@@ -5241,8 +5316,8 @@ export const SupportChatDocument = gql`
 }
     `;
 
-export function useSupportChatQuery(options: Omit<Urql.UseQueryArgs<SupportChatQueryVariables>, 'query'>) {
-  return Urql.useQuery<SupportChatQuery, SupportChatQueryVariables>({ query: SupportChatDocument, ...options });
+export function useSupportChatMessagesQuery(options: Omit<Urql.UseQueryArgs<SupportChatMessagesQueryVariables>, 'query'>) {
+  return Urql.useQuery<SupportChatMessagesQuery, SupportChatMessagesQueryVariables>({ query: SupportChatMessagesDocument, ...options });
 };
 export const MeDocument = gql`
     query Me {
@@ -5466,6 +5541,7 @@ export const SupportChatMessageAddedDocument = gql`
     isReadByUser
     sender {
       id
+      isStaff
       profile {
         fullName
       }

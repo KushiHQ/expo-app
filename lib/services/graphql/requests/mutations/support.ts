@@ -24,6 +24,7 @@ export const SEND_SUPPORT_MESSAGE_MUTATION = gql`
       isReadByUser
       sender {
         id
+        isStaff
         profile {
           fullName
         }
