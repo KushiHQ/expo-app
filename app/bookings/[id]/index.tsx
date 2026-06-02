@@ -247,7 +247,7 @@ export default function UserBooking() {
 
   return (
     <>
-      <DetailsLayout title={booking?.hosting?.title ?? 'My Booking'} footer={footer}>
+      <DetailsLayout title={booking?.hosting?.title ?? 'My Booking'} footer={footer} withSupport={true}>
         {fetchingBooking && !booking ? (
           <View style={{ gap: 14, paddingTop: 8 }}>
             <Skeleton style={{ height: 160, borderRadius: 16 }} />

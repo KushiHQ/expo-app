@@ -1,4 +1,4 @@
-import { gql } from 'urql';
+import { gql } from "urql";
 
 export const UPDATE_HOST = gql`
   mutation UpdateHost($input: HostInput!) {
@@ -112,6 +112,15 @@ export const COMPLETE_PHONE_NUMBER_VERIFICATION = gql`
         number
         verificationStatus
       }
+    }
+  }
+`;
+
+export const DELETE_ACCOUNT = gql`
+  mutation DeleteAccount {
+    deleteAccount {
+      message
+      data
     }
   }
 `;

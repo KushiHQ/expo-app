@@ -75,7 +75,7 @@ export default function TransactionDetails() {
 
   if (fetching) {
     return (
-      <DetailsLayout title="Transaction Details">
+      <DetailsLayout withSupport={true} title="Transaction Details">
         <View className="gap-6 p-6">
           <Skeleton style={{ height: 150, borderRadius: 16 }} />
           <Skeleton style={{ height: 300, borderRadius: 16 }} />
@@ -86,7 +86,7 @@ export default function TransactionDetails() {
 
   if (error || !transaction) {
     return (
-      <DetailsLayout title="Transaction Details">
+      <DetailsLayout withSupport={true} title="Transaction Details">
         <View className="mt-20 items-center justify-center p-6">
           <XCircle color={colors.error} size={48} />
           <ThemedText className="mt-4 text-center">
@@ -107,7 +107,7 @@ export default function TransactionDetails() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <DetailsLayout
+      <DetailsLayout withSupport={true}
         title="Transaction Receipt"
         refreshControl={<RefreshControl refreshing={fetching} onRefresh={refetch} />}
       >

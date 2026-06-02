@@ -953,7 +953,6 @@ export type Mutations = {
   createOrUpdateHosting: HostingResponse;
   createOrUpdateHostingReview: HostingReviewResponse;
   createOrUpdateHostingRoom: HostingRoomResponse;
-  createSupportChat: SupportChat;
   createUpdateHostPaymentDetails: HostAccountDetailsResponse;
   createUpdateMessage: HostingChatMessage;
   createUpdateSavedHosting: SavedHostingResponse;
@@ -976,6 +975,7 @@ export type Mutations = {
   initiateHostingChat: HostingChat;
   initiateHostingVerification: HostingVerificationResponse;
   initiatePhoneNumberVerification: MessageResponse;
+  initiateSupportChat: SupportChat;
   login: AuthTokenResponse;
   logout: MessageResponse;
   markAllNotificationsAsRead: MessageResponse;
@@ -1104,11 +1104,6 @@ export type MutationsCreateOrUpdateHostingRoomArgs = {
 };
 
 
-export type MutationsCreateSupportChatArgs = {
-  initialMessage: Scalars['String']['input'];
-};
-
-
 export type MutationsCreateUpdateHostPaymentDetailsArgs = {
   input: HostAccountDetailsInput;
 };
@@ -1214,6 +1209,13 @@ export type MutationsInitiateHostingVerificationArgs = {
 
 export type MutationsInitiatePhoneNumberVerificationArgs = {
   phoneNumber: Scalars['String']['input'];
+};
+
+
+export type MutationsInitiateSupportChatArgs = {
+  initialMessage?: InputMaybe<Scalars['String']['input']>;
+  itemId?: InputMaybe<Scalars['String']['input']>;
+  itemType?: InputMaybe<SupportItemType>;
 };
 
 
@@ -1912,11 +1914,16 @@ export type SubscriptionsSupportChatMessageAddedArgs = {
 
 export type SupportChat = {
   __typename?: 'SupportChat';
+  booking?: Maybe<Booking>;
   createdAt: Scalars['String']['output'];
+  hosting?: Maybe<Hosting>;
   id: Scalars['String']['output'];
+  itemId?: Maybe<Scalars['String']['output']>;
+  itemType?: Maybe<SupportItemType>;
   lastUpdated: Scalars['String']['output'];
   messages: Array<SupportChatMessage>;
   status: SupportChatStatus;
+  transaction?: Maybe<Transaction>;
   user: User;
 };
 
@@ -1940,6 +1947,12 @@ export enum SupportChatStatus {
   Closed = 'CLOSED',
   Open = 'OPEN',
   Resolved = 'RESOLVED'
+}
+
+export enum SupportItemType {
+  Booking = 'BOOKING',
+  Hosting = 'HOSTING',
+  Transaction = 'TRANSACTION'
 }
 
 export type TenancySection = {
@@ -2437,12 +2450,14 @@ export type VerifyTransactionByReferenceMutationVariables = Exact<{
 
 export type VerifyTransactionByReferenceMutation = { __typename?: 'Mutations', verifyTransactionByReference: { __typename?: 'TransactionResponse', message: string, data?: { __typename?: 'Transaction', id: string, status: TransactionStatus } | null } };
 
-export type CreateSupportChatMutationVariables = Exact<{
-  initialMessage: Scalars['String']['input'];
+export type InitiateSupportChatMutationVariables = Exact<{
+  itemType?: InputMaybe<SupportItemType>;
+  itemId?: InputMaybe<Scalars['String']['input']>;
+  initialMessage?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
-export type CreateSupportChatMutation = { __typename?: 'Mutations', createSupportChat: { __typename?: 'SupportChat', id: string, status: SupportChatStatus, createdAt: string, lastUpdated: string, messages: Array<{ __typename?: 'SupportChatMessage', id: string }> } };
+export type InitiateSupportChatMutation = { __typename?: 'Mutations', initiateSupportChat: { __typename?: 'SupportChat', id: string, status: SupportChatStatus, createdAt: string, lastUpdated: string, messages: Array<{ __typename?: 'SupportChatMessage', id: string }> } };
 
 export type SendSupportMessageMutationVariables = Exact<{
   chatId: Scalars['String']['input'];
@@ -2514,6 +2529,11 @@ export type CompletePhoneNumberVerificationMutationVariables = Exact<{
 
 
 export type CompletePhoneNumberVerificationMutation = { __typename?: 'Mutations', completePhoneNumberVerification: { __typename?: 'PhoneNumberResponse', message: string, data?: { __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus } | null } };
+
+export type DeleteAccountMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type DeleteAccountMutation = { __typename?: 'Mutations', deleteAccount: { __typename?: 'BoolResponse', message: string, data?: boolean | null } };
 
 export type AdminFeeConfigQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -3967,9 +3987,13 @@ export const VerifyTransactionByReferenceDocument = gql`
 export function useVerifyTransactionByReferenceMutation() {
   return Urql.useMutation<VerifyTransactionByReferenceMutation, VerifyTransactionByReferenceMutationVariables>(VerifyTransactionByReferenceDocument);
 };
-export const CreateSupportChatDocument = gql`
-    mutation CreateSupportChat($initialMessage: String!) {
-  createSupportChat(initialMessage: $initialMessage) {
+export const InitiateSupportChatDocument = gql`
+    mutation InitiateSupportChat($itemType: SupportItemType, $itemId: String, $initialMessage: String) {
+  initiateSupportChat(
+    itemType: $itemType
+    itemId: $itemId
+    initialMessage: $initialMessage
+  ) {
     id
     status
     createdAt
@@ -3981,8 +4005,8 @@ export const CreateSupportChatDocument = gql`
 }
     `;
 
-export function useCreateSupportChatMutation() {
-  return Urql.useMutation<CreateSupportChatMutation, CreateSupportChatMutationVariables>(CreateSupportChatDocument);
+export function useInitiateSupportChatMutation() {
+  return Urql.useMutation<InitiateSupportChatMutation, InitiateSupportChatMutationVariables>(InitiateSupportChatDocument);
 };
 export const SendSupportMessageDocument = gql`
     mutation SendSupportMessage($chatId: String!, $text: String!) {
@@ -4147,6 +4171,18 @@ export const CompletePhoneNumberVerificationDocument = gql`
 
 export function useCompletePhoneNumberVerificationMutation() {
   return Urql.useMutation<CompletePhoneNumberVerificationMutation, CompletePhoneNumberVerificationMutationVariables>(CompletePhoneNumberVerificationDocument);
+};
+export const DeleteAccountDocument = gql`
+    mutation DeleteAccount {
+  deleteAccount {
+    message
+    data
+  }
+}
+    `;
+
+export function useDeleteAccountMutation() {
+  return Urql.useMutation<DeleteAccountMutation, DeleteAccountMutationVariables>(DeleteAccountDocument);
 };
 export const AdminFeeConfigDocument = gql`
     query AdminFeeConfig {

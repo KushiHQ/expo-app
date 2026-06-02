@@ -1,8 +1,8 @@
 import { gql } from 'urql';
 
-export const CREATE_SUPPORT_CHAT_MUTATION = gql`
-  mutation CreateSupportChat($initialMessage: String!) {
-    createSupportChat(initialMessage: $initialMessage) {
+export const INITIATE_SUPPORT_CHAT_MUTATION = gql`
+  mutation InitiateSupportChat($itemType: SupportItemType, $itemId: String, $initialMessage: String) {
+    initiateSupportChat(itemType: $itemType, itemId: $itemId, initialMessage: $initialMessage) {
       id
       status
       createdAt
