@@ -26,6 +26,12 @@ export const SUPPORT_CHAT_QUERY = gql`
       createdAt
       lastUpdated
       itemType
+      supportChatRating {
+        id
+        rating
+        comment
+        createdAt
+      }
       user {
         id
         isStaff
@@ -92,6 +98,15 @@ export const SUPPORT_CHAT_MESSAGES_QUERY = gql`
         text
         createdAt
         isReadByUser
+        assets {
+          id
+          asset {
+            id
+            publicUrl
+            contentType
+            originalFilename
+          }
+        }
         sender {
           id
           isStaff
