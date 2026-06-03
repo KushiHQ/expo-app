@@ -293,7 +293,8 @@ export default function FeedbackScreen() {
           title={submitting ? 'Submitting...' : 'Submit Feedback'}
           onPress={handleSubmit}
           disabled={submitting || !body.trim()}
-          variant={submitting || !body.trim() ? 'outline' : 'primary'}
+          variant={submitting || !body.trim() ? 'outline' : 'solid'}
+          type="primary"
         />
       </ScrollView>
     </DetailsLayout>

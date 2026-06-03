@@ -6,7 +6,7 @@ import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import * as Haptics from 'expo-haptics';
-import { useSubmitNPSMutation } from '@/lib/services/graphql/generated';
+import { useSubmitNpsMutation } from '@/lib/services/graphql/generated';
 
 interface NPSPromptProps {
   context: string;
@@ -16,7 +16,7 @@ interface NPSPromptProps {
 
 const NPSPrompt: React.FC<NPSPromptProps> = ({ context, onDismiss, onSubmit }) => {
   const colors = useThemeColors();
-  const [, submitNPS] = useSubmitNPSMutation();
+  const [, submitNPS] = useSubmitNpsMutation();
   const [selectedScore, setSelectedScore] = React.useState<number | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
   const [submitted, setSubmitted] = React.useState(false);

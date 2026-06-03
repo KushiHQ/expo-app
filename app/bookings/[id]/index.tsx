@@ -51,7 +51,8 @@ import {
   User,
 } from "lucide-react-native";
 import React from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, View, Modal } from "react-native";
+import BookingFeedbackPrompt from "@/components/molecules/m-booking-feedback-prompt";
 import Pdf from "react-native-pdf";
 
 const BOOKING_STATUS_COLORS: Record<string, string> = {
@@ -81,9 +82,17 @@ export default function UserBooking() {
   const [cancelOtpOpen, setCancelOtpOpen] = React.useState(false);
   const [cancelError, setCancelError] = React.useState<string | null>(null);
   const [finalizeOtpOpen, setFinalizeOtpOpen] = React.useState(false);
-
   const user = useUser();
   const booking = data?.booking;
+  const [showFeedbackPrompt, setShowFeedbackPrompt] = React.useState(false);
+  const [feedbackSubmitted, setFeedbackSubmitted] = React.useState(false);
+
+  // Check if booking is completed and show feedback prompt
+  React.useEffect(() => {
+    if (booking?.status === BookingStatus.Completed && !feedbackSubmitted) {
+      setShowFeedbackPrompt(true);
+    }
+  }, [booking?.status, feedbackSubmitted]);
   const loading =
     initiatingFinalize || finalizing || initiatingCancel || canceling;
 
@@ -685,6 +694,33 @@ export default function UserBooking() {
         description={cancelError ?? undefined}
       />
       <LoadingModal visible={loading} />
+
+      {/* Booking Feedback Prompt Modal */}
+      <Modal
+        visible={showFeedbackPrompt && !feedbackSubmitted}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowFeedbackPrompt(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: hexToRgba(colors.background, 0.8),
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 24,
+          }}
+        >
+          <BookingFeedbackPrompt
+            bookingId={cast(id)}
+            onDismiss={() => setShowFeedbackPrompt(false)}
+            onSubmit={() => {
+              setFeedbackSubmitted(true);
+              setShowFeedbackPrompt(false);
+            }}
+          />
+        </View>
+      </Modal>
     </>
   );
 }
