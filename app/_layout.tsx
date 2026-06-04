@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/react-native";
+import * as Sentry from '@sentry/react-native';
 import {
   Inter_100Thin,
   Inter_200ExtraLight,
@@ -10,44 +10,37 @@ import {
   Inter_800ExtraBold,
   Inter_900Black,
   useFonts,
-} from "@expo-google-fonts/inter";
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
-import { Stack, useLocalSearchParams, usePathname } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import { StatusBar } from "expo-status-bar";
-import {
-  configureReanimatedLogger,
-  ReanimatedLogLevel,
-} from "react-native-reanimated";
-import ToastContainer from "@/components/atoms/a-toast-container";
-import { NotificationProvider } from "@/components/contexts/notifications";
-import GraphqlClientProvider from "@/components/providers/graphql-client";
-import TansStackProvider from "@/components/providers/tanstack";
-import { Fonts } from "@/lib/constants/theme";
-import { useColorScheme } from "@/lib/hooks/use-color-scheme";
-import { useLockScreen } from "@/lib/hooks/use-lock-screen";
-import { initializeNotifications } from "@/lib/utils/notifications";
-import React from "react";
-import { Linking, LogBox, Platform } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { KeyboardProvider } from "react-native-keyboard-controller";
-import { PaperProvider } from "react-native-paper";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import "../global.css";
+} from '@expo-google-fonts/inter';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { Stack, useLocalSearchParams, usePathname } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
+import ToastContainer from '@/components/atoms/a-toast-container';
+import { NotificationProvider } from '@/components/contexts/notifications';
+import GraphqlClientProvider from '@/components/providers/graphql-client';
+import TansStackProvider from '@/components/providers/tanstack';
+import { Fonts } from '@/lib/constants/theme';
+import { useColorScheme } from '@/lib/hooks/use-color-scheme';
+import { useLockScreen } from '@/lib/hooks/use-lock-screen';
+import { initializeNotifications } from '@/lib/utils/notifications';
+import React from 'react';
+import { Linking, LogBox, Platform } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import '../global.css';
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
-  environment: __DEV__ ? "development" : "production",
+  environment: __DEV__ ? 'development' : 'production',
   // Capture 100% of transactions in dev so you see everything locally.
   // In production 10% is plenty — full sampling at scale is expensive.
   tracesSampleRate: __DEV__ ? 1.0 : 0.1,
   // Only enable verbose Sentry debug logs in dev (and not on Android where
   // they clutter the Metro output).
-  debug: __DEV__ && Platform.OS !== "android",
+  debug: __DEV__ && Platform.OS !== 'android',
 });
 
 SplashScreen.preventAutoHideAsync();
@@ -58,8 +51,8 @@ configureReanimatedLogger({
 });
 
 LogBox.ignoreLogs([
-  "AddIceCandidate failed because the session was shut down",
-  "Illegal State: call.join() shall be called only once",
+  'AddIceCandidate failed because the session was shut down',
+  'Illegal State: call.join() shall be called only once',
   "The screen 'index' was removed natively but didn't get removed from JS state",
 ]);
 
@@ -73,35 +66,35 @@ function RootLayout() {
   useLockScreen();
 
   React.useEffect(() => {
-    if (Platform.OS === "web") {
+    if (Platform.OS === 'web') {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const isShared = params.shared === "true";
+      const isShared = params.shared === 'true';
 
       if (isMobile && isShared) {
         // Detect slugified hosting or reservation routes
-        const isHosting =
-          pathname.startsWith("/guest/") && pathname.includes("___");
-        const isReservation = pathname.includes("/reservation/");
+        const isHosting = pathname.startsWith('/guest/') && pathname.includes('___');
+        const isReservation = pathname.includes('/reservation/');
 
         if (isHosting || isReservation) {
           // For slugified hosting, we need to extract the ID from the end (___ID)
           let deepLink = `kushi://${pathname.substring(1)}`;
 
           if (isHosting && !isReservation) {
-            const id = pathname.split("___").pop();
+            const id = pathname.split('___').pop();
             deepLink = `kushi://hostings/${id}`;
           }
 
           const queryParams = { ...params };
           delete queryParams.shared; // Remove shared from deep link
 
-          const finalDeepLink = `${deepLink}${Object.keys(queryParams).length
+          const finalDeepLink = `${deepLink}${
+            Object.keys(queryParams).length
               ? `?${new URLSearchParams(queryParams as any).toString()}`
-              : ""
-            }`;
+              : ''
+          }`;
 
           setTimeout(() => {
-            Linking.openURL(finalDeepLink).catch(() => { });
+            Linking.openURL(finalDeepLink).catch(() => {});
           }, 1000);
         }
       }
@@ -117,7 +110,7 @@ function RootLayout() {
     [Fonts.bold]: Inter_700Bold,
     [Fonts.extrabold]: Inter_800ExtraBold,
     [Fonts.black]: Inter_900Black,
-    TwemojiMozilla: require("react-native-country-select/lib/assets/fonts/TwemojiMozilla.woff2"),
+    TwemojiMozilla: require('react-native-country-select/lib/assets/fonts/TwemojiMozilla.woff2'),
   });
 
   React.useEffect(() => {
@@ -139,70 +132,23 @@ function RootLayout() {
               <PaperProvider>
                 <SafeAreaProvider>
                   <NotificationProvider>
-                    <ThemeProvider
-                      value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-                    >
-                      <Stack screenOptions={{ animation: "default" }}>
-                        <Stack.Screen
-                          name="index"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="+not-found"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="onboarding"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="auth"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="guest"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="host"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="camera"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="photo-gallery"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="hostings"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="kyc"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="bookings"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="chats"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="users"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="support"
-                          options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                          name="logout"
-                          options={{ headerShown: false }}
-                        />
+                    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                      <Stack screenOptions={{ animation: 'default' }}>
+                        <Stack.Screen name="index" options={{ headerShown: false }} />
+                        <Stack.Screen name="+not-found" options={{ headerShown: false }} />
+                        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+                        <Stack.Screen name="auth" options={{ headerShown: false }} />
+                        <Stack.Screen name="guest" options={{ headerShown: false }} />
+                        <Stack.Screen name="host" options={{ headerShown: false }} />
+                        <Stack.Screen name="camera" options={{ headerShown: false }} />
+                        <Stack.Screen name="photo-gallery" options={{ headerShown: false }} />
+                        <Stack.Screen name="hostings" options={{ headerShown: false }} />
+                        <Stack.Screen name="kyc" options={{ headerShown: false }} />
+                        <Stack.Screen name="bookings" options={{ headerShown: false }} />
+                        <Stack.Screen name="chats" options={{ headerShown: false }} />
+                        <Stack.Screen name="users" options={{ headerShown: false }} />
+                        <Stack.Screen name="support" options={{ headerShown: false }} />
+                        <Stack.Screen name="logout" options={{ headerShown: false }} />
                       </Stack>
                       <StatusBar style="auto" />
                       <ToastContainer />

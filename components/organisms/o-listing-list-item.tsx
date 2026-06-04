@@ -1,28 +1,21 @@
-import { PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { Image } from "expo-image";
-import React from "react";
-import { Pressable, Text, View } from "react-native";
-import ThemedText from "../atoms/a-themed-text";
-import { Fonts } from "@/lib/constants/theme";
-import { EllipsisVertical } from "lucide-react-native";
-import { hexToRgba } from "@/lib/utils/colors";
-import { IconParkOutlineDot } from "../icons/i-circle";
-import ListingOptions from "../molecules/m-listing-options";
-import { useRouter } from "@/lib/hooks/use-router";
-import {
-  HostListingsQuery,
-  PublishStatus,
-} from "@/lib/services/graphql/generated";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
-import * as Haptics from "expo-haptics";
+import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { Image } from 'expo-image';
+import React from 'react';
+import { Pressable, Text, View } from 'react-native';
+import ThemedText from '../atoms/a-themed-text';
+import { Fonts } from '@/lib/constants/theme';
+import { EllipsisVertical } from 'lucide-react-native';
+import { hexToRgba } from '@/lib/utils/colors';
+import { IconParkOutlineDot } from '../icons/i-circle';
+import ListingOptions from '../molecules/m-listing-options';
+import { useRouter } from '@/lib/hooks/use-router';
+import { HostListingsQuery, PublishStatus } from '@/lib/services/graphql/generated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 
 type Props = {
-  hosting: HostListingsQuery["hostings"][number];
+  hosting: HostListingsQuery['hostings'][number];
 };
 
 const ListingListItem: React.FC<Props> = ({ hosting }) => {
@@ -65,7 +58,7 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         className="flex-row items-center gap-4 rounded-2xl p-3"
-        style={{ backgroundColor: colors["surface-01"] }}
+        style={{ backgroundColor: colors['surface-01'] }}
       >
         <View className="h-[80px] w-[100px] overflow-hidden rounded-xl">
           <Image
@@ -73,8 +66,8 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
               uri: hosting.coverImage?.asset.publicUrl,
             }}
             style={{
-              height: "100%",
-              width: "100%",
+              height: '100%',
+              width: '100%',
             }}
             contentFit="cover"
             transition={400}
@@ -124,7 +117,7 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
                   fontSize: 11,
                   color: statusColor,
                   fontFamily: Fonts.semibold,
-                  textTransform: "capitalize",
+                  textTransform: 'capitalize',
                 }}
               >
                 {hosting.publishStatus}
@@ -142,11 +135,7 @@ const ListingListItem: React.FC<Props> = ({ hosting }) => {
           </View>
         </View>
       </Pressable>
-      <ListingOptions
-        open={optionsOpen}
-        onClose={() => setOptionsOpen(false)}
-        hosting={hosting}
-      />
+      <ListingOptions open={optionsOpen} onClose={() => setOptionsOpen(false)} hosting={hosting} />
     </Animated.View>
   );
 };

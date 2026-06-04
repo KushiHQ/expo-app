@@ -1,21 +1,21 @@
-import { PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { Image } from "expo-image";
-import React from "react";
-import { Pressable, View } from "react-native";
-import ThemedText from "../atoms/a-themed-text";
-import { Fonts } from "@/lib/constants/theme";
-import { hexToRgba } from "@/lib/utils/colors";
-import Button from "../atoms/a-button";
-import { ChevronDown } from "lucide-react-native";
-import BookingDetailsSheet from "./m-booking-details";
-import { BookingsQuery } from "@/lib/services/graphql/generated";
-import { capitalize } from "@/lib/utils/text";
-import { getBookingStatus } from "@/lib/utils/bookings";
-import { useRouter } from "@/lib/hooks/use-router";
+import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { Image } from 'expo-image';
+import React from 'react';
+import { Pressable, View } from 'react-native';
+import ThemedText from '../atoms/a-themed-text';
+import { Fonts } from '@/lib/constants/theme';
+import { hexToRgba } from '@/lib/utils/colors';
+import Button from '../atoms/a-button';
+import { ChevronDown } from 'lucide-react-native';
+import BookingDetailsSheet from './m-booking-details';
+import { BookingsQuery } from '@/lib/services/graphql/generated';
+import { capitalize } from '@/lib/utils/text';
+import { getBookingStatus } from '@/lib/utils/bookings';
+import { useRouter } from '@/lib/hooks/use-router';
 
 type Props = {
-  booking: BookingsQuery["bookings"][number];
+  booking: BookingsQuery['bookings'][number];
 };
 
 const BookingCard: React.FC<Props> = ({ booking }) => {
@@ -27,10 +27,7 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
 
   return (
     <>
-      <View
-        className="gap-4 border-b pb-4"
-        style={{ borderColor: hexToRgba(colors.text, 0.15) }}
-      >
+      <View className="gap-4 border-b pb-4" style={{ borderColor: hexToRgba(colors.text, 0.15) }}>
         <Pressable
           onPress={() => router.push(`/bookings/${booking.id}`)}
           className="flex-row items-center gap-4 rounded-xl border p-2"
@@ -44,7 +41,7 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
               source={{
                 uri: booking.hosting.coverImage?.asset.publicUrl,
               }}
-              style={{ height: "100%", width: "100%" }}
+              style={{ height: '100%', width: '100%' }}
               contentFit="cover"
               transition={300}
               placeholder={{ blurhash: PROPERTY_BLURHASH }}
@@ -61,23 +58,21 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
             >
               {booking.hosting.title}
             </ThemedText>
-            <ThemedText
-              style={{ fontSize: 14, color: hexToRgba(colors.text, 0.6) }}
-            >
+            <ThemedText style={{ fontSize: 14, color: hexToRgba(colors.text, 0.6) }}>
               {booking.hosting.city}, {booking.hosting.state}
             </ThemedText>
             <View className="flex-row items-center justify-between">
               <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14 }}>
-                ₦{Number(booking.amount ?? "0").toLocaleString()}{" "}
-                {capitalize(booking.hosting.paymentInterval ?? "")}
+                ₦{Number(booking.amount ?? '0').toLocaleString()}{' '}
+                {capitalize(booking.hosting.paymentInterval ?? '')}
               </ThemedText>
               <View
                 className="max-w-[74px] flex-1 items-center justify-center rounded-lg p-1 px-2"
                 style={{
                   backgroundColor: hexToRgba(
-                    bookingStatus === "pending"
+                    bookingStatus === 'pending'
                       ? colors.accent
-                      : bookingStatus === "active"
+                      : bookingStatus === 'active'
                         ? colors.success
                         : colors.error,
                     0.3,
@@ -88,9 +83,9 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
                   style={{
                     fontSize: 12,
                     color:
-                      bookingStatus === "pending"
+                      bookingStatus === 'pending'
                         ? colors.accent
-                        : bookingStatus === "active"
+                        : bookingStatus === 'active'
                           ? colors.success
                           : colors.error,
                   }}
@@ -101,22 +96,14 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
             </View>
           </View>
         </Pressable>
-        <Button
-          onPress={() => setOpen(true)}
-          type="tinted"
-          style={{ paddingBlock: 4 }}
-        >
+        <Button onPress={() => setOpen(true)} type="tinted" style={{ paddingBlock: 4 }}>
           <View className="flex-row items-center gap-2">
             <ThemedText content="tinted">View Reciept</ThemedText>
             <ChevronDown color={colors.primary} />
           </View>
         </Button>
       </View>
-      <BookingDetailsSheet
-        open={open}
-        onOpenChange={setOpen}
-        booking={booking}
-      />
+      <BookingDetailsSheet open={open} onOpenChange={setOpen} booking={booking} />
     </>
   );
 };

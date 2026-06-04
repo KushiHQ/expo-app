@@ -1,4 +1,4 @@
-import { gql } from "urql";
+import { gql } from 'urql';
 
 export const BOOKING_APPLICATIONS_COUNT = gql`
   query BookingApplicationsCount($filter: BookingApplicationFilter) {

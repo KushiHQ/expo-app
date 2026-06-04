@@ -107,7 +107,8 @@ export default function TransactionDetails() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <DetailsLayout withSupport={true}
+      <DetailsLayout
+        withSupport={true}
         title="Transaction Receipt"
         refreshControl={<RefreshControl refreshing={fetching} onRefresh={refetch} />}
       >

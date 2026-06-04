@@ -6,10 +6,7 @@ import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import * as Haptics from 'expo-haptics';
-import {
-  useSubmitFeedbackMutation,
-  FeedbackType,
-} from '@/lib/services/graphql/generated';
+import { useSubmitFeedbackMutation, FeedbackType } from '@/lib/services/graphql/generated';
 
 interface BookingFeedbackPromptProps {
   bookingId: string;
@@ -116,14 +113,10 @@ const BookingFeedbackPrompt: React.FC<BookingFeedbackPromptProps> = ({
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor:
-                rating !== null && rating >= score
-                  ? colors.primary
-                  : hexToRgba(colors.text, 0.06),
+                rating !== null && rating >= score ? colors.primary : hexToRgba(colors.text, 0.06),
               borderWidth: 1,
               borderColor:
-                rating !== null && rating >= score
-                  ? colors.primary
-                  : hexToRgba(colors.text, 0.08),
+                rating !== null && rating >= score ? colors.primary : hexToRgba(colors.text, 0.08),
             }}
           >
             <ThemedText style={{ fontSize: 20 }}>

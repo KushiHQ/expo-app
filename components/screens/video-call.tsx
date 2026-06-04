@@ -73,7 +73,10 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
     if (isIncoming) {
       answerPulse.value = withRepeat(
         withSequence(
-          withTiming(1.08, { duration: 700, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1.08, {
+            duration: 700,
+            easing: Easing.inOut(Easing.ease),
+          }),
           withTiming(1.0, { duration: 700, easing: Easing.inOut(Easing.ease) }),
         ),
         -1,
@@ -157,15 +160,6 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
         pointerEvents="box-none"
       >
         <View style={styles.header} pointerEvents="box-none">
-          <Pressable
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.back();
-            }}
-            style={[styles.headerBtn, { backgroundColor: hexToRgba('#ffffff', 0.14) }]}
-          >
-            <ChevronLeft size={22} color="#fff" />
-          </Pressable>
           <View style={styles.headerInfo}>
             <ThemedText style={styles.headerName}>{recipientName}</ThemedText>
             <ThemedText style={styles.headerStatus}>{statusLabel}</ThemedText>
@@ -263,7 +257,10 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
       <View
         style={[
           styles.bottomGradient,
-          { paddingBottom: insets.bottom + 20, backgroundColor: 'rgba(2,6,23,0.85)' },
+          {
+            paddingBottom: insets.bottom + 20,
+            backgroundColor: 'rgba(2,6,23,0.85)',
+          },
         ]}
         onLayout={(e) => setControlsHeight(e.nativeEvent.layout.height)}
       >

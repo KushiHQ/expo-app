@@ -6,10 +6,7 @@ import ThemedText from '@/components/atoms/a-themed-text';
 import AButton from '@/components/atoms/a-button';
 import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import {
-  useSubmitFeedbackMutation,
-  FeedbackType,
-} from '@/lib/services/graphql/generated';
+import { useSubmitFeedbackMutation, FeedbackType } from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
 import * as Haptics from 'expo-haptics';
 
@@ -65,7 +62,9 @@ export default function FeedbackScreen() {
   if (submitted) {
     return (
       <DetailsLayout title="Feedback">
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, gap: 16 }}>
+        <View
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, gap: 16 }}
+        >
           <ThemedText style={{ fontSize: 48 }}>✅</ThemedText>
           <ThemedText
             style={{
@@ -142,24 +141,16 @@ export default function FeedbackScreen() {
                 borderRadius: 12,
                 borderWidth: 1,
                 borderColor:
-                  selectedType === cat.value
-                    ? colors.primary
-                    : hexToRgba(colors.text, 0.15),
+                  selectedType === cat.value ? colors.primary : hexToRgba(colors.text, 0.15),
                 backgroundColor:
-                  selectedType === cat.value
-                    ? hexToRgba(colors.primary, 0.1)
-                    : 'transparent',
+                  selectedType === cat.value ? hexToRgba(colors.primary, 0.1) : 'transparent',
               }}
             >
               <ThemedText
                 style={{
-                  fontFamily:
-                    selectedType === cat.value ? Fonts.semibold : Fonts.medium,
+                  fontFamily: selectedType === cat.value ? Fonts.semibold : Fonts.medium,
                   fontSize: 13,
-                  color:
-                    selectedType === cat.value
-                      ? colors.primary
-                      : hexToRgba(colors.text, 0.7),
+                  color: selectedType === cat.value ? colors.primary : hexToRgba(colors.text, 0.7),
                 }}
               >
                 {cat.label}
@@ -247,18 +238,16 @@ export default function FeedbackScreen() {
               height: 22,
               borderRadius: 6,
               borderWidth: 2,
-              borderColor: contactConsent
-                ? colors.primary
-                : hexToRgba(colors.text, 0.3),
-              backgroundColor: contactConsent
-                ? colors.primary
-                : 'transparent',
+              borderColor: contactConsent ? colors.primary : hexToRgba(colors.text, 0.3),
+              backgroundColor: contactConsent ? colors.primary : 'transparent',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
             {contactConsent && (
-              <ThemedText style={{ fontSize: 12, color: colors.background, fontFamily: Fonts.semibold }}>
+              <ThemedText
+                style={{ fontSize: 12, color: colors.background, fontFamily: Fonts.semibold }}
+              >
                 ✓
               </ThemedText>
             )}

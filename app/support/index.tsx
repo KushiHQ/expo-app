@@ -55,9 +55,7 @@ const SupportChatListItem = ({ chat, router, colors }: { chat: any; router: any;
           gap: 12,
           alignItems: 'center',
           borderWidth: 0.5,
-          borderColor: hasUnread
-              ? hexToRgba(colors.primary, 0.3)
-              : hexToRgba(colors.text, 0.07),
+          borderColor: hasUnread ? hexToRgba(colors.primary, 0.3) : hexToRgba(colors.text, 0.07),
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.06,
@@ -82,14 +80,14 @@ const SupportChatListItem = ({ chat, router, colors }: { chat: any; router: any;
           }}
         />
       )}
-      <View 
-        style={{ 
-          width: 52, 
-          height: 52, 
-          borderRadius: 14, 
+      <View
+        style={{
+          width: 52,
+          height: 52,
+          borderRadius: 14,
           backgroundColor: hexToRgba(colors.primary, 0.1),
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
         }}
       >
         <Support size={24} color={colors.primary} />
@@ -129,7 +127,11 @@ const SupportChatListItem = ({ chat, router, colors }: { chat: any; router: any;
               flex: 1,
             }}
           >
-            {lastMessage ? lastMessage.text : (chat.status === 'OPEN' ? 'New conversation' : 'Closed conversation')}
+            {lastMessage
+              ? lastMessage.text
+              : chat.status === 'OPEN'
+                ? 'New conversation'
+                : 'Closed conversation'}
           </ThemedText>
         </View>
       </View>
@@ -178,7 +180,12 @@ export default function SupportInboxScreen() {
         ListEmptyComponent={
           !fetching && !chats.length ? <EmptyList message="No support chats" /> : null
         }
-        refreshControl={<RefreshControl onRefresh={() => refetch({ requestPolicy: 'network-only' })} refreshing={fetching} />}
+        refreshControl={
+          <RefreshControl
+            onRefresh={() => refetch({ requestPolicy: 'network-only' })}
+            refreshing={fetching}
+          />
+        }
       />
     </DetailsLayout>
   );

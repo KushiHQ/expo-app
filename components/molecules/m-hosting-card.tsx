@@ -1,28 +1,24 @@
-import React from "react";
-import { View, Pressable } from "react-native";
-import ThemedText from "../atoms/a-themed-text";
-import { Fonts } from "@/lib/constants/theme";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
-import { formatDate } from "@/lib/utils/time";
-import { MynauiStarSolid } from "../icons/i-star";
-import Carousel from "../atoms/a-carousel";
-import { Image } from "expo-image";
-import Skeleton from "../atoms/a-skeleton";
-import { useRouter } from "@/lib/hooks/use-router";
-import { PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { HostingQuery, HostingsQuery } from "@/lib/services/graphql/generated";
-import { capitalize } from "@/lib/utils/text";
-import HostingLikeButton from "../atoms/a-hosting-like-button";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
-import * as Haptics from "expo-haptics";
+import React from 'react';
+import { View, Pressable } from 'react-native';
+import ThemedText from '../atoms/a-themed-text';
+import { Fonts } from '@/lib/constants/theme';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
+import { formatDate } from '@/lib/utils/time';
+import { MynauiStarSolid } from '../icons/i-star';
+import Carousel from '../atoms/a-carousel';
+import { Image } from 'expo-image';
+import Skeleton from '../atoms/a-skeleton';
+import { useRouter } from '@/lib/hooks/use-router';
+import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { HostingQuery, HostingsQuery } from '@/lib/services/graphql/generated';
+import { capitalize } from '@/lib/utils/text';
+import HostingLikeButton from '../atoms/a-hosting-like-button';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 
 type Props = {
-  hosting: HostingsQuery["hostings"][number] | HostingQuery["hosting"];
+  hosting: HostingsQuery['hostings'][number] | HostingQuery['hosting'];
   disabled?: boolean;
   index?: number;
 };
@@ -56,13 +52,13 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
       <View
         style={{
           height: 290,
-          backgroundColor: colors["surface-01"],
+          backgroundColor: colors['surface-01'],
         }}
         className="relative overflow-hidden rounded-2xl"
       >
         <Carousel
           autoplay
-          style={{ height: "100%", width: "100%" }}
+          style={{ height: '100%', width: '100%' }}
           interval={3000 + 1000 * (index ?? 1)}
         >
           {images.map((img) => (
@@ -70,7 +66,7 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
               source={{
                 uri: img.asset?.publicUrl,
               }}
-              style={{ height: "100%", width: "100%" }}
+              style={{ height: '100%', width: '100%' }}
               contentFit="cover"
               transition={400}
               placeholder={{ blurhash: PROPERTY_BLURHASH }}
@@ -126,14 +122,11 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
               fontFamily: Fonts.medium,
             }}
           >
-            {hosting.state}, {hosting.country} •{" "}
-            {capitalize(hosting.paymentInterval ?? "")}
+            {hosting.state}, {hosting.country} • {capitalize(hosting.paymentInterval ?? '')}
           </ThemedText>
 
           <View className="mt-1 flex-row items-center justify-between">
-            <ThemedText
-              style={{ fontSize: 12, color: hexToRgba(colors.text, 0.4) }}
-            >
+            <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.4) }}>
               {formatDate(hosting.createdAt)}
             </ThemedText>
             <View className="flex-row items-center gap-1.5">
@@ -146,7 +139,7 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
                     color: colors.text,
                   }}
                 >
-                  {Number(hosting.averageRating ?? "0").toFixed(1)}
+                  {Number(hosting.averageRating ?? '0').toFixed(1)}
                 </ThemedText>
                 <ThemedText
                   style={{
@@ -155,7 +148,7 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
                     color: hexToRgba(colors.text, 0.5),
                   }}
                 >
-                  ({Number(hosting.totalRatings ?? "0").toFixed(1)})
+                  ({Number(hosting.totalRatings ?? '0').toFixed(1)})
                 </ThemedText>
               </View>
             </View>
@@ -188,24 +181,21 @@ export const HostingDetailsSkeleton = () => {
       <View className="gap-4">
         {/* Title and Like Row */}
         <View className="flex-row items-center justify-between">
-          <Skeleton style={{ height: 24, width: "60%", borderRadius: 4 }} />
+          <Skeleton style={{ height: 24, width: '60%', borderRadius: 4 }} />
           <Skeleton style={{ height: 24, width: 24, borderRadius: 12 }} />
         </View>
 
         {/* Location */}
-        <Skeleton style={{ height: 16, width: "30%", borderRadius: 4 }} />
+        <Skeleton style={{ height: 16, width: '30%', borderRadius: 4 }} />
 
         {/* Rating Row */}
         <View className="flex-row items-center gap-2">
           <Skeleton style={{ height: 16, width: 16, borderRadius: 4 }} />
-          <Skeleton style={{ height: 16, width: "20%", borderRadius: 4 }} />
+          <Skeleton style={{ height: 16, width: '20%', borderRadius: 4 }} />
         </View>
 
         {/* Description Section */}
-        <View
-          className="mt-8 border-b pb-8"
-          style={{ borderColor: hexToRgba(colors.text, 0.1) }}
-        >
+        <View className="mt-8 border-b pb-8" style={{ borderColor: hexToRgba(colors.text, 0.1) }}>
           <Skeleton
             style={{
               height: 22,
@@ -217,7 +207,7 @@ export const HostingDetailsSkeleton = () => {
           <Skeleton
             style={{
               height: 14,
-              width: "100%",
+              width: '100%',
               borderRadius: 4,
               marginBottom: 8,
             }}
@@ -225,20 +215,20 @@ export const HostingDetailsSkeleton = () => {
           <Skeleton
             style={{
               height: 14,
-              width: "100%",
+              width: '100%',
               borderRadius: 4,
               marginBottom: 8,
             }}
           />
-          <Skeleton style={{ height: 14, width: "80%", borderRadius: 4 }} />
+          <Skeleton style={{ height: 14, width: '80%', borderRadius: 4 }} />
         </View>
 
         {/* Host Section */}
         <View className="flex-row items-center gap-4 py-4">
           <Skeleton style={{ height: 50, width: 50, borderRadius: 25 }} />
           <View className="flex-1 gap-2">
-            <Skeleton style={{ height: 16, width: "40%", borderRadius: 4 }} />
-            <Skeleton style={{ height: 14, width: "30%", borderRadius: 4 }} />
+            <Skeleton style={{ height: 16, width: '40%', borderRadius: 4 }} />
+            <Skeleton style={{ height: 14, width: '30%', borderRadius: 4 }} />
           </View>
         </View>
 

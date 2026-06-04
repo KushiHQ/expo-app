@@ -1,13 +1,13 @@
-import React from "react";
-import { View, FlatList, ActivityIndicator, Modal } from "react-native";
-import { useLocalSearchParams } from "expo-router";
-import DetailsLayout from "@/components/layouts/details";
-import ChatMessageBubble from "@/components/molecules/m-chat-message-bubble";
-import ChatInput from "@/components/organisms/o-chat-input";
-import SupportChatContextCard from "@/components/molecules/m-support-chat-context-card";
-import SupportRatingPrompt from "@/components/molecules/m-support-rating-prompt";
-import ThemedText from "@/components/atoms/a-themed-text";
-import Logo from "@/components/icons/i-logo";
+import React from 'react';
+import { View, FlatList, ActivityIndicator, Modal } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import DetailsLayout from '@/components/layouts/details';
+import ChatMessageBubble from '@/components/molecules/m-chat-message-bubble';
+import ChatInput from '@/components/organisms/o-chat-input';
+import SupportChatContextCard from '@/components/molecules/m-support-chat-context-card';
+import SupportRatingPrompt from '@/components/molecules/m-support-rating-prompt';
+import ThemedText from '@/components/atoms/a-themed-text';
+import Logo from '@/components/icons/i-logo';
 import {
   SupportChatMessagesQuery,
   SupportChatStatus,
@@ -16,19 +16,19 @@ import {
   useSendSupportMessageMutation,
   useSupportChatMessageAddedSubscription,
   SupportChatMessageAddedSubscription,
-} from "@/lib/services/graphql/generated";
-import { useUser } from "@/lib/hooks/user";
-import { hexToRgba } from "@/lib/utils/colors";
-import { Fonts } from "@/lib/constants/theme";
-import { getDefaultProfileImageUrl } from "@/lib/utils/urls";
-import { Image } from "expo-image";
-import * as Haptics from "expo-haptics";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { cast } from "@/lib/types/utils";
+} from '@/lib/services/graphql/generated';
+import { useUser } from '@/lib/hooks/user';
+import { hexToRgba } from '@/lib/utils/colors';
+import { Fonts } from '@/lib/constants/theme';
+import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
+import { Image } from 'expo-image';
+import * as Haptics from 'expo-haptics';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { cast } from '@/lib/types/utils';
 
 const LIMIT = 20;
 
-type MessageItem = SupportChatMessagesQuery["supportChat"]["messages"][0] & {
+type MessageItem = SupportChatMessagesQuery['supportChat']['messages'][0] & {
   sending?: boolean;
 };
 
@@ -48,15 +48,14 @@ export default function SupportChatScreen() {
   // ─── Chat metadata ────────────────────────────────────────────────────────
   const [{ data: chatData }] = useSupportChatQuery({
     variables: { id: chatId },
-    requestPolicy: "cache-and-network",
+    requestPolicy: 'cache-and-network',
   });
 
   // ─── Paginated messages ────────────────────────────────────────────────────
-  const [{ data: messagesData, fetching: messagesFetching }] =
-    useSupportChatMessagesQuery({
-      variables: { id: chatId, pagination: { limit: LIMIT, offset } },
-      requestPolicy: "network-only",
-    });
+  const [{ data: messagesData, fetching: messagesFetching }] = useSupportChatMessagesQuery({
+    variables: { id: chatId, pagination: { limit: LIMIT, offset } },
+    requestPolicy: 'network-only',
+  });
 
   React.useEffect(() => {
     const incoming = messagesData?.supportChat?.messages ?? [];
@@ -71,16 +70,14 @@ export default function SupportChatScreen() {
       if (offset === 0) {
         const optimistic = prev.filter((m) => m.sending);
         const merged = [...optimistic, ...incoming].sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
         return merged;
       }
       const existingIds = new Set(prev.map((m) => m.id));
       const unique = incoming.filter((m) => !existingIds.has(m.id));
       return [...prev, ...unique].sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
     });
   }, [messagesData, offset]);
@@ -91,16 +88,11 @@ export default function SupportChatScreen() {
   // ─── Subscription ─────────────────────────────────────────────────────────
   useSupportChatMessageAddedSubscription(
     { variables: { chatId } },
-    (
-      prev: SupportChatMessageAddedSubscription["supportChatMessageAdded"][] = [],
-      curr,
-    ) => {
+    (prev: SupportChatMessageAddedSubscription['supportChatMessageAdded'][] = [], curr) => {
       const msg = curr.supportChatMessageAdded;
       setMessages((prevMsgs) => {
         const items = [...prevMsgs];
-        const idx = items.findIndex(
-          (v) => v.id === msg.id || (v.sending && v.text === msg.text),
-        );
+        const idx = items.findIndex((v) => v.id === msg.id || (v.sending && v.text === msg.text));
         if (idx >= 0) {
           items[idx] = cast({ ...msg });
         } else {
@@ -122,10 +114,7 @@ export default function SupportChatScreen() {
   const chat = chatData?.supportChat;
 
   React.useEffect(() => {
-    if (
-      chat?.status === SupportChatStatus.Resolved ||
-      chat?.status === SupportChatStatus.Closed
-    ) {
+    if (chat?.status === SupportChatStatus.Resolved || chat?.status === SupportChatStatus.Closed) {
       if (chat.supportChatRating) {
         setHasRated(true);
       } else {
@@ -146,9 +135,9 @@ export default function SupportChatScreen() {
       isReadByUser: true,
       sending: true,
       sender: {
-        id: user.user?.id ?? "",
+        id: user.user?.id ?? '',
         isStaff: false,
-        profile: { fullName: user.user?.profile?.fullName ?? "Me" },
+        profile: { fullName: user.user?.profile?.fullName ?? 'Me' },
       } as any,
     } as any as MessageItem;
 
@@ -174,13 +163,7 @@ export default function SupportChatScreen() {
   // ─── Group threshold ───────────────────────────────────────────────────────
   const GROUP_THRESHOLD_MS = 5 * 60 * 1000;
 
-  const renderItem = ({
-    item,
-    index,
-  }: {
-    item: MessageItem;
-    index: number;
-  }) => {
+  const renderItem = ({ item, index }: { item: MessageItem; index: number }) => {
     const isMe = item.sender?.id === user.user?.id;
     const above = messages[index + 1];
     const below = messages[index - 1];
@@ -188,14 +171,12 @@ export default function SupportChatScreen() {
     const isFirstInGroup =
       !above ||
       above.sender?.id !== item.sender?.id ||
-      new Date(item.createdAt).getTime() - new Date(above.createdAt).getTime() >
-      GROUP_THRESHOLD_MS;
+      new Date(item.createdAt).getTime() - new Date(above.createdAt).getTime() > GROUP_THRESHOLD_MS;
 
     const isLastInGroup =
       !below ||
       below.sender?.id !== item.sender?.id ||
-      new Date(below.createdAt).getTime() - new Date(item.createdAt).getTime() >
-      GROUP_THRESHOLD_MS;
+      new Date(below.createdAt).getTime() - new Date(item.createdAt).getTime() > GROUP_THRESHOLD_MS;
 
     const isStaff = item.sender?.isStaff === true;
 
@@ -204,20 +185,18 @@ export default function SupportChatScreen() {
         message={
           {
             id: item.id,
-            text: item.text ?? "",
+            text: item.text ?? '',
             createdAt: item.createdAt,
             lastUpdated: item.createdAt,
             isSender: isMe,
             isDeleted: false,
             assets: item.assets ?? [],
             sender: {
-              id: item.sender?.id ?? "",
+              id: item.sender?.id ?? '',
               isStaff: isStaff,
               profile: {
-                id: "",
-                fullName: isMe
-                  ? "Me"
-                  : (item.sender?.profile.fullName ?? "Kushi Support"),
+                id: '',
+                fullName: isMe ? 'Me' : (item.sender?.profile.fullName ?? 'Kushi Support'),
               },
             },
           } as any
@@ -226,10 +205,7 @@ export default function SupportChatScreen() {
         isLastInGroup={isLastInGroup}
         isStaffMessage={isStaff}
         senderName={
-          isMe
-            ? "You"
-            : (item.sender?.profile?.fullName ??
-              (isStaff ? "Kushi Support" : undefined))
+          isMe ? 'You' : (item.sender?.profile?.fullName ?? (isStaff ? 'Kushi Support' : undefined))
         }
       />
     );
@@ -237,8 +213,7 @@ export default function SupportChatScreen() {
 
   const userProfile = chat?.user?.profile;
   const userImageUrl =
-    userProfile?.image?.publicUrl ??
-    getDefaultProfileImageUrl(userProfile?.fullName ?? "");
+    userProfile?.image?.publicUrl ?? getDefaultProfileImageUrl(userProfile?.fullName ?? '');
 
   return (
     <DetailsLayout
@@ -267,29 +242,29 @@ export default function SupportChatScreen() {
           paddingHorizontal: 20,
           paddingBottom: 20,
           flexGrow: 1,
-          justifyContent: "flex-end",
+          justifyContent: 'flex-end',
         }}
         ListFooterComponent={
           <View style={{ marginBottom: 32, marginTop: 16 }}>
-            <View style={{ alignItems: "center", gap: 8, marginBottom: 24 }}>
+            <View style={{ alignItems: 'center', gap: 8, marginBottom: 24 }}>
               <View
                 style={{
                   width: 72,
                   height: 72,
                   borderRadius: 36,
-                  overflow: "hidden",
+                  overflow: 'hidden',
                   borderWidth: 2,
                   borderColor: hexToRgba(colors.primary, 0.35),
                 }}
               >
                 <Image
                   source={{ uri: userImageUrl }}
-                  style={{ width: "100%", height: "100%" }}
+                  style={{ width: '100%', height: '100%' }}
                   contentFit="cover"
                 />
               </View>
               <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 17 }}>
-                {userProfile?.fullName ?? "You"}
+                {userProfile?.fullName ?? 'You'}
               </ThemedText>
               <View
                 style={{
@@ -311,10 +286,7 @@ export default function SupportChatScreen() {
             )}
 
             {messagesFetching && hasNextPage && (
-              <ActivityIndicator
-                style={{ marginTop: 20 }}
-                color={colors.primary}
-              />
+              <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} />
             )}
           </View>
         }
@@ -323,15 +295,13 @@ export default function SupportChatScreen() {
             <View
               style={{
                 flex: 1,
-                alignItems: "center",
-                justifyContent: "center",
+                alignItems: 'center',
+                justifyContent: 'center',
                 paddingTop: 40,
                 gap: 10,
               }}
             >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
-              >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                 <View
                   style={{
                     flex: 1,
@@ -374,8 +344,8 @@ export default function SupportChatScreen() {
           style={{
             flex: 1,
             backgroundColor: hexToRgba(colors.background, 0.8),
-            alignItems: "center",
-            justifyContent: "center",
+            alignItems: 'center',
+            justifyContent: 'center',
             padding: 24,
           }}
         >

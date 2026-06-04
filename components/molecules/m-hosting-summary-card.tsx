@@ -1,16 +1,16 @@
-import { PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { Image } from "expo-image";
-import React from "react";
-import { View, Platform } from "react-native";
-import ThemedText from "../atoms/a-themed-text";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { Fonts } from "@/lib/constants/theme";
-import { hexToRgba } from "@/lib/utils/colors";
-import { MynauiStarSolid } from "../icons/i-star";
-import { BookingQuery, HostingQuery } from "@/lib/services/graphql/generated";
+import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { Image } from 'expo-image';
+import React from 'react';
+import { View, Platform } from 'react-native';
+import ThemedText from '../atoms/a-themed-text';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { Fonts } from '@/lib/constants/theme';
+import { hexToRgba } from '@/lib/utils/colors';
+import { MynauiStarSolid } from '../icons/i-star';
+import { BookingQuery, HostingQuery } from '@/lib/services/graphql/generated';
 
 type Props = {
-  hosting: HostingQuery["hosting"] | BookingQuery["booking"]["hosting"];
+  hosting: HostingQuery['hosting'] | BookingQuery['booking']['hosting'];
 };
 
 const HostingSummaryCard: React.FC<Props> = ({ hosting }) => {
@@ -50,8 +50,8 @@ const HostingSummaryCard: React.FC<Props> = ({ hosting }) => {
               uri: hosting.coverImage?.asset.publicUrl,
             }}
             style={{
-              height: "100%",
-              width: "100%",
+              height: '100%',
+              width: '100%',
               borderRadius: 12,
               maxWidth: 150,
             }}
@@ -71,16 +71,12 @@ const HostingSummaryCard: React.FC<Props> = ({ hosting }) => {
           >
             {hosting.title}
           </ThemedText>
-          <ThemedText
-            style={{ fontSize: 14, color: hexToRgba(colors.text, 0.7) }}
-          >
+          <ThemedText style={{ fontSize: 14, color: hexToRgba(colors.text, 0.7) }}>
             {hosting.city}, {hosting.state}
           </ThemedText>
           <View className="flex-row items-center gap-1">
             <MynauiStarSolid color={colors.accent} size={16} />
-            <ThemedText style={{ fontSize: 14 }}>
-              {hosting.averageRating}
-            </ThemedText>
+            <ThemedText style={{ fontSize: 14 }}>{hosting.averageRating}</ThemedText>
             <ThemedText
               style={{
                 fontSize: 14,

@@ -1,14 +1,14 @@
-import { PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { HostPaymentDetailsQuery } from "@/lib/services/graphql/generated";
-import { Image } from "expo-image";
-import { Platform, View } from "react-native";
-import ThemedText from "../atoms/a-themed-text";
-import { hexToRgba } from "@/lib/utils/colors";
-import { Fonts } from "@/lib/constants/theme";
+import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { HostPaymentDetailsQuery } from '@/lib/services/graphql/generated';
+import { Image } from 'expo-image';
+import { Platform, View } from 'react-native';
+import ThemedText from '../atoms/a-themed-text';
+import { hexToRgba } from '@/lib/utils/colors';
+import { Fonts } from '@/lib/constants/theme';
 
 type Props = {
-  details: HostPaymentDetailsQuery["hostPaymentDetails"][number];
+  details: HostPaymentDetailsQuery['hostPaymentDetails'][number];
 };
 
 const SelectedPaymentDetails: React.FC<Props> = ({ details }) => {
@@ -40,7 +40,7 @@ const SelectedPaymentDetails: React.FC<Props> = ({ details }) => {
             uri: details.bankDetails?.image,
           }}
           style={{
-            height: "100%",
+            height: '100%',
             borderRadius: 999,
           }}
           contentFit="contain"
@@ -53,7 +53,7 @@ const SelectedPaymentDetails: React.FC<Props> = ({ details }) => {
       </View>
       <View>
         <ThemedText style={{ fontFamily: Fonts.medium }}>
-          {details.accountName ?? "Account Name"}
+          {details.accountName ?? 'Account Name'}
         </ThemedText>
         <ThemedText>
           {details.accountNumber} {details.bankDetails?.name}

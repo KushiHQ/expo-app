@@ -1,5 +1,8 @@
 import React from 'react';
-import { useCanLeaveBookingFeedbackQuery, useShouldShowNpsSurveyQuery } from '@/lib/services/graphql/generated';
+import {
+  useCanLeaveBookingFeedbackQuery,
+  useShouldShowNpsSurveyQuery,
+} from '@/lib/services/graphql/generated';
 
 interface UseFeedbackTriggerOptions {
   bookingId?: string;
@@ -26,7 +29,9 @@ export function useFeedbackTrigger({
   bookingId,
   enabled = true,
 }: UseFeedbackTriggerOptions): UseFeedbackTriggerResult {
-  const [dismissedBookingFeedback, setDismissedBookingFeedback] = React.useState<Set<string>>(new Set());
+  const [dismissedBookingFeedback, setDismissedBookingFeedback] = React.useState<Set<string>>(
+    new Set(),
+  );
   const [dismissedNPS, setDismissedNPS] = React.useState(false);
 
   // Query: can user leave feedback for this booking?
@@ -55,7 +60,7 @@ export function useFeedbackTrigger({
 
   const dismissBookingFeedback = React.useCallback(() => {
     if (bookingId) {
-      setDismissedBookingFeedback(prev => new Set(prev).add(bookingId));
+      setDismissedBookingFeedback((prev) => new Set(prev).add(bookingId));
     }
   }, [bookingId]);
 

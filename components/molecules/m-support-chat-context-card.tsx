@@ -50,14 +50,20 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
       return (
         <View className="flex-1 justify-between py-1">
           <View className="gap-1">
-            <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.45), fontFamily: Fonts.medium }}>
+            <ThemedText
+              style={{
+                fontSize: 12,
+                color: hexToRgba(colors.text, 0.45),
+                fontFamily: Fonts.medium,
+              }}
+            >
               Transaction
             </ThemedText>
             <ThemedText style={{ fontSize: 16, fontFamily: Fonts.semibold }}>
               ₦{Number(transaction.amount ?? '0').toLocaleString()}
             </ThemedText>
           </View>
-          <View className="flex-row items-center gap-2 mt-2">
+          <View className="mt-2 flex-row items-center gap-2">
             <View
               className="rounded-lg px-2 py-1"
               style={{ backgroundColor: hexToRgba(colors.primary, 0.1) }}
@@ -66,7 +72,13 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
                 {capitalize(transaction.status ?? '')}
               </ThemedText>
             </View>
-            <ThemedText style={{ fontSize: 11, color: hexToRgba(colors.text, 0.4), fontFamily: Fonts.regular }}>
+            <ThemedText
+              style={{
+                fontSize: 11,
+                color: hexToRgba(colors.text, 0.4),
+                fontFamily: Fonts.regular,
+              }}
+            >
               {transaction.createdAt ? new Date(transaction.createdAt).toLocaleDateString() : ''}
             </ThemedText>
           </View>
@@ -78,17 +90,31 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
       return (
         <View className="flex-1 justify-between py-1">
           <View className="gap-1">
-            <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.45), fontFamily: Fonts.medium }}>
+            <ThemedText
+              style={{
+                fontSize: 12,
+                color: hexToRgba(colors.text, 0.45),
+                fontFamily: Fonts.medium,
+              }}
+            >
               Booking · {booking.bookingReference}
             </ThemedText>
-            <ThemedText ellipsizeMode="tail" numberOfLines={1} style={{ fontSize: 15, fontFamily: Fonts.semibold }}>
+            <ThemedText
+              ellipsizeMode="tail"
+              numberOfLines={1}
+              style={{ fontSize: 15, fontFamily: Fonts.semibold }}
+            >
               {effectiveHosting.title}
             </ThemedText>
-            <ThemedText ellipsizeMode="tail" numberOfLines={1} style={{ color: hexToRgba(colors.text, 0.5), fontSize: 12 }}>
+            <ThemedText
+              ellipsizeMode="tail"
+              numberOfLines={1}
+              style={{ color: hexToRgba(colors.text, 0.5), fontSize: 12 }}
+            >
               {effectiveHosting.city}, {effectiveHosting.state}
             </ThemedText>
           </View>
-          <View className="flex-row items-center gap-2 mt-2">
+          <View className="mt-2 flex-row items-center gap-2">
             <View
               className="rounded-lg px-2 py-1"
               style={{ backgroundColor: hexToRgba(colors.primary, 0.1) }}
@@ -98,7 +124,10 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
               </ThemedText>
             </View>
             {canNavigate && (
-              <ThemedText style={{ fontSize: 11, fontFamily: Fonts.medium, color: colors.primary }} className="underline">
+              <ThemedText
+                style={{ fontSize: 11, fontFamily: Fonts.medium, color: colors.primary }}
+                className="underline"
+              >
                 View Details
               </ThemedText>
             )}
@@ -112,25 +141,41 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
       return (
         <View className="flex-1 justify-between py-1">
           <View className="gap-1">
-            <ThemedText ellipsizeMode="tail" numberOfLines={1} style={{ fontSize: 16, fontFamily: Fonts.semibold }}>
+            <ThemedText
+              ellipsizeMode="tail"
+              numberOfLines={1}
+              style={{ fontSize: 16, fontFamily: Fonts.semibold }}
+            >
               {effectiveHosting.title}
             </ThemedText>
-            <ThemedText ellipsizeMode="tail" numberOfLines={1} style={{ color: hexToRgba(colors.text, 0.5), fontSize: 12 }}>
+            <ThemedText
+              ellipsizeMode="tail"
+              numberOfLines={1}
+              style={{ color: hexToRgba(colors.text, 0.5), fontSize: 12 }}
+            >
               {effectiveHosting.city}, {effectiveHosting.state}
             </ThemedText>
           </View>
           <View className="mt-2 flex-row items-center justify-between">
-            <View className="rounded-lg px-2 py-1" style={{ backgroundColor: hexToRgba(colors.primary, 0.1) }}>
+            <View
+              className="rounded-lg px-2 py-1"
+              style={{ backgroundColor: hexToRgba(colors.primary, 0.1) }}
+            >
               <ThemedText style={{ fontSize: 14, fontFamily: Fonts.bold, color: colors.primary }}>
                 ₦{Number(effectiveHosting.price ?? '0').toLocaleString()}
-                <ThemedText style={{ fontSize: 10, fontFamily: Fonts.medium, color: colors.primary }}>
+                <ThemedText
+                  style={{ fontSize: 10, fontFamily: Fonts.medium, color: colors.primary }}
+                >
                   {' '}
                   / {capitalize(effectiveHosting.paymentInterval ?? '')}
                 </ThemedText>
               </ThemedText>
             </View>
             {canNavigate && (
-              <ThemedText style={{ fontSize: 11, fontFamily: Fonts.medium, color: colors.primary }} className="underline">
+              <ThemedText
+                style={{ fontSize: 11, fontFamily: Fonts.medium, color: colors.primary }}
+                className="underline"
+              >
                 View Details
               </ThemedText>
             )}

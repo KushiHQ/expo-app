@@ -1,19 +1,19 @@
-import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { Image } from "expo-image";
-import React from "react";
-import { Pressable, View } from "react-native";
-import ThemedText from "../atoms/a-themed-text";
-import { MynauiStarSolid } from "../icons/i-star";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { Fonts } from "@/lib/constants/theme";
-import Skeleton from "../atoms/a-skeleton";
-import { useRouter } from "@/lib/hooks/use-router";
-import Checkbox from "../atoms/a-checkbox";
-import { SavedHostingsQuery } from "@/lib/services/graphql/generated";
-import HostingLikeButton from "../atoms/a-hosting-like-button";
+import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { Image } from 'expo-image';
+import React from 'react';
+import { Pressable, View } from 'react-native';
+import ThemedText from '../atoms/a-themed-text';
+import { MynauiStarSolid } from '../icons/i-star';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { Fonts } from '@/lib/constants/theme';
+import Skeleton from '../atoms/a-skeleton';
+import { useRouter } from '@/lib/hooks/use-router';
+import Checkbox from '../atoms/a-checkbox';
+import { SavedHostingsQuery } from '@/lib/services/graphql/generated';
+import HostingLikeButton from '../atoms/a-hosting-like-button';
 
 type Props = {
-  hosting: SavedHostingsQuery["savedHostings"][number];
+  hosting: SavedHostingsQuery['savedHostings'][number];
   selectMode?: boolean;
   selected?: boolean;
   onSelect?: (id: string) => void;
@@ -43,7 +43,7 @@ const SavedHostingCard: React.FC<Props> = ({
           source={{
             uri: hosting.hosting.coverImage?.asset.publicUrl,
           }}
-          style={{ height: "100%", width: "100%", borderRadius: 12 }}
+          style={{ height: '100%', width: '100%', borderRadius: 12 }}
           contentFit="cover"
           transition={300}
           placeholder={{ blurhash: PROPERTY_BLURHASH }}
@@ -65,39 +65,32 @@ const SavedHostingCard: React.FC<Props> = ({
               size={24}
               color={colors.primary}
               iconStyles={{
-                position: "absolute",
+                position: 'absolute',
                 left: -2.5,
               }}
               style={{
-                backgroundColor: "white",
+                backgroundColor: 'white',
                 borderRadius: 4,
                 width: 18,
                 height: 18,
-                alignContent: "center",
-                justifyContent: "center",
+                alignContent: 'center',
+                justifyContent: 'center',
               }}
             />
           ) : (
-            <HostingLikeButton
-              saved={hosting.hosting.saved ?? false}
-              id={hosting.hosting.id}
-            />
+            <HostingLikeButton saved={hosting.hosting.saved ?? false} id={hosting.hosting.id} />
           )}
         </View>
       </View>
       <View>
-        <ThemedText
-          numberOfLines={1}
-          ellipsizeMode="tail"
-          style={{ fontFamily: Fonts.medium }}
-        >
+        <ThemedText numberOfLines={1} ellipsizeMode="tail" style={{ fontFamily: Fonts.medium }}>
           {hosting.hosting.title}
         </ThemedText>
         <View className="flex-row items-center gap-1">
           <MynauiStarSolid color={colors.accent} size={16} />
           <ThemedText>
-            {hosting.hosting.averageRating?.toFixed(2) ?? "0.0"}(
-            {hosting.hosting.totalRatings ?? 0})
+            {hosting.hosting.averageRating?.toFixed(2) ?? '0.0'}({hosting.hosting.totalRatings ?? 0}
+            )
           </ThemedText>
         </View>
       </View>
@@ -111,13 +104,11 @@ export const SavedHostingCardSkeleton = () => {
   return (
     <View className="mb-2 gap-2">
       <View className="h-[130px]">
-        <Skeleton style={{ height: "100%", width: "100%", borderRadius: 12 }} />
+        <Skeleton style={{ height: '100%', width: '100%', borderRadius: 12 }} />
       </View>
       <View className="gap-1">
-        <Skeleton style={{ height: 17, width: "100%", borderRadius: 12 }} />
-        <Skeleton
-          style={{ height: 16, width: "100%", maxWidth: 50, borderRadius: 12 }}
-        />
+        <Skeleton style={{ height: 17, width: '100%', borderRadius: 12 }} />
+        <Skeleton style={{ height: 16, width: '100%', maxWidth: 50, borderRadius: 12 }} />
       </View>
     </View>
   );

@@ -1,7 +1,11 @@
 import { gql } from 'urql';
 
 export const INITIATE_SUPPORT_CHAT_MUTATION = gql`
-  mutation InitiateSupportChat($itemType: SupportItemType, $itemId: String, $initialMessage: String) {
+  mutation InitiateSupportChat(
+    $itemType: SupportItemType
+    $itemId: String
+    $initialMessage: String
+  ) {
     initiateSupportChat(itemType: $itemType, itemId: $itemId, initialMessage: $initialMessage) {
       id
       status

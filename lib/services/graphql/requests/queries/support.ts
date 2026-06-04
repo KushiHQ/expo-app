@@ -1,4 +1,4 @@
-import { gql } from "urql";
+import { gql } from 'urql';
 
 export const MY_SUPPORT_CHATS_QUERY = gql`
   query MySupportChats($pagination: PaginationInput) {

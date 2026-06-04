@@ -1,25 +1,21 @@
-import { View } from "react-native";
-import { SelectionDetails } from "./m-select-input";
-import React from "react";
-import { Image } from "expo-image";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { PROPERTY_BLURHASH } from "@/lib/constants/images";
-import ThemedText from "../atoms/a-themed-text";
-import { HostPaymentDetailsQuery } from "@/lib/services/graphql/generated";
-import { hexToRgba } from "@/lib/utils/colors";
-import Checkbox from "../atoms/a-checkbox";
+import { View } from 'react-native';
+import { SelectionDetails } from './m-select-input';
+import React from 'react';
+import { Image } from 'expo-image';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import ThemedText from '../atoms/a-themed-text';
+import { HostPaymentDetailsQuery } from '@/lib/services/graphql/generated';
+import { hexToRgba } from '@/lib/utils/colors';
+import Checkbox from '../atoms/a-checkbox';
 
-type Props = HostPaymentDetailsQuery["hostPaymentDetails"][number] &
-  SelectionDetails;
+type Props = HostPaymentDetailsQuery['hostPaymentDetails'][number] & SelectionDetails;
 
-const PaymentDetailsSelectOption: React.FC<Props> = ({
-  selected,
-  ...details
-}) => {
+const PaymentDetailsSelectOption: React.FC<Props> = ({ selected, ...details }) => {
   const colors = useThemeColors();
   const image = details.bankDetails?.image
     ? details.bankDetails.image
-    : "https://png.pngtree.com/png-clipart/20190619/original/pngtree-concept-banking-logo-png-image_4017929.jpg";
+    : 'https://png.pngtree.com/png-clipart/20190619/original/pngtree-concept-banking-logo-png-image_4017929.jpg';
 
   return (
     <View className="flex-row items-center justify-between">
@@ -36,8 +32,8 @@ const PaymentDetailsSelectOption: React.FC<Props> = ({
               uri: image,
             }}
             style={{
-              height: "100%",
-              width: "100%",
+              height: '100%',
+              width: '100%',
               borderRadius: 999,
             }}
             contentFit="contain"
@@ -49,9 +45,7 @@ const PaymentDetailsSelectOption: React.FC<Props> = ({
           />
         </View>
         <View>
-          <ThemedText style={{ fontSize: 14 }}>
-            {details.accountName ?? "Account Name"}
-          </ThemedText>
+          <ThemedText style={{ fontSize: 14 }}>{details.accountName ?? 'Account Name'}</ThemedText>
           <ThemedText style={{ fontSize: 12 }}>
             {details.accountNumber} {details.bankDetails?.name}
           </ThemedText>

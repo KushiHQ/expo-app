@@ -50,7 +50,10 @@ const RippleRing: React.FC<RippleRingProps> = ({ delay, maxOpacity }) => {
       withRepeat(
         withSequence(
           withTiming(1, { duration: 0 }),
-          withTiming(1.9, { duration: PERIOD, easing: Easing.out(Easing.cubic) }),
+          withTiming(1.9, {
+            duration: PERIOD,
+            easing: Easing.out(Easing.cubic),
+          }),
         ),
         -1,
       ),
@@ -108,7 +111,10 @@ const CallScreen: React.FC<Props> = ({ callData }) => {
     if (isIncoming) {
       answerPulse.value = withRepeat(
         withSequence(
-          withTiming(1.08, { duration: 650, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1.08, {
+            duration: 650,
+            easing: Easing.inOut(Easing.ease),
+          }),
           withTiming(1.0, { duration: 650, easing: Easing.inOut(Easing.ease) }),
         ),
         -1,
@@ -135,20 +141,14 @@ const CallScreen: React.FC<Props> = ({ callData }) => {
       <View
         style={[
           styles.root,
-          { paddingTop: insets.top, paddingBottom: Math.max(insets.bottom, 24) },
+          {
+            paddingTop: insets.top,
+            paddingBottom: Math.max(insets.bottom, 24),
+          },
         ]}
       >
         {/* Header */}
         <View style={styles.header}>
-          <Pressable
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.back();
-            }}
-            style={styles.headerBack}
-          >
-            <ChevronLeft size={22} color="rgba(255,255,255,0.9)" />
-          </Pressable>
           <ThemedText style={styles.headerTitle}>Voice Call</ThemedText>
           <View style={styles.headerSpacer} />
         </View>

@@ -1,22 +1,17 @@
-import { PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { Image } from "expo-image";
-import React from "react";
-import { Pressable, View } from "react-native";
-import ThemedText from "../atoms/a-themed-text";
-import { Fonts } from "@/lib/constants/theme";
-import { hexToRgba } from "@/lib/utils/colors";
-import { MynauiStarSolid } from "../icons/i-star";
-import {
-  HostAnalyticsQuery,
-  HostingQuery,
-} from "@/lib/services/graphql/generated";
-import { capitalize } from "@/lib/utils/text";
+import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { Image } from 'expo-image';
+import React from 'react';
+import { Pressable, View } from 'react-native';
+import ThemedText from '../atoms/a-themed-text';
+import { Fonts } from '@/lib/constants/theme';
+import { hexToRgba } from '@/lib/utils/colors';
+import { MynauiStarSolid } from '../icons/i-star';
+import { HostAnalyticsQuery, HostingQuery } from '@/lib/services/graphql/generated';
+import { capitalize } from '@/lib/utils/text';
 
 type Props = {
-  hosting:
-  | HostAnalyticsQuery["hostAnalytics"]["topListing"]
-  | HostingQuery["hosting"];
+  hosting: HostAnalyticsQuery['hostAnalytics']['topListing'] | HostingQuery['hosting'];
   onPress?: () => void;
 };
 
@@ -37,7 +32,7 @@ const TopListingCard: React.FC<Props> = ({ hosting, onPress }) => {
           source={{
             uri: hosting?.coverImage?.asset.publicUrl,
           }}
-          style={{ height: "100%", width: "100%" }}
+          style={{ height: '100%', width: '100%' }}
           contentFit="cover"
           transition={300}
           placeholder={{ blurhash: PROPERTY_BLURHASH }}
@@ -54,15 +49,13 @@ const TopListingCard: React.FC<Props> = ({ hosting, onPress }) => {
         >
           {hosting?.title}
         </ThemedText>
-        <ThemedText
-          style={{ fontSize: 14, color: hexToRgba(colors.text, 0.6) }}
-        >
+        <ThemedText style={{ fontSize: 14, color: hexToRgba(colors.text, 0.6) }}>
           {hosting?.city}, {hosting?.state}
         </ThemedText>
         <View className="flex-row items-center justify-between">
           <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14 }}>
-            ₦{Number(hosting?.price ?? "0").toLocaleString()}{" "}
-            {capitalize(hosting?.paymentInterval ?? "")}
+            ₦{Number(hosting?.price ?? '0').toLocaleString()}{' '}
+            {capitalize(hosting?.paymentInterval ?? '')}
           </ThemedText>
           {hosting?.totalRatings && (
             <View className="flex-row items-center gap-1">
