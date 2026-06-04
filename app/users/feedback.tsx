@@ -290,12 +290,15 @@ export default function FeedbackScreen() {
         ) : null}
 
         <AButton
-          title={submitting ? 'Submitting...' : 'Submit Feedback'}
           onPress={handleSubmit}
           disabled={submitting || !body.trim()}
           variant={submitting || !body.trim() ? 'outline' : 'solid'}
           type="primary"
-        />
+        >
+          <ThemedText content="primary">
+            {submitting ? 'Submitting...' : 'Submit Feedback'}
+          </ThemedText>
+        </AButton>
       </ScrollView>
     </DetailsLayout>
   );
