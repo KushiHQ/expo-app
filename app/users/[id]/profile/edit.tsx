@@ -113,7 +113,7 @@ export default function UserProfileEdit() {
                 <Button
                   className="flex-1"
                   type="primary"
-                  onPress={() => router.push('/auth/reset-password')}
+                  onPress={() => router.push(`/auth/reset-password?email=${user.email}`)}
                 >
                   <ThemedText content="primary">Change</ThemedText>
                 </Button>
