@@ -49,10 +49,19 @@ jobs:
         run: |
           rm -rf ios/Pods ios/build
 
+      - name: Cache Metro bundler
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.cache/metro
+            ${{ github.workspace }}/.expo
+          key: metro-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: metro-${{ runner.os }}-
+
       - name: Cache CocoaPods
         uses: actions/cache@v4
         with:
-          path: ~/.cocoapods
+          path: ~/Library/Caches/CocoaPods
           key: cocoapods-${{ hashFiles('ios/Podfile.lock') }}
           restore-keys: cocoapods-
 
