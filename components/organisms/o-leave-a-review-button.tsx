@@ -1,32 +1,32 @@
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import Button from "../atoms/a-button";
-import ThemedText from "../atoms/a-themed-text";
-import { HugeiconsStar } from "../icons/i-star";
-import { View } from "react-native";
-import ThemedModal from "../molecules/m-modal";
-import React from "react";
-import { hexToRgba } from "@/lib/utils/colors";
-import RatingInput from "../atoms/a-rating-input";
-import ReviewMetricsInfoButton from "../molecules/m-review-metrics-info-button";
-import FloatingLabelInput from "../atoms/a-floating-label-input";
-import { SimpleGrid } from "react-native-super-grid";
-import { REVIEW_METRICS } from "@/lib/constants/reviews";
-import { capitalize } from "@/lib/utils/text";
-import { cast } from "@/lib/types/utils";
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import Button from '../atoms/a-button';
+import ThemedText from '../atoms/a-themed-text';
+import { HugeiconsStar } from '../icons/i-star';
+import { View } from 'react-native';
+import ThemedModal from '../molecules/m-modal';
+import React from 'react';
+import { hexToRgba } from '@/lib/utils/colors';
+import RatingInput from '../atoms/a-rating-input';
+import ReviewMetricsInfoButton from '../molecules/m-review-metrics-info-button';
+import FloatingLabelInput from '../atoms/a-floating-label-input';
+import { SimpleGrid } from 'react-native-super-grid';
+import { REVIEW_METRICS } from '@/lib/constants/reviews';
+import { capitalize } from '@/lib/utils/text';
+import { cast } from '@/lib/types/utils';
 import {
   BookingQuery,
   HostingReviewInput,
   useCreateUpdateHostingReviewMutation,
-} from "@/lib/services/graphql/generated";
-import { handleError } from "@/lib/utils/error";
-import { toast } from "@/lib/hooks/use-toast";
-import LoadingModal from "../atoms/a-loading-modal";
-import { FluentImageEdit24Regular } from "../icons/i-edit";
-import { Fonts } from "@/lib/constants/theme";
+} from '@/lib/services/graphql/generated';
+import { handleError } from '@/lib/utils/error';
+import { toast } from '@/lib/hooks/use-toast';
+import LoadingModal from '../atoms/a-loading-modal';
+import { FluentImageEdit24Regular } from '../icons/i-edit';
+import { Fonts } from '@/lib/constants/theme';
 
 type Props = {
   edit?: boolean;
-  review?: BookingQuery["booking"]["userReview"];
+  review?: BookingQuery['booking']['userReview'];
   hostingId?: string;
 };
 
@@ -50,15 +50,15 @@ const LeaveAReviewButton: React.FC<Props> = ({ hostingId, review, edit }) => {
 
   const handleSubmit = () => {
     submitReview({
-      input: { ...inputs, hostingId: hostingId ?? "" },
+      input: { ...inputs, hostingId: hostingId ?? '' },
     }).then((res) => {
       if (res.error) {
         handleError(res.error);
       }
       if (res.data) {
         toast.show({
-          type: "success",
-          text1: "Success",
+          type: 'success',
+          text1: 'Success',
           text2: res.data.createOrUpdateHostingReview.message,
         });
         setModalOpen(false);
@@ -77,7 +77,7 @@ const LeaveAReviewButton: React.FC<Props> = ({ hostingId, review, edit }) => {
       <Button
         onPress={() => setModalOpen(true)}
         variant="text"
-        style={{ alignItems: "center" }}
+        style={{ alignItems: 'center' }}
         type="accent"
         className="py-2"
       >
@@ -90,16 +90,13 @@ const LeaveAReviewButton: React.FC<Props> = ({ hostingId, review, edit }) => {
               letterSpacing: 0.2,
             }}
           >
-            {edit ? "Edit" : "Leave a Review"}
+            {edit ? 'Edit' : 'Leave a Review'}
           </ThemedText>
         </View>
       </Button>
       <ThemedModal visible={modalOpen} onClose={() => setModalOpen(false)}>
         <View className="gap-4">
-          <View
-            className="border-b pb-4"
-            style={{ borderColor: hexToRgba(colors.text, 0.15) }}
-          >
+          <View className="border-b pb-4" style={{ borderColor: hexToRgba(colors.text, 0.15) }}>
             <ThemedText type="semibold">Leave A Review</ThemedText>
           </View>
           <View className="gap-4">
@@ -115,9 +112,7 @@ const LeaveAReviewButton: React.FC<Props> = ({ hostingId, review, edit }) => {
                   </View>
                   <RatingInput
                     value={item.value}
-                    onChange={(v) =>
-                      setInputs((c) => ({ ...c, [item.key]: v }))
-                    }
+                    onChange={(v) => setInputs((c) => ({ ...c, [item.key]: v }))}
                   />
                 </View>
               )}

@@ -1,76 +1,68 @@
-import AnalyticsCard from "@/components/atoms/a-analytics-card";
-import AreaChart from "@/components/molecules/m-area-chart";
-import Skeleton from "@/components/atoms/a-skeleton";
-import ThemedText from "@/components/atoms/a-themed-text";
-import DetailsLayout from "@/components/layouts/details";
-import { Fonts } from "@/lib/constants/theme";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import {
-  useHostAnalyticsQuery,
-  useNotificationsQuery,
-} from "@/lib/services/graphql/generated";
-import { REVENUE_GROWTH } from "@/lib/services/graphql/requests/queries/users";
-import { hexToRgba } from "@/lib/utils/colors";
-import { Link } from "expo-router";
-import { useRouter } from "@/lib/hooks/use-router";
-import { useQuery } from "urql";
-import { Plus, Wallet, Home, ClipboardList } from "lucide-react-native";
-import React from "react";
-import { Pressable, RefreshControl, View } from "react-native";
-import { SimpleGrid } from "react-native-super-grid";
-import { twMerge } from "tailwind-merge";
-import EmptyList from "@/components/molecules/m-empty-list";
-import NotificationCard from "@/components/molecules/m-notification-card";
-import TopListingCard from "@/components/molecules/m-top-listing-card";
+import AnalyticsCard from '@/components/atoms/a-analytics-card';
+import AreaChart from '@/components/molecules/m-area-chart';
+import Skeleton from '@/components/atoms/a-skeleton';
+import ThemedText from '@/components/atoms/a-themed-text';
+import DetailsLayout from '@/components/layouts/details';
+import { Fonts } from '@/lib/constants/theme';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { useHostAnalyticsQuery, useNotificationsQuery } from '@/lib/services/graphql/generated';
+import { REVENUE_GROWTH } from '@/lib/services/graphql/requests/queries/users';
+import { hexToRgba } from '@/lib/utils/colors';
+import { Link } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
+import { useQuery } from 'urql';
+import { Plus, Wallet, Home, ClipboardList } from 'lucide-react-native';
+import React from 'react';
+import { Pressable, RefreshControl, View } from 'react-native';
+import { SimpleGrid } from 'react-native-super-grid';
+import { twMerge } from 'tailwind-merge';
+import EmptyList from '@/components/molecules/m-empty-list';
+import NotificationCard from '@/components/molecules/m-notification-card';
+import TopListingCard from '@/components/molecules/m-top-listing-card';
 
 export default function HostAnalytics() {
   const router = useRouter();
   const colors = useThemeColors();
 
-  const [
-    { fetching: analyticsFetching, data: analyticsData },
-    refetchAnalytics,
-  ] = useHostAnalyticsQuery({ requestPolicy: "network-only" });
+  const [{ fetching: analyticsFetching, data: analyticsData }, refetchAnalytics] =
+    useHostAnalyticsQuery({ requestPolicy: 'network-only' });
 
-  const [{ fetching: growthFetching, data: growthData }, refetchGrowth] =
-    useQuery({
-      query: REVENUE_GROWTH,
-      variables: { lastNMonths: 12 },
-      requestPolicy: "network-only",
-    });
-  const [
-    { fetching: notificationsFetching, data: notificationsData },
-    refetchNotifications,
-  ] = useNotificationsQuery({ variables: { pagination: { limit: 5 } } });
+  const [{ fetching: growthFetching, data: growthData }, refetchGrowth] = useQuery({
+    query: REVENUE_GROWTH,
+    variables: { lastNMonths: 12 },
+    requestPolicy: 'network-only',
+  });
+  const [{ fetching: notificationsFetching, data: notificationsData }, refetchNotifications] =
+    useNotificationsQuery({ variables: { pagination: { limit: 5 } } });
 
   const stats = React.useMemo(() => {
     const host = analyticsData?.hostAnalytics;
     return [
       {
-        label: "Funds in Escrow",
+        label: 'Funds in Escrow',
         value: Number(host?.fundsInEscrow ?? 0),
         currency: true,
         icon: Wallet,
-        description: "Booking payments pending guest approval.",
+        description: 'Booking payments pending guest approval.',
       },
       {
-        label: "Total Revenue",
+        label: 'Total Revenue',
         value: Number(host?.totalRevenue ?? 0),
         currency: true,
         icon: Wallet,
-        description: "Total earnings on the platform.",
+        description: 'Total earnings on the platform.',
       },
       {
-        label: "Total Listings",
+        label: 'Total Listings',
         value: host?.totalListings ?? 0,
         icon: Home,
-        description: "Total number of properties managed.",
+        description: 'Total number of properties managed.',
       },
       {
-        label: "Pending Applications",
+        label: 'Pending Applications',
         value: host?.pendingApplications ?? 0,
         icon: ClipboardList,
-        description: "Booking applications pending your review.",
+        description: 'Booking applications pending your review.',
       },
     ];
   }, [analyticsData]);
@@ -104,15 +96,12 @@ export default function HostAnalytics() {
       withNotifications
       withProfile
       refreshControl={
-        <RefreshControl
-          refreshing={analyticsFetching || growthFetching}
-          onRefresh={onRefresh}
-        />
+        <RefreshControl refreshing={analyticsFetching || growthFetching} onRefresh={onRefresh} />
       }
       footer={
         <Pressable
           aria-label="New Listing"
-          onPress={() => router.push("/hostings/form")}
+          onPress={() => router.push('/hostings/form')}
           className="absolute bottom-4 right-4 items-center justify-center rounded-full shadow-lg"
           style={{
             backgroundColor: colors.primary,
@@ -140,13 +129,8 @@ export default function HostAnalytics() {
                 letterSpacing: -0.5,
               }}
             >
-              Welcome,{" "}
-              {
-                (
-                  analyticsData?.hostAnalytics.host.user.profile.fullName ??
-                  "Host"
-                ).split(" ")[0]
-              }
+              Welcome,{' '}
+              {(analyticsData?.hostAnalytics.host.user.profile.fullName ?? 'Host').split(' ')[0]}
             </ThemedText>
           )}
           <ThemedText
@@ -170,9 +154,9 @@ export default function HostAnalytics() {
               data={[1, 2, 3, 4]}
               renderItem={({ index }) => (
                 <Skeleton
-                  className={twMerge("mb-2", (index + 1) % 2 !== 0 && "mr-2")}
+                  className={twMerge('mb-2', (index + 1) % 2 !== 0 && 'mr-2')}
                   style={{
-                    width: "100%",
+                    width: '100%',
                     height: 140,
                     borderRadius: 24,
                   }}
@@ -185,9 +169,7 @@ export default function HostAnalytics() {
               itemDimension={160}
               listKey="stats-grid"
               data={stats}
-              renderItem={({ item, index }) => (
-                <AnalyticsCard index={index} {...item} />
-              )}
+              renderItem={({ item, index }) => <AnalyticsCard index={index} {...item} />}
             />
           )}
         </View>
@@ -197,25 +179,19 @@ export default function HostAnalytics() {
           {growthFetching ? (
             <Skeleton
               style={{
-                width: "100%",
+                width: '100%',
                 height: 350,
                 borderRadius: 24,
               }}
             />
           ) : (
-            <AreaChart
-              data={chartData}
-              title="Revenue Growth"
-              color={colors.primary}
-            />
+            <AreaChart data={chartData} title="Revenue Growth" color={colors.primary} />
           )}
         </View>
         <View className="mt-6 gap-3 px-2">
-          <ThemedText style={{ fontFamily: Fonts.bold }}>
-            Top Performing Listing
-          </ThemedText>
+          <ThemedText style={{ fontFamily: Fonts.bold }}>Top Performing Listing</ThemedText>
           {analyticsFetching ? (
-            <Skeleton style={{ height: 100, width: "100%", borderRadius: 8 }} />
+            <Skeleton style={{ height: 100, width: '100%', borderRadius: 8 }} />
           ) : !analyticsData?.hostAnalytics.topListing ? (
             <EmptyList message="You have no listings yet" />
           ) : (
@@ -231,14 +207,9 @@ export default function HostAnalytics() {
         </View>
         <View className="mt-8 gap-3 px-2">
           <View className="flex-row items-center justify-between">
-            <ThemedText style={{ fontFamily: Fonts.bold }}>
-              Recent Activity
-            </ThemedText>
+            <ThemedText style={{ fontFamily: Fonts.bold }}>Recent Activity</ThemedText>
             <Link href="/users/notifications">
-              <ThemedText
-                style={{ fontSize: 14, color: colors.primary }}
-                className="underline"
-              >
+              <ThemedText style={{ fontSize: 14, color: colors.primary }} className="underline">
                 View All
               </ThemedText>
             </Link>
@@ -246,21 +217,14 @@ export default function HostAnalytics() {
           <View className="gap-2">
             {notificationsFetching
               ? Array.from({ length: 5 }).map((_, index) => (
-                <Skeleton
-                  style={{ height: 85, width: "100%", borderRadius: 8 }}
-                  key={index}
-                />
-              ))
+                  <Skeleton style={{ height: 85, width: '100%', borderRadius: 8 }} key={index} />
+                ))
               : notificationsData?.notifications.map((notification) => (
-                <NotificationCard
-                  notification={notification}
-                  key={notification.id}
-                />
-              ))}
-            {!notificationsFetching &&
-              !notificationsData?.notifications.length && (
-                <EmptyList message="No activity yet" />
-              )}
+                  <NotificationCard notification={notification} key={notification.id} />
+                ))}
+            {!notificationsFetching && !notificationsData?.notifications.length && (
+              <EmptyList message="No activity yet" />
+            )}
           </View>
         </View>
       </View>
