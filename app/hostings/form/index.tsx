@@ -6,6 +6,7 @@ import { ONBOARDING_STEPS } from '@/lib/constants/hosting/onboarding';
 import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useUser } from '@/lib/hooks/user';
+import { useActiveFormHosingStore, useHostingRoomsStore } from '@/lib/stores/hostings';
 import { hexToRgba } from '@/lib/utils/colors';
 import { ImageBackground } from 'expo-image';
 import { Link } from 'expo-router';
@@ -17,6 +18,13 @@ export default function NewHosting() {
   const { user } = useUser();
   const router = useRouter();
   const colors = useThemeColors();
+
+  // "+" button entry point — this route never carries a hosting id, so any
+  // state left over from a previous form would be wrong here. Wipe it.
+  React.useEffect(() => {
+    useActiveFormHosingStore.getState().clear();
+    useHostingRoomsStore.getState().setRooms([]);
+  }, []);
 
   return (
     <DetailsLayout

@@ -239,6 +239,11 @@ export const BOOKING_QUERY = gql`
         id
         publicUrl
       }
+      guest {
+        user {
+          id
+        }
+      }
       status
       userReview {
         averageRating

@@ -189,5 +189,10 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>((set) => 
         ...data,
       },
     })),
-  clear: () => set({ input: undefined, hosting: undefined }),
+  clear: () =>
+    set({
+      input: {} as HostingInput,
+      verificationInput: {} as Partial<HostingVerificationInput>,
+      hosting: undefined,
+    }),
 }));

@@ -303,6 +303,7 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
                 disabled
                 onPress={(e) => {
                   e.stopPropagation();
+                  Keyboard.dismiss();
                   setLocationInputOpen(true);
                 }}
                 label="Location"

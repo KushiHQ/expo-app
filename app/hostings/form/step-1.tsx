@@ -141,7 +141,7 @@ export default function NewHostingStep1() {
             numberOfLines={6}
             value={cast(input.description)}
             onChangeText={(v) => updateInput({ description: v })}
-            returnKeyType="done"
+            returnKeyType="default"
           />
         </SectionCard>
       </View>

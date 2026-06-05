@@ -153,6 +153,16 @@ export default function BookingApplicationDetails() {
                 <ThemedText content="primary">Accept</ThemedText>
               </Button>
             </View>
+          ) : app?.booking?.id ? (
+            <View className="p-4 pb-8" style={{ backgroundColor: colors.background }}>
+              <Button
+                type="primary"
+                className="w-full"
+                onPress={() => router.push(`/bookings/${app.booking?.id}`)}
+              >
+                <ThemedText content="primary">View Booking</ThemedText>
+              </Button>
+            </View>
           ) : undefined
         }
       >

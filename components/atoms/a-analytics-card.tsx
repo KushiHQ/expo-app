@@ -1,14 +1,14 @@
-import { useCountUp } from '@/lib/utils/animations';
-import React from 'react';
-import { View } from 'react-native';
-import ThemedText from './a-themed-text';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { hexToRgba } from '@/lib/utils/colors';
-import { Fonts } from '@/lib/constants/theme';
-import { TablerCurrencyNaira } from '../icons/i-currency';
-import { LucideIcon, Info } from 'lucide-react-native';
-import Tooltip from './a-tooltip';
-import { twMerge } from 'tailwind-merge';
+import { useCountUp } from "@/lib/utils/animations";
+import React from "react";
+import { View } from "react-native";
+import ThemedText from "./a-themed-text";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { hexToRgba } from "@/lib/utils/colors";
+import { Fonts } from "@/lib/constants/theme";
+import { TablerCurrencyNaira } from "../icons/i-currency";
+import { LucideIcon, Info } from "lucide-react-native";
+import Tooltip from "./a-tooltip";
+import { twMerge } from "tailwind-merge";
 
 type Props = {
   label: string;
@@ -35,17 +35,16 @@ const AnalyticsCard: React.FC<Props> = ({
   return (
     <View
       style={{
-        borderRadius: 24,
+        borderRadius: 14,
         backgroundColor: colors.surface,
         borderWidth: 1,
         borderColor: hexToRgba(colors.text, 0.05),
-        shadowColor: colors.text,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.03,
-        shadowRadius: 15,
         elevation: 1,
       }}
-      className={twMerge('mb-2 flex-1 gap-4 p-5', (index + 1) % 2 !== 0 && 'mr-2')}
+      className={twMerge(
+        "mb-2 flex-1 gap-4 p-5",
+        (index + 1) % 2 !== 0 && "mr-2",
+      )}
     >
       <View className="flex-row items-start justify-between gap-2">
         <View className="flex-1 flex-row items-center gap-1">
@@ -54,7 +53,6 @@ const AnalyticsCard: React.FC<Props> = ({
             style={{
               fontFamily: Fonts.semibold,
               fontSize: 13,
-              flex: 1,
               lineHeight: 18,
               color: hexToRgba(colors.text, 0.5),
             }}
@@ -102,7 +100,7 @@ const AnalyticsCard: React.FC<Props> = ({
             }}
           >
             {val.toLocaleString()}
-            {percentage && '%'}
+            {percentage && "%"}
           </ThemedText>
         </View>
       </View>

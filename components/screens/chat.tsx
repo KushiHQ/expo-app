@@ -5,6 +5,7 @@ import { PROPERTY_BLURHASH } from '@/lib/constants/images';
 import { Fonts } from '@/lib/constants/theme';
 import { useDebounce } from '@/lib/hooks/use-debounce';
 import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
+import { useSettledList } from '@/lib/hooks/use-settled-list';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useUserChatsQuery } from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
@@ -43,7 +44,9 @@ const ChatSkeleton = () => {
   );
 };
 
-const ChatListItem = ({ chat, router, colors }: { chat: any; router: any; colors: any }) => {
+const ChatListItem = React.memo(({ chat }: { chat: any }) => {
+  const router = useRouter();
+  const colors = useThemeColors();
   const pressScale = useSharedValue(1);
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pressScale.value }],
@@ -205,10 +208,11 @@ const ChatListItem = ({ chat, router, colors }: { chat: any; router: any; colors
       </View>
     </AnimatedPressable>
   );
-};
+});
+
+ChatListItem.displayName = 'ChatListItem';
 
 const ChatScreen: React.FC<Props> = ({ variant = 'guest' }) => {
-  const router = useRouter();
   const colors = useThemeColors();
   const [searchText, setSearchText] = React.useState('');
   const debouncedSearchText = useDebounce(searchText, 500);
@@ -242,15 +246,36 @@ const ChatScreen: React.FC<Props> = ({ variant = 'guest' }) => {
     }
   }, [debouncedSearchText]);
 
+  // Keep the last settled chats on screen while a new search/refresh loads, so
+  // the list never blanks or flashes the empty state mid-search.
+  const { displayed, showInitialSkeleton } = useSettledList(userChats, chatsFetching);
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!chatsFetching) setRefreshing(false);
+  }, [chatsFetching]);
+
+  // Skeletons only on the very first load — never while typing a search.
+  const showSkeleton = showInitialSkeleton && !refreshing;
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    refresh();
+  };
+
+  const keyExtractor = React.useCallback((item: any) => item.id, []);
+  const renderItem = React.useCallback(
+    ({ item }: { item: any }) => <ChatListItem chat={item} />,
+    [],
+  );
+
   return (
     <DetailsLayout title="Messages" withProfile variant={variant} scrollable={false}>
       <FlatList
-        data={userChats}
-        keyExtractor={(item) => item.id}
+        data={displayed}
+        keyExtractor={keyExtractor}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
-        renderItem={({ item: chat }) => (
-          <ChatListItem chat={chat} router={router} colors={colors} />
-        )}
+        renderItem={renderItem}
         ListHeaderComponent={
           <View className="mb-4">
             <View
@@ -276,7 +301,7 @@ const ChatScreen: React.FC<Props> = ({ variant = 'guest' }) => {
                 placeholder="Search messages..."
               />
             </View>
-            {chatsFetching && !userChats.length && (
+            {showSkeleton && (
               <View className="mt-4 gap-3">
                 {Array.from({ length: 6 }).map((_, index) => (
                   <ChatSkeleton key={index} />
@@ -286,11 +311,11 @@ const ChatScreen: React.FC<Props> = ({ variant = 'guest' }) => {
           </View>
         }
         ListEmptyComponent={
-          !chatsFetching && !userChats.length ? <EmptyList message="No chats yet" /> : null
+          !chatsFetching && !displayed.length ? <EmptyList message="No chats yet" /> : null
         }
         onEndReached={() => hasNextPage && loadMore()}
         onEndReachedThreshold={0.5}
-        refreshControl={<RefreshControl onRefresh={() => refresh()} refreshing={chatsFetching} />}
+        refreshControl={<RefreshControl onRefresh={handleRefresh} refreshing={refreshing} />}
       />
     </DetailsLayout>
   );
