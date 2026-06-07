@@ -248,10 +248,59 @@ export const CREATE_UPDATE_HOSTING_REVIEW = gql`
   }
 `;
 
-export const INITIATE_HOSTING_VERFICATION = gql`
+export const INITIATE_HOSTING_VERIFICATION = gql`
   mutation InitiateHostingVerification($input: HostingVerificationInput!) {
     initiateHostingVerification(input: $input) {
       message
+      data {
+        id
+        landlordFullName
+        landlordAddress
+        verificationTier
+        propertyRelationship
+        declOwnership
+        declLitigation
+        declIndemnity
+        titleType
+        titleNumber
+        createdAt
+        lastUpdated
+      }
+    }
+  }
+`;
+
+export const REQUEST_HOSTING_VERIFICATION_TIER = gql`
+  mutation RequestHostingVerificationTier(
+    $input: HostingVerificationTierRequestInput!
+  ) {
+    requestHostingVerificationTier(input: $input) {
+      message
+      data {
+        id
+        tier
+        status
+        statusDetails
+        createdAt
+        lastUpdated
+        documents {
+          id
+          name
+          createdAt
+          lastUpdated
+          asset {
+            id
+            publicUrl
+          }
+        }
+        logs {
+          datetime
+          variant
+          staffId
+          action
+          statusDetail
+        }
+      }
     }
   }
 `;

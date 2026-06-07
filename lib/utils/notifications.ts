@@ -14,6 +14,12 @@ export function initializeNotifications() {
         await Linking.openURL(`kushi://chats/${data.chatId}`);
         return;
       }
+      if (data?.intent === 'verification' && data?.hostingId) {
+        await Linking.openURL(
+          `kushi://hostings/form/verification/overview?id=${data.hostingId}`,
+        );
+        return;
+      }
     }
     await handleNotifeeEvent(event);
   });
@@ -67,6 +73,48 @@ export const handleIncomingChatMessage = async (remoteMessage: any) => {
     },
     ios: {
       sound: 'message-notification.mp3',
+      foregroundPresentationOptions: {
+        alert: true,
+        sound: true,
+        badge: true,
+      },
+    },
+  });
+};
+
+/**
+ * Displays a Notifee notification banner for a hosting verification status
+ * change. The tap target is the verification overview for the affected
+ * hosting, looked up via `data.hostingId`.
+ */
+export const handleIncomingVerificationNotification = async (remoteMessage: any) => {
+  const data = remoteMessage.data ?? {};
+  const notification = remoteMessage.notification;
+
+  const channelId = await notifee.createChannel({
+    id: 'verification-status',
+    name: 'Verification Updates',
+    importance: AndroidImportance.HIGH,
+    vibration: true,
+  });
+
+  await notifee.displayNotification({
+    id: `verification-${data?.requestId ?? data?.hostingId ?? Math.random().toString(36).slice(2)}`,
+    title: notification?.title ?? 'Verification Update',
+    body: notification?.body ?? 'Your verification request was updated.',
+    data: {
+      intent: 'verification',
+      hostingId: data?.hostingId ?? '',
+      requestId: data?.requestId ?? '',
+    },
+    android: {
+      channelId,
+      importance: AndroidImportance.HIGH,
+      pressAction: { id: 'default', launchActivity: 'default' },
+      color: '#F59E0B',
+    },
+    ios: {
+      sound: 'default',
       foregroundPresentationOptions: {
         alert: true,
         sound: true,
