@@ -16,6 +16,7 @@ export type Scalars = {
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
   Decimal: { input: any; output: any; }
+  JSON: { input: any; output: any; }
   Upload: { input: any; output: any; }
 };
 
@@ -161,9 +162,9 @@ export type AdminKyc = {
   bvnVerified?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['String']['output'];
   idDocumentType?: Maybe<Scalars['String']['output']>;
+  kycReferenceId?: Maybe<Scalars['String']['output']>;
   lastUpdated: Scalars['String']['output'];
   ninVerified?: Maybe<Scalars['Boolean']['output']>;
-  youverifyReferenceId?: Maybe<Scalars['String']['output']>;
 };
 
 export type AdminLegalConfig = {
@@ -1064,10 +1065,32 @@ export type HostingVerificationRequest = {
 export type HostingVerificationRequestDocument = {
   __typename?: 'HostingVerificationRequestDocument';
   asset: Asset;
+  /** Structured list of conflict records (prior sales, competing claims). */
+  conflictRecords?: Maybe<Scalars['JSON']['output']>;
   createdAt: Scalars['String']['output'];
+  /**
+   * Structured list of encumbrances (mortgages, liens, caveats) returned
+   * by the registry search.
+   */
+  encumbrances?: Maybe<Scalars['JSON']['output']>;
+  /** When the registry result expires (typically 12 months from `searched_at`). */
+  expiresAt?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
   name: Scalars['String']['output'];
+  /** Plot status — "Allocated", "Revoked", "Under_Acquisition", etc. */
+  plotStatus?: Maybe<Scalars['String']['output']>;
+  /** Free-form raw response — pasted text, PDF excerpt, or admin notes. */
+  rawResponse?: Maybe<Scalars['String']['output']>;
+  /** When the admin ran the registry search. */
+  searchedAt?: Maybe<Scalars['String']['output']>;
+  /**
+   * Registry search source — e.g. "AGIS", "Lagos e-GIS", "Ogun OGIS",
+   * "Kano KADGIS", or "Manual" for the admin human-in-the-loop case.
+   */
+  source?: Maybe<Scalars['String']['output']>;
+  /** Name of the registered owner returned by the registry search. */
+  verifiedOwnerName?: Maybe<Scalars['String']['output']>;
 };
 
 export type HostingVerificationRequestResponse = {
@@ -1090,10 +1113,10 @@ export type HostingVerificationResponse = {
 };
 
 export enum HostingVerificationTier {
-  AddressVerified = 'ADDRESS_VERIFIED',
   IdentityVerified = 'IDENTITY_VERIFIED',
   KushiVetted = 'KUSHI_VETTED',
-  OwnerVerified = 'OWNER_VERIFIED',
+  TitleChecked = 'TITLE_CHECKED',
+  TitleSubmitted = 'TITLE_SUBMITTED',
   Unverified = 'UNVERIFIED'
 }
 
@@ -1118,14 +1141,22 @@ export type Kyc = {
   id: Scalars['String']['output'];
   idDocumentType?: Maybe<Scalars['String']['output']>;
   image?: Maybe<Asset>;
+  kycReferenceId?: Maybe<Scalars['String']['output']>;
   lastUpdated: Scalars['String']['output'];
   ninVerified?: Maybe<Scalars['Boolean']['output']>;
-  youverifyReferenceId?: Maybe<Scalars['String']['output']>;
 };
 
 export type KycInput = {
   bvn?: InputMaybe<Scalars['String']['input']>;
   nin?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type KycStatus = {
+  __typename?: 'KycStatus';
+  bvnVerified: Scalars['Boolean']['output'];
+  hasLiveness: Scalars['Boolean']['output'];
+  kycComplete: Scalars['Boolean']['output'];
+  ninVerified: Scalars['Boolean']['output'];
 };
 
 export type LandlordMandateConfig = {
@@ -1952,6 +1983,12 @@ export type Query = {
    */
   hostingVerificationTier?: Maybe<AdminVerificationTier>;
   hostings: Array<Hosting>;
+  /**
+   * Returns the calling user's KYC status. Used by the mobile app to
+   * gate access to the hosting verification flow (Sprint 1.5 hard-gate)
+   * and to render a clear "what's missing" state in the KYC UI.
+   */
+  kycStatus: KycStatus;
   landlordMandateOptions: LandlordMandateConfig;
   me: User;
   mySupportChats: Array<SupportChat>;
@@ -2678,14 +2715,14 @@ export type GoogleSignUpMutationVariables = Exact<{
 }>;
 
 
-export type GoogleSignUpMutation = { __typename?: 'Mutations', googleSignUp: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
+export type GoogleSignUpMutation = { __typename?: 'Mutations', googleSignUp: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, kycReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
 
 export type RefreshTokenMutationVariables = Exact<{
   input: RefreshTokenInput;
 }>;
 
 
-export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
+export type RefreshTokenMutation = { __typename?: 'Mutations', refreshToken: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, kycReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
 
 export type VerifyEmailMutationVariables = Exact<{
   input: Otpinput;
@@ -2706,28 +2743,28 @@ export type GoogleLoginMutationVariables = Exact<{
 }>;
 
 
-export type GoogleLoginMutation = { __typename?: 'Mutations', googleLogin: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
+export type GoogleLoginMutation = { __typename?: 'Mutations', googleLogin: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, kycReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
 
 export type AppleLoginMutationVariables = Exact<{
   input: AppleAuthInput;
 }>;
 
 
-export type AppleLoginMutation = { __typename?: 'Mutations', appleLogin: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
+export type AppleLoginMutation = { __typename?: 'Mutations', appleLogin: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, kycReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
 
 export type AppleSignUpMutationVariables = Exact<{
   input: AppleAuthInput;
 }>;
 
 
-export type AppleSignUpMutation = { __typename?: 'Mutations', appleSignUp: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
+export type AppleSignUpMutation = { __typename?: 'Mutations', appleSignUp: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, kycReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
 
 export type LoginMutationVariables = Exact<{
   input: LoginInput;
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutations', login: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
+export type LoginMutation = { __typename?: 'Mutations', login: { __typename?: 'AuthTokenResponse', message: string, data?: { __typename?: 'AuthToken', token: string, refreshToken: string, expiresAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, kycReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } } | null } };
 
 export type RequestPasswordChangeMutationVariables = Exact<{
   input: RequestPasswordChangeInput;
@@ -3274,7 +3311,7 @@ export type HostingQueryVariables = Exact<{
 }>;
 
 
-export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, cautionFee?: any | null, serviceCharge?: any | null, maxOccupants?: number | null, bookingApplicationsCount: number, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, createdAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, phoneNumber?: string | null, kyc: { __typename?: 'Kyc', idDocumentType?: string | null, youverifyReferenceId?: string | null }, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string, image?: { __typename?: 'Asset', publicUrl: string } | null } }, signature?: { __typename?: 'Asset', id: string, publicUrl: string } | null }, coverImage?: { __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, createdAt: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null, image?: { __typename?: 'Asset', publicUrl: string } | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null }, tenancyAgreementTemplate?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, priority: number, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, verification?: { __typename?: 'HostingVerification', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, titleType?: string | null, titleNumber?: string | null, createdAt: string, lastUpdated: string } | null } };
+export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, cautionFee?: any | null, serviceCharge?: any | null, maxOccupants?: number | null, bookingApplicationsCount: number, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } }> }>, host: { __typename?: 'Host', id: string, createdAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, phoneNumber?: string | null, kyc: { __typename?: 'Kyc', idDocumentType?: string | null, kycReferenceId?: string | null }, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string, image?: { __typename?: 'Asset', publicUrl: string } | null } }, signature?: { __typename?: 'Asset', id: string, publicUrl: string } | null }, coverImage?: { __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, createdAt: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null, image?: { __typename?: 'Asset', publicUrl: string } | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null }, tenancyAgreementTemplate?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, priority: number, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, verification?: { __typename?: 'HostingVerification', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, titleType?: string | null, titleNumber?: string | null, createdAt: string, lastUpdated: string } | null } };
 
 export type HostingsQueryVariables = Exact<{
   filters?: InputMaybe<HostingFilterInput>;
@@ -3283,7 +3320,7 @@ export type HostingsQueryVariables = Exact<{
 }>;
 
 
-export type HostingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, price?: any | null, totalRatings?: number | null, averageRating?: number | null, country?: string | null, state?: string | null, title?: string | null, city?: string | null, street?: string | null, landmarks?: string | null, saved: boolean, publishStatus?: PublishStatus | null, latitude?: string | null, longitude?: string | null, paymentInterval?: PaymentInterval | null, createdAt: string, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', publicUrl: string } } | null, rooms: Array<{ __typename?: 'HostingRoom', id: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, originalFilename?: string | null } }> }> }> };
+export type HostingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, price?: any | null, totalRatings?: number | null, averageRating?: number | null, country?: string | null, state?: string | null, title?: string | null, city?: string | null, street?: string | null, landmarks?: string | null, saved: boolean, publishStatus?: PublishStatus | null, latitude?: string | null, longitude?: string | null, paymentInterval?: PaymentInterval | null, createdAt: string, verification?: { __typename?: 'HostingVerification', id: string, verificationTier: HostingVerificationTier } | null, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', publicUrl: string } } | null, rooms: Array<{ __typename?: 'HostingRoom', id: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, originalFilename?: string | null } }> }> }> };
 
 export type SavedHostingFoldersQueryVariables = Exact<{
   pagination?: InputMaybe<PaginationInput>;
@@ -3314,6 +3351,11 @@ export type HostListingsQueryVariables = Exact<{
 
 
 export type HostListingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, title?: string | null, state?: string | null, city?: string | null, publishStatus?: PublishStatus | null, bookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, originalFilename?: string | null } } | null }> };
+
+export type KycStatusQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type KycStatusQuery = { __typename?: 'Query', kycStatus: { __typename?: 'KycStatus', bvnVerified: boolean, ninVerified: boolean, hasLiveness: boolean, kycComplete: boolean } };
 
 export type NotificationsQueryVariables = Exact<{
   filter?: InputMaybe<NotificationsFilterInput>;
@@ -3380,7 +3422,7 @@ export type SupportChatMessagesQuery = { __typename?: 'Query', supportChat: { __
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, youverifyReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } };
+export type MeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, email: string, kushiId: string, createdAt: string, lastUpdated: string, profile: { __typename?: 'Profile', id: string, fullName: string, gender?: string | null, createdAt: string, lastUpdated: string }, notificationSettings: { __typename?: 'NotificationSettings', id: string, email: boolean, appUpdates: boolean, pushNotifications: boolean, specialOffers: boolean, fcmToken?: string | null, voipToken?: string | null }, kyc: { __typename?: 'Kyc', id: string, bvnVerified?: boolean | null, ninVerified?: boolean | null, idDocumentType?: string | null, kycReferenceId?: string | null, image?: { __typename?: 'Asset', id: string, secureUrl: string } | null }, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus }> } };
 
 export type HostAnalyticsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -3485,7 +3527,7 @@ export const GoogleSignUpDocument = gql`
           bvnVerified
           ninVerified
           idDocumentType
-          youverifyReferenceId
+          kycReferenceId
           image {
             id
             secureUrl
@@ -3543,7 +3585,7 @@ export const RefreshTokenDocument = gql`
           bvnVerified
           ninVerified
           idDocumentType
-          youverifyReferenceId
+          kycReferenceId
           image {
             id
             secureUrl
@@ -3623,7 +3665,7 @@ export const GoogleLoginDocument = gql`
           bvnVerified
           ninVerified
           idDocumentType
-          youverifyReferenceId
+          kycReferenceId
           image {
             id
             secureUrl
@@ -3681,7 +3723,7 @@ export const AppleLoginDocument = gql`
           bvnVerified
           ninVerified
           idDocumentType
-          youverifyReferenceId
+          kycReferenceId
           image {
             id
             secureUrl
@@ -3739,7 +3781,7 @@ export const AppleSignUpDocument = gql`
           bvnVerified
           ninVerified
           idDocumentType
-          youverifyReferenceId
+          kycReferenceId
           image {
             id
             secureUrl
@@ -3797,7 +3839,7 @@ export const LoginDocument = gql`
           bvnVerified
           ninVerified
           idDocumentType
-          youverifyReferenceId
+          kycReferenceId
           image {
             id
             secureUrl
@@ -5636,7 +5678,7 @@ export const HostingDocument = gql`
         phoneNumber
         kyc {
           idDocumentType
-          youverifyReferenceId
+          kycReferenceId
         }
         profile {
           fullName
@@ -5774,6 +5816,10 @@ export const HostingsDocument = gql`
     latitude
     longitude
     paymentInterval
+    verification {
+      id
+      verificationTier
+    }
     coverImage {
       asset {
         publicUrl
@@ -5887,6 +5933,20 @@ export const HostListingsDocument = gql`
 
 export function useHostListingsQuery(options?: Omit<Urql.UseQueryArgs<HostListingsQueryVariables>, 'query'>) {
   return Urql.useQuery<HostListingsQuery, HostListingsQueryVariables>({ query: HostListingsDocument, ...options });
+};
+export const KycStatusDocument = gql`
+    query KycStatus {
+  kycStatus {
+    bvnVerified
+    ninVerified
+    hasLiveness
+    kycComplete
+  }
+}
+    `;
+
+export function useKycStatusQuery(options?: Omit<Urql.UseQueryArgs<KycStatusQueryVariables>, 'query'>) {
+  return Urql.useQuery<KycStatusQuery, KycStatusQueryVariables>({ query: KycStatusDocument, ...options });
 };
 export const NotificationsDocument = gql`
     query Notifications($filter: NotificationsFilterInput, $pagination: PaginationInput) {
@@ -6165,7 +6225,7 @@ export const MeDocument = gql`
       bvnVerified
       ninVerified
       idDocumentType
-      youverifyReferenceId
+      kycReferenceId
       image {
         id
         secureUrl

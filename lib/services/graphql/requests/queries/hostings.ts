@@ -103,7 +103,7 @@ export const HOSTING_QUERY = gql`
           phoneNumber
           kyc {
             idDocumentType
-            youverifyReferenceId
+            kycReferenceId
           }
           profile {
             fullName
@@ -243,6 +243,10 @@ export const HOSTINGS_QUERY = gql`
       latitude
       longitude
       paymentInterval
+      verification {
+        id
+        verificationTier
+      }
       coverImage {
         asset {
           publicUrl

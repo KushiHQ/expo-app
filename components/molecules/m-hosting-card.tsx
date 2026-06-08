@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Pressable } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
+import TierBadge from '../atoms/a-verification-tier-badge';
 import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
@@ -82,6 +83,11 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
           id={hosting.id}
           className="absolute right-4 top-4"
         />
+        {hosting.verification?.verificationTier ? (
+          <View className="absolute left-4 top-4">
+            <TierBadge tier={hosting.verification.verificationTier} size="sm" />
+          </View>
+        ) : null}
       </View>
       <Pressable
         disabled={disabled}

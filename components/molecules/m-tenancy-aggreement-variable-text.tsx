@@ -42,7 +42,7 @@ type TenantUserVars = {
   kushiId?: string | null;
   kyc?: {
     idDocumentType?: string | null;
-    youverifyReferenceId?: string | null;
+    kycReferenceId?: string | null;
   } | null;
 };
 
@@ -169,7 +169,7 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
           }
           if (hu.kyc) {
             variablesMap['LANDLORD_ID_TYPE'] = hu.kyc.idDocumentType ?? 'Government-issued ID';
-            variablesMap['KYC_REFERENCE_ID'] = hu.kyc.youverifyReferenceId ?? 'Pending';
+            variablesMap['KYC_REFERENCE_ID'] = hu.kyc.kycReferenceId ?? 'Pending';
           }
         }
       }
@@ -215,7 +215,7 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
         if (tenantUser.kyc) {
           variablesMap['TENANT_ID_TYPE'] = tenantUser.kyc.idDocumentType ?? 'Government-issued ID';
           variablesMap['TENANT_KYC_REFERENCE_ID'] =
-            tenantUser.kyc.youverifyReferenceId ?? 'Pending';
+            tenantUser.kyc.kycReferenceId ?? 'Pending';
         }
       }
 

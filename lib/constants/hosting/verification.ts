@@ -30,10 +30,15 @@ export const HOSTING_VERIFICATION_OPTIONS: {
 /**
  * Ordered list of tiers a host can request. The order matches the
  * `admin_verification_tier` table and is the recommended progression:
- * Unverified -> Identity -> Address -> Owner -> Kushi Vetted.
+ * Unverified -> ID Verified -> Title Submitted -> Title Checked -> Kushi Vetted.
  *
  * `Unverified` is omitted from the request picker — it's a derived state,
  * not something the host requests.
+ *
+ * Sprint 1.9: customer-facing labels updated to match the team's
+ * consensus — `ID Verified` (was `Identity Verified`),
+ * `Title Submitted` (was `Address Verified`),
+ * `Title Checked` (was `Owner Verified`).
  */
 export const VERIFICATION_TIER_OPTIONS: {
   value: HostingVerificationTier;
@@ -42,18 +47,20 @@ export const VERIFICATION_TIER_OPTIONS: {
 }[] = [
   {
     value: HostingVerificationTier.IdentityVerified,
-    label: 'Identity Verified',
-    description: 'BVN + NIN match the host profile.',
+    label: 'ID Verified',
+    description: 'BVN + NIN match the host profile. Auto-granted after KYC.',
   },
   {
-    value: HostingVerificationTier.AddressVerified,
-    label: 'Address Verified',
-    description: 'Utility bill + on-site possession confirmed.',
+    value: HostingVerificationTier.TitleSubmitted,
+    label: 'Title Submitted',
+    description:
+      'Title documents uploaded (C of O / R of O / Deed of Assignment / Survey Plan).',
   },
   {
-    value: HostingVerificationTier.OwnerVerified,
-    label: 'Owner Verified',
-    description: 'Title document + survey plan cross-checked with the land registry.',
+    value: HostingVerificationTier.TitleChecked,
+    label: 'Title Checked',
+    description:
+      'Registry search clean: AGIS for FCT, Lagos e-GIS for Lagos, state registry elsewhere.',
   },
   {
     value: HostingVerificationTier.KushiVetted,

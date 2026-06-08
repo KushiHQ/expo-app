@@ -121,7 +121,7 @@ export function landlordTypeLabel(
       base = 'Landlord';
   }
   if (
-    tier === HostingVerificationTier.OwnerVerified ||
+    tier === HostingVerificationTier.TitleChecked ||
     tier === HostingVerificationTier.KushiVetted
   ) {
     return `${base} (Kushi Verified)`;
@@ -133,10 +133,10 @@ export function verificationTierLabel(tier?: HostingVerificationTier | null): st
   switch (tier) {
     case HostingVerificationTier.IdentityVerified:
       return 'Identity Verified';
-    case HostingVerificationTier.AddressVerified:
-      return 'Address Verified';
-    case HostingVerificationTier.OwnerVerified:
-      return 'Owner Verified';
+    case HostingVerificationTier.TitleSubmitted:
+      return 'Title Submitted';
+    case HostingVerificationTier.TitleChecked:
+      return 'Title Checked';
     case HostingVerificationTier.KushiVetted:
       return 'Kushi Vetted';
     default:

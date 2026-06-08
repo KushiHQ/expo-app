@@ -29,7 +29,7 @@ export const ME_QUERY = gql`
         bvnVerified
         ninVerified
         idDocumentType
-        youverifyReferenceId
+        kycReferenceId
         image {
           id
           secureUrl

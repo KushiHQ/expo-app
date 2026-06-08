@@ -8,6 +8,7 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useUser } from '@/lib/hooks/user';
 import { useActiveFormHosingStore, useHostingRoomsStore } from '@/lib/stores/hostings';
 import { hexToRgba } from '@/lib/utils/colors';
+import { useKycStatusQuery } from '@/lib/services/graphql/generated';
 import { ImageBackground } from 'expo-image';
 import { Link } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
@@ -18,6 +19,13 @@ export default function NewHosting() {
   const { user } = useUser();
   const router = useRouter();
   const colors = useThemeColors();
+
+  // Use the server-authoritative kycStatus query. The hard-gate on the
+  // server requires BVN + NIN + liveness image; we mirror that check
+  // here so the host can't even start the hosting form until KYC is
+  // complete (Sprint 1.5 server gate, Sprint 1.19 mobile mirror).
+  const [{ data: kycStatusData }] = useKycStatusQuery();
+  const kycComplete = !!kycStatusData?.kycStatus?.kycComplete;
 
   // "+" button entry point — this route never carries a hosting id, so any
   // state left over from a previous form would be wrong here. Wipe it.
@@ -31,7 +39,7 @@ export default function NewHosting() {
       title="Hosting"
       footer={
         <HostingStepper
-          disabled={!(!!user.user?.kyc.ninVerified && !!user.user.kyc.bvnVerified)}
+          disabled={!kycComplete}
           onPress={() => {
             router.push('/hostings/form/step-1');
           }}
@@ -44,23 +52,34 @@ export default function NewHosting() {
           <View className="flex-row items-center justify-between">
             <ThemedText style={{ fontFamily: Fonts.medium }}>KYC Application</ThemedText>
             <ThemedSwitch
-              value={!!user.user?.kyc.ninVerified && !!user.user.kyc.bvnVerified}
+              value={kycComplete}
               onValueChange={() => {
-                if (!(!!user.user?.kyc.ninVerified && !!user.user.kyc.bvnVerified)) {
+                if (!kycComplete) {
                   router.push('/kyc');
                 }
               }}
             />
           </View>
-          {!(!!user.user?.kyc.ninVerified && !!user.user.kyc.bvnVerified) && (
-            <ThemedText style={{ fontSize: 12 }}>
-              Unfortunately, your KYC application has not been completed. Please fill out the KYC
-              form before you can access the hosting services.{' '}
-              <Link href="/kyc" style={{ color: colors.accent }} className="underline">
-                Submit your KYC application.
-              </Link>
-            </ThemedText>
-          )}
+          {!kycComplete ? (
+            <View>
+              <ThemedText style={{ fontSize: 12 }}>
+                Unfortunately, your KYC application has not been completed.{' '}
+                {!kycStatusData?.kycStatus?.bvnVerified
+                  ? 'BVN verification is required. '
+                  : null}
+                {!kycStatusData?.kycStatus?.ninVerified
+                  ? 'NIN verification is required. '
+                  : null}
+                {!kycStatusData?.kycStatus?.hasLiveness
+                  ? 'A selfie image is required. '
+                  : null}
+                Please complete the KYC form before you can access the hosting services.{' '}
+                <Link href="/kyc" style={{ color: colors.accent }} className="underline">
+                  Submit your KYC application.
+                </Link>
+              </ThemedText>
+            </View>
+          ) : null}
         </View>
         <View>
           <View className="mt-8 overflow-hidden rounded-lg">
