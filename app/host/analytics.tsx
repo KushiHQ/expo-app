@@ -84,10 +84,16 @@ export default function HostAnalytics() {
   }, [growthData]);
 
   const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
     refetchAnalytics();
     refetchGrowth();
     refetchNotifications();
   }, [refetchAnalytics, refetchGrowth]);
+
+  const [refreshing, setRefreshing] = React.useState(false);
+  React.useEffect(() => {
+    if (!analyticsFetching && !growthFetching) setRefreshing(false);
+  }, [analyticsFetching, growthFetching]);
 
   return (
     <DetailsLayout
@@ -96,7 +102,7 @@ export default function HostAnalytics() {
       withNotifications
       withProfile
       refreshControl={
-        <RefreshControl refreshing={analyticsFetching || growthFetching} onRefresh={onRefresh} />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
       footer={
         <Pressable

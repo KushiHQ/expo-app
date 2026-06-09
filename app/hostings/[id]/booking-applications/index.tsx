@@ -41,13 +41,21 @@ export default function BookingApplications() {
     }
   }, [error]);
 
+  const [refreshing, setRefreshing] = React.useState(false);
+  React.useEffect(() => {
+    if (!fetching) setRefreshing(false);
+  }, [fetching]);
+
   return (
     <DetailsLayout
       title="Booking Applications"
       refreshControl={
         <RefreshControl
-          refreshing={fetching}
-          onRefresh={() => refetch({ requestPolicy: 'network-only' })}
+          refreshing={refreshing}
+          onRefresh={() => {
+            setRefreshing(true);
+            refetch({ requestPolicy: 'network-only' });
+          }}
         />
       }
     >

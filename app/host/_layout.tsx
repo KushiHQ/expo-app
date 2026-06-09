@@ -4,6 +4,7 @@ import { FluentAppsList24Filled, FluentAppsList24Regular } from '@/components/ic
 import { TablerMessage2, TablerMessage2Filled } from '@/components/icons/i-message';
 import { MingcuteUser3Fill, MingcuteUser3Line } from '@/components/icons/i-user';
 import SidebarNav, { type SidebarNavItem } from '@/components/organisms/o-sidebar-nav';
+import React from 'react';
 import { Fonts } from '@/lib/constants/theme';
 import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
@@ -52,6 +53,13 @@ export default function Layout() {
 
   const insets = useSafeAreaInsets();
 
+  const [tabBarBottomInset, setTabBarBottomInset] = React.useState(0);
+  React.useEffect(() => {
+    if (insets.bottom > 0 && tabBarBottomInset === 0) {
+      setTabBarBottomInset(insets.bottom);
+    }
+  }, [insets.bottom, tabBarBottomInset]);
+
   const handleTabPress = (tabName: string) => (e: any) => {
     if (currentTab === tabName) {
       e.preventDefault();
@@ -71,7 +79,7 @@ export default function Layout() {
         tabBarStyle: isTablet
           ? { display: 'none' }
           : {
-              height: 80 + insets.bottom,
+              height: 80 + tabBarBottomInset,
               backgroundColor: colors['background'],
               borderTopColor: '#0000',
               borderTopWidth: 1,

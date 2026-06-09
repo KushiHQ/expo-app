@@ -49,14 +49,20 @@ export default function NewHostingStep7() {
     allTemplateSections,
   } = useTenancyTermsForm(String(id));
 
+  const [refreshing, setRefreshing] = React.useState(false);
+  React.useEffect(() => {
+    if (!templateFetching && !fetchingHosting) setRefreshing(false);
+  }, [templateFetching, fetchingHosting]);
+
   return (
     <>
       <DetailsLayout
         title="Hosting"
         refreshControl={
           <RefreshControl
-            refreshing={templateFetching || fetchingHosting}
+            refreshing={refreshing}
             onRefresh={() => {
+              setRefreshing(true);
               refetchTemplate();
               refetch();
             }}

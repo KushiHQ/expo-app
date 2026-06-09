@@ -148,6 +148,11 @@ export default function SupportInboxScreen() {
     requestPolicy: 'cache-and-network',
   });
 
+  const [refreshing, setRefreshing] = React.useState(false);
+  React.useEffect(() => {
+    if (!fetching) setRefreshing(false);
+  }, [fetching]);
+
   useFocusEffect(
     React.useCallback(() => {
       refetch({ requestPolicy: 'network-only' });
@@ -182,8 +187,11 @@ export default function SupportInboxScreen() {
         }
         refreshControl={
           <RefreshControl
-            onRefresh={() => refetch({ requestPolicy: 'network-only' })}
-            refreshing={fetching}
+            onRefresh={() => {
+              setRefreshing(true);
+              refetch({ requestPolicy: 'network-only' });
+            }}
+            refreshing={refreshing}
           />
         }
       />

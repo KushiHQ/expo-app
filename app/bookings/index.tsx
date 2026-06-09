@@ -132,6 +132,17 @@ export default function UserBookings() {
     },
   });
 
+  const [refreshing, setRefreshing] = React.useState(false);
+  React.useEffect(() => {
+    if (!bookingsQuery.fetching && !appsQuery.fetching) setRefreshing(false);
+  }, [bookingsQuery.fetching, appsQuery.fetching]);
+
+  const handleRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    bookingsQuery.refresh();
+    appsQuery.refresh();
+  }, [bookingsQuery, appsQuery]);
+
   return (
     <DetailsLayout title="My Bookings" scrollable={false}>
       <View style={{ flex: 1, marginTop: 16 }}>
@@ -266,8 +277,8 @@ export default function UserBookings() {
                   onEndReachedThreshold={0.5}
                   refreshControl={
                     <RefreshControl
-                      refreshing={bookingsQuery.fetching}
-                      onRefresh={() => bookingsQuery.refresh()}
+                      refreshing={refreshing}
+                      onRefresh={handleRefresh}
                     />
                   }
                 />
@@ -312,8 +323,8 @@ export default function UserBookings() {
                   onEndReachedThreshold={0.5}
                   refreshControl={
                     <RefreshControl
-                      refreshing={appsQuery.fetching}
-                      onRefresh={() => appsQuery.refresh()}
+                      refreshing={refreshing}
+                      onRefresh={handleRefresh}
                     />
                   }
                 />

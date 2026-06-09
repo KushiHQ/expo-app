@@ -60,10 +60,17 @@ function SavedContent() {
   const [, deleteSavedHosting] = useDeleteSavedHostingMutation();
   const [, updateSavedHosting] = useCreateUpdateSavedHostingMutation();
 
+  const [refreshing, setRefreshing] = React.useState(false);
+
   const handleRefresh = () => {
+    setRefreshing(true);
     refetchFolders({ requestPolicy: 'network-only' });
     refetchSaved({ requestPolicy: 'network-only' });
   };
+
+  React.useEffect(() => {
+    if (!folderFetching && !savedFetching) setRefreshing(false);
+  }, [folderFetching, savedFetching]);
 
   const toggleSelectMode = () => {
     setSelectMode((c) => !c);
@@ -164,7 +171,7 @@ function SavedContent() {
         title="Saved Listings"
         withProfile
         refreshControl={
-          <RefreshControl refreshing={folderFetching || savedFetching} onRefresh={handleRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
         <View className="mt-6 gap-8">

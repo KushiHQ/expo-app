@@ -35,6 +35,9 @@ export default function HostingGallery() {
             <View key={room.id} className="mt-4">
               <View className="px-2">
                 <ThemedText>{room.name}</ThemedText>
+                {room.description ? (
+                  <ThemedText style={{ fontSize: 13, opacity: 0.6 }}>{room.description}</ThemedText>
+                ) : null}
               </View>
               <View>
                 <SimpleGrid

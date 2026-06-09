@@ -30,6 +30,11 @@ export default function NewHostingStep1() {
     refetch: refetchHosting,
   } = useHostingForm(id);
 
+  const [refreshing, setRefreshing] = React.useState(false);
+  React.useEffect(() => {
+    if (!fetching) setRefreshing(false);
+  }, [fetching]);
+
   const handleMutate = () => {
     mutate({ input: input }).then((res) => {
       if (res.error) {
@@ -50,7 +55,13 @@ export default function NewHostingStep1() {
     <DetailsLayout
       title="Property Details"
       refreshControl={
-        <RefreshControl refreshing={fetching} onRefresh={() => id && refetchHosting()} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => {
+            setRefreshing(true);
+            id && refetchHosting();
+          }}
+        />
       }
       footer={
         <HostingStepper

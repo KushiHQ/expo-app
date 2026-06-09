@@ -45,7 +45,13 @@ export default function VerificationOverview() {
 		if (error) handleError(error);
 	}, [error]);
 
+	const [refreshing, setRefreshing] = React.useState(false);
+	React.useEffect(() => {
+		if (!fetching && !hostingFetching) setRefreshing(false);
+	}, [fetching, hostingFetching]);
+
 	const handleRefresh = () => {
+		setRefreshing(true);
 		refetchVerification({ requestPolicy: "network-only" });
 		refetchHosting({ requestPolicy: "network-only" });
 	};
@@ -76,7 +82,7 @@ export default function VerificationOverview() {
 			scrollable
 			refreshControl={
 				<RefreshControl
-					refreshing={fetching || hostingFetching}
+					refreshing={refreshing}
 					onRefresh={handleRefresh}
 					tintColor={colors.primary}
 				/>

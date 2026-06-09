@@ -175,13 +175,13 @@ export default ({ config }) => ({
 		[
 			"expo-splash-screen",
 			{
-				image: "./assets/icons/splash-icon-dark.png",
+				image: "./assets/images/splashscreen.png",
 				imageWidth: 200,
-				resizeMode: "contain",
-				backgroundColor: "#ffffff",
+				resizeMode: "cover",
+				backgroundColor: "#0a1142",
 				dark: {
-					image: "./assets/icons/splash-icon-light.png",
-					backgroundColor: "#000000",
+					image: "./assets/images/splashscreen.png",
+					backgroundColor: "#0a1142",
 				},
 			},
 		],

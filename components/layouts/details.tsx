@@ -21,7 +21,7 @@ import { Image } from 'expo-image';
 import { EventEmitter } from '@/lib/utils/event-emitter';
 import { HugeiconsVideo01, SolarPhoneOutline } from '../icons/i-phone';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useGradualKeyboardAnimation } from '@/lib/hooks/keyboard';
 import ThemedView from '../atoms/a-themed-view';
 import { IonNotificationsOutline } from '../icons/i-notifications';
@@ -97,6 +97,21 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
     const { user } = useUser();
     const [initiateSupportChatResult, initiateSupportChat] = useInitiateSupportChatMutation();
 
+    // Track when safe area insets have been measured to avoid layout jumps.
+    // On first render insets.bottom is 0, then transitions to the real value (e.g. 34px).
+    // We animate to the measured value so the footer settles smoothly.
+    const bottomInsetReady = React.useRef(false);
+    const animatedBottomInset = useSharedValue(0);
+
+    React.useEffect(() => {
+      if (insets.bottom > 0 && !bottomInsetReady.current) {
+        bottomInsetReady.current = true;
+        // Animate from 0 to the real value so the footer shifts smoothly
+        // rather than snapping.
+        animatedBottomInset.value = withTiming(insets.bottom, { duration: 150 });
+      }
+    }, [insets.bottom, animatedBottomInset]);
+
     React.useImperativeHandle(ref, () => scrollViewRef.current as ScrollView);
 
     React.useEffect(() => {
@@ -119,9 +134,11 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
       return {
         transform: [
           {
-            translateY: -Math.max(0, keyboardHeight.value - insets.bottom),
+            translateY: -Math.max(0, keyboardHeight.value - animatedBottomInset.value),
           },
         ],
+        paddingBottom: animatedBottomInset.value,
+        marginBottom: -animatedBottomInset.value,
       };
     });
 
@@ -369,8 +386,6 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                   animatedFooterStyle,
                   {
                     backgroundColor: colors.background,
-                    marginBottom: -insets.bottom,
-                    paddingBottom: insets.bottom,
                   },
                 ]}
               >

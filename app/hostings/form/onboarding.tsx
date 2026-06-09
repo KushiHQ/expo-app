@@ -38,6 +38,11 @@ export default function HostingOnboarding() {
 		},
 	});
 
+	const [refreshing, setRefreshing] = React.useState(false);
+	React.useEffect(() => {
+		if (!fetching) setRefreshing(false);
+	}, [fetching]);
+
 	const actions = React.useMemo(() => {
 		const actions: Record<number, Action> = {};
 		ONBOARDING_STEPS.forEach((_, index) => {
@@ -122,9 +127,15 @@ export default function HostingOnboarding() {
 	return (
 		<DetailsLayout
 			title="Hosting"
-			refreshControl={
-				<RefreshControl refreshing={fetching} onRefresh={refetch} />
-			}
+		refreshControl={
+			<RefreshControl
+				refreshing={refreshing}
+				onRefresh={() => {
+					setRefreshing(true);
+					refetch();
+				}}
+			/>
+		}
 		>
 			<View>
 				<ThemedText

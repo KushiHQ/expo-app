@@ -32,6 +32,11 @@ export default function TransactionDetails() {
 
   const transaction = data?.transactionByReference;
 
+  const [refreshing, setRefreshing] = React.useState(false);
+  React.useEffect(() => {
+    if (!fetching) setRefreshing(false);
+  }, [fetching]);
+
   React.useEffect(() => {
     let timeout: number | undefined = undefined;
     if (downloadType !== undefined) {
@@ -110,7 +115,15 @@ export default function TransactionDetails() {
       <DetailsLayout
         withSupport={true}
         title="Transaction Receipt"
-        refreshControl={<RefreshControl refreshing={fetching} onRefresh={refetch} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true);
+              refetch();
+            }}
+          />
+        }
       >
         <ScrollView className="flex-1 px-6 pb-10 pt-4">
           {/* Receipt Header */}

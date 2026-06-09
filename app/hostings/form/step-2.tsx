@@ -49,12 +49,23 @@ export default function NewHostingStep2() {
 
   const allRoomTypesUsed = rooms.length >= 20;
 
+  const [refreshing, setRefreshing] = React.useState(false);
+  React.useEffect(() => {
+    if (!fetchingHosting) setRefreshing(false);
+  }, [fetchingHosting]);
+
   return (
     <>
       <DetailsLayout
         title="Hosting"
         refreshControl={
-          <RefreshControl refreshing={fetchingHosting} onRefresh={() => refetchHosting()} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              setRefreshing(true);
+              refetchHosting();
+            }}
+          />
         }
         footer={
           <HostingStepper
