@@ -3,7 +3,7 @@ import ThemedModal from '../molecules/m-modal';
 import ThemedText from '../atoms/a-themed-text';
 import { Fonts } from '@/lib/constants/theme';
 import FloatingLabelInput from '../atoms/a-floating-label-input';
-import { PhHeart } from '../icons/i-heart';
+import { FolderPlus } from 'lucide-react-native';
 import Button from '../atoms/a-button';
 import React from 'react';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
@@ -14,6 +14,7 @@ import {
 import { cast } from '@/lib/types/utils';
 import { handleError } from '@/lib/utils/error';
 import { toast } from '@/lib/hooks/use-toast';
+import { hexToRgba } from '@/lib/utils/colors';
 
 type Props = {
   open: boolean;
@@ -38,6 +39,7 @@ const SavedHostingFolderModal: React.FC<Props> = ({ open, onClose, onCreate }) =
           text1: 'Success',
           text2: res.data.createUpdateSavedHostingFolder.message,
         });
+        setInputs({});
         onCreate?.();
       }
     });
@@ -45,29 +47,52 @@ const SavedHostingFolderModal: React.FC<Props> = ({ open, onClose, onCreate }) =
 
   return (
     <ThemedModal visible={open} onClose={onClose}>
-      <View className="gap-8">
-        <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
-          Organize Your Collections
-        </ThemedText>
+      <View style={{ gap: 24 }}>
+        <View>
+          <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
+            Create Collection
+          </ThemedText>
+          <ThemedText
+            style={{
+              fontFamily: Fonts.regular,
+              fontSize: 14,
+              color: hexToRgba(colors.text, 0.5),
+              marginTop: 4,
+            }}
+          >
+            Organize your saved listings into folders
+          </ThemedText>
+        </View>
         <FloatingLabelInput
           focused
-          label="Add Folder"
-          placeholder="Folder Name"
+          label="Folder Name"
+          placeholder="e.g. Dream Homes"
           onChangeText={(v) => setInputs((c) => ({ ...c, folderName: v }))}
-          suffix={<PhHeart size={16} color={colors.text} />}
+          suffix={<FolderPlus size={16} color={hexToRgba(colors.text, 0.4)} />}
         />
       </View>
-      <View className="mt-4 flex-row items-center justify-end gap-8 px-4">
-        <Button onPress={onClose}>
-          <ThemedText style={{ color: colors.error }}>Cancel</ThemedText>
+      <View
+        style={{
+          marginTop: 24,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: 12,
+        }}
+      >
+        <Button onPress={onClose} variant="text">
+          <ThemedText style={{ color: hexToRgba(colors.text, 0.6) }}>Cancel</ThemedText>
         </Button>
         <Button
           loading={res.fetching}
-          style={{ width: 80 }}
+          style={{ paddingHorizontal: 24 }}
           onPress={handleCreate}
           disabled={res.fetching || !inputs.folderName?.length}
+          type="primary"
         >
-          <ThemedText content="tinted">Create</ThemedText>
+          <ThemedText content="primary" style={{ fontFamily: Fonts.semibold }}>
+            Create
+          </ThemedText>
         </Button>
       </View>
     </ThemedModal>

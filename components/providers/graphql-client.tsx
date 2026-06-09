@@ -63,7 +63,7 @@ const createClient = (ws: ReturnType<typeof createWSClientInstance>) => {
           },
           didAuthError(error, _operation) {
             return error.graphQLErrors.some(
-              (e) => e.message.includes('Invalid token') || e.message.includes('Authentication'),
+              (e) => e.message.includes('Auth Error'),
             );
           },
           async refreshAuth() {

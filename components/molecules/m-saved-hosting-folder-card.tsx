@@ -19,49 +19,67 @@ const SavedHostingFolderCard: React.FC<Props> = ({ folder }) => {
   const colors = useThemeColors();
 
   return (
-    <Pressable onPress={() => router.push(`/hostings/folders/${folder.id}`)}>
+    <Pressable
+      onPress={() => router.push(`/hostings/folders/${folder.id}`)}
+      style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
+    >
       <ThemedView
-        className="gap-5 rounded-2xl border p-4"
         style={{
-          borderColor: hexToRgba(colors.text, 0.1),
+          gap: 16,
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: hexToRgba(colors.primary, 0.12),
+          padding: 18,
+          backgroundColor: colors['surface-01'],
           ...Platform.select({
             ios: {
               shadowColor: colors.primary,
-              shadowOffset: { width: 0, height: -2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 8,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.08,
+              shadowRadius: 12,
             },
             android: {
-              elevation: 10,
-              shadowColor: hexToRgba(colors.text, 0.3),
+              elevation: 6,
+              shadowColor: hexToRgba(colors.primary, 0.15),
             },
           }),
         }}
       >
-        <View>
-          <HugeiconsFolder03 color={colors.text} size={32} />
+        <View
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 14,
+            backgroundColor: hexToRgba(colors.primary, 0.1),
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <HugeiconsFolder03 color={colors.primary} size={22} />
         </View>
-        <View className="gap-2">
+        <View style={{ gap: 6 }}>
           <ThemedText
             numberOfLines={1}
             ellipsizeMode="tail"
-            style={{ fontFamily: Fonts.medium, fontSize: 18 }}
+            style={{ fontFamily: Fonts.semibold, fontSize: 16 }}
           >
             {folder.folderName}
           </ThemedText>
-          <View className="flex-row items-center justify-between">
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <ThemedText
               style={{
                 fontSize: 12,
-                color: hexToRgba(colors.text, 0.6),
+                fontFamily: Fonts.regular,
+                color: hexToRgba(colors.text, 0.45),
               }}
             >
-              {folder.itemCount} items
+              {folder.itemCount} {folder.itemCount === 1 ? 'listing' : 'listings'}
             </ThemedText>
             <ThemedText
               style={{
                 fontSize: 12,
-                color: hexToRgba(colors.text, 0.6),
+                fontFamily: Fonts.regular,
+                color: hexToRgba(colors.text, 0.35),
               }}
             >
               {moment(folder.lastUpdated).fromNow()}
