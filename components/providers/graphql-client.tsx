@@ -1,49 +1,70 @@
-import { clearAuthTokens, getAuthTokens, saveAuthTokens } from '@/lib/utils/auth';
-import React from 'react';
-import { authExchange } from '@urql/exchange-auth';
+import {
+  clearAuthTokens,
+  getAuthTokens,
+  saveAuthTokens,
+} from "@/lib/utils/auth";
+import React from "react";
+import { authExchange } from "@urql/exchange-auth";
 import {
   RefreshTokenMutation,
   RefreshTokenMutationVariables,
-} from '@/lib/services/graphql/generated';
-import { REFRESH_TOKEN_MUTATION } from '@/lib/services/graphql/requests/mutations/auth';
-import { useUserStore } from '@/lib/stores/users';
-import { cacheExchange, Client, fetchExchange, Provider, subscriptionExchange } from 'urql';
-import { createClient as createWSClient } from 'graphql-ws';
+} from "@/lib/services/graphql/generated";
+import { REFRESH_TOKEN_MUTATION } from "@/lib/services/graphql/requests/mutations/auth";
+import { useUserStore } from "@/lib/stores/users";
+import {
+  cacheExchange,
+  Client,
+  fetchExchange,
+  Provider,
+  subscriptionExchange,
+} from "urql";
+import { createClient as createWSClient } from "graphql-ws";
 
 type Props = {
   children?: React.ReactNode;
 };
 
-const WS_TAG = '[WS]';
+const WS_TAG = "[WS]";
 
 const createWSClientInstance = () =>
   createWSClient({
-    url: process.env.EXPO_PUBLIC_GRAPHQL_SUBSCRIPTION_URL ?? '',
+    url: process.env.EXPO_PUBLIC_GRAPHQL_SUBSCRIPTION_URL ?? "",
     retryAttempts: 20,
     async retryWait(retries) {
       // Exponential backoff: 1s, 2s, 4s … capped at 30s
-      await new Promise((resolve) => setTimeout(resolve, Math.min(1000 * 2 ** retries, 30_000)));
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.min(1000 * 2 ** retries, 30_000)),
+      );
     },
     async connectionParams() {
       const tokens = await getAuthTokens();
-      console.log(WS_TAG, 'connectionParams — has token:', Boolean(tokens?.access));
+      console.info(
+        WS_TAG,
+        "connectionParams — has token:",
+        Boolean(tokens?.access),
+      );
       return {
         authorization: tokens?.access ? `Bearer ${tokens.access}` : null,
       };
     },
     on: {
-      connecting: () => console.log(WS_TAG, 'connecting…'),
-      connected: () => console.log(WS_TAG, 'connected'),
-      closed: (event) => console.log(WS_TAG, 'closed', JSON.stringify(event)),
+      connecting: () => console.info(WS_TAG, "connecting…"),
+      connected: () => console.info(WS_TAG, "connected"),
+      closed: (event) => console.info(WS_TAG, "closed", JSON.stringify(event)),
       error: (err) =>
-        console.log(WS_TAG, 'error', err instanceof Error ? err.message : JSON.stringify(err)),
-      message: (msg) => msg.type !== 'next' && console.log(WS_TAG, 'msg type:', msg.type),
+        console.info(
+          WS_TAG,
+          "error",
+          err instanceof Error ? err.message : JSON.stringify(err),
+        ),
+      message: (msg) =>
+        msg.type !== "next" && console.info(WS_TAG, "msg type:", msg.type),
     },
   });
 
 const createClient = (ws: ReturnType<typeof createWSClientInstance>) => {
   return new Client({
-    url: process.env.EXPO_PUBLIC_GRAPHQL_URL ?? '',
+    url: process.env.EXPO_PUBLIC_GRAPHQL_URL ?? "",
     preferGetMethod: false,
     exchanges: [
       cacheExchange,
@@ -62,8 +83,8 @@ const createClient = (ws: ReturnType<typeof createWSClientInstance>) => {
             });
           },
           didAuthError(error, _operation) {
-            return error.graphQLErrors.some(
-              (e) => e.message.includes('Auth Error'),
+            return error.graphQLErrors.some((e) =>
+              e.message.includes("Auth Error"),
             );
           },
           async refreshAuth() {
@@ -75,12 +96,12 @@ const createClient = (ws: ReturnType<typeof createWSClientInstance>) => {
               useUserStore.getState().reset();
               return;
             }
-            const result = await utils.mutate<RefreshTokenMutation, RefreshTokenMutationVariables>(
-              REFRESH_TOKEN_MUTATION,
-              {
-                input: { refreshToken: storedTokens.refresh },
-              },
-            );
+            const result = await utils.mutate<
+              RefreshTokenMutation,
+              RefreshTokenMutationVariables
+            >(REFRESH_TOKEN_MUTATION, {
+              input: { refreshToken: storedTokens.refresh },
+            });
             if (result.data?.refreshToken.data) {
               const data = result.data.refreshToken.data;
               tokens = { access: data.token, refresh: data.refreshToken };
@@ -96,7 +117,7 @@ const createClient = (ws: ReturnType<typeof createWSClientInstance>) => {
       fetchExchange,
       subscriptionExchange({
         forwardSubscription(request) {
-          const input = { ...request, query: request.query || '' };
+          const input = { ...request, query: request.query || "" };
           return {
             subscribe(sink) {
               const unsubscribe = ws.subscribe(input, sink);
@@ -111,7 +132,9 @@ const createClient = (ws: ReturnType<typeof createWSClientInstance>) => {
 
 const URQLProvider: React.FC<Props> = ({ children }) => {
   const user = useUserStore((c) => c.user);
-  const wsRef = React.useRef<ReturnType<typeof createWSClientInstance> | null>(null);
+  const wsRef = React.useRef<ReturnType<typeof createWSClientInstance> | null>(
+    null,
+  );
   const [client, setClient] = React.useState<Client | null>(null);
 
   React.useEffect(() => {
@@ -141,8 +164,8 @@ const URQLProvider: React.FC<Props> = ({ children }) => {
   // login screen's mutations) are never blocked waiting for a WS connection.
   const [fallbackClient] = React.useState(() =>
     createClient({
-      subscribe: () => ({ unsubscribe: () => {} }),
-      dispose: () => {},
+      subscribe: () => ({ unsubscribe: () => { } }),
+      dispose: () => { },
     } as any),
   );
 

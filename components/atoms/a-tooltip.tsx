@@ -1,32 +1,40 @@
-import React, { useRef, useState } from 'react';
-import { View, StyleSheet, Pressable, Dimensions } from 'react-native';
+import React, { useRef, useState } from "react";
+import { View, StyleSheet, Pressable, Dimensions } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
   runOnJS,
-} from 'react-native-reanimated';
-import { Portal } from 'react-native-paper';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import ThemedText from '../atoms/a-themed-text';
-import { hexToRgba } from '@/lib/utils/colors';
+} from "react-native-reanimated";
+import { Portal } from "react-native-paper";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import ThemedText from "../atoms/a-themed-text";
+import { hexToRgba } from "@/lib/utils/colors";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 interface TooltipProps {
   title?: string;
   description: string;
   className?: string;
+  position?: "top" | "right" | "bottom" | "left";
   children: React.ReactNode;
 }
 
-const Tooltip: React.FC<TooltipProps> = ({ title, className, description, children }) => {
+const Tooltip: React.FC<TooltipProps> = ({
+  title,
+  className,
+  description,
+  position = "top",
+  children,
+}) => {
   const colors = useThemeColors();
   const triggerRef = useRef<View>(null);
 
   const [isVisible, setIsVisible] = useState(false);
   const [coords, setCoords] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [tooltipHeight, setTooltipHeight] = useState(0);
 
   const animation = useSharedValue(0);
 
@@ -53,13 +61,68 @@ const Tooltip: React.FC<TooltipProps> = ({ title, className, description, childr
 
   const TOOLTIP_WIDTH = 220;
   const tooltipX = coords.x + coords.width / 2 - TOOLTIP_WIDTH / 2;
-  const safeX = Math.max(10, Math.min(tooltipX, SCREEN_WIDTH - TOOLTIP_WIDTH - 10));
-  const tooltipY = coords.y + 25;
+  const safeX = Math.max(
+    10,
+    Math.min(tooltipX, SCREEN_WIDTH - TOOLTIP_WIDTH - 10),
+  );
+
+  let tooltipPosStyle: any = {};
+  let arrowPosStyle: any = {};
+
+  if (position === "top") {
+    tooltipPosStyle = {
+      left: safeX,
+      bottom: SCREEN_HEIGHT - coords.y + 10,
+    };
+    arrowPosStyle = {
+      bottom: -5,
+      left: coords.x - safeX + coords.width / 2 - 6,
+    };
+  } else if (position === "right") {
+    tooltipPosStyle = {
+      left: coords.x + coords.width + 12,
+      top: coords.y + coords.height / 2 - tooltipHeight / 2 + 55,
+    };
+    arrowPosStyle = {
+      left: -5,
+      top: tooltipHeight / 2 - 6,
+    };
+  } else if (position === "bottom") {
+    tooltipPosStyle = {
+      left: safeX,
+      top: coords.y + coords.height + 12,
+    };
+    arrowPosStyle = {
+      top: -5,
+      left: coords.x - safeX + coords.width / 2 - 6,
+    };
+  } else if (position === "left") {
+    tooltipPosStyle = {
+      right: SCREEN_WIDTH - coords.x + 12,
+      top: coords.y + coords.height / 2 - tooltipHeight / 2,
+    };
+    arrowPosStyle = {
+      right: -5,
+      top: tooltipHeight / 2 - 6,
+    };
+  }
 
   const rTooltipStyle = useAnimatedStyle(() => {
+    const translateY =
+      position === "top"
+        ? (1 - animation.value) * 10
+        : position === "bottom"
+          ? -(1 - animation.value) * 10
+          : 0;
+    const translateX =
+      position === "left"
+        ? (1 - animation.value) * 10
+        : position === "right"
+          ? -(1 - animation.value) * 10
+          : 0;
     return {
       opacity: animation.value,
-      transform: [{ scale: animation.value }, { translateY: (1 - animation.value) * 20 }],
+      transform: [{ scale: animation.value }, { translateY }, { translateX }],
     };
   });
 
@@ -73,25 +136,38 @@ const Tooltip: React.FC<TooltipProps> = ({ title, className, description, childr
 
       {isVisible && (
         <Portal>
-          <Pressable style={StyleSheet.absoluteFillObject} onPress={closeTooltip}>
+          <Pressable
+            style={StyleSheet.absoluteFillObject}
+            onPress={closeTooltip}
+          >
             <Animated.View
+              onLayout={(e) => {
+                const h = e.nativeEvent.layout.height;
+                if (h && h !== tooltipHeight) {
+                  setTooltipHeight(h);
+                }
+              }}
               style={[
                 styles.tooltipBubble,
-                {
-                  backgroundColor: colors.text,
-                  left: safeX,
-                  bottom: SCREEN_HEIGHT - tooltipY,
-                },
+                { backgroundColor: colors.text },
+                tooltipPosStyle,
                 rTooltipStyle,
+                { transform: [{ translateY: 10 }] },
               ]}
             >
               {title && (
-                <ThemedText type="semibold" style={[styles.title, { color: colors.background }]}>
+                <ThemedText
+                  type="semibold"
+                  style={[styles.title, { color: colors.background }]}
+                >
                   {title}
                 </ThemedText>
               )}
               <ThemedText
-                style={[styles.description, { color: hexToRgba(colors.background, 0.9) }]}
+                style={[
+                  styles.description,
+                  { color: hexToRgba(colors.background, 0.9) },
+                ]}
               >
                 {description}
               </ThemedText>
@@ -99,10 +175,8 @@ const Tooltip: React.FC<TooltipProps> = ({ title, className, description, childr
               <View
                 style={[
                   styles.arrow,
-                  {
-                    backgroundColor: colors.text,
-                    left: coords.x - safeX + coords.width / 2 - 6,
-                  },
+                  { backgroundColor: colors.text },
+                  arrowPosStyle,
                 ]}
               />
             </Animated.View>
@@ -117,11 +191,11 @@ export default Tooltip;
 
 const styles = StyleSheet.create({
   tooltipBubble: {
-    position: 'absolute',
-    width: 220,
+    position: "absolute",
+    maxWidth: 220,
     padding: 12,
     borderRadius: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -137,10 +211,9 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   arrow: {
-    position: 'absolute',
-    bottom: -5,
+    position: "absolute",
     width: 12,
     height: 12,
-    transform: [{ rotate: '45deg' }],
+    transform: [{ rotate: "45deg" }],
   },
 });

@@ -1,19 +1,23 @@
-import { PROPERTY_BLURHASH } from '@/lib/constants/images';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { Image } from 'expo-image';
-import React from 'react';
-import { Pressable, View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import ThemedText from '../atoms/a-themed-text';
-import { hexToRgba } from '@/lib/utils/colors';
-import { Fonts } from '@/lib/constants/theme';
-import { useRouter } from '@/lib/hooks/use-router';
-import { HostingChatQuery } from '@/lib/services/graphql/generated';
-import { capitalize } from '@/lib/utils/text';
+import { PROPERTY_BLURHASH } from "@/lib/constants/images";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { Image } from "expo-image";
+import React from "react";
+import { Pressable, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
+import ThemedText from "../atoms/a-themed-text";
+import { hexToRgba } from "@/lib/utils/colors";
+import { Fonts } from "@/lib/constants/theme";
+import { useRouter } from "@/lib/hooks/use-router";
+import { HostingChatQuery } from "@/lib/services/graphql/generated";
+import { capitalize } from "@/lib/utils/text";
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 type Props = {
-  hosting?: HostingChatQuery['hostingChat']['hosting'];
+  hosting?: HostingChatQuery["hostingChat"]["hosting"];
 };
 
 const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
@@ -34,7 +38,7 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
       className="flex-row gap-4 rounded-2xl border p-3"
       style={[
         {
-          backgroundColor: colors['surface-01'],
+          backgroundColor: colors["surface-01"],
           borderColor: hexToRgba(colors.text, 0.08),
           // Subtle shadow for depth
           shadowColor: colors.text,
@@ -51,11 +55,7 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
           source={{
             uri: hosting?.coverImage?.asset.publicUrl,
           }}
-          style={{ height: '100%', width: '100%' }}
-          onError={(e) => {
-            console.log(hosting);
-            console.log(e);
-          }}
+          style={{ height: "100%", width: "100%" }}
           contentFit="cover"
           transition={300}
           placeholder={{ blurhash: PROPERTY_BLURHASH }}
@@ -93,7 +93,7 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
                 color: colors.primary,
               }}
             >
-              ₦{Number(hosting?.price ?? '0').toLocaleString()}
+              ₦{Number(hosting?.price ?? "0").toLocaleString()}
               <ThemedText
                 style={{
                   fontSize: 10,
@@ -101,8 +101,8 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
                   color: colors.primary,
                 }}
               >
-                {' '}
-                / {capitalize(hosting?.paymentInterval ?? '')}
+                {" "}
+                / {capitalize(hosting?.paymentInterval ?? "")}
               </ThemedText>
             </ThemedText>
           </View>
