@@ -117,9 +117,8 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
     <View style={{ zIndex: 50 }}>
       <Animated.View
         layout={LinearTransition.springify().damping(25).stiffness(300)}
-        className={`flex-row gap-3 rounded-2xl px-4 ${
-          isInputFocused ? 'min-h-[120px] items-start py-4' : 'min-h-[56px] items-center py-2.5'
-        }`}
+        className={`flex-row gap-3 rounded-2xl px-4 ${isInputFocused ? 'min-h-[120px] items-start py-4' : 'min-h-[56px] items-center py-2.5'
+          }`}
         style={{
           backgroundColor: isMapView ? colors.background : colors['surface-01'],
           borderWidth: 1,
@@ -159,10 +158,10 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
             placeholderClassName="text-ellipsis"
             style={{ color: colors['text'], fontSize: 14 }}
             placeholderTextColor={hexToRgba(colors['text'], 0.5)}
-            placeholder="Enter location, price, property type, pr..."
+            placeholder="Enter location, price, property type, property amenities and features etc."
             onChangeText={setSearchInput}
-            multiline={true}
-            numberOfLines={4}
+            multiline={isInputFocused || searchInput.length > 0}
+            numberOfLines={isInputFocused || searchInput.length > 0 ? 4 : 1}
             onFocus={() => setIsInputFocused(true)}
             onBlur={() => setIsInputFocused(false)}
             textAlignVertical={isInputFocused ? 'top' : 'center'}

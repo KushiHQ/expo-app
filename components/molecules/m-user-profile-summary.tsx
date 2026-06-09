@@ -75,7 +75,7 @@ const UserProfileSummary: React.FC<Props> = ({ edit, onPressAvatar, avatarUri })
           </ThemedText>
           <SolarMedalStarBold color={colors.accent} size={16} />
         </View>
-        <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 15 }}>
+        <ThemedText numberOfLines={1} style={{ fontFamily: Fonts.bold, fontSize: 15 }}>
           {user.user?.profile.fullName}
         </ThemedText>
         <ThemedText style={{ fontSize: 11, color: hexToRgba(colors.text, 0.5) }}>
