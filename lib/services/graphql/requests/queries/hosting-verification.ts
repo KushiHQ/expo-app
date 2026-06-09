@@ -1,4 +1,4 @@
-import { gql } from 'urql';
+import { gql } from "urql";
 
 export const HOSTING_VERIFICATION_REQUESTS = gql`
   query HostingVerificationRequests($hostingId: String!) {
@@ -38,7 +38,10 @@ export const HOSTING_VERIFICATION_TIER = gql`
       description
       color
       price
-      documentRequirements
+      documentRequirements {
+        title
+        description
+      }
     }
   }
 `;

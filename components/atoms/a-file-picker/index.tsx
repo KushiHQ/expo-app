@@ -20,6 +20,8 @@ type Props = {
   label: string;
   /** Hint text shown next to the label (e.g. "PDF or image, max 10MB"). */
   hint?: string;
+  /** Optional description for the file picker. */
+  description?: string;
   /** When set, the picker is locked to that file and shows a "Replace" CTA. */
   value?: PickedFile | null;
   onChange: (file: PickedFile | null) => void;
@@ -45,7 +47,7 @@ function formatBytes(bytes?: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-const FilePicker: React.FC<Props> = ({ label, hint, value, onChange, disabled, className }) => {
+const FilePicker: React.FC<Props> = ({ label, hint, description, value, onChange, disabled, className }) => {
   const colors = useThemeColors();
   const [picking, setPicking] = useState(false);
 
@@ -100,6 +102,18 @@ const FilePicker: React.FC<Props> = ({ label, hint, value, onChange, disabled, c
           >
             {label}
           </ThemedText>
+          {description ? (
+            <ThemedText
+              style={{
+                fontSize: 12,
+                color: hexToRgba(colors.text, 0.7),
+                marginTop: 4,
+                marginBottom: 2,
+              }}
+            >
+              {description}
+            </ThemedText>
+          ) : null}
           {hint ? (
             <ThemedText
               style={{

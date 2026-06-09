@@ -20,12 +20,22 @@ export type Scalars = {
   Upload: { input: any; output: any; }
 };
 
-export type AdminAssetInfo = {
-  __typename?: 'AdminAssetInfo';
-  contentType?: Maybe<Scalars['String']['output']>;
+export type AdminAuditLog = {
+  __typename?: 'AdminAuditLog';
+  auditType: Scalars['String']['output'];
+  createdAt: Scalars['String']['output'];
   id: Scalars['String']['output'];
-  originalFilename?: Maybe<Scalars['String']['output']>;
-  publicUrl: Scalars['String']['output'];
+  meta: Scalars['String']['output'];
+  staffEmail?: Maybe<Scalars['String']['output']>;
+  staffId?: Maybe<Scalars['String']['output']>;
+  staffName?: Maybe<Scalars['String']['output']>;
+  userId?: Maybe<Scalars['String']['output']>;
+};
+
+export type AdminAuditLogConnection = {
+  __typename?: 'AdminAuditLogConnection';
+  items: Array<AdminAuditLog>;
+  total: Scalars['Int']['output'];
 };
 
 export type AdminCreateRoleInput = {
@@ -71,83 +81,6 @@ export type AdminHostInfo = {
   __typename?: 'AdminHostInfo';
   createdAt: Scalars['String']['output'];
   id: Scalars['String']['output'];
-};
-
-export type AdminHostProfile = {
-  __typename?: 'AdminHostProfile';
-  email?: Maybe<Scalars['String']['output']>;
-  emailVerified: Scalars['Boolean']['output'];
-  fullName?: Maybe<Scalars['String']['output']>;
-  hostId: Scalars['String']['output'];
-  kycBvnVerified?: Maybe<Scalars['Boolean']['output']>;
-  kycNinVerified?: Maybe<Scalars['Boolean']['output']>;
-  phone?: Maybe<Scalars['String']['output']>;
-  userId: Scalars['String']['output'];
-};
-
-export type AdminHosting = {
-  __typename?: 'AdminHosting';
-  averageRating?: Maybe<Scalars['Float']['output']>;
-  bookingApplicationsCount: Scalars['Int']['output'];
-  bookingsCount: Scalars['Int']['output'];
-  /** Categories */
-  categories: Array<Scalars['String']['output']>;
-  cautionFee?: Maybe<Scalars['String']['output']>;
-  city?: Maybe<Scalars['String']['output']>;
-  coverImage?: Maybe<AdminAssetInfo>;
-  coverImageUrl?: Maybe<Scalars['String']['output']>;
-  createdAt: Scalars['String']['output'];
-  description?: Maybe<Scalars['String']['output']>;
-  /** Facilities/amenities */
-  facilities: Array<Scalars['String']['output']>;
-  /** Full host profile with user info, KYC, phone */
-  host?: Maybe<AdminHostProfile>;
-  id: Scalars['String']['output'];
-  imagesCount: Scalars['Int']['output'];
-  landmarks?: Maybe<Scalars['String']['output']>;
-  lastUpdated: Scalars['String']['output'];
-  latitude?: Maybe<Scalars['String']['output']>;
-  listingType?: Maybe<Scalars['String']['output']>;
-  longitude?: Maybe<Scalars['String']['output']>;
-  maxOccupants?: Maybe<Scalars['Int']['output']>;
-  paymentInterval?: Maybe<Scalars['String']['output']>;
-  price?: Maybe<Scalars['String']['output']>;
-  propertyType?: Maybe<Scalars['String']['output']>;
-  publishStatus?: Maybe<Scalars['String']['output']>;
-  /** Rooms with images */
-  rooms: Array<AdminHostingRoom>;
-  roomsCount: Scalars['Int']['output'];
-  serviceCharge?: Maybe<Scalars['String']['output']>;
-  state?: Maybe<Scalars['String']['output']>;
-  street?: Maybe<Scalars['String']['output']>;
-  title?: Maybe<Scalars['String']['output']>;
-  totalRatings?: Maybe<Scalars['Int']['output']>;
-  /** Verification details for this hosting */
-  verification?: Maybe<AdminHostingVerification>;
-  /** Web-app slug link for viewing the listing */
-  webUrl: Scalars['String']['output'];
-};
-
-export type AdminHostingRoom = {
-  __typename?: 'AdminHostingRoom';
-  count?: Maybe<Scalars['Int']['output']>;
-  id: Scalars['String']['output'];
-  imagesCount: Scalars['Int']['output'];
-  name?: Maybe<Scalars['String']['output']>;
-};
-
-export type AdminHostingVerification = {
-  __typename?: 'AdminHostingVerification';
-  createdAt: Scalars['String']['output'];
-  declIndemnity: Scalars['Boolean']['output'];
-  declLitigation: Scalars['Boolean']['output'];
-  declOwnership: Scalars['Boolean']['output'];
-  id: Scalars['String']['output'];
-  landlordAddress: Scalars['String']['output'];
-  landlordFullName: Scalars['String']['output'];
-  lastUpdated: Scalars['String']['output'];
-  propertyRelationship: Scalars['String']['output'];
-  verificationTier: Scalars['String']['output'];
 };
 
 export type AdminInviteStaffInput = {
@@ -259,17 +192,28 @@ export type AdminVerificationTier = {
   color: Scalars['String']['output'];
   createdAt: Scalars['String']['output'];
   description: Scalars['String']['output'];
-  documentRequirements: Scalars['String']['output'];
+  documentRequirements: Array<AdminVerificationTierDocumentRequirement>;
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
   price?: Maybe<Scalars['Decimal']['output']>;
   tier: Scalars['String']['output'];
 };
 
+export type AdminVerificationTierDocumentRequirement = {
+  __typename?: 'AdminVerificationTierDocumentRequirement';
+  description: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+};
+
+export type AdminVerificationTierDocumentRequirementInput = {
+  description: Scalars['String']['input'];
+  title: Scalars['String']['input'];
+};
+
 export type AdminVerificationTierInput = {
   color?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
-  documentRequirements?: InputMaybe<Scalars['String']['input']>;
+  documentRequirements?: InputMaybe<Array<AdminVerificationTierDocumentRequirementInput>>;
   price?: InputMaybe<Scalars['Decimal']['input']>;
   tier?: InputMaybe<Scalars['String']['input']>;
 };
@@ -752,6 +696,7 @@ export type Hosting = {
   __typename?: 'Hosting';
   averageRating?: Maybe<Scalars['Float']['output']>;
   bookingApplicationsCount: Scalars['Int']['output'];
+  bookingsCount: Scalars['Int']['output'];
   categories?: Maybe<Array<Scalars['String']['output']>>;
   cautionFee?: Maybe<Scalars['Decimal']['output']>;
   city?: Maybe<Scalars['String']['output']>;
@@ -763,6 +708,7 @@ export type Hosting = {
   facilities?: Maybe<Array<Scalars['String']['output']>>;
   host: Host;
   id: Scalars['String']['output'];
+  imagesCount: Scalars['Int']['output'];
   landmarks?: Maybe<Scalars['String']['output']>;
   lastUpdated: Scalars['String']['output'];
   latitude?: Maybe<Scalars['String']['output']>;
@@ -778,6 +724,7 @@ export type Hosting = {
   reviewAverage: HostingReviewAverage;
   reviews: Array<HostingReview>;
   rooms: Array<HostingRoom>;
+  roomsCount: Scalars['Int']['output'];
   saved: Scalars['Boolean']['output'];
   serviceCharge?: Maybe<Scalars['Decimal']['output']>;
   state?: Maybe<Scalars['String']['output']>;
@@ -786,6 +733,7 @@ export type Hosting = {
   title?: Maybe<Scalars['String']['output']>;
   totalRatings?: Maybe<Scalars['Int']['output']>;
   verification?: Maybe<HostingVerification>;
+  webUrl: Scalars['String']['output'];
 };
 
 
@@ -1054,6 +1002,8 @@ export type HostingVerificationRequest = {
   createdAt: Scalars['String']['output'];
   /** Documents attached to this request, ordered by created_at. */
   documents: Array<HostingVerificationRequestDocument>;
+  /** Resolves the hosting summary through the verification record. */
+  hosting?: Maybe<Hosting>;
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
   logs: Array<VerificationLogEntry>;
@@ -1116,7 +1066,7 @@ export enum HostingVerificationTier {
   IdentityVerified = 'IDENTITY_VERIFIED',
   KushiVetted = 'KUSHI_VETTED',
   TitleChecked = 'TITLE_CHECKED',
-  TitleSubmitted = 'TITLE_SUBMITTED',
+  AddressVerified = 'ADDRESS_VERIFIED',
   Unverified = 'UNVERIFIED'
 }
 
@@ -1909,6 +1859,7 @@ export enum PublishStatus {
 
 export type Query = {
   __typename?: 'Query';
+  adminAuditLogs: AdminAuditLogConnection;
   adminBooking: Booking;
   adminBookingApplication: BookingApplication;
   adminBookingApplications: Array<BookingApplication>;
@@ -1918,10 +1869,10 @@ export type Query = {
   adminDashboardStats: AdminDashboardStats;
   adminFeeConfig: AdminFeeConfig;
   adminFeedback: Array<Feedback>;
-  adminHosting: AdminHosting;
+  adminHosting: Hosting;
   adminHostingVerificationRequest: HostingVerificationRequest;
   adminHostingVerificationRequests: Array<HostingVerificationRequest>;
-  adminHostings: Array<AdminHosting>;
+  adminHostings: Array<Hosting>;
   /**
    * Returns the platform-wide legal configuration defaults used to
    * pre-populate tenancy agreement fields.
@@ -2009,6 +1960,11 @@ export type Query = {
   transactionByReference: Transaction;
   transactions: Array<Transaction>;
   userChats: Array<HostingChat>;
+};
+
+
+export type QueryAdminAuditLogsArgs = {
+  pagination?: InputMaybe<PaginationInput>;
 };
 
 
@@ -3291,7 +3247,7 @@ export type HostingVerificationTierQueryVariables = Exact<{
 }>;
 
 
-export type HostingVerificationTierQuery = { __typename?: 'Query', hostingVerificationTier?: { __typename?: 'AdminVerificationTier', id: string, tier: string, description: string, color: string, price?: any | null, documentRequirements: string } | null };
+export type HostingVerificationTierQuery = { __typename?: 'Query', hostingVerificationTier?: { __typename?: 'AdminVerificationTier', id: string, tier: string, description: string, color: string, price?: any | null, documentRequirements: Array<{ __typename?: 'AdminVerificationTierDocumentRequirement', title: string, description: string }> } | null };
 
 export type AiHostingSearchPredictionsQueryVariables = Exact<{
   userInput: Scalars['String']['input'];
@@ -5561,7 +5517,10 @@ export const HostingVerificationTierDocument = gql`
     description
     color
     price
-    documentRequirements
+    documentRequirements {
+      title
+      description
+    }
   }
 }
     `;

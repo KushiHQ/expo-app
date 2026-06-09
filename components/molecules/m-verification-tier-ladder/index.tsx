@@ -12,7 +12,7 @@ import { View } from 'react-native';
 const TIER_ICONS: Record<HostingVerificationTier, LucideIcon> = {
   [HostingVerificationTier.Unverified]: ShieldCheck,
   [HostingVerificationTier.IdentityVerified]: User,
-  [HostingVerificationTier.TitleSubmitted]: MapPin,
+  [HostingVerificationTier.AddressVerified]: MapPin,
   [HostingVerificationTier.TitleChecked]: Award,
   [HostingVerificationTier.KushiVetted]: Crown,
 };

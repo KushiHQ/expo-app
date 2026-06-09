@@ -32,20 +32,26 @@ export default function VerificationOverview() {
 		? hostingId[0]
 		: (hostingId ?? "");
 
-	const [{ data, fetching, error }, refetch] =
+	const [{ data, fetching, error }, refetchVerification] =
 		useHostingVerificationRequestsQuery({
 			variables: { hostingId: hostingIdStr },
 		});
-	const [{ data: hostingData, fetching: hostingFetching }] = useHostingQuery({
-		variables: { hostingId: hostingIdStr },
-	});
+	const [{ data: hostingData, fetching: hostingFetching }, refetchHosting] =
+		useHostingQuery({
+			variables: { hostingId: hostingIdStr },
+		});
 
 	React.useEffect(() => {
 		if (error) handleError(error);
 	}, [error]);
 
+	const handleRefresh = () => {
+		refetchVerification({ requestPolicy: "network-only" });
+		refetchHosting({ requestPolicy: "network-only" });
+	};
+
 	const requests = data?.hostingVerificationRequests ?? [];
-	const currentTier: HostingVerificationTier =
+	const currentTier =
 		hostingData?.hosting?.verification?.verificationTier ??
 		HostingVerificationTier.Unverified;
 	const isTopTier = currentTier === HostingVerificationTier.KushiVetted;
@@ -71,7 +77,7 @@ export default function VerificationOverview() {
 			refreshControl={
 				<RefreshControl
 					refreshing={fetching || hostingFetching}
-					onRefresh={() => refetch({ requestPolicy: "network-only" })}
+					onRefresh={handleRefresh}
 					tintColor={colors.primary}
 				/>
 			}

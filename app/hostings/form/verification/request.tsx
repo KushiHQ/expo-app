@@ -3,7 +3,6 @@ import RequestVerificationForm from '@/components/molecules/m-request-verificati
 import { useRouter } from '@/lib/hooks/use-router';
 import {
   HostingVerificationTier,
-  useHostingQuery,
 } from '@/lib/services/graphql/generated';
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
@@ -18,18 +17,11 @@ export default function RequestVerificationScreen() {
   const hostingIdStr = Array.isArray(hostingId) ? hostingId[0] : (hostingId ?? '');
   const initialTier = Array.isArray(tier) ? tier[0] : tier;
 
-  const [{ data: hostingData }] = useHostingQuery({
-    variables: { hostingId: hostingIdStr },
-  });
-  const currentTier =
-    hostingData?.hosting?.verification?.verificationTier ?? HostingVerificationTier.Unverified;
-
   return (
     <DetailsLayout title="Get Verified" backButton="translucent" scrollable>
       <RequestVerificationForm
         hostingId={hostingIdStr}
         initialTier={initialTier}
-        currentTier={currentTier}
         title="Request verification"
         onSubmitted={() => router.back()}
       />

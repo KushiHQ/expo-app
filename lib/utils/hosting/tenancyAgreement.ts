@@ -133,8 +133,8 @@ export function verificationTierLabel(tier?: HostingVerificationTier | null): st
   switch (tier) {
     case HostingVerificationTier.IdentityVerified:
       return 'Identity Verified';
-    case HostingVerificationTier.TitleSubmitted:
-      return 'Title Submitted';
+    case HostingVerificationTier.AddressVerified:
+      return 'Address Verified';
     case HostingVerificationTier.TitleChecked:
       return 'Title Checked';
     case HostingVerificationTier.KushiVetted:
