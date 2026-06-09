@@ -1010,6 +1010,7 @@ export type HostingVerificationRequest = {
   status: HostingVerificationRequestStatus;
   statusDetails?: Maybe<Scalars['String']['output']>;
   tier: HostingVerificationTier;
+  verificationMeta?: Maybe<Scalars['String']['output']>;
 };
 
 export type HostingVerificationRequestDocument = {
@@ -1063,10 +1064,10 @@ export type HostingVerificationResponse = {
 };
 
 export enum HostingVerificationTier {
+  AddressVerified = 'ADDRESS_VERIFIED',
   IdentityVerified = 'IDENTITY_VERIFIED',
   KushiVetted = 'KUSHI_VETTED',
   TitleChecked = 'TITLE_CHECKED',
-  AddressVerified = 'ADDRESS_VERIFIED',
   Unverified = 'UNVERIFIED'
 }
 
@@ -1241,6 +1242,12 @@ export type Mutations = {
   updateSupportChatStatus: SupportChat;
   updateUserNotificationSettings: NotificationSettingsResponse;
   uploadKycImage: Kyc;
+  /**
+   * Upload a video walkthrough for a hosting.
+   * The client records the video, extracts GPS samples, and uploads the file.
+   * The server validates NDPR consent, stores metadata, and spawns reverse image search.
+   */
+  uploadVideoWalkthrough: VideoWalkthroughResponse;
   verifyBookingPayment: BookingResponse;
   verifyEmail: MessageResponse;
   verifyKyc: Kyc;
@@ -1658,6 +1665,12 @@ export type MutationsUpdateUserNotificationSettingsArgs = {
 
 export type MutationsUploadKycImageArgs = {
   file: Scalars['Upload']['input'];
+};
+
+
+export type MutationsUploadVideoWalkthroughArgs = {
+  input: VideoWalkthroughInput;
+  video: Scalars['Upload']['input'];
 };
 
 
@@ -2657,6 +2670,47 @@ export type VerificationLogEntry = {
 export type VerifyAccountInput = {
   accountNumber: Scalars['String']['input'];
   bankCode: Scalars['String']['input'];
+};
+
+export type VideoWalkthrough = {
+  __typename?: 'VideoWalkthrough';
+  consentText?: Maybe<Scalars['String']['output']>;
+  createdAt: Scalars['String']['output'];
+  durationSeconds: Scalars['Int']['output'];
+  expiresAt: Scalars['String']['output'];
+  geofenceStatus: Scalars['String']['output'];
+  gpsEndLat?: Maybe<Scalars['Float']['output']>;
+  gpsEndLng?: Maybe<Scalars['Float']['output']>;
+  gpsSamples?: Maybe<Scalars['String']['output']>;
+  gpsStartLat?: Maybe<Scalars['Float']['output']>;
+  gpsStartLng?: Maybe<Scalars['Float']['output']>;
+  hostingId: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+  ndprConsent: Scalars['Boolean']['output'];
+  recordedAt: Scalars['String']['output'];
+  verified: Scalars['Boolean']['output'];
+  videoAssetId: Scalars['String']['output'];
+};
+
+export type VideoWalkthroughInput = {
+  consentText?: InputMaybe<Scalars['String']['input']>;
+  durationSeconds: Scalars['Int']['input'];
+  geofenceStatus: Scalars['String']['input'];
+  gpsEndLat?: InputMaybe<Scalars['Float']['input']>;
+  gpsEndLng?: InputMaybe<Scalars['Float']['input']>;
+  gpsSamples?: InputMaybe<Scalars['String']['input']>;
+  gpsStartLat?: InputMaybe<Scalars['Float']['input']>;
+  gpsStartLng?: InputMaybe<Scalars['Float']['input']>;
+  hostingId: Scalars['String']['input'];
+  ndprConsent: Scalars['Boolean']['input'];
+  recordedAt: Scalars['String']['input'];
+};
+
+export type VideoWalkthroughResponse = {
+  __typename?: 'VideoWalkthroughResponse';
+  data?: Maybe<VideoWalkthrough>;
+  message: Scalars['String']['output'];
 };
 
 export type SignUpMutationVariables = Exact<{
