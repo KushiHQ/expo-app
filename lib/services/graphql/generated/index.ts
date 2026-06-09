@@ -1138,6 +1138,12 @@ export type Mutations = {
   addSupportMessageAttachment: Scalars['Boolean']['output'];
   /** Accept a staff invitation (public, no auth required) */
   adminAcceptStaffInvitation: Scalars['Boolean']['output'];
+  /**
+   * AI pre-screen a title document: downloads the asset, runs multimodal OCR
+   * via OpenRouter (Gemini Flash), saves structured results to
+   * `hosting_title_metadata`. Returns the extracted metadata.
+   */
+  adminAiPreScreenTitleDocuments: TitleMetadataResponse;
   /** Create a new role with permissions */
   adminCreateRole: Role;
   /** Deactivate a staff member */
@@ -1147,6 +1153,11 @@ export type Mutations = {
   adminDeleteRole: Scalars['Boolean']['output'];
   /** Invite a new staff member. If the user doesn't exist, creates them with a temp password. */
   adminInviteStaff: StaffInvitation;
+  /**
+   * Manually mark a hosting as Address Verified. Upgrades the hosting's
+   * verification tier from Unverified or IdentityVerified → AddressVerified.
+   */
+  adminMarkHostingAsAddressVerified: HostingVerificationRequestResponse;
   /** Mark an admin-approved claim as Released (triggers payout logic externally). */
   adminReleaseCautionClaim: CautionClaimResponse;
   /** Approve or decline a disputed caution claim after mediation. */
@@ -1272,6 +1283,11 @@ export type MutationsAdminAcceptStaffInvitationArgs = {
 };
 
 
+export type MutationsAdminAiPreScreenTitleDocumentsArgs = {
+  documentId: Scalars['String']['input'];
+};
+
+
 export type MutationsAdminCreateRoleArgs = {
   input: AdminCreateRoleInput;
 };
@@ -1294,6 +1310,11 @@ export type MutationsAdminDeleteRoleArgs = {
 
 export type MutationsAdminInviteStaffArgs = {
   input: AdminInviteStaffInput;
+};
+
+
+export type MutationsAdminMarkHostingAsAddressVerifiedArgs = {
+  hostingId: Scalars['String']['input'];
 };
 
 
@@ -2038,6 +2059,7 @@ export type QueryAdminHostingVerificationRequestsArgs = {
 
 export type QueryAdminHostingsArgs = {
   pagination?: InputMaybe<PaginationInput>;
+  source?: InputMaybe<Scalars['String']['input']>;
   status?: InputMaybe<Scalars['String']['input']>;
   verificationTier?: InputMaybe<Scalars['String']['input']>;
 };
@@ -2555,6 +2577,28 @@ export type TenantMandateConfig = {
 export type TimeSeriesData = {
   __typename?: 'TimeSeriesData';
   dataPoints: Array<AnalyticsDataPoint>;
+};
+
+export type TitleMetadata = {
+  __typename?: 'TitleMetadata';
+  confidence?: Maybe<Scalars['Float']['output']>;
+  createdAt: Scalars['String']['output'];
+  dates?: Maybe<Scalars['String']['output']>;
+  documentId: Scalars['String']['output'];
+  fileNumbers?: Maybe<Scalars['String']['output']>;
+  flagReason?: Maybe<Scalars['String']['output']>;
+  flagged: Scalars['Boolean']['output'];
+  id: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+  names?: Maybe<Scalars['String']['output']>;
+  plotReference?: Maybe<Scalars['String']['output']>;
+  rawOcrText?: Maybe<Scalars['String']['output']>;
+};
+
+export type TitleMetadataResponse = {
+  __typename?: 'TitleMetadataResponse';
+  data?: Maybe<TitleMetadata>;
+  message: Scalars['String']['output'];
 };
 
 export type Transaction = {

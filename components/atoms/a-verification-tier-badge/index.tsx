@@ -1,3 +1,4 @@
+import React from 'react';
 import { View } from 'react-native';
 import { Award, ShieldCheck, ShieldCheck as CheckBadge } from 'lucide-react-native';
 import ThemedText from './../a-themed-text';
@@ -6,14 +7,15 @@ import { hexToRgba } from '@/lib/utils/colors';
 import { Fonts } from '@/lib/constants/theme';
 import { HostingVerificationTier } from '@/lib/services/graphql/generated';
 import { formatTierLabel } from '@/lib/utils/verification/tier';
-import React from 'react';
+import Tooltip from '../a-tooltip';
 
 type Props = {
   tier: HostingVerificationTier;
   size?: 'sm' | 'md';
+  tooltipDescription?: string;
 };
 
-const TierBadge: React.FC<Props> = ({ tier, size = 'md' }) => {
+const TierBadge: React.FC<Props> = ({ tier, size = 'md', tooltipDescription }) => {
   const colors = useThemeColors();
 
   // KushiVetted is the premium tier — render with the gold accent.
@@ -43,7 +45,7 @@ const TierBadge: React.FC<Props> = ({ tier, size = 'md' }) => {
   const iconSize = size === 'sm' ? 10 : 12;
   const fontSize = size === 'sm' ? 10 : 11;
 
-  return (
+  const badge = (
     <View
       className="flex-row items-center gap-1.5 self-start rounded-full"
       style={{
@@ -72,6 +74,12 @@ const TierBadge: React.FC<Props> = ({ tier, size = 'md' }) => {
       </ThemedText>
     </View>
   );
+
+  if (tooltipDescription) {
+    return <Tooltip description={tooltipDescription}>{badge}</Tooltip>;
+  }
+
+  return badge;
 };
 
 export default TierBadge;

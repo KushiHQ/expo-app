@@ -28,6 +28,7 @@ import HostingFacilities from "@/components/molecules/m-hosting-facilities";
 import HostingGalleryComponent from "@/components/molecules/m-hosting-gallery";
 import HostingReviews from "@/components/organisms/o-hosting-reviews";
 import HostingLocation from "@/components/molecules/m-hosting-location";
+import AVerificationTierBadge from "@/components/atoms/a-verification-tier-badge";
 
 export default function HostingDetails() {
 	const router = useRouter();
@@ -229,6 +230,14 @@ export default function HostingDetails() {
 										/>
 									)}
 								</View>
+								{hosting?.verificationTier && (
+									<View className="mt-2">
+										<AVerificationTierBadge
+											tier={hosting.verificationTier}
+											tooltipDescription={hosting.tierTooltip ?? undefined}
+										/>
+									</View>
+								)}
 								<ThemedText style={{ fontSize: 14, fontFamily: Fonts.light }}>
 									{hosting?.city}, {hosting?.state}
 								</ThemedText>
