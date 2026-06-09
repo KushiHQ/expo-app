@@ -212,6 +212,7 @@ export const HOSTING_QUERY = gql`
         titleNumber
         createdAt
         lastUpdated
+        tierTooltip
       }
       cautionFee
       serviceCharge
@@ -246,6 +247,7 @@ export const HOSTINGS_QUERY = gql`
       verification {
         id
         verificationTier
+        tierTooltip
       }
       coverImage {
         asset {

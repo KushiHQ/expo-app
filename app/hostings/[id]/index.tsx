@@ -230,11 +230,11 @@ export default function HostingDetails() {
 										/>
 									)}
 								</View>
-								{hosting?.verificationTier && (
+								{hosting?.verification?.verificationTier && (
 									<View className="mt-2">
 										<AVerificationTierBadge
-											tier={hosting.verificationTier}
-											tooltipDescription={hosting.tierTooltip ?? undefined}
+											tier={hosting.verification.verificationTier}
+											tooltipDescription={hosting.verification.tierTooltip ?? undefined}
 										/>
 									</View>
 								)}
