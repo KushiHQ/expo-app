@@ -61,6 +61,7 @@ export default function GuestHome() {
         keyExtractor={(item) => item.id}
         numColumns={numColumns}
         contentContainerStyle={{ padding: 24, paddingTop: 12 }}
+        ListHeaderComponentStyle={{ zIndex: 10 }}
         columnWrapperStyle={numColumns > 1 ? { gap: 16 } : undefined}
         renderItem={({ item, index }) => (
           <View style={{ flex: 1, marginBottom: 32 }}>

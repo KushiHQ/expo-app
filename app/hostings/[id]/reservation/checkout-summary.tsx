@@ -14,7 +14,7 @@ import { hexToRgba } from '@/lib/utils/colors';
 import { formatNaira } from '@/lib/utils/currency';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react-native';
+import { ChevronLeftIcon, ChevronRightIcon, Info } from 'lucide-react-native';
 import React from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -122,6 +122,24 @@ export default function CheckoutSummary() {
             />
           </View>
         )}
+        <View
+          className="flex-row gap-3 rounded-2xl p-4"
+          style={{
+            backgroundColor: hexToRgba(colors.secondary, 0.1),
+            borderWidth: 1,
+            borderColor: hexToRgba(colors.secondary, 0.25),
+          }}
+        >
+          <Info size={18} color={colors.secondary} style={{ marginTop: 2 }} />
+          <ThemedText
+            className="flex-1"
+            style={{ fontSize: 13, lineHeight: 20, color: hexToRgba(colors.text, 0.8) }}
+          >
+            You won&apos;t be charged now. Once the host accepts your booking application,
+            we&apos;ll send you a bill — you&apos;ll have one week to complete payment, after
+            which the spot may be offered to someone else.
+          </ThemedText>
+        </View>
       </View>
     </DetailsLayout>
   );

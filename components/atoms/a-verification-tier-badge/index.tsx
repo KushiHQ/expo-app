@@ -25,21 +25,21 @@ const TierBadge: React.FC<Props> = ({
   const isKushiVetted = tier === HostingVerificationTier.KushiVetted;
   const isUnverified = tier === HostingVerificationTier.Unverified;
 
+  // The badge renders over photos (hosting card) and on dark surfaces (detail
+  // screen), so it uses a solid dark scrim with bright accents rather than a
+  // translucent tint, which had too little contrast in both places.
   const accentHex = isKushiVetted
-    ? "#F59E0B"
+    ? "#FFB020"
     : isUnverified
-      ? hexToRgba(colors.text, 0.5)
-      : colors.secondary;
-  const containerBg = isKushiVetted
-    ? "rgba(245, 158, 11, 0.12)"
-    : isUnverified
-      ? hexToRgba(colors.text, 0.06)
-      : hexToRgba(colors.secondary, 0.12);
+      ? "rgba(255, 255, 255, 0.55)"
+      : "#8AB4F8";
+  const labelHex = isUnverified ? "rgba(255, 255, 255, 0.75)" : "#FFFFFF";
+  const containerBg = "rgba(8, 8, 8, 0.9)";
   const borderHex = isKushiVetted
-    ? "rgba(245, 158, 11, 0.35)"
+    ? "rgba(255, 176, 32, 0.5)"
     : isUnverified
-      ? hexToRgba(colors.text, 0.15)
-      : hexToRgba(colors.secondary, 0.35);
+      ? "rgba(255, 255, 255, 0.2)"
+      : hexToRgba(colors.secondary, 0.6);
 
   const paddingH = size === "sm" ? 8 : 10;
   const paddingV = size === "sm" ? 3 : 5;
@@ -66,7 +66,7 @@ const TierBadge: React.FC<Props> = ({
       <ThemedText
         style={{
           fontSize,
-          color: accentHex,
+          color: labelHex,
           fontFamily: Fonts.semibold,
           letterSpacing: 0.2,
         }}

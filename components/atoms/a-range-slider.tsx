@@ -14,6 +14,13 @@ const formatValue = (value: number, currencySymbol: string): string => {
   return `${currencySymbol}${value}`;
 };
 
+// "2500000" / "2,500,000" / 2500000 -> "2,500,000"; keeps empty input empty.
+const formatWithCommas = (value: string | number): string => {
+  const digits = String(value).replace(/[^0-9]/g, '');
+  if (!digits) return '';
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
 interface RangeSliderProps {
   min: number;
   max: number;
@@ -39,8 +46,8 @@ const RangeSlider: FC<RangeSliderProps> = ({
   const [low, setLow] = useState(initialLow);
   const [high, setHigh] = useState(initialHigh);
 
-  const [lowText, setLowText] = useState(initialLow.toString());
-  const [highText, setHighText] = useState(initialHigh.toString());
+  const [lowText, setLowText] = useState(formatWithCommas(initialLow));
+  const [highText, setHighText] = useState(formatWithCommas(initialHigh));
 
   const onChangeRef = React.useRef(onChange);
   React.useEffect(() => {
@@ -50,8 +57,8 @@ const RangeSlider: FC<RangeSliderProps> = ({
   const onValuesChange = useCallback((newLow: number, newHigh: number) => {
     setLow(newLow);
     setHigh(newHigh);
-    setLowText(newLow.toString());
-    setHighText(newHigh.toString());
+    setLowText(formatWithCommas(newLow));
+    setHighText(formatWithCommas(newHigh));
     if (onChangeRef.current) {
       onChangeRef.current(newLow, newHigh);
     }
@@ -63,7 +70,7 @@ const RangeSlider: FC<RangeSliderProps> = ({
     if (parsed > high - step) parsed = high - step;
 
     setLow(parsed);
-    setLowText(parsed.toString());
+    setLowText(formatWithCommas(parsed));
     if (onChange) onChange(parsed, high);
   };
 
@@ -73,7 +80,7 @@ const RangeSlider: FC<RangeSliderProps> = ({
     if (parsed < low + step) parsed = low + step;
 
     setHigh(parsed);
-    setHighText(parsed.toString());
+    setHighText(formatWithCommas(parsed));
     if (onChange) onChange(low, parsed);
   };
 
@@ -126,7 +133,7 @@ const RangeSlider: FC<RangeSliderProps> = ({
               <Text style={{ color: colors.text }}>{currencySymbol}</Text>
               <TextInput
                 value={lowText}
-                onChangeText={setLowText}
+                onChangeText={(t) => setLowText(formatWithCommas(t))}
                 onBlur={handleLowBlur}
                 keyboardType="numeric"
                 style={[styles.input, { color: colors.text }]}
@@ -142,7 +149,7 @@ const RangeSlider: FC<RangeSliderProps> = ({
               <Text style={{ color: colors.text }}>{currencySymbol}</Text>
               <TextInput
                 value={highText}
-                onChangeText={setHighText}
+                onChangeText={(t) => setHighText(formatWithCommas(t))}
                 onBlur={handleHighBlur}
                 keyboardType="numeric"
                 style={[styles.input, { color: colors.text }]}
