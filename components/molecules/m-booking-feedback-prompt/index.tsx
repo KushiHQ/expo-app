@@ -87,7 +87,7 @@ const BookingFeedbackPrompt: React.FC<BookingFeedbackPromptProps> = ({
             marginBottom: 4,
           }}
         >
-          How was your stay?
+          How are you enjoying the app?
         </ThemedText>
         <ThemedText
           style={{
