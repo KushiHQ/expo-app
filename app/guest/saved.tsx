@@ -257,6 +257,7 @@ function SavedContent() {
                     onSelectMode={toggleSelectMode}
                     selectMode={selectMode}
                     hosting={item}
+                    onUpdate={() => refetchSaved({ requestPolicy: 'network-only' })}
                   />
                 )}
               />

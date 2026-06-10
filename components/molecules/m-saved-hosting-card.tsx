@@ -21,6 +21,7 @@ type Props = {
   onSelect?: (id: string) => void;
   onDeSelect?: (id: string) => void;
   onSelectMode?: () => void;
+  onUpdate?: () => void;
 };
 
 const SavedHostingCard: React.FC<Props> = ({
@@ -30,6 +31,7 @@ const SavedHostingCard: React.FC<Props> = ({
   onSelect,
   onDeSelect,
   onSelectMode,
+  onUpdate,
 }) => {
   const colors = useThemeColors();
   const router = useRouter();
@@ -123,7 +125,11 @@ const SavedHostingCard: React.FC<Props> = ({
               )}
             </View>
           ) : (
-            <HostingLikeButton saved={hosting.hosting.saved ?? false} id={hosting.hosting.id} />
+            <HostingLikeButton
+              saved={hosting.hosting.saved ?? false}
+              id={hosting.hosting.id}
+              onUpdate={() => onUpdate?.()}
+            />
           )}
         </View>
         {selected && (

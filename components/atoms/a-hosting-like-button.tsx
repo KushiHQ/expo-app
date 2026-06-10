@@ -14,9 +14,10 @@ type Props = {
   id: string;
   saved: boolean;
   className?: string;
+  onUpdate?: (saved: boolean) => void;
 };
 
-const HostingLikeButton: React.FC<Props> = ({ saved: defSaved, className, id }) => {
+const HostingLikeButton: React.FC<Props> = ({ saved: defSaved, className, id, onUpdate }) => {
   const colors = useThemeColors();
   const [saved, setSaved] = React.useState(defSaved ?? false);
   const [{ fetching: savingHosting }, saveHosting] = useCreateUpdateSavedHostingMutation();
@@ -34,6 +35,7 @@ const HostingLikeButton: React.FC<Props> = ({ saved: defSaved, className, id }) 
           handleError(res.error);
         }
         if (res.data) {
+          onUpdate?.(false);
           toast.show({
             type: 'success',
             text2: res.data.deleteSavedHosting.message,
@@ -47,6 +49,7 @@ const HostingLikeButton: React.FC<Props> = ({ saved: defSaved, className, id }) 
           handleError(res.error);
         }
         if (res.data) {
+          onUpdate?.(true);
           toast.show({
             type: 'success',
             text2: res.data.createUpdateSavedHosting.message,
