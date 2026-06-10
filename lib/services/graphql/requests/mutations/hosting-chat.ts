@@ -13,6 +13,10 @@ export const CREATE_UPDATE_MESSAGE = gql`
     createUpdateMessage(input: $input) {
       id
       text
+      messageType
+      callType
+      callId
+      callDurationSeconds
       isSender
       sender {
         id
@@ -47,8 +51,20 @@ export const CLEAR_CHAT_UNREAD_MESSAGES = gql`
 `;
 
 export const SEND_CHAT_CALL_NOTIFICATION = gql`
-  mutation SendChatCallNotification($chatId: String!, $callType: CallType!, $callId: String!) {
-    sendChatCallNotification(chatId: $chatId, callType: $callType, callId: $callId) {
+  mutation SendChatCallNotification(
+    $chatId: String!
+    $callType: CallType!
+    $callId: String!
+    $durationSeconds: Int
+    $callKind: String
+  ) {
+    sendChatCallNotification(
+      chatId: $chatId
+      callType: $callType
+      callId: $callId
+      durationSeconds: $durationSeconds
+      callKind: $callKind
+    ) {
       message
     }
   }

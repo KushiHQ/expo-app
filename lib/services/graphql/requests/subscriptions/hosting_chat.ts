@@ -5,6 +5,10 @@ export const LATEST_HOSTING_CHAT_MESSAGES = gql`
     latestHostingChatMessage(chatId: $chatId) {
       id
       text
+      messageType
+      callType
+      callId
+      callDurationSeconds
       isSender
       sender {
         id

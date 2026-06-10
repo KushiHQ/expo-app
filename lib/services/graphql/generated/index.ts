@@ -425,8 +425,10 @@ export type BoolResponse = {
 };
 
 export enum CallType {
+  Answered = 'ANSWERED',
   Cancel = 'CANCEL',
   Decline = 'DECLINE',
+  Ended = 'ENDED',
   Video = 'VIDEO',
   Voice = 'VOICE'
 }
@@ -775,11 +777,15 @@ export type HostingChatFilter = {
 export type HostingChatMessage = {
   __typename?: 'HostingChatMessage';
   assets: Array<HostingChatAsset>;
+  callDurationSeconds?: Maybe<Scalars['Int']['output']>;
+  callId?: Maybe<Scalars['String']['output']>;
+  callType?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['String']['output'];
   edited?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['String']['output'];
   isSender: Scalars['Boolean']['output'];
   lastUpdated: Scalars['String']['output'];
+  messageType?: Maybe<Scalars['String']['output']>;
   sender: User;
   text: Scalars['String']['output'];
   unread: Scalars['Boolean']['output'];
@@ -1612,8 +1618,10 @@ export type MutationsRetryBookingPaymentArgs = {
 
 export type MutationsSendChatCallNotificationArgs = {
   callId: Scalars['String']['input'];
+  callKind?: InputMaybe<Scalars['String']['input']>;
   callType: CallType;
   chatId: Scalars['String']['input'];
+  durationSeconds?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -3004,7 +3012,7 @@ export type CreateUpdateMessageMutationVariables = Exact<{
 }>;
 
 
-export type CreateUpdateMessageMutation = { __typename?: 'Mutations', createUpdateMessage: { __typename?: 'HostingChatMessage', id: string, text: string, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
+export type CreateUpdateMessageMutation = { __typename?: 'Mutations', createUpdateMessage: { __typename?: 'HostingChatMessage', id: string, text: string, messageType?: string | null, callType?: string | null, callId?: string | null, callDurationSeconds?: number | null, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
 
 export type ClearChatUrnreadMessagesMutationVariables = Exact<{
   chatId: Scalars['String']['input'];
@@ -3017,6 +3025,8 @@ export type SendChatCallNotificationMutationVariables = Exact<{
   chatId: Scalars['String']['input'];
   callType: CallType;
   callId: Scalars['String']['input'];
+  durationSeconds?: InputMaybe<Scalars['Int']['input']>;
+  callKind?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -3326,7 +3336,7 @@ export type ChatMessagesQueryVariables = Exact<{
 }>;
 
 
-export type ChatMessagesQuery = { __typename?: 'Query', chatMessages: Array<{ __typename?: 'HostingChatMessage', id: string, text: string, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> }> };
+export type ChatMessagesQuery = { __typename?: 'Query', chatMessages: Array<{ __typename?: 'HostingChatMessage', id: string, text: string, messageType?: string | null, callType?: string | null, callId?: string | null, callDurationSeconds?: number | null, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> }> };
 
 export type HostingChatQueryVariables = Exact<{
   chatId: Scalars['String']['input'];
@@ -3517,7 +3527,7 @@ export type LatestHostingChatMessageSubscriptionVariables = Exact<{
 }>;
 
 
-export type LatestHostingChatMessageSubscription = { __typename?: 'Subscriptions', latestHostingChatMessage: { __typename?: 'HostingChatMessage', id: string, text: string, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
+export type LatestHostingChatMessageSubscription = { __typename?: 'Subscriptions', latestHostingChatMessage: { __typename?: 'HostingChatMessage', id: string, text: string, messageType?: string | null, callType?: string | null, callId?: string | null, callDurationSeconds?: number | null, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
 
 export type OnlineUserSubscriptionVariables = Exact<{
   userId: Scalars['String']['input'];
@@ -4344,6 +4354,10 @@ export const CreateUpdateMessageDocument = gql`
   createUpdateMessage(input: $input) {
     id
     text
+    messageType
+    callType
+    callId
+    callDurationSeconds
     isSender
     sender {
       id
@@ -4384,8 +4398,14 @@ export function useClearChatUrnreadMessagesMutation() {
   return Urql.useMutation<ClearChatUrnreadMessagesMutation, ClearChatUrnreadMessagesMutationVariables>(ClearChatUrnreadMessagesDocument);
 };
 export const SendChatCallNotificationDocument = gql`
-    mutation SendChatCallNotification($chatId: String!, $callType: CallType!, $callId: String!) {
-  sendChatCallNotification(chatId: $chatId, callType: $callType, callId: $callId) {
+    mutation SendChatCallNotification($chatId: String!, $callType: CallType!, $callId: String!, $durationSeconds: Int, $callKind: String) {
+  sendChatCallNotification(
+    chatId: $chatId
+    callType: $callType
+    callId: $callId
+    durationSeconds: $durationSeconds
+    callKind: $callKind
+  ) {
     message
   }
 }
@@ -5505,6 +5525,10 @@ export const ChatMessagesDocument = gql`
   chatMessages(chatId: $chatId, pagination: $pagination) {
     id
     text
+    messageType
+    callType
+    callId
+    callDurationSeconds
     isSender
     sender {
       id
@@ -6427,6 +6451,10 @@ export const LatestHostingChatMessageDocument = gql`
   latestHostingChatMessage(chatId: $chatId) {
     id
     text
+    messageType
+    callType
+    callId
+    callDurationSeconds
     isSender
     sender {
       id

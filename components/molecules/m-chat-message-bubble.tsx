@@ -10,7 +10,7 @@ import ListDocument from './m-list-document';
 import ListImage from '../atoms/a-list-image';
 import AudioPlayerBubble from '../atoms/a-audio-player';
 import { AUDIO_EXTENSIONS } from '@/lib/utils/file';
-import { Clock } from 'lucide-react-native';
+import { Clock, Phone, PhoneMissed, Video } from 'lucide-react-native';
 
 type Props = {
   message: ChatMessagesQuery['chatMessages'][number] & { sending?: boolean };
@@ -76,6 +76,76 @@ const ChatMessageBubble: React.FC<Props> = ({
   const displayName = isSender
     ? 'You'
     : (senderName ?? (isStaffMessage ? 'Kushi Support' : 'User'));
+
+  // Call history events render as a compact inline pill instead of a bubble.
+  // `text` is pre-formatted by the server ("Missed voice call", "Voice call · 4m 02s").
+  const isCallEvent =
+    message.messageType === 'missed_call' || message.messageType === 'accepted_call';
+
+  if (isCallEvent) {
+    const isMissed = message.messageType === 'missed_call';
+    const CallIcon = isMissed ? PhoneMissed : message.callType === 'video' ? Video : Phone;
+    const tint = isMissed ? colors.error : hexToRgba(colors.text, 0.6);
+
+    return (
+      <View
+        style={{
+          alignSelf: isSender ? 'flex-end' : 'flex-start',
+          maxWidth: '78%',
+          marginBottom: isLastInGroup ? 8 : 2,
+        }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            paddingHorizontal: 14,
+            paddingVertical: 9,
+            borderRadius: 20,
+            backgroundColor: isMissed ? hexToRgba(colors.error, 0.08) : colors['surface-01'],
+            borderWidth: 0.5,
+            borderColor: isMissed ? hexToRgba(colors.error, 0.25) : hexToRgba(colors.text, 0.12),
+          }}
+        >
+          <CallIcon size={15} color={tint} strokeWidth={2} />
+          <ThemedText
+            style={{
+              fontSize: 14,
+              lineHeight: 20,
+              color: isMissed ? colors.error : hexToRgba(colors.text, 0.8),
+              fontFamily: Fonts.medium,
+            }}
+          >
+            {message.text}
+          </ThemedText>
+        </View>
+
+        {isLastInGroup && (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+              marginTop: 4,
+              paddingHorizontal: 4,
+              justifyContent: isSender ? 'flex-end' : 'flex-start',
+            }}
+          >
+            <ThemedText
+              style={{
+                fontSize: 11,
+                color: hexToRgba(colors.text, 0.38),
+                fontFamily: Fonts.regular,
+              }}
+            >
+              {formatChatMessageTime(message.lastUpdated)}
+            </ThemedText>
+          </View>
+        )}
+      </View>
+    );
+  }
 
   return (
     <View

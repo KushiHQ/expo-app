@@ -71,6 +71,10 @@ export const CHAT_MESSAGES_QUERY = gql`
     chatMessages(chatId: $chatId, pagination: $pagination) {
       id
       text
+      messageType
+      callType
+      callId
+      callDurationSeconds
       isSender
       sender {
         id

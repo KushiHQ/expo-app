@@ -23,6 +23,7 @@ export const useActiveCall = () => {
   const router = useRouter();
   const pathname = usePathname();
   const isVideoCall = pathname.endsWith('video');
+  const callKind: 'voice' | 'video' = isVideoCall ? 'video' : 'voice';
   const { id, initiate, accept, callId } = useLocalSearchParams();
   const { isLockScreenLaunch } = useLockScreen();
 
@@ -38,6 +39,12 @@ export const useActiveCall = () => {
 
   const hasLeftRef = useRef(false);
   const actionHandled = useRef(false);
+  // Callee side: ensure ANSWERED is signalled at most once per call
+  const answeredSentRef = useRef(false);
+  // Caller side: when the remote participant joined (call became active)
+  const remoteJoinedAtRef = useRef<number | null>(null);
+  // Caller side: ensure ENDED is signalled at most once per call
+  const endedSentRef = useRef(false);
 
   const [{ data: chatData }] = useHostingChatQuery({
     variables: { chatId: cast(id) },
@@ -66,9 +73,31 @@ export const useActiveCall = () => {
 
   const player = useAudioPlayer(initiate === 'true' ? callerRingtone : receiverRingtone);
 
+  // Caller side only: if the call was answered, stamp the duration on the
+  // chat timeline by sending ENDED with the elapsed seconds. Once per call.
+  const sendCallEndedIfAnswered = useCallback(() => {
+    if (initiate !== 'true') return;
+    if (endedSentRef.current || remoteJoinedAtRef.current === null) return;
+    endedSentRef.current = true;
+
+    const durationSeconds = Math.max(
+      0,
+      Math.round((Date.now() - remoteJoinedAtRef.current) / 1000),
+    );
+    sendNotification({
+      chatId: cast(id),
+      callId: String(callId),
+      callType: CallType.Ended,
+      durationSeconds,
+      callKind,
+    }).catch((err) => console.warn('Failed to send call ended signal', err));
+  }, [initiate, id, callId, callKind, sendNotification]);
+
   const handleLeave = useCallback(async () => {
     if (hasLeftRef.current) return;
     hasLeftRef.current = true;
+
+    sendCallEndedIfAnswered();
 
     try {
       player.pause();
@@ -98,7 +127,7 @@ export const useActiveCall = () => {
         console.warn('handleLeave navigate:', e);
       }
     }
-  }, [call, callId, player, router, isLockScreenLaunch]);
+  }, [call, callId, player, router, isLockScreenLaunch, sendCallEndedIfAnswered]);
 
   const handleJoin = useCallback(async () => {
     try {
@@ -121,11 +150,23 @@ export const useActiveCall = () => {
 
       if (initiate !== 'true') {
         setIsRinging(false);
+
+        // Callee accepted and joined the room — tell the server so it can
+        // post an "accepted_call" message (and cancel the missed-call timer).
+        if (!answeredSentRef.current) {
+          answeredSentRef.current = true;
+          sendNotification({
+            chatId: cast(id),
+            callId: String(callId),
+            callType: CallType.Answered,
+            callKind,
+          }).catch((err) => console.warn('Failed to send call answered signal', err));
+        }
       }
     } catch (e) {
       console.error('Join failed', e);
     }
-  }, [call, isVideoCall, initiate, callId]);
+  }, [call, isVideoCall, initiate, callId, id, callKind, sendNotification]);
 
   useEffect(() => {
     let callObj: DailyCall | null = null;
@@ -149,6 +190,7 @@ export const useActiveCall = () => {
           chatId: cast(id),
           callId: String(callId),
           callType: CallType.Cancel,
+          callKind,
         }).catch((err) => console.error('Failed to send timeout cancel push', err));
 
         handleLeave();
@@ -157,7 +199,7 @@ export const useActiveCall = () => {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [initiate, isRinging, id, callId, sendNotification, handleLeave]);
+  }, [initiate, isRinging, id, callId, callKind, sendNotification, handleLeave]);
 
   useEffect(() => {
     const startRinging = async () => {
@@ -194,6 +236,11 @@ export const useActiveCall = () => {
       const remoteIds = Object.keys(p).filter((pid) => pid !== 'local');
       if (remoteIds.length > 0) {
         setRemoteParticipant(p[remoteIds[0]]);
+        // Caller side: remember when the call became active so we can stamp
+        // the duration when it ends.
+        if (remoteJoinedAtRef.current === null) {
+          remoteJoinedAtRef.current = Date.now();
+        }
         if (isRinging) setIsRinging(false);
       } else {
         setRemoteParticipant(null);
@@ -203,6 +250,7 @@ export const useActiveCall = () => {
     const handleLeft = () => {
       if (hasLeftRef.current) return;
       hasLeftRef.current = true;
+      sendCallEndedIfAnswered();
       if (Platform.OS === 'ios') {
         try {
           RNCallKeep.endAllCalls();
@@ -231,7 +279,7 @@ export const useActiveCall = () => {
       call.off('left-meeting', handleLeft);
       call.off('error', handleLeft);
     };
-  }, [call, id, router, isRinging]);
+  }, [call, id, router, isRinging, sendCallEndedIfAnswered]);
 
   // Dismiss call screen when the caller cancels or the remote party declines
   useEffect(() => {
@@ -269,6 +317,7 @@ export const useActiveCall = () => {
             chatId: cast(id),
             callId: String(callId),
             callType: CallType.Decline,
+            callKind,
           }).catch((err) => console.warn('Failed to send decline signal', err));
           await handleLeave();
         } else {
@@ -283,7 +332,18 @@ export const useActiveCall = () => {
     };
 
     setupCall();
-  }, [call, initiate, accept, callId, handleJoin, id, handleLeave, isVideoCall, sendNotification]);
+  }, [
+    call,
+    initiate,
+    accept,
+    callId,
+    handleJoin,
+    id,
+    handleLeave,
+    isVideoCall,
+    callKind,
+    sendNotification,
+  ]);
 
   const toggleCamera = useCallback(() => {
     if (!call) return;
