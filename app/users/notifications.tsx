@@ -65,6 +65,8 @@ export default function UserNotifications() {
     hasNextPage,
     refresh,
     setVariables,
+    showInitialSkeleton,
+    showEmpty,
   } = useInfiniteQuery(useNotificationsQuery, {
     queryKey: 'notifications',
     initialVariables: { filter },
@@ -85,8 +87,6 @@ export default function UserNotifications() {
     }
     refresh();
   };
-
-  const isFirstLoad = fetching && notifications.length === 0;
 
   return (
     <DetailsLayout title="Notifications">
@@ -133,10 +133,10 @@ export default function UserNotifications() {
       </View>
 
       {/* Skeleton */}
-      {isFirstLoad && <NotificationSkeleton />}
+      {showInitialSkeleton && <NotificationSkeleton />}
 
       {/* Empty state */}
-      {!isFirstLoad && notifications.length === 0 && (
+      {showEmpty && (
         <View className="flex-1 items-center justify-center">
           <View
             className="items-center justify-center gap-4 rounded-xl border p-10"
@@ -151,7 +151,7 @@ export default function UserNotifications() {
       )}
 
       {/* List */}
-      {!isFirstLoad && notifications.length > 0 && (
+      {notifications.length > 0 && (
         <View className="gap-3">
           {notifications.map(
             (notification) =>

@@ -13,6 +13,11 @@ type State<Val, TVariables> = {
   pagination: PaginationInput;
 };
 
+function mergePages<Val>(existing: Val[], page: Val[]): Val[] {
+  const existingIds = new Set(existing.map((i: any) => i?.id).filter(Boolean));
+  return [...existing, ...page.filter((i: any) => !i?.id || !existingIds.has(i.id))];
+}
+
 export function useInfiniteQuery<
   TData extends Record<TKey, any[]>,
   TKey extends string,
@@ -40,14 +45,14 @@ export function useInfiniteQuery<
     pagination: { limit, offset: 0 },
   });
 
-  // Sync with initialVariables if they change from outside
+  // Sync with initialVariables if they change from outside. Items are kept on
+  // purpose: the previous list stays visible until the new variables settle.
   const initialVarsJson = JSON.stringify(initialVariables);
   useEffect(() => {
     setState((prev) => {
       if (JSON.stringify(prev.variables) === initialVarsJson) return prev;
       return {
         ...prev,
-        items: [],
         hasNextPage: true,
         variables: initialVariables,
         pagination: { limit, offset: 0 },
@@ -70,7 +75,6 @@ export function useInfiniteQuery<
 
         return {
           ...prev,
-          items: [],
           hasNextPage: true,
           variables: nextVars,
           pagination: { limit, offset: 0 },
@@ -94,43 +98,36 @@ export function useInfiniteQuery<
     ...(requestPolicy && { requestPolicy }),
   });
 
-  // Sync data
+  const currentPage = (data?.[queryKey] ?? undefined) as Val[] | undefined;
+  const offset = state.pagination.offset ?? 0;
+
+  // The list is derived during render so it updates in the same frame the
+  // response arrives. `state.items` only serves as the fallback while a fetch
+  // for new variables/offset is in flight (urql exposes no data for the new
+  // operation yet), which keeps the previous results on screen instead of
+  // blanking the list.
+  const items = useMemo(() => {
+    if (!currentPage) return state.items;
+    if (offset === 0) return currentPage;
+    return mergePages(state.items, currentPage);
+  }, [currentPage, state.items, offset]);
+
+  // Persist the derived list so it survives as the fallback above. Also tracks
+  // whether another page is available.
   useEffect(() => {
-    if (data && data[queryKey]) {
-      const newItems = data[queryKey] as Val[];
-
+    if (currentPage) {
       setState((prev) => {
-        if (newItems.length > 0) {
-          // If we are at offset 0, strictly replace the data
-          if (prev.pagination.offset === 0) {
-            return {
-              ...prev,
-              items: newItems,
-              hasNextPage: newItems.length === (prev.pagination.limit ?? 20),
-            };
-          }
-
-          // Basic duplicate prevention by ID if items have IDs
-          const existingIds = new Set(prev.items.map((i: any) => (i as any).id).filter(Boolean));
-          const uniqueNewItems = newItems.filter(
-            (i: any) => !(i as any).id || !existingIds.has((i as any).id),
-          );
-
-          return {
-            ...prev,
-            items: [...prev.items, ...uniqueNewItems],
-            hasNextPage: newItems.length === (prev.pagination.limit ?? 20),
-          };
-        } else {
-          return { ...prev, hasNextPage: false };
-        }
+        const atStart = (prev.pagination.offset ?? 0) === 0;
+        return {
+          ...prev,
+          items: atStart ? currentPage : mergePages(prev.items, currentPage),
+          hasNextPage: currentPage.length === (prev.pagination.limit ?? 20),
+        };
       });
-    } else if (data && !data[queryKey]) {
-      setState((prev) => (prev.hasNextPage ? { ...prev, hasNextPage: false } : prev));
-    } else if (error) {
+    } else if ((data && !currentPage) || error) {
       setState((prev) => (prev.hasNextPage ? { ...prev, hasNextPage: false } : prev));
     }
-  }, [data, queryKey, error]);
+  }, [currentPage, data, error]);
 
   const loadMore = useCallback(() => {
     if (state.hasNextPage && !fetching && !error) {
@@ -154,7 +151,7 @@ export function useInfiniteQuery<
   }, [reexecute]);
 
   return {
-    items: state.items,
+    items,
     fetching,
     error,
     loadMore,
@@ -162,5 +159,13 @@ export function useInfiniteQuery<
     refresh,
     setVariables,
     variables: state.variables,
+    /**
+     * True while a fetch is in flight with nothing to display. Because the
+     * previous list is retained across variable changes, this can only be true
+     * when the screen would otherwise be blank.
+     */
+    showInitialSkeleton: fetching && items.length === 0,
+    /** True only once a fetch has settled with no rows — never flashes mid-fetch. */
+    showEmpty: !fetching && !error && currentPage !== undefined && items.length === 0,
   };
 }

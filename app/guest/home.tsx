@@ -7,7 +7,6 @@ import HostingFilterManager from '@/components/organisms/o-hosting-filter-manage
 import { PublishStatus, useHostingsQuery } from '@/lib/services/graphql/generated';
 import { useHostingFilterStore } from '@/lib/stores/hostings';
 import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
-import { useSettledList } from '@/lib/hooks/use-settled-list';
 import { View, FlatList } from 'react-native';
 import { RefreshControl } from 'react-native-gesture-handler';
 import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
@@ -30,6 +29,8 @@ export default function GuestHome() {
     loadMore,
     hasNextPage,
     refresh,
+    showInitialSkeleton,
+    showEmpty,
   } = useInfiniteQuery(useHostingsQuery, {
     queryKey: 'hostings',
     initialVariables: {
@@ -37,9 +38,6 @@ export default function GuestHome() {
     },
   });
 
-  // Keep the last settled results visible while a new filter/search loads, so
-  // the list never blanks or flashes the empty state mid-search.
-  const { displayed, showInitialSkeleton } = useSettledList(hostings, fetching);
   const [refreshing, setRefreshing] = React.useState(false);
 
   React.useEffect(() => {
@@ -59,7 +57,7 @@ export default function GuestHome() {
       <FlatList
         key={numColumns}
         showsVerticalScrollIndicator={false}
-        data={displayed}
+        data={hostings}
         keyExtractor={(item) => item.id}
         numColumns={numColumns}
         contentContainerStyle={{ padding: 24, paddingTop: 12 }}
@@ -102,9 +100,7 @@ export default function GuestHome() {
             )}
           </View>
         }
-        ListEmptyComponent={
-          !fetching && !displayed.length ? <EmptyList message="No hostings yet" /> : null
-        }
+        ListEmptyComponent={showEmpty ? <EmptyList message="No hostings yet" /> : null}
         onEndReached={() => {
           if (hasNextPage) loadMore();
         }}

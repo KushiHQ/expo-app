@@ -20,6 +20,8 @@ export default function TransactionsScreen() {
     loadMore,
     hasNextPage,
     refresh,
+    showInitialSkeleton,
+    showEmpty,
   } = useInfiniteQuery(useTransactionsQuery, {
     queryKey: 'transactions',
     initialVariables: {
@@ -93,11 +95,11 @@ export default function TransactionsScreen() {
         ListHeaderComponent={renderHeader}
         ListFooterComponent={renderFooter}
         ListEmptyComponent={
-          !fetching ? (
+          showEmpty ? (
             <View className="px-5">
               <EmptyList message="No transactions found" />
             </View>
-          ) : (
+          ) : showInitialSkeleton ? (
             <View className="gap-3 px-5">
               {Array.from({ length: 5 }).map((_, index) => (
                 <View
@@ -107,7 +109,7 @@ export default function TransactionsScreen() {
                 />
               ))}
             </View>
-          )
+          ) : null
         }
         contentContainerStyle={{ paddingBottom: 20 }}
         onEndReached={() => {
@@ -116,7 +118,7 @@ export default function TransactionsScreen() {
         onEndReachedThreshold={0.5}
         refreshControl={
           <RefreshControl
-            refreshing={fetching && transactions.length === 0}
+            refreshing={showInitialSkeleton}
             onRefresh={refresh}
             tintColor={colors.primary}
           />

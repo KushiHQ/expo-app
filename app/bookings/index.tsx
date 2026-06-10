@@ -254,7 +254,7 @@ export default function UserBookings() {
                     </View>
                   )}
                   ListEmptyComponent={
-                    !bookingsQuery.fetching && bookingsQuery.items.length === 0 ? (
+                    bookingsQuery.showEmpty ? (
                       <View className="mt-20">
                         <EmptyList
                           message="No bookings found"
@@ -265,7 +265,7 @@ export default function UserBookings() {
                     ) : null
                   }
                   ListHeaderComponent={
-                    bookingsQuery.fetching && bookingsQuery.items.length === 0 ? (
+                    bookingsQuery.showInitialSkeleton ? (
                       <View className="mt-4 gap-6">
                         {Array.from({ length: 4 }).map((_, i) => (
                           <Skeleton key={i} style={{ height: 140, borderRadius: 16 }} />
@@ -300,7 +300,7 @@ export default function UserBookings() {
                     </View>
                   )}
                   ListEmptyComponent={
-                    !appsQuery.fetching && appsQuery.items.length === 0 ? (
+                    appsQuery.showEmpty ? (
                       <View className="mt-20">
                         <EmptyList
                           message="No applications found"
@@ -311,7 +311,7 @@ export default function UserBookings() {
                     ) : null
                   }
                   ListHeaderComponent={
-                    appsQuery.fetching && appsQuery.items.length === 0 ? (
+                    appsQuery.showInitialSkeleton ? (
                       <View className="mt-4 gap-6">
                         {Array.from({ length: 4 }).map((_, i) => (
                           <Skeleton key={i} style={{ height: 140, borderRadius: 16 }} />

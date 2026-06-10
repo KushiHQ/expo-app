@@ -14,7 +14,6 @@ import { useUser } from '@/lib/hooks/user';
 import { useHostListingsQuery } from '@/lib/services/graphql/generated';
 import { useRouter } from '@/lib/hooks/use-router';
 import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
-import { useSettledList } from '@/lib/hooks/use-settled-list';
 import React from 'react';
 import { FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { FlatGrid } from 'react-native-super-grid';
@@ -32,6 +31,8 @@ export default function HostListings() {
     loadMore,
     hasNextPage,
     refresh,
+    showInitialSkeleton,
+    showEmpty,
   } = useInfiniteQuery(useHostListingsQuery, {
     queryKey: 'hostings',
     initialVariables: {
@@ -44,9 +45,6 @@ export default function HostListings() {
 
   const colors = useThemeColors();
 
-  // Keep the last settled results on screen while a new search/refresh loads,
-  // so the list never blanks or flashes the empty state mid-search.
-  const { displayed, showInitialSkeleton } = useSettledList(hostings, fetching);
   const [refreshing, setRefreshing] = React.useState(false);
 
   React.useEffect(() => {
@@ -85,7 +83,7 @@ export default function HostListings() {
           )}
         </Pressable>
       </View>
-      {!fetching && !displayed.length && (
+      {showEmpty && (
         <EmptyList
           message="No listings yet"
           buttonTitle="Create Listing"
@@ -155,7 +153,7 @@ export default function HostListings() {
         {user.hostListingsView === 'list' ? (
           <FlatList
             style={{ flex: 1 }}
-            data={displayed}
+            data={hostings}
             keyExtractor={(item) => item.id}
             contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
             ListHeaderComponent={renderHeader}
@@ -174,7 +172,7 @@ export default function HostListings() {
             style={{ flex: 1 }}
             itemDimension={user.hostListingsView === 'block' ? 350 : 160}
             spacing={16}
-            data={displayed}
+            data={hostings}
             renderItem={({ item }) => (
               <View className="mb-2 mr-2">
                 <ListingCard hosting={item} />
