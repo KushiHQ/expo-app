@@ -237,6 +237,14 @@ export const DELETE_SAVED_HOSTING = gql`
   }
 `;
 
+export const DELETE_SAVED_HOSTING_FOLDER = gql`
+  mutation DeleteSavedHostingFolder($folderId: String!) {
+    deleteSavedHostingFolder(folderId: $folderId) {
+      message
+    }
+  }
+`;
+
 export const CREATE_UPDATE_HOSTING_REVIEW = gql`
   mutation CreateUpdateHostingReview($input: HostingReviewInput!) {
     createOrUpdateHostingReview(input: $input) {

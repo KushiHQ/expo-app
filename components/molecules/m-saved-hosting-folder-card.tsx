@@ -2,25 +2,59 @@ import moment from 'moment';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import ThemedView from '../atoms/a-themed-view';
 import { hexToRgba } from '@/lib/utils/colors';
-import { Platform, Pressable, View } from 'react-native';
+import { Alert, Platform, Pressable, View } from 'react-native';
 import { HugeiconsFolder03 } from '../icons/i-files';
 import ThemedText from '../atoms/a-themed-text';
 import { Fonts } from '@/lib/constants/theme';
-import { SavedHostingFolder } from '@/lib/services/graphql/generated';
+import {
+  SavedHostingFolder,
+  useDeleteSavedHostingFolderMutation,
+} from '@/lib/services/graphql/generated';
 import React from 'react';
+import * as Haptics from 'expo-haptics';
 import { useRouter } from '@/lib/hooks/use-router';
+import { toast } from '@/lib/hooks/use-toast';
 
 type Props = {
   folder: SavedHostingFolder;
+  onDelete?: () => void;
 };
 
-const SavedHostingFolderCard: React.FC<Props> = ({ folder }) => {
+const SavedHostingFolderCard: React.FC<Props> = ({ folder, onDelete }) => {
   const router = useRouter();
   const colors = useThemeColors();
+  const [, deleteFolder] = useDeleteSavedHostingFolderMutation();
+
+  const handleDelete = async () => {
+    const result = await deleteFolder({ folderId: folder.id });
+    if (result.error) {
+      toast.show({ type: 'error', text1: 'Error', text2: 'Failed to delete folder' });
+    } else {
+      toast.show({
+        type: 'success',
+        text1: 'Folder deleted',
+        text2: 'Saved homes moved back to Unsorted',
+      });
+      onDelete?.();
+    }
+  };
+
+  const handleLongPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert(
+      'Delete Folder',
+      `Delete "${folder.folderName}"? Its saved homes will move back to Unsorted.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: handleDelete },
+      ],
+    );
+  };
 
   return (
     <Pressable
       onPress={() => router.push(`/hostings/folders/${folder.id}`)}
+      onLongPress={handleLongPress}
       style={({ pressed }) => ({ opacity: pressed ? 0.85 : 1 })}
     >
       <ThemedView

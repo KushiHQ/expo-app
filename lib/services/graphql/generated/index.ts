@@ -1207,6 +1207,7 @@ export type Mutations = {
   deleteHostingRoom: MessageResponse;
   deleteHostingRoomImage: MessageResponse;
   deleteSavedHosting: MessageResponse;
+  deleteSavedHostingFolder: MessageResponse;
   finalizeBooking: Booking;
   googleLogin: AuthTokenResponse;
   googleSignUp: AuthTokenResponse;
@@ -1488,6 +1489,11 @@ export type MutationsDeleteHostingRoomImageArgs = {
 
 export type MutationsDeleteSavedHostingArgs = {
   hostingId: Scalars['String']['input'];
+};
+
+
+export type MutationsDeleteSavedHostingFolderArgs = {
+  folderId: Scalars['String']['input'];
 };
 
 
@@ -3088,6 +3094,13 @@ export type DeleteSavedHostingMutationVariables = Exact<{
 
 export type DeleteSavedHostingMutation = { __typename?: 'Mutations', deleteSavedHosting: { __typename?: 'MessageResponse', message: string } };
 
+export type DeleteSavedHostingFolderMutationVariables = Exact<{
+  folderId: Scalars['String']['input'];
+}>;
+
+
+export type DeleteSavedHostingFolderMutation = { __typename?: 'Mutations', deleteSavedHostingFolder: { __typename?: 'MessageResponse', message: string } };
+
 export type CreateUpdateHostingReviewMutationVariables = Exact<{
   input: HostingReviewInput;
 }>;
@@ -4674,6 +4687,17 @@ export const DeleteSavedHostingDocument = gql`
 
 export function useDeleteSavedHostingMutation() {
   return Urql.useMutation<DeleteSavedHostingMutation, DeleteSavedHostingMutationVariables>(DeleteSavedHostingDocument);
+};
+export const DeleteSavedHostingFolderDocument = gql`
+    mutation DeleteSavedHostingFolder($folderId: String!) {
+  deleteSavedHostingFolder(folderId: $folderId) {
+    message
+  }
+}
+    `;
+
+export function useDeleteSavedHostingFolderMutation() {
+  return Urql.useMutation<DeleteSavedHostingFolderMutation, DeleteSavedHostingFolderMutationVariables>(DeleteSavedHostingFolderDocument);
 };
 export const CreateUpdateHostingReviewDocument = gql`
     mutation CreateUpdateHostingReview($input: HostingReviewInput!) {

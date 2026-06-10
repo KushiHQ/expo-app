@@ -224,7 +224,15 @@ function SavedContent() {
                 listKey="folders"
                 itemDimension={160}
                 data={folderData.savedHostingFolders}
-                renderItem={({ item }) => <SavedHostingFolderCard folder={item} />}
+                renderItem={({ item }) => (
+                  <SavedHostingFolderCard
+                    folder={item}
+                    onDelete={() => {
+                      refetchFolders({ requestPolicy: 'network-only' });
+                      refetchSaved({ requestPolicy: 'network-only' });
+                    }}
+                  />
+                )}
               />
             </View>
           )}
