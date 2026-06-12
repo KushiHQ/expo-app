@@ -7,10 +7,7 @@ import "dotenv/config";
 export default ({ config }) => ({
 	// Custom Expo configuration for Kushi App (v1.0.0)
 	...config,
-	name:
-		process.env.APP_ENV === "staging"
-			? "Kushi Housing (Staging)"
-			: "Kushi Housing",
+	name: "Kushi Housing",
 	slug: "kushi",
 	version: "1.0.0",
 	orientation: "default",
@@ -182,6 +179,18 @@ export default ({ config }) => ({
 				dark: {
 					image: "./assets/images/logo-1.png",
 					backgroundColor: "#050505",
+				},
+				// Android 12+ masks the splash icon to a circle, which clips the
+				// wide wordmark — use a square asset padded so the mark fits the
+				// safe circle. iOS keeps the unpadded wordmark above.
+				android: {
+					image: "./assets/images/splash-android.png",
+					imageWidth: 320,
+					backgroundColor: "#050505",
+					dark: {
+						image: "./assets/images/splash-android.png",
+						backgroundColor: "#050505",
+					},
 				},
 			},
 		],
