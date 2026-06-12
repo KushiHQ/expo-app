@@ -279,9 +279,7 @@ export const INITIATE_HOSTING_VERIFICATION = gql`
 `;
 
 export const REQUEST_HOSTING_VERIFICATION_TIER = gql`
-  mutation RequestHostingVerificationTier(
-    $input: HostingVerificationTierRequestInput!
-  ) {
+  mutation RequestHostingVerificationTier($input: HostingVerificationTierRequestInput!) {
     requestHostingVerificationTier(input: $input) {
       message
       data {

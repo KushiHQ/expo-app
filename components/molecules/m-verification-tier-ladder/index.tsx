@@ -40,9 +40,7 @@ const TierLadder: React.FC<Props> = ({ currentTier, isTopTier }) => {
           : isReached
             ? colors.text
             : hexToRgba(colors.text, 0.5);
-        const taglineColor = isCurrent
-          ? hexToRgba(colors.text, 0.7)
-          : hexToRgba(colors.text, 0.45);
+        const taglineColor = isCurrent ? hexToRgba(colors.text, 0.7) : hexToRgba(colors.text, 0.45);
         const iconBg = isCurrent
           ? isLast && isTopTier
             ? '#F59E0B'
@@ -57,9 +55,7 @@ const TierLadder: React.FC<Props> = ({ currentTier, isTopTier }) => {
           : isReached
             ? colors.success
             : hexToRgba(colors.text, 0.4);
-        const connectorColor = isReached
-          ? colors.success
-          : hexToRgba(colors.text, 0.1);
+        const connectorColor = isReached ? colors.success : hexToRgba(colors.text, 0.1);
 
         return (
           <React.Fragment key={tier}>

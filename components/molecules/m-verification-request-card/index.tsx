@@ -5,7 +5,10 @@ import Button from '@/components/atoms/a-button';
 import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
-import { HostingVerificationRequestStatus, HostingVerificationTier } from '@/lib/services/graphql/generated';
+import {
+  HostingVerificationRequestStatus,
+  HostingVerificationTier,
+} from '@/lib/services/graphql/generated';
 import { formatTierLabel } from '@/lib/utils/verification/tier';
 import { FileText, ImageIcon, Clock } from 'lucide-react-native';
 import * as Linking from 'expo-linking';
@@ -143,10 +146,7 @@ const RequestCard: React.FC<Props> = ({
             >
               Documents ({documents.length})
             </ThemedText>
-            <View
-              className="flex-row flex-wrap gap-2"
-              style={{ marginHorizontal: -4 }}
-            >
+            <View className="flex-row flex-wrap gap-2" style={{ marginHorizontal: -4 }}>
               {documents.map((doc) => (
                 <Pressable
                   key={doc.id}
@@ -212,7 +212,8 @@ const RequestCard: React.FC<Props> = ({
                         width: 8,
                         height: 8,
                         borderRadius: 4,
-                        backgroundColor: log.variant === 'staff' ? colors.primary : hexToRgba(colors.text, 0.3),
+                        backgroundColor:
+                          log.variant === 'staff' ? colors.primary : hexToRgba(colors.text, 0.3),
                       }}
                     />
                     {idx < logs.length - 1 ? (
@@ -264,10 +265,7 @@ const RequestCard: React.FC<Props> = ({
         ) : null}
 
         {isRejected && onRequestAgain ? (
-          <View
-            className="pt-1"
-            style={{ marginTop: 4 }}
-          >
+          <View className="pt-1" style={{ marginTop: 4 }}>
             <Button type="primary" onPress={onRequestAgain}>
               Request again
             </Button>
@@ -298,9 +296,7 @@ const RequestCard: React.FC<Props> = ({
 };
 
 function prettifyAction(action: string): string {
-  return action
-    .replace(/_/g, ' ')
-    .replace(/^./, (c) => c.toUpperCase());
+  return action.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
 }
 
 export default RequestCard;

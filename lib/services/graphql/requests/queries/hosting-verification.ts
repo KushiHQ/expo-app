@@ -1,4 +1,4 @@
-import { gql } from "urql";
+import { gql } from 'urql';
 
 export const HOSTING_VERIFICATION_REQUESTS = gql`
   query HostingVerificationRequests($hostingId: String!) {

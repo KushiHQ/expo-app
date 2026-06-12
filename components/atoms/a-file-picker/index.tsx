@@ -47,7 +47,15 @@ function formatBytes(bytes?: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-const FilePicker: React.FC<Props> = ({ label, hint, description, value, onChange, disabled, className }) => {
+const FilePicker: React.FC<Props> = ({
+  label,
+  hint,
+  description,
+  value,
+  onChange,
+  disabled,
+  className,
+}) => {
   const colors = useThemeColors();
   const [picking, setPicking] = useState(false);
 
@@ -149,9 +157,7 @@ const FilePicker: React.FC<Props> = ({ label, hint, description, value, onChange
             >
               {value.name}
             </ThemedText>
-            <ThemedText
-              style={{ fontSize: 11, color: hexToRgba(colors.text, 0.6) }}
-            >
+            <ThemedText style={{ fontSize: 11, color: hexToRgba(colors.text, 0.6) }}>
               {value.type}
               {value.size ? ` · ${formatBytes(value.size)}` : ''}
             </ThemedText>
@@ -163,9 +169,7 @@ const FilePicker: React.FC<Props> = ({ label, hint, description, value, onChange
             className="rounded-full px-3 py-1.5"
             style={{ backgroundColor: hexToRgba(colors.primary, 0.15) }}
           >
-            <ThemedText
-              style={{ fontSize: 12, color: colors.primary, fontFamily: 'Inter_600' }}
-            >
+            <ThemedText style={{ fontSize: 12, color: colors.primary, fontFamily: 'Inter_600' }}>
               Replace
             </ThemedText>
           </Pressable>
@@ -181,9 +185,7 @@ const FilePicker: React.FC<Props> = ({ label, hint, description, value, onChange
           }}
         >
           <Upload size={16} color={colors.primary} />
-          <ThemedText
-            style={{ fontSize: 13, color: colors.primary, fontFamily: 'Inter_600' }}
-          >
+          <ThemedText style={{ fontSize: 13, color: colors.primary, fontFamily: 'Inter_600' }}>
             {picking ? 'Opening…' : 'Choose file'}
           </ThemedText>
         </Pressable>

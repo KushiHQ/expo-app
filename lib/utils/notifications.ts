@@ -15,9 +15,7 @@ export function initializeNotifications() {
         return;
       }
       if (data?.intent === 'verification' && data?.hostingId) {
-        await Linking.openURL(
-          `kushi://hostings/form/verification/overview?id=${data.hostingId}`,
-        );
+        await Linking.openURL(`kushi://hostings/form/verification/overview?id=${data.hostingId}`);
         return;
       }
     }

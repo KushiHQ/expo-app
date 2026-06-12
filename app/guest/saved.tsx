@@ -125,7 +125,11 @@ function SavedContent() {
     if (hasError) {
       toast.show({ type: 'error', text1: 'Error', text2: 'Some items could not be moved' });
     } else {
-      toast.show({ type: 'success', text1: 'Success', text2: `${selected.length} item(s) organized` });
+      toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: `${selected.length} item(s) organized`,
+      });
       setSelected([]);
       setSelectMode(false);
       setSelectFolderOpen(false);
@@ -149,7 +153,11 @@ function SavedContent() {
     if (hasError) {
       toast.show({ type: 'error', text1: 'Error', text2: 'Some items could not be deleted' });
     } else {
-      toast.show({ type: 'success', text1: 'Success', text2: `${selected.length} item(s) removed` });
+      toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: `${selected.length} item(s) removed`,
+      });
       setSelected([]);
       setSelectMode(false);
       refetchSaved({ requestPolicy: 'network-only' });
@@ -170,9 +178,7 @@ function SavedContent() {
       <DetailsLayout
         title="Saved Listings"
         withProfile
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
         <View className="mt-6 gap-8">
           {(folderFetching || savedFetching) && (
@@ -440,11 +446,7 @@ function SavedContent() {
                 </ThemedText>
               </View>
             </Button>
-            <Button
-              onPress={() => setCreateFolderOpen(true)}
-              type="primary"
-              style={{ flex: 1 }}
-            >
+            <Button onPress={() => setCreateFolderOpen(true)} type="primary" style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <FolderPlus size={16} color={colors['primary-content']} />
                 <ThemedText content="primary" style={{ fontFamily: Fonts.semibold }}>
@@ -458,4 +460,3 @@ function SavedContent() {
     </>
   );
 }
-

@@ -136,8 +136,8 @@ export default function CheckoutSummary() {
             style={{ fontSize: 13, lineHeight: 20, color: hexToRgba(colors.text, 0.8) }}
           >
             You won&apos;t be charged now. Once the host accepts your booking application,
-            we&apos;ll send you a bill — you&apos;ll have one week to complete payment, after
-            which the spot may be offered to someone else.
+            we&apos;ll send you a bill — you&apos;ll have one week to complete payment, after which
+            the spot may be offered to someone else.
           </ThemedText>
         </View>
       </View>

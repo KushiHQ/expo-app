@@ -101,9 +101,7 @@ export default function HostAnalytics() {
       variant="host"
       withNotifications
       withProfile
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       footer={
         <Pressable
           aria-label="New Listing"

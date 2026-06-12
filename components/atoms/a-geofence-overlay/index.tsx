@@ -14,12 +14,7 @@ type Props = {
 const CLOSE_THRESHOLD = 200;
 const MEDIUM_THRESHOLD = 500;
 
-function getDistanceMeters(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number,
-): number {
+function getDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371000;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -54,11 +49,7 @@ function getLabel(distance: number): string {
   return 'Far from property';
 }
 
-const GeofenceOverlay: React.FC<Props> = ({
-  hostingLatitude,
-  hostingLongitude,
-  visible,
-}) => {
+const GeofenceOverlay: React.FC<Props> = ({ hostingLatitude, hostingLongitude, visible }) => {
   const [currentLocation, setCurrentLocation] = useState<LocationObject | null>(null);
   const mapRef = useRef<MapView>(null);
   const watchRef = useRef<Location.LocationSubscription | null>(null);

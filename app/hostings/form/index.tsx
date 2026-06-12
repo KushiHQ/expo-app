@@ -64,15 +64,9 @@ export default function NewHosting() {
             <View>
               <ThemedText style={{ fontSize: 12 }}>
                 Unfortunately, your KYC application has not been completed.{' '}
-                {!kycStatusData?.kycStatus?.bvnVerified
-                  ? 'BVN verification is required. '
-                  : null}
-                {!kycStatusData?.kycStatus?.ninVerified
-                  ? 'NIN verification is required. '
-                  : null}
-                {!kycStatusData?.kycStatus?.hasLiveness
-                  ? 'A selfie image is required. '
-                  : null}
+                {!kycStatusData?.kycStatus?.bvnVerified ? 'BVN verification is required. ' : null}
+                {!kycStatusData?.kycStatus?.ninVerified ? 'NIN verification is required. ' : null}
+                {!kycStatusData?.kycStatus?.hasLiveness ? 'A selfie image is required. ' : null}
                 Please complete the KYC form before you can access the hosting services.{' '}
                 <Link href="/kyc" style={{ color: colors.accent }} className="underline">
                   Submit your KYC application.

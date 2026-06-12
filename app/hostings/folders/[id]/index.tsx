@@ -120,7 +120,9 @@ export default function HostingFolder() {
             </View>
           )}
 
-          {!savedFetching && hostings.length === 0 && <EmptyList message="No listings in this folder" />}
+          {!savedFetching && hostings.length === 0 && (
+            <EmptyList message="No listings in this folder" />
+          )}
 
           {hostings.length > 0 && (
             <View style={{ gap: 12 }}>
@@ -204,18 +206,23 @@ export default function HostingFolder() {
             <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14, color: colors.primary }}>
               {selected.length} selected
             </ThemedText>
-            <Pressable onPress={toggleSelectMode} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Pressable
+              onPress={toggleSelectMode}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+            >
               <X size={16} color={hexToRgba(colors.text, 0.6)} />
-              <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14, color: hexToRgba(colors.text, 0.6) }}>
+              <ThemedText
+                style={{
+                  fontFamily: Fonts.medium,
+                  fontSize: 14,
+                  color: hexToRgba(colors.text, 0.6),
+                }}
+              >
                 Cancel
               </ThemedText>
             </Pressable>
           </View>
-          <Button
-            onPress={handleRemoveFromFolder}
-            disabled={selected.length === 0}
-            type="error"
-          >
+          <Button onPress={handleRemoveFromFolder} disabled={selected.length === 0} type="error">
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Trash2 size={16} color="#fff" />
               <ThemedText content="error" style={{ fontFamily: Fonts.semibold }}>

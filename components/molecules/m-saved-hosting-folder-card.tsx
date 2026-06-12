@@ -99,7 +99,9 @@ const SavedHostingFolderCard: React.FC<Props> = ({ folder, onDelete }) => {
           >
             {folder.folderName}
           </ThemedText>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          >
             <ThemedText
               style={{
                 fontSize: 12,

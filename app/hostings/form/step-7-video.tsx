@@ -1,13 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  StyleSheet,
-  Pressable,
-  Text,
-  Alert,
-  Modal,
-  ScrollView,
-} from 'react-native';
+import { View, StyleSheet, Pressable, Text, Alert, Modal, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Location from 'expo-location';
@@ -46,8 +38,7 @@ export default function VideoWalkthroughScreen() {
 
   const [permission, requestPermission] = useCameraPermissions();
   const { hosting } = useHostingForm(id);
-  const [, requestHostingVerificationTier] =
-    useRequestHostingVerificationTierMutation();
+  const [, requestHostingVerificationTier] = useRequestHostingVerificationTierMutation();
 
   const [phase, setPhase] = useState<Phase>('gps-check');
   const [gpsSamples, setGpsSamples] = useState<Location.LocationObject[]>([]);
@@ -99,7 +90,9 @@ export default function VideoWalkthroughScreen() {
           }
         } catch {
           if (mounted) {
-            setGpsError('Could not acquire GPS signal. You can still record, but GPS metadata will be limited.');
+            setGpsError(
+              'Could not acquire GPS signal. You can still record, but GPS metadata will be limited.',
+            );
             setPhase('ready');
           }
         }
@@ -291,10 +284,7 @@ export default function VideoWalkthroughScreen() {
                 {Array.from({ length: GPS_SAMPLE_COUNT }).map((_, i) => (
                   <View
                     key={i}
-                    style={[
-                      styles.gpsDot,
-                      i < gpsSamples.length && styles.gpsDotActive,
-                    ]}
+                    style={[styles.gpsDot, i < gpsSamples.length && styles.gpsDotActive]}
                   />
                 ))}
               </View>
@@ -313,10 +303,7 @@ export default function VideoWalkthroughScreen() {
             )}
 
             <View style={styles.topBar}>
-              <Pressable
-                onPress={() => router.back()}
-                style={styles.closeButton}
-              >
+              <Pressable onPress={() => router.back()} style={styles.closeButton}>
                 <X size={20} color="white" />
               </Pressable>
               <View style={styles.topBarTitle}>
@@ -415,9 +402,7 @@ export default function VideoWalkthroughScreen() {
               <Button type="tinted" onPress={handleRetake} style={styles.previewButton}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <RotateCcw size={16} color={colors.text} />
-                  <Text style={{ color: colors.text, fontFamily: Fonts.semibold }}>
-                    Re-record
-                  </Text>
+                  <Text style={{ color: colors.text, fontFamily: Fonts.semibold }}>Re-record</Text>
                 </View>
               </Button>
               <Button type="primary" onPress={handleSubmit} style={styles.previewButton}>
@@ -447,12 +432,10 @@ export default function VideoWalkthroughScreen() {
               <View style={styles.consentIconContainer}>
                 <Video size={22} color="#FFA500" />
               </View>
-              <Text style={[styles.consentTitle, { color: colors.text }]}>
-                Recording Consent
-              </Text>
+              <Text style={[styles.consentTitle, { color: colors.text }]}>Recording Consent</Text>
               <Text style={styles.consentSubtitle}>
-                Your walkthrough video will be used to verify the property and build trust
-                with potential guests. Please review and accept the following:
+                Your walkthrough video will be used to verify the property and build trust with
+                potential guests. Please review and accept the following:
               </Text>
             </View>
 
@@ -469,8 +452,8 @@ export default function VideoWalkthroughScreen() {
                     I consent to recording
                   </Text>
                   <Text style={styles.consentCheckDesc}>
-                    I understand this video will be recorded on the property premises and
-                    submitted to Kushi for verification purposes.
+                    I understand this video will be recorded on the property premises and submitted
+                    to Kushi for verification purposes.
                   </Text>
                 </View>
               </View>
@@ -487,9 +470,9 @@ export default function VideoWalkthroughScreen() {
                     Third-party disclosure
                   </Text>
                   <Text style={styles.consentCheckDesc}>
-                    I acknowledge that this video may be reviewed by Kushi verification
-                    staff and may be stored securely on Kushi&apos;s infrastructure. I have
-                    obtained consent from any persons who may appear in the recording.
+                    I acknowledge that this video may be reviewed by Kushi verification staff and
+                    may be stored securely on Kushi&apos;s infrastructure. I have obtained consent
+                    from any persons who may appear in the recording.
                   </Text>
                 </View>
               </View>

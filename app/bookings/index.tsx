@@ -276,10 +276,7 @@ export default function UserBookings() {
                   onEndReached={() => bookingsQuery.hasNextPage && bookingsQuery.loadMore()}
                   onEndReachedThreshold={0.5}
                   refreshControl={
-                    <RefreshControl
-                      refreshing={refreshing}
-                      onRefresh={handleRefresh}
-                    />
+                    <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
                   }
                 />
               </View>
@@ -322,10 +319,7 @@ export default function UserBookings() {
                   onEndReached={() => appsQuery.hasNextPage && appsQuery.loadMore()}
                   onEndReachedThreshold={0.5}
                   refreshControl={
-                    <RefreshControl
-                      refreshing={refreshing}
-                      onRefresh={handleRefresh}
-                    />
+                    <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
                   }
                 />
               </View>

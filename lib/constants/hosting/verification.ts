@@ -53,8 +53,7 @@ export const VERIFICATION_TIER_OPTIONS: {
   {
     value: HostingVerificationTier.AddressVerified,
     label: 'Address Verified',
-    description:
-      'Title documents uploaded (C of O / R of O / Deed of Assignment / Survey Plan).',
+    description: 'Title documents uploaded (C of O / R of O / Deed of Assignment / Survey Plan).',
   },
   {
     value: HostingVerificationTier.TitleChecked,
@@ -68,4 +67,3 @@ export const VERIFICATION_TIER_OPTIONS: {
     description: 'Building plan compliance + on-site Kushi inspection.',
   },
 ];
-
