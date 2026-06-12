@@ -29,7 +29,7 @@ import { cast } from "@/lib/types/utils";
 type Props = {
 	hostingId: string;
 	/** The target tier for this request. */
-	initialTier?: HostingVerificationTier;
+	selectedTier?: HostingVerificationTier;
 	/** Optional pre-fill for the docs already submitted (when re-requesting). */
 	prefillDocumentNames?: string[];
 	/** Title shown above the form (e.g. "Request Verification Upgrade"). */
@@ -40,7 +40,7 @@ type Props = {
 
 const RequestVerificationForm: React.FC<Props> = ({
 	hostingId,
-	initialTier,
+	selectedTier,
 	title,
 	onSubmitted,
 }) => {
@@ -48,9 +48,6 @@ const RequestVerificationForm: React.FC<Props> = ({
 	const router = useRouter();
 	const toast = useToast();
 
-	const [selectedTier] = useState<HostingVerificationTier | undefined>(
-		initialTier,
-	);
 	const [picked, setPicked] = useState<Record<string, PickedFile | null>>({});
 	const [submitting, setSubmitting] = useState(false);
 
@@ -83,10 +80,11 @@ const RequestVerificationForm: React.FC<Props> = ({
 		if (!allPicked) {
 			toast.show({
 				type: "error",
-				text2: `Please pick all ${tierData?.hostingVerificationTier?.documentRequirements.length} required document${tierData?.hostingVerificationTier?.documentRequirements.length === 1
+				text2: `Please pick all ${tierData?.hostingVerificationTier?.documentRequirements.length} required document${
+					tierData?.hostingVerificationTier?.documentRequirements.length === 1
 						? ""
 						: "s"
-					}.`,
+				}.`,
 			});
 			return;
 		}
@@ -339,11 +337,12 @@ const RequestVerificationForm: React.FC<Props> = ({
 								? "Submitting…"
 								: allPicked
 									? "Submit request"
-									: `Pick ${tierData?.hostingVerificationTier?.documentRequirements.length} more document${tierData?.hostingVerificationTier?.documentRequirements
-										.length === 1
-										? ""
-										: "s"
-									}`}
+									: `Pick ${tierData?.hostingVerificationTier?.documentRequirements.length} more document${
+											tierData?.hostingVerificationTier?.documentRequirements
+												.length === 1
+												? ""
+												: "s"
+										}`}
 						</ThemedText>
 					</View>
 				</Button>
