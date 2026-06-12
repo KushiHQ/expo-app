@@ -2,9 +2,10 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
 import { FileText, Upload, X } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
 import ThemedText from '@/components/atoms/a-themed-text';
 
 export type PickedFile = {
@@ -59,9 +60,44 @@ const FilePicker: React.FC<Props> = ({
   const colors = useThemeColors();
   const [picking, setPicking] = useState(false);
 
-  const handlePick = async () => {
-    if (disabled || picking) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  const emitImageAsset = (asset: ImagePicker.ImagePickerAsset) => {
+    onChange({
+      uri: asset.uri,
+      name: asset.fileName ?? `photo-${Date.now()}.jpg`,
+      type: (asset.mimeType ?? 'image/jpeg').toLowerCase(),
+      size: asset.fileSize ?? undefined,
+    });
+  };
+
+  const pickFromLibrary = async () => {
+    setPicking(true);
+    try {
+      // PHPicker / Photo Picker — no permission prompt needed on either platform.
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 1,
+      });
+      if (result.canceled || !result.assets?.[0]) return;
+      emitImageAsset(result.assets[0]);
+    } finally {
+      setPicking(false);
+    }
+  };
+
+  const pickFromCamera = async () => {
+    setPicking(true);
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) return;
+      const result = await ImagePicker.launchCameraAsync({ quality: 1 });
+      if (result.canceled || !result.assets?.[0]) return;
+      emitImageAsset(result.assets[0]);
+    } finally {
+      setPicking(false);
+    }
+  };
+
+  const pickFromFiles = async () => {
     setPicking(true);
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -81,6 +117,19 @@ const FilePicker: React.FC<Props> = ({
     } finally {
       setPicking(false);
     }
+  };
+
+  const handlePick = () => {
+    if (disabled || picking) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    // The iOS document picker only browses the Files app, where photos don't
+    // live — offer the photo library and camera as first-class sources.
+    Alert.alert(label, 'Where is the document?', [
+      { text: 'Photo Library', onPress: pickFromLibrary },
+      { text: 'Take Photo', onPress: pickFromCamera },
+      { text: 'Browse Files…', onPress: pickFromFiles },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
   };
 
   const handleClear = () => {
