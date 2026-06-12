@@ -224,6 +224,7 @@ export default function Login() {
               onChangeText={(v) => setInputs((c) => ({ ...c, email: v }))}
             />
             <FloatingLabelInput
+              focused
               secureTextEntry
               inputMode="text"
               autoComplete="password"
