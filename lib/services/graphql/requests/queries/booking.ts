@@ -57,6 +57,7 @@ export const CALCULATE_HOSTING_FEE = gql`
       stampDuty
       guestServiceCharge
       hostServiceCharge
+      paymentWindowDays
       lineItems {
         key
         label
