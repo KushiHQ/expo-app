@@ -163,24 +163,20 @@ export default function KycImage() {
     try {
       const photo = await photoOutput.capturePhoto({ flashMode: 'off' }, {});
       const tempPath = await photo.saveToTemporaryFileAsync();
-
-      let finalUri = `file://${tempPath}`;
-
-      if (photo.orientation !== 'up') {
-        const rotationMap: Record<string, number> = { left: 90, down: 180, right: 270 };
-        const rotation = rotationMap[photo.orientation];
-        if (rotation) {
-          const manipulated = await manipulateAsync(finalUri, [{ rotate: rotation }], {
-            compress: 1,
-            format: SaveFormat.JPEG,
-          });
-          finalUri = manipulated.uri;
-        }
-      }
-
       photo.dispose();
+
+      // saveToTemporaryFileAsync already applies the capture orientation/mirror
+      // lazily via EXIF flags. Run it through the manipulator once (no rotation)
+      // to BAKE that orientation into the pixels — upright, EXIF normalized — so
+      // it renders and uploads correctly even where EXIF is ignored. A manual
+      // rotate here double-applies the orientation and lands selfies sideways.
+      const baked = await manipulateAsync(`file://${tempPath}`, [], {
+        compress: 1,
+        format: SaveFormat.JPEG,
+      });
+
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setKycImage(finalUri);
+      setKycImage(baked.uri);
     } catch (error) {
       console.error('Failed to capture photo:', error);
       toast.show({
