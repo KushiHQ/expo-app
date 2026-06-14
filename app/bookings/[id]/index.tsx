@@ -20,6 +20,7 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useUser } from '@/lib/hooks/user';
 import {
   BookingStatus,
+  PaymentStatus,
   TransactionStatus,
   useBookingQuery,
   useCancelBookingMutation,
@@ -102,10 +103,15 @@ export default function UserBooking() {
     ? (BOOKING_STATUS_COLORS[booking.status] ?? hexToRgba(colors.text, 0.4))
     : hexToRgba(colors.text, 0.4);
 
+  // Gate the payment CTA on the booking's own payment status (the canonical
+  // "awaiting payment" signal), not on the transaction/reference — after an
+  // application is accepted the booking is created with paymentStatus PENDING,
+  // and the reference may not be minted until checkout.
   const isPaymentPending =
-    (booking?.transaction?.status === TransactionStatus.Pending ||
-      booking?.transaction?.status === TransactionStatus.Failed) &&
-    !!booking.transaction.reference;
+    booking?.status !== BookingStatus.Canceled &&
+    booking?.status !== BookingStatus.Completed &&
+    (booking?.paymentStatus === PaymentStatus.Pending ||
+      booking?.paymentStatus === PaymentStatus.Failed);
 
   const canFinalize =
     booking?.status !== BookingStatus.Completed &&
@@ -192,13 +198,15 @@ export default function UserBooking() {
   };
 
   const handleCompletePayment = () => {
-    if (!booking?.transaction?.reference) return;
+    if (!booking) return;
+    // The checkout screen mints a fresh payment reference via retryBookingPayment,
+    // so a pre-existing transaction reference is optional — pass it when present.
     router.push({
       pathname: '/hostings/[id]/reservation/checkout',
       params: {
         id: booking.hosting.id,
         bkId: booking.id,
-        ref: booking.transaction.reference,
+        ...(booking.transaction?.reference ? { ref: booking.transaction.reference } : {}),
       },
     });
   };
