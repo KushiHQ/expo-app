@@ -9,6 +9,7 @@ import { REFRESH_TOKEN_MUTATION } from '@/lib/services/graphql/requests/mutation
 import { useUserStore } from '@/lib/stores/users';
 import { cacheExchange, Client, fetchExchange, Provider, subscriptionExchange } from 'urql';
 import { createClient as createWSClient } from 'graphql-ws';
+import { router } from 'expo-router';
 
 type Props = {
   children?: React.ReactNode;
@@ -84,9 +85,15 @@ const createClient = (ws: ReturnType<typeof createWSClientInstance>) => {
               tokens = { access: data.token, refresh: data.refreshToken };
               await saveAuthTokens(tokens);
             } else {
+              // A refresh token existed but the refresh failed → the session is
+              // genuinely expired. Clear it AND kick the user to /auth so they
+              // don't sit on a stale, half-loaded screen. (The no-refresh-token
+              // case above is an anonymous/Explore browser — route guards handle
+              // those, so we don't yank them out of the public browse area.)
               tokens = null;
               clearAuthTokens();
               useUserStore.getState().reset();
+              router.replace('/auth');
             }
           },
         };

@@ -24,7 +24,11 @@ export default function NewHosting() {
   // server requires BVN + NIN + liveness image; we mirror that check
   // here so the host can't even start the hosting form until KYC is
   // complete (Sprint 1.5 server gate, Sprint 1.19 mobile mirror).
-  const [{ data: kycStatusData }] = useKycStatusQuery();
+  // cache-and-network: the KycStatus type has no id and the verify/upload KYC
+  // mutations return a different type, so the urql document cache never
+  // invalidates a stale "incomplete" value. Re-validate against the network on
+  // every mount so a host who just finished KYC isn't blocked until app restart.
+  const [{ data: kycStatusData }] = useKycStatusQuery({ requestPolicy: 'cache-and-network' });
   const kycComplete = !!kycStatusData?.kycStatus?.kycComplete;
 
   // "+" button entry point — this route never carries a hosting id, so any

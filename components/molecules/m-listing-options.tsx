@@ -18,9 +18,13 @@ type Props = {
   open: boolean;
   onClose: () => void;
   hosting: HostListingsQuery['hostings'][number];
+  /** Called after a successful delete so the list can refresh — the deleteHosting
+   *  mutation returns only `{ message }`, so the urql document cache can't
+   *  auto-invalidate the listings query. */
+  onDelete?: () => void;
 };
 
-const ListingOptions: React.FC<Props> = ({ open, onClose, hosting }) => {
+const ListingOptions: React.FC<Props> = ({ open, onClose, hosting, onDelete }) => {
   const router = useRouter();
   const colors = useThemeColors();
   const [deleteOpen, setDeleteOpen] = React.useState(false);
@@ -36,6 +40,7 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting }) => {
         });
         setDeleteOpen(false);
         onClose();
+        onDelete?.();
       }
     });
   };

@@ -4,6 +4,7 @@ import { FluentAppsList24Filled, FluentAppsList24Regular } from '@/components/ic
 import { TablerMessage2, TablerMessage2Filled } from '@/components/icons/i-message';
 import { MingcuteUser3Fill, MingcuteUser3Line } from '@/components/icons/i-user';
 import SidebarNav, { type SidebarNavItem } from '@/components/organisms/o-sidebar-nav';
+import AuthGuard from '@/components/guards/auth-guard';
 import React from 'react';
 import { Fonts } from '@/lib/constants/theme';
 import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
@@ -171,12 +172,14 @@ export default function Layout() {
 
   if (isTablet) {
     return (
-      <View style={{ flex: 1, flexDirection: 'row' }}>
-        <SidebarNav items={SIDEBAR_ITEMS} mode="host" onModeSwitch={handleSwitchToGuest} />
-        <View style={{ flex: 1 }}>{tabs}</View>
-      </View>
+      <AuthGuard>
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          <SidebarNav items={SIDEBAR_ITEMS} mode="host" onModeSwitch={handleSwitchToGuest} />
+          <View style={{ flex: 1 }}>{tabs}</View>
+        </View>
+      </AuthGuard>
     );
   }
 
-  return tabs;
+  return <AuthGuard>{tabs}</AuthGuard>;
 }

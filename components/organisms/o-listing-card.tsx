@@ -16,9 +16,10 @@ import * as Haptics from 'expo-haptics';
 
 type Props = {
   hosting: HostListingsQuery['hostings'][number];
+  onDelete?: () => void;
 };
 
-const ListingCard: React.FC<Props> = ({ hosting }) => {
+const ListingCard: React.FC<Props> = ({ hosting, onDelete }) => {
   const router = useRouter();
   const colors = useThemeColors();
   const [optionsOpen, setOptionsOpen] = React.useState(false);
@@ -131,7 +132,12 @@ const ListingCard: React.FC<Props> = ({ hosting }) => {
           </ThemedText>
         </View>
       </Pressable>
-      <ListingOptions open={optionsOpen} onClose={() => setOptionsOpen(false)} hosting={hosting} />
+      <ListingOptions
+        open={optionsOpen}
+        onClose={() => setOptionsOpen(false)}
+        hosting={hosting}
+        onDelete={onDelete}
+      />
     </Animated.View>
   );
 };
