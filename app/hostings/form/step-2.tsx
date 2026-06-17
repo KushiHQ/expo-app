@@ -49,6 +49,12 @@ export default function NewHostingStep2() {
 
   const allRoomTypesUsed = rooms.length >= 20;
 
+  // Quality floor: require at least 5 photos across all spaces before the host
+  // can continue, and surface progress so the requirement is clear.
+  const MIN_PHOTOS = 5;
+  const totalPhotos = rooms.reduce((sum, room) => sum + (room.images?.length ?? 0), 0);
+  const hasEnoughPhotos = totalPhotos >= MIN_PHOTOS;
+
   const [refreshing, setRefreshing] = React.useState(false);
   React.useEffect(() => {
     if (!fetchingHosting) setRefreshing(false);
@@ -69,7 +75,7 @@ export default function NewHostingStep2() {
         }
         footer={
           <HostingStepper
-            disabled={!rooms.length}
+            disabled={!rooms.length || !hasEnoughPhotos}
             step={2}
             onPress={() => {
               router.push(`/hostings/form/step-3?id=${hosting?.id}`);
@@ -141,6 +147,29 @@ export default function NewHostingStep2() {
               />
             )}
           </SectionCard>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              borderRadius: 12,
+              padding: 12,
+              backgroundColor: hexToRgba(hasEnoughPhotos ? colors.primary : colors.text, 0.06),
+            }}
+          >
+            <ThemedText
+              style={{
+                fontSize: 13,
+                lineHeight: 19,
+                color: hexToRgba(colors.text, hasEnoughPhotos ? 0.6 : 0.8),
+              }}
+            >
+              {hasEnoughPhotos
+                ? `Great — ${totalPhotos} photos added.`
+                : `Add at least ${MIN_PHOTOS} photos across your spaces to continue (${totalPhotos}/${MIN_PHOTOS}). Quality photos help your listing stand out.`}
+            </ThemedText>
+          </View>
         </View>
       </DetailsLayout>
 

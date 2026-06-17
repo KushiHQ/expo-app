@@ -14,7 +14,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
 import { MessageSquare } from 'lucide-react-native';
 import React from 'react';
-import { Share, View } from 'react-native';
+import { Pressable, Share, View } from 'react-native';
 import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
 import { useUser } from '@/lib/hooks/user';
 import Skeleton from '@/components/atoms/a-skeleton';
@@ -218,6 +218,35 @@ export default function HostingDetails() {
                       tooltipDescription={hosting.verification.tierTooltip ?? undefined}
                     />
                   </View>
+                )}
+                {isHost && hosting && !hosting.verification?.verificationTier && (
+                  <Pressable
+                    onPress={() =>
+                      router.push(`/hostings/form/verification/overview?id=${hosting.id}`)
+                    }
+                    style={{
+                      marginTop: 8,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 10,
+                      borderRadius: 12,
+                      padding: 12,
+                      backgroundColor: hexToRgba(colors.primary, 0.08),
+                    }}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <ThemedText
+                        style={{ fontSize: 13, fontFamily: Fonts.medium, color: colors.primary }}
+                      >
+                        Get this property verified
+                      </ThemedText>
+                      <ThemedText style={{ fontSize: 12, opacity: 0.6 }}>
+                        It’s already listed — verification adds a trust badge guests look for.
+                      </ThemedText>
+                    </View>
+                    <ThemedText style={{ fontSize: 18, color: colors.primary }}>›</ThemedText>
+                  </Pressable>
                 )}
                 <ThemedText style={{ fontSize: 14, fontFamily: Fonts.light }}>
                   {hosting?.city}, {hosting?.state}

@@ -9,10 +9,18 @@ import { useRouter } from '@/lib/hooks/use-router';
 type Props = {
   show: boolean;
   onClose: () => void;
+  hostingId?: string;
 };
 
-const PublishListingSuccess: React.FC<Props> = ({ show, onClose }) => {
+const PublishListingSuccess: React.FC<Props> = ({ show, onClose, hostingId }) => {
   const router = useRouter();
+
+  const handleGetVerified = () => {
+    onClose();
+    if (hostingId) {
+      router.push(`/hostings/form/verification/overview?id=${hostingId}`);
+    }
+  };
 
   return (
     <BottomSheet isVisible={show} onClose={onClose}>
@@ -42,9 +50,22 @@ const PublishListingSuccess: React.FC<Props> = ({ show, onClose }) => {
             />
           </View>
         </View>
+        <ThemedText
+          className="mb-4 text-center"
+          style={{ fontSize: 13, opacity: 0.6 }}
+        >
+          Verification is optional — your listing stays up whether or not it’s
+          verified. Getting verified earns a trust badge that helps guests choose
+          your property.
+        </ThemedText>
         <View className="gap-4">
-          <Button type="primary" onPress={onClose}>
-            <ThemedText content="primary">Go to Dashboard</ThemedText>
+          {hostingId && (
+            <Button type="primary" onPress={handleGetVerified}>
+              <ThemedText content="primary">Get Verified</ThemedText>
+            </Button>
+          )}
+          <Button type={hostingId ? 'tinted' : 'primary'} onPress={onClose}>
+            <ThemedText content={hostingId ? 'tinted' : 'primary'}>Go to Dashboard</ThemedText>
           </Button>
           <Button type="tinted" onPress={() => router.push('/host/listings')}>
             <ThemedText content="tinted">Edit Listing</ThemedText>

@@ -370,7 +370,7 @@ export default function NewHostingStep8() {
       </DetailsLayout>
 
       <LoadingModal visible={loading} />
-      <PublishListingSuccess show={success} onClose={handleClose} />
+      <PublishListingSuccess show={success} onClose={handleClose} hostingId={hosting?.id} />
     </>
   );
 }

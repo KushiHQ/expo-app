@@ -109,10 +109,12 @@ const SignaturePad: React.FC<Props> = ({ onSave, existingUrl, uploading }) => {
     })
     .onUpdate((e) => {
       'worklet';
-      // Skip micro-movements under 3px — eliminates finger jitter
+      // Skip only true micro-jitter (<1.5px). The previous 3px threshold dropped
+      // points during slow, deliberate signing, which made strokes feel
+      // unresponsive and look jagged. Midpoint bezier + Chaikin still smooth it.
       const dx = e.x - prevX.value;
       const dy = e.y - prevY.value;
-      if (dx * dx + dy * dy < 9) return;
+      if (dx * dx + dy * dy < 2.25) return;
       // Quadratic bezier through midpoints for real-time display on UI thread
       const mx = (prevX.value + e.x) / 2;
       const my = (prevY.value + e.y) / 2;
