@@ -76,9 +76,8 @@ const RequestVerificationForm: React.FC<Props> = ({
     if (!allPicked) {
       toast.show({
         type: 'error',
-        text2: `Please pick all ${tierData?.hostingVerificationTier?.documentRequirements.length} required document${
-          tierData?.hostingVerificationTier?.documentRequirements.length === 1 ? '' : 's'
-        }.`,
+        text2: `Please pick all ${tierData?.hostingVerificationTier?.documentRequirements.length} required document${tierData?.hostingVerificationTier?.documentRequirements.length === 1 ? '' : 's'
+          }.`,
       });
       return;
     }
@@ -108,6 +107,7 @@ const RequestVerificationForm: React.FC<Props> = ({
       });
 
       if (res.error) {
+        console.error(res.error)
         handleError(res.error);
         return;
       }
@@ -312,11 +312,10 @@ const RequestVerificationForm: React.FC<Props> = ({
                 ? 'Submitting…'
                 : allPicked
                   ? 'Submit request'
-                  : `Pick ${tierData?.hostingVerificationTier?.documentRequirements.length} more document${
-                      tierData?.hostingVerificationTier?.documentRequirements.length === 1
-                        ? ''
-                        : 's'
-                    }`}
+                  : `Pick ${tierData?.hostingVerificationTier?.documentRequirements.length} more document${tierData?.hostingVerificationTier?.documentRequirements.length === 1
+                    ? ''
+                    : 's'
+                  }`}
             </ThemedText>
           </View>
         </Button>

@@ -5,7 +5,7 @@ import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { FileText, Upload, X } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Alert, Platform, Pressable, View } from 'react-native';
 import ThemedText from '@/components/atoms/a-themed-text';
 
 export type PickedFile = {
@@ -122,8 +122,14 @@ const FilePicker: React.FC<Props> = ({
   const handlePick = () => {
     if (disabled || picking) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    // The iOS document picker only browses the Files app, where photos don't
-    // live — offer the photo library and camera as first-class sources.
+    // Android's system document picker already aggregates gallery, downloads
+    // and drive, so it goes straight there. Only iOS needs the source chooser
+    // because its document picker browses the Files app alone, where photos
+    // don't live.
+    if (Platform.OS !== 'ios') {
+      pickFromFiles();
+      return;
+    }
     Alert.alert(label, 'Where is the document?', [
       { text: 'Photo Library', onPress: pickFromLibrary },
       { text: 'Take Photo', onPress: pickFromCamera },
