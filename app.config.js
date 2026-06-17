@@ -5,11 +5,11 @@ import "dotenv/config";
  * @returns {import('expo/config').ExpoConfig}
  */
 export default ({ config }) => ({
-	// Custom Expo configuration for Kushi App (v1.0.0)
+	// Custom Expo configuration for Kushi App (v1.1)
 	...config,
 	name: "Kushi Housing",
 	slug: "kushi",
-	version: "1.0.0",
+	version: "1.1",
 	orientation: "default",
 	icon: "./assets/icons/adaptive-icon.png",
 	scheme: "kushi",
