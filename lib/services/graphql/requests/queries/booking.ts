@@ -97,6 +97,9 @@ export const BOOKING_APPLICATION = gql`
         incomeRanges
         occupancyTypes
         guarantorRelationships
+        guarantorName
+        guarantorPhone
+        guarantorAddress
       }
       bookingAggrement {
         sections {

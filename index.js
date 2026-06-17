@@ -4,6 +4,10 @@ import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { Platform } from 'react-native';
 import { handleIncomingCall } from './lib/utils/call';
+import {
+  handleIncomingChatMessage,
+  handleIncomingVerificationNotification,
+} from './lib/utils/notifications';
 import { EventEmitter } from './lib/utils/event-emitter';
 
 // Keyed by callId so answerCall/endCall events can look up the full call data
@@ -113,6 +117,21 @@ messaging().setBackgroundMessageHandler(async (remoteMessage) => {
       }
     }
   } else {
-    await handleIncomingCall(remoteMessage);
+    // Android: route by intent, mirroring the foreground onMessage handler.
+    // Call intents → call UI/ringtone; chat & verification → display a banner
+    // (data-only pushes don't auto-display, so the handler must do it).
+    const intent = data?.intent;
+    if (
+      intent === 'voice-call' ||
+      intent === 'video-call' ||
+      intent === 'cancel_call' ||
+      intent === 'decline_call'
+    ) {
+      await handleIncomingCall(remoteMessage);
+    } else if (intent === 'notification') {
+      await handleIncomingChatMessage(remoteMessage);
+    } else if (intent === 'verification') {
+      await handleIncomingVerificationNotification(remoteMessage);
+    }
   }
 });

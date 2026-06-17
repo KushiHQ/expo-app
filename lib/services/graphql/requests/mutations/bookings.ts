@@ -49,6 +49,9 @@ export const INITIATE_BOOKING_APPLICATION = gql`
           incomeRanges
           occupancyTypes
           guarantorRelationships
+          guarantorName
+          guarantorPhone
+          guarantorAddress
         }
       }
     }
@@ -104,6 +107,9 @@ export const UPDATE_BOOKING_APPLICATION = gql`
           incomeRanges
           occupancyTypes
           guarantorRelationships
+          guarantorName
+          guarantorPhone
+          guarantorAddress
         }
       }
     }

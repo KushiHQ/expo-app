@@ -117,7 +117,16 @@ export const handleNotifeeEvent = async ({ type, detail }: Event) => {
       return;
     }
 
+    // Stop the ringtone, tear down the foreground service, and clear the
+    // incoming-call notification BEFORE any navigation. Doing the cleanup
+    // up-front guarantees the ring stops (esp. on reject) even though a deep
+    // link can cold-start a second runtime that previously raced this cleanup.
+    // The notification was displayed with id = chatId, so fall back to it when
+    // the event's notification.id is missing — otherwise the foreground-service
+    // notification (and its looping audio) would linger.
     await stopRingtone();
+    await notifee.stopForegroundService();
+    await notifee.cancelNotification(notification?.id ?? (data?.chatId as string) ?? '');
 
     if (pressAction?.id === 'accept') {
       if (data?.intent === CALL_TYPE_VALUE[CallType.Voice]) {
@@ -150,9 +159,6 @@ export const handleNotifeeEvent = async ({ type, detail }: Event) => {
         );
       }
     }
-
-    await notifee.stopForegroundService();
-    await notifee.cancelNotification(notification?.id ?? '');
   } else if (type === EventType.DISMISSED) {
     await stopRingtone();
     await notifee.stopForegroundService();

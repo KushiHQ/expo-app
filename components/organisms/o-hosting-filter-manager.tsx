@@ -76,6 +76,8 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
       city: predictionFilters.city,
       state: predictionFilters.state,
       country: predictionFilters.country,
+      propertyType: predictionFilters.propertyType ?? undefined,
+      facilities: predictionFilters.facilities ?? undefined,
       minPrice: predictionFilters.minPrice ? Number(predictionFilters.minPrice) : undefined,
       maxPrice: predictionFilters.maxPrice ? Number(predictionFilters.maxPrice) : undefined,
     });

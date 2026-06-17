@@ -1,4 +1,5 @@
 import Button from '@/components/atoms/a-button';
+import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
 import LoadingModal from '@/components/atoms/a-loading-modal';
 import ThemedSwitch from '@/components/atoms/a-themed-switch';
 import ThemedText from '@/components/atoms/a-themed-text';
@@ -103,7 +104,10 @@ export default function BookingApplicationStep2() {
                   : false) ||
                 (hasGurantor &&
                   input.guestFormData.employmentStatus !== GuestFormEmploymentStatus.Employed &&
-                  !input.guestFormData.guarantorRelationships)
+                  (!input.guestFormData.guarantorRelationships ||
+                    !input.guestFormData.guarantorName ||
+                    !input.guestFormData.guarantorPhone ||
+                    !input.guestFormData.guarantorAddress))
               }
             >
               <ThemedText content="primary">Continue</ThemedText>
@@ -204,32 +208,50 @@ export default function BookingApplicationStep2() {
             )}
             {hasGurantor &&
               input.guestFormData?.employmentStatus !== GuestFormEmploymentStatus.Employed && (
-                <View>
-                  <SelectInput
-                    focused
-                    label="Guarantor Relationship"
-                    placeholder="Employer"
-                    description="How is your guarantor related to you? Landlords prefer close family members or employers."
-                    defaultValue={
-                      input.guestFormData?.guarantorRelationships
-                        ? {
-                            label:
-                              BOOKING_APPLICATION_GUARANTOR_RELATIONSHIPS.find(
-                                (v) => v.value === input.guestFormData?.guarantorRelationships,
-                              )?.label ?? input.guestFormData.guarantorRelationships,
-                            value: input.guestFormData.guarantorRelationships,
-                          }
-                        : undefined
-                    }
-                    onSelect={(v) =>
-                      updateGuestFormData({
-                        guarantorRelationships: cast(v.value),
-                      })
-                    }
-                    options={BOOKING_APPLICATION_GUARANTOR_RELATIONSHIPS.sort(
-                      (a, b) => (a.sequence ?? 1) - (b.sequence ?? 1),
-                    )}
-                    renderItem={SelectOption}
+                <View className="gap-4">
+                  <View>
+                    <SelectInput
+                      focused
+                      label="Guarantor Relationship"
+                      placeholder="Employer"
+                      description="How is your guarantor related to you? Landlords prefer close family members or employers."
+                      defaultValue={
+                        input.guestFormData?.guarantorRelationships
+                          ? {
+                              label:
+                                BOOKING_APPLICATION_GUARANTOR_RELATIONSHIPS.find(
+                                  (v) => v.value === input.guestFormData?.guarantorRelationships,
+                                )?.label ?? input.guestFormData.guarantorRelationships,
+                              value: input.guestFormData.guarantorRelationships,
+                            }
+                          : undefined
+                      }
+                      onSelect={(v) =>
+                        updateGuestFormData({
+                          guarantorRelationships: cast(v.value),
+                        })
+                      }
+                      options={BOOKING_APPLICATION_GUARANTOR_RELATIONSHIPS.sort(
+                        (a, b) => (a.sequence ?? 1) - (b.sequence ?? 1),
+                      )}
+                      renderItem={SelectOption}
+                    />
+                  </View>
+                  <FloatingLabelInput
+                    label="Guarantor Full Name"
+                    value={input.guestFormData?.guarantorName ?? ''}
+                    onChangeText={(v) => updateGuestFormData({ guarantorName: v })}
+                  />
+                  <FloatingLabelInput
+                    label="Guarantor Phone Number"
+                    keyboardType="phone-pad"
+                    value={input.guestFormData?.guarantorPhone ?? ''}
+                    onChangeText={(v) => updateGuestFormData({ guarantorPhone: v })}
+                  />
+                  <FloatingLabelInput
+                    label="Guarantor Address"
+                    value={input.guestFormData?.guarantorAddress ?? ''}
+                    onChangeText={(v) => updateGuestFormData({ guarantorAddress: v })}
                   />
                 </View>
               )}
