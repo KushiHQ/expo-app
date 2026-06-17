@@ -210,6 +210,9 @@ export default function KycImage() {
               },
             },
           });
+          // Swap the local capture for the uploaded URL so the footer moves from
+          // the Confirm state into the confirmed (Retake + Continue) state.
+          setKycImage(res.data.uploadKycImage.image?.secureUrl);
         }
       })
       .finally(() => setUploading(false));
@@ -227,14 +230,49 @@ export default function KycImage() {
             className="border-t p-4"
             style={{ backgroundColor: colors.background, borderColor: hexToRgba(colors.text, 0.2) }}
           >
-            <Button
-              disabled={!user.user?.kyc?.image?.secureUrl}
-              onPress={() => router.push('/kyc/nin')}
-              type="primary"
-              className="py-[18px]"
-            >
-              <ThemedText content="primary">Continue</ThemedText>
-            </Button>
+            {!kycImage ? (
+              // No image yet → capture (gated on a detected face).
+              <Button
+                disabled={!canCapture}
+                onPress={handleCapture}
+                type="primary"
+                className="py-[18px]"
+              >
+                <ThemedText content="primary">Capture</ThemedText>
+              </Button>
+            ) : kycImage.startsWith('file') ? (
+              // Captured but not yet uploaded → retake or confirm.
+              <View className="flex-row gap-4">
+                <Button
+                  onPress={() => setKycImage(undefined)}
+                  variant="outline"
+                  className="flex-1 py-[18px]"
+                >
+                  <ThemedText>Retake</ThemedText>
+                </Button>
+                <Button onPress={handleUploadImage} type="primary" className="flex-1 py-[18px]">
+                  <ThemedText content="primary">Confirm</ThemedText>
+                </Button>
+              </View>
+            ) : (
+              // Confirmed (uploaded) → retake or continue.
+              <View className="flex-row gap-4">
+                <Button
+                  onPress={() => setKycImage(undefined)}
+                  variant="outline"
+                  className="flex-1 py-[18px]"
+                >
+                  <ThemedText>Retake</ThemedText>
+                </Button>
+                <Button
+                  onPress={() => router.push('/kyc/nin')}
+                  type="primary"
+                  className="flex-1 py-[18px]"
+                >
+                  <ThemedText content="primary">Continue</ThemedText>
+                </Button>
+              </View>
+            )}
           </View>
         }
       >
@@ -280,23 +318,6 @@ export default function KycImage() {
                   Please ensure your face is fully visible and well-lit. This image will be used to
                   verify your identity against your NIN and BVN records.
                 </ThemedText>
-                <View className="max-w-[400px] flex-row gap-4">
-                  <Button
-                    onPress={() => setKycImage(undefined)}
-                    variant="outline"
-                    className="mt-8 flex-1 py-[14px]"
-                  >
-                    <ThemedText>Retake</ThemedText>
-                  </Button>
-                  <Button
-                    onPress={handleUploadImage}
-                    disabled={!kycImage.startsWith('file')}
-                    type="primary"
-                    className="mt-8 flex-1 py-[14px]"
-                  >
-                    <ThemedText content="primary">Confirm</ThemedText>
-                  </Button>
-                </View>
               </View>
             ) : (
               <Animated.View
@@ -322,14 +343,6 @@ export default function KycImage() {
                     <ThemedText style={styles.detectedLabel}>Face locked</ThemedText>
                   </Animated.View>
                 )}
-                <Button
-                  onPress={handleCapture}
-                  disabled={!canCapture}
-                  type="primary"
-                  className="mt-4 w-full max-w-[300px] py-[16px]"
-                >
-                  <ThemedText content="primary">Capture</ThemedText>
-                </Button>
               </Animated.View>
             )}
           </View>
