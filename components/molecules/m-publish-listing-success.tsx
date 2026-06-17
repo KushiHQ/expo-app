@@ -50,13 +50,9 @@ const PublishListingSuccess: React.FC<Props> = ({ show, onClose, hostingId }) =>
             />
           </View>
         </View>
-        <ThemedText
-          className="mb-4 text-center"
-          style={{ fontSize: 13, opacity: 0.6 }}
-        >
-          Verification is optional — your listing stays up whether or not it’s
-          verified. Getting verified earns a trust badge that helps guests choose
-          your property.
+        <ThemedText className="mb-4 text-center" style={{ fontSize: 13, opacity: 0.6 }}>
+          Verification is optional — your listing stays up whether or not it’s verified. Getting
+          verified earns a trust badge that helps guests choose your property.
         </ThemedText>
         <View className="gap-4">
           {hostingId && (

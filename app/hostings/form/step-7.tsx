@@ -109,11 +109,11 @@ export default function NewHostingStep7() {
                   sectionVariables.length === 0
                     ? 'default'
                     : sectionVariables.every(({ clause, variable }) => {
-                        const value = clause.providedValues.find(
-                          (pv) => pv.key === variable.name,
-                        )?.value;
-                        return !!value && value.trim().length > 0;
-                      })
+                          const value = clause.providedValues.find(
+                            (pv) => pv.key === variable.name,
+                          )?.value;
+                          return !!value && value.trim().length > 0;
+                        })
                       ? 'success'
                       : 'error';
                 return (
