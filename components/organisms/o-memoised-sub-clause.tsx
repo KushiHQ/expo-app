@@ -23,17 +23,29 @@ const MemoizedSubClause = React.memo(
       variable: SubClauseValueInput,
     ) => void;
   }) => {
-    // Clauses with variable fields to fill (or non-mandatory, removable ones)
-    // are the actionable ones — tint them so the user can tell them apart from
-    // the fixed, non-editable clauses (which render muted). Clause text itself
-    // is never editable and there are no custom clauses by design.
-    const isEditable = clause.requiredVariables.length > 0 || !clause.isMandatory;
+    // Clauses with variable fields go RED until every field is filled, then
+    // GREEN — so unfinished entries are obvious at a glance. Non-variable
+    // removable clauses keep the neutral accent; fixed ones render muted.
+    const hasVariables = clause.requiredVariables.length > 0;
+    const allVariablesFilled =
+      hasVariables &&
+      clause.requiredVariables.every((variable) => {
+        const value = clause.providedValues.find((pv) => pv.key === variable.name)?.value;
+        return !!value && value.trim().length > 0;
+      });
+    const tint = hasVariables
+      ? allVariablesFilled
+        ? 'success'
+        : 'error'
+      : !clause.isMandatory
+        ? 'primary'
+        : 'shade';
     return (
       <Collapsible
         title={clause.title}
         description={clause.description}
         key={clause.id}
-        tint={isEditable ? 'primary' : 'shade'}
+        tint={tint}
       >
         <View className="mt-4">
           {clause.content && (

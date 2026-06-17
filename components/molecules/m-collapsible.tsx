@@ -17,7 +17,7 @@ import Checkbox from '../atoms/a-checkbox';
 interface CollapsibleProps {
   title: string;
   outline?: boolean;
-  tint?: 'primary' | 'success' | 'default' | 'shade';
+  tint?: 'primary' | 'success' | 'error' | 'default' | 'shade';
   withCheckbox?: boolean;
   checked?: boolean;
   checkDisabled?: boolean;
@@ -93,11 +93,13 @@ const Collapsible: React.FC<CollapsibleProps> = ({
   function getTintColor() {
     return tint === 'success'
       ? colors.success
-      : tint === 'shade'
-        ? colors.shade
-        : tint === 'primary'
-          ? colors.primary
-          : colors.text;
+      : tint === 'error'
+        ? colors.error
+        : tint === 'shade'
+          ? colors.shade
+          : tint === 'primary'
+            ? colors.primary
+            : colors.text;
   }
 
   return (

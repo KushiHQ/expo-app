@@ -94,21 +94,42 @@ export default function NewHostingStep7() {
               </View>
             )}
             {hosting &&
-              input.tenancyAgreementTemplate?.sections.map((section, sIdx) => (
-                <Collapsible
-                  title={section.title}
-                  description={section.description}
-                  key={section.id}
-                >
-                  <View style={{ marginTop: 12 }}>
-                    {section.preamble && (
-                      <TenancyAgreementVariableText hosting={hosting} text={section.preamble} />
-                    )}
-                  </View>
-                  <View style={{ marginTop: 12 }}>
-                    {section.subClauses
-                      .filter((clause) => subClauseConditionMet(clause.id, hosting))
-                      .map((clause, cIdx) => (
+              input.tenancyAgreementTemplate?.sections.map((section, sIdx) => {
+                const visibleClauses = section.subClauses.filter((clause) =>
+                  subClauseConditionMet(clause.id, hosting),
+                );
+                // Roll up variable-completion for the whole section so the
+                // collapsed header signals unfinished business at a glance:
+                // red while any required variable is blank, green once all are
+                // filled, neutral when the section has no variables to fill.
+                const sectionVariables = visibleClauses.flatMap((clause) =>
+                  clause.requiredVariables.map((variable) => ({ clause, variable })),
+                );
+                const sectionTint =
+                  sectionVariables.length === 0
+                    ? 'default'
+                    : sectionVariables.every(({ clause, variable }) => {
+                        const value = clause.providedValues.find(
+                          (pv) => pv.key === variable.name,
+                        )?.value;
+                        return !!value && value.trim().length > 0;
+                      })
+                      ? 'success'
+                      : 'error';
+                return (
+                  <Collapsible
+                    title={section.title}
+                    description={section.description}
+                    key={section.id}
+                    tint={sectionTint}
+                  >
+                    <View style={{ marginTop: 12 }}>
+                      {section.preamble && (
+                        <TenancyAgreementVariableText hosting={hosting} text={section.preamble} />
+                      )}
+                    </View>
+                    <View style={{ marginTop: 12 }}>
+                      {visibleClauses.map((clause, cIdx) => (
                         <MemoizedSubClause
                           key={clause.id}
                           clause={clause}
@@ -118,9 +139,10 @@ export default function NewHostingStep7() {
                           onUpdateVariable={handleUpdateVariable}
                         />
                       ))}
-                  </View>
-                </Collapsible>
-              ))}
+                    </View>
+                  </Collapsible>
+                );
+              })}
             <Button type="text" style={{ alignSelf: 'flex-end' }} onPress={() => setEditOpen(true)}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <FluentTextBulletListSquareEdit20Regular color={colors.background} size={24} />
