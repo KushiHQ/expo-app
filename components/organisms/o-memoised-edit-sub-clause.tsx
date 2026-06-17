@@ -25,13 +25,16 @@ export const MemoizedEditSubClause = React.memo(
     isChecked: boolean;
     onToggle: (sectionId: string, clause: SubClause) => void;
   }) => {
+    // Non-mandatory sub-clauses are the ones the user can toggle off — highlight
+    // them; mandatory (fixed) ones render muted.
+    const toggleable = !clause.isMandatory;
     return (
       <Collapsible
         withCheckbox
         checked={isChecked}
         onCheckedChange={() => onToggle(sectionId, clause)}
         checkDisabled={clause.isMandatory}
-        tint={isChecked ? 'primary' : 'shade'}
+        tint={toggleable ? 'primary' : 'shade'}
         title={clause.title}
         description={clause.description}
       >
@@ -77,6 +80,10 @@ export const MemoizedEditSection = React.memo(
     hasSubClause: (clause: SubClause) => boolean;
     onToggleSubClause: (sectionId: string, clause: SubClause) => void;
   }) => {
+    // Highlight sections that contain at least one toggleable (non-mandatory)
+    // sub-clause — those are where the user can opt sub-clauses out, so they
+    // should stand out at a glance. Fully-mandatory sections render muted.
+    const hasToggleable = section.subClauses.some((sub) => !sub.isMandatory);
     return (
       <Collapsible
         withCheckbox
@@ -85,7 +92,7 @@ export const MemoizedEditSection = React.memo(
         checkDisabled={
           !!section.subClauses.find((sub) => sub.isMandatory) || !section.subClauses.length
         }
-        tint={isChecked ? 'primary' : 'shade'}
+        tint={hasToggleable ? 'primary' : 'shade'}
         title={section.title}
         description={section.description}
       >
