@@ -238,18 +238,24 @@ export default function BookingApplicationStep2() {
                     />
                   </View>
                   <FloatingLabelInput
+                    focused
                     label="Guarantor Full Name"
+                    placeholder="e.g. Jane Doe"
                     value={input.guestFormData?.guarantorName ?? ''}
                     onChangeText={(v) => updateGuestFormData({ guarantorName: v })}
                   />
                   <FloatingLabelInput
+                    focused
                     label="Guarantor Phone Number"
+                    placeholder="e.g. 0801 234 5678"
                     keyboardType="phone-pad"
                     value={input.guestFormData?.guarantorPhone ?? ''}
                     onChangeText={(v) => updateGuestFormData({ guarantorPhone: v })}
                   />
                   <FloatingLabelInput
+                    focused
                     label="Guarantor Address"
+                    placeholder="e.g. 12 Admiralty Way, Lekki"
                     value={input.guestFormData?.guarantorAddress ?? ''}
                     onChangeText={(v) => updateGuestFormData({ guarantorAddress: v })}
                   />
