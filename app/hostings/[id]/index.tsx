@@ -35,6 +35,9 @@ export default function HostingDetails() {
   const { id } = useLocalSearchParams();
   const [{ data, error, fetching }] = useHostingQuery({
     variables: { hostingId: cast(id) },
+    // Show cache instantly, then refetch so host edits (made on another account)
+    // appear without waiting for the document cache to invalidate.
+    requestPolicy: 'cache-and-network',
   });
   const colors = useThemeColors();
   const { isTablet } = useBreakpoint();
@@ -45,7 +48,11 @@ export default function HostingDetails() {
 
   const handleShare = async () => {
     const slug = `${slugify(hosting?.title ?? '')}___${id}`;
-    const shareUrl = (process.env.EXPO_PUBLIC_SHARE_PROPERTY_URL ?? '').replace('<slug>', slug);
+    // Hardcoded fallback: EAS builds don't bundle the local .env, so the env var
+    // can be undefined in production → an empty `url`, which iOS Share rejects.
+    const base =
+      process.env.EXPO_PUBLIC_SHARE_PROPERTY_URL || 'https://kushicorp.com/hostings/<slug>';
+    const shareUrl = base.replace('<slug>', slug);
     try {
       await Share.share({
         title: hosting?.title ?? undefined,

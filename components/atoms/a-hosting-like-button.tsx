@@ -20,6 +20,11 @@ type Props = {
 const HostingLikeButton: React.FC<Props> = ({ saved: defSaved, className, id, onUpdate }) => {
   const colors = useThemeColors();
   const [saved, setSaved] = React.useState(defSaved ?? false);
+  // Re-sync when the prop changes (refetch, or FlatList recycling this instance
+  // for a different hosting) — otherwise the heart shows a stale saved state.
+  React.useEffect(() => {
+    setSaved(defSaved ?? false);
+  }, [defSaved]);
   const [{ fetching: savingHosting }, saveHosting] = useCreateUpdateSavedHostingMutation();
   const [{ fetching: deletingSaved }, deleteSaved] = useDeleteSavedHostingMutation();
 

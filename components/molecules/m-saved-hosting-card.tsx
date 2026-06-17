@@ -83,7 +83,13 @@ const SavedHostingCard: React.FC<Props> = ({
       >
         <Image
           source={{
-            uri: hosting.hosting.coverImage?.asset.publicUrl,
+            // Fall back through: hosting cover → the saved record's own image →
+            // a static placeholder, so the tile never renders a broken image
+            // (e.g. a listing saved before it had a cover photo).
+            uri:
+              hosting.hosting.coverImage?.asset.publicUrl ??
+              hosting.image?.asset.publicUrl ??
+              FALLBACK_IMAGE,
           }}
           style={{ height: '100%', width: '100%' }}
           contentFit="cover"

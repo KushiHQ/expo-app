@@ -23,8 +23,18 @@ const MemoizedSubClause = React.memo(
       variable: SubClauseValueInput,
     ) => void;
   }) => {
+    // Clauses with variable fields to fill (or non-mandatory, removable ones)
+    // are the actionable ones — tint them so the user can tell them apart from
+    // the fixed, non-editable clauses (which render muted). Clause text itself
+    // is never editable and there are no custom clauses by design.
+    const isEditable = clause.requiredVariables.length > 0 || !clause.isMandatory;
     return (
-      <Collapsible title={clause.title} description={clause.description} key={clause.id}>
+      <Collapsible
+        title={clause.title}
+        description={clause.description}
+        key={clause.id}
+        tint={isEditable ? 'primary' : 'shade'}
+      >
         <View className="mt-4">
           {clause.content && (
             <TenancyAgreementVariableText

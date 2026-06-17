@@ -16,6 +16,10 @@ import { Tabs, useRouter, useSegments } from 'expo-router';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Anchor the tab group to analytics so a cold start / restored navigation state
+// can't strand the user on a tab root (e.g. profile) with no way back.
+export const unstable_settings = { initialRouteName: 'analytics' };
+
 const SIDEBAR_ITEMS: SidebarNavItem[] = [
   {
     name: 'analytics',
