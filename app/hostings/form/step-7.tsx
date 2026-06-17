@@ -86,7 +86,7 @@ export default function NewHostingStep7() {
             title="Agreement Clauses"
             subtitle="Select the rules and restrictions that apply to your property"
           >
-            {(templateFetching || fetchingHosting) && (
+            {(templateFetching || fetchingHosting) && !input.tenancyAgreementTemplate && (
               <View style={{ gap: 10 }}>
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Skeleton key={i} style={{ height: 50, borderRadius: 12 }} />

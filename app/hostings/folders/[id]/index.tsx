@@ -99,7 +99,7 @@ export default function HostingFolder() {
     <>
       <DetailsLayout title={data?.savedHostingFolder.folderName} withProfile>
         <View style={{ marginTop: 24, gap: 32 }}>
-          {(fetching || savedFetching) && (
+          {(fetching || savedFetching) && hostings.length === 0 && (
             <View style={{ gap: 12 }}>
               <View style={{ paddingHorizontal: 4 }}>
                 <Skeleton

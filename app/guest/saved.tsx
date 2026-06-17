@@ -181,7 +181,7 @@ function SavedContent() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
         <View className="mt-6 gap-8">
-          {(folderFetching || savedFetching) && (
+          {(folderFetching || savedFetching) && !hasData && (
             <View className="gap-3">
               <View className="px-1">
                 <Skeleton
