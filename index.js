@@ -1,3 +1,8 @@
+// Register Notifee background handler BEFORE anything else.
+// This must execute at the top-level of the bundle — Notifee requires
+// it to be registered before the app process is suspended.
+import './lib/notifications/background-handler';
+
 import 'expo-router/entry';
 import messaging from '@react-native-firebase/messaging';
 import RNCallKeep from 'react-native-callkeep';

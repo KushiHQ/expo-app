@@ -27,37 +27,38 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
   const colors = useThemeColors();
   const [, markAsRead] = useMarkNotificationAsReadMutation();
 
+  // Defensive data parsing — notification.data may be a JSON string or already an object
+  const data = React.useMemo(() => {
+    const raw = notification.data;
+    if (!raw) return {};
+    if (typeof raw === 'string') {
+      try { return JSON.parse(raw); } catch { return {}; }
+    }
+    return raw;
+  }, [notification.data]);
+
   const getRoute = (): string | null => {
-    const subject = notification.data?.subject;
-    const id = notification.data?.id;
-    const intent = notification.data?.intent;
+    const subject = data.subject;
+    const id = data.id;
+    const intent = data.intent;
 
     if (!id) return null;
 
-    // Subject-based routing takes priority over intent
-    if (subject === NotificationSubject.Booking) {
-      return `/bookings/${id}`;
-    }
-    if (subject === NotificationSubject.BookingApplication) {
-      return `/users/booking-applications/${id}`;
-    }
-    if (subject === NotificationSubject.Hosting) {
-      return `/hostings/${id}`;
-    }
-    if (subject === NotificationSubject.Chat) {
-      return `/chats/${id}/`;
-    }
+    // Subject-based routing — compare case-insensitively for robustness
+    const s = String(subject).toLowerCase();
+    if (s === 'booking') return `/bookings/${id}`;
+    if (s === 'bookingapplication') return `/users/booking-applications/${id}`;
+    if (s === 'hosting') return `/hostings/${id}`;
+    if (s === 'chat') return `/chats/${id}/`;
 
-    // Fall back to intent only when no subject is set
-    if (intent === NotificationIntent.NewMessage) {
-      return `/chats/${id}/`;
-    }
+    // Intent fallback
+    const i = String(intent).toLowerCase();
+    if (i === 'notification') return `/chats/${id}/`;
 
     return null;
   };
 
-  const handlePress = async () => {
-    // Mark as read on any press if not already read
+  const markReadAndNavigate = async () => {
     if (!notification.isRead) {
       await markAsRead({ notificationId: notification.id });
       if (Platform.OS === 'ios') {
@@ -72,23 +73,32 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
     }
   };
 
+  const handleCardPress = () => markReadAndNavigate();
+
+  const handleButtonPress = (e: any) => {
+    e.stopPropagation?.();
+    markReadAndNavigate();
+  };
+
   const hasRoute = !!getRoute();
   const isUnread = !notification.isRead;
 
   const getActionLabel = () => {
-    const subject = notification.data?.subject;
-    const intent = notification.data?.intent;
-    if (subject === NotificationSubject.Booking) return 'View Booking';
-    if (subject === NotificationSubject.BookingApplication) return 'View Application';
-    if (subject === NotificationSubject.Hosting) return 'View Listing';
-    if (subject === NotificationSubject.Chat) return 'Open Chat';
-    if (intent === NotificationIntent.NewMessage) return 'Open Chat';
+    const subject = data.subject;
+    const intent = data.intent;
+    const s = String(subject).toLowerCase();
+    const i = String(intent).toLowerCase();
+    if (s === 'booking') return 'View Booking';
+    if (s === 'bookingapplication') return 'View Application';
+    if (s === 'hosting') return 'View Listing';
+    if (s === 'chat') return 'Open Chat';
+    if (i === 'notification') return 'Open Chat';
     return 'View';
   };
 
   return (
     <Pressable
-      onPress={handlePress}
+      onPress={handleCardPress}
       className="overflow-hidden rounded-xl"
       style={{
         backgroundColor: isUnread ? hexToRgba(colors.primary, 0.07) : hexToRgba(colors.text, 0.05),
@@ -157,7 +167,7 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
           {/* Action button — only shown when there's a route */}
           {hasRoute && (
             <View className="mt-2 self-start">
-              <Button variant="outline" type="shade" className="px-3 py-1.5" onPress={handlePress}>
+              <Button variant="outline" type="shade" className="px-3 py-1.5" onPress={handleButtonPress}>
                 <ThemedText
                   style={{
                     fontSize: 11,

@@ -1,26 +1,12 @@
-import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
-import { handleIncomingCall, handleNotifeeEvent } from '@/lib/utils/call';
-import * as Linking from 'expo-linking';
+import notifee, { AndroidImportance } from '@notifee/react-native';
 
 export function initializeNotifications() {
-  // Note: setBackgroundMessageHandler is already registered in index.js.
-  // Registering it again here via the modular API would be a duplicate — omitted.
-
-  notifee.onBackgroundEvent(async (event) => {
-    // Handle chat message notification taps from the background
-    if (event.type === EventType.PRESS || event.type === EventType.ACTION_PRESS) {
-      const data = event.detail.notification?.data as any;
-      if (data?.intent === 'notification' && data?.chatId) {
-        await Linking.openURL(`kushi://chats/${data.chatId}`);
-        return;
-      }
-      if (data?.intent === 'verification' && data?.hostingId) {
-        await Linking.openURL(`kushi://hostings/form/verification/overview?id=${data.hostingId}`);
-        return;
-      }
-    }
-    await handleNotifeeEvent(event);
-  });
+  // ─── REMOVED ────────────────────────────────────────────────────────
+  // The notifee.onBackgroundEvent() handler now lives in
+  // lib/notifications/background-handler.ts and is imported in index.js
+  // at the top-level of the bundle (required by Notifee for background
+  // tap handling).
+  // ─────────────────────────────────────────────────────────────────────
 
   notifee.setNotificationCategories([
     {
