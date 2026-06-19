@@ -31,7 +31,6 @@ import {
 import Skeleton from '../atoms/a-skeleton';
 import { useRouter } from '@/lib/hooks/use-router';
 import { Reset } from '../icons/i-delete';
-
 type Props = {
   isMapView?: boolean;
 };
@@ -54,9 +53,17 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
   });
 
   const [isInputFocused, setIsInputFocused] = React.useState(false);
+  const textInputRef = React.useRef<TextInput>(null);
 
   const colors = useThemeColors();
   const { filter, updateFilter, resetFilter } = useHostingFilterStore();
+
+  React.useEffect(() => {
+    const listener = Keyboard.addListener('keyboardDidHide', () => {
+      setIsInputFocused(false);
+    });
+    return () => listener.remove();
+  }, []);
 
   function handleApply() {
     setFilterOpen(false);
@@ -159,6 +166,7 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
           )}
 
           <TextInput
+            ref={textInputRef}
             value={searchInput}
             cursorColor={colors.primary}
             className={twMerge('flex-1', isInputFocused && 'pt-1.5')}
@@ -286,6 +294,24 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
             </ScrollView>
           )}
         </View>
+      )}
+
+      {isInputFocused && (
+        <Pressable
+          onPress={() => {
+            textInputRef.current?.blur();
+            Keyboard.dismiss();
+            setIsInputFocused(false);
+          }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 99,
+          }}
+        />
       )}
 
       <BottomSheet isVisible={filterOpen} onClose={() => setFilterOpen(false)}>

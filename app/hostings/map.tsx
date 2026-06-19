@@ -4,7 +4,7 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useHostingFilterStore } from '@/lib/stores/hostings';
 import { useHostingsQuery, PublishStatus, Hosting } from '@/lib/services/graphql/generated';
 import React, { useState, useEffect } from 'react';
-import { View, ActivityIndicator, Alert, Pressable } from 'react-native';
+import { View, ActivityIndicator, Alert, Pressable, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import HostingMapCard from '@/components/molecules/m-hosting-map-card';
@@ -34,7 +34,7 @@ export default function HostingDiscoveryMap() {
   const [selectedHosting, setSelectedHosting] = useState<Partial<Hosting> | null>(null);
 
   const [{ data, fetching }] = useHostingsQuery({
-    variables: { filters: { ...filter, publishStatus: PublishStatus.Live } },
+    variables: { filters: { ...filter, publishStatus: PublishStatus.Live, onSale: true } },
     pause: isFocusedMode,
   });
 
@@ -57,27 +57,27 @@ export default function HostingDiscoveryMap() {
   const focusedMarker: MapHosting[] =
     isFocusedMode && latitude && longitude
       ? [
-          {
-            id: hostingId!,
-            latitude: Number(latitude),
-            longitude: Number(longitude),
-            price: Number(price ?? 0),
-            title: decodeURIComponent(title ?? ''),
-          },
-        ]
+        {
+          id: hostingId!,
+          latitude: Number(latitude),
+          longitude: Number(longitude),
+          price: Number(price ?? 0),
+          title: decodeURIComponent(title ?? ''),
+        },
+      ]
       : [];
 
   const mapHostings: MapHosting[] = isFocusedMode
     ? focusedMarker
     : (data?.hostings
-        ?.map((h) => ({
-          id: h.id,
-          latitude: Number(h.latitude),
-          longitude: Number(h.longitude),
-          price: Number(h.price),
-          title: h.title ?? '',
-        }))
-        .filter((h) => !isNaN(h.latitude) && !isNaN(h.longitude)) ?? []);
+      ?.map((h) => ({
+        id: h.id,
+        latitude: Number(h.latitude),
+        longitude: Number(h.longitude),
+        price: Number(h.price),
+        title: h.title ?? '',
+      }))
+      .filter((h) => !isNaN(h.latitude) && !isNaN(h.longitude)) ?? []);
 
   const handleMarkerSelect = (mapH: MapHosting) => {
     if (isFocusedMode) return;
@@ -91,7 +91,10 @@ export default function HostingDiscoveryMap() {
       : (userLocation ?? undefined);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
+    <Pressable
+      onPress={() => Keyboard.dismiss()}
+      style={{ flex: 1, backgroundColor: colors.background }}
+    >
       <ExpoMap
         hostings={mapHostings}
         coordinates={focusCoordinates}
@@ -139,6 +142,6 @@ export default function HostingDiscoveryMap() {
           <ActivityIndicator color={colors.primary} />
         </View>
       )}
-    </View>
+    </Pressable>
   );
 }

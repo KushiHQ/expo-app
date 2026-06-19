@@ -157,6 +157,7 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ flexGrow: 1 }}
               refreshControl={refreshControl}
+              keyboardDismissMode="interactive"
             >
               {Content}
             </ScrollView>
