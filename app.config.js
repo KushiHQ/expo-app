@@ -58,8 +58,7 @@ export default ({ config }) => ({
 			"android.permission.USE_FULL_SCREEN_INTENT",
 			"android.permission.WAKE_LOCK",
 			"android.permission.DISABLE_KEYGUARD",
-			"android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE",
-			"android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+			
 			"android.permission.FOREGROUND_SERVICE_CAMERA",
 			"android.permission.FOREGROUND_SERVICE_MICROPHONE",
 			"android.permission.FOREGROUND_SERVICE_PHONE_CALL",
