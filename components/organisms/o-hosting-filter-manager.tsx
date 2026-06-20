@@ -171,11 +171,16 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
             cursorColor={colors.primary}
             className={twMerge('flex-1', isInputFocused && 'pt-1.5')}
             placeholderClassName="text-ellipsis"
-            style={{ color: colors['text'], fontSize: 14 }}
+            // NOTE: `multiline` is intentionally constant. On iOS, toggling
+            // multiline swaps the underlying native view (single- vs multi-line),
+            // which remounts the input, drops focus, and dismisses the keyboard
+            // the instant it opens. Keep it fixed and drive the collapsed vs.
+            // expanded look with maxHeight/numberOfLines (those don't remount).
+            style={{ color: colors['text'], fontSize: 14, maxHeight: isInputFocused ? 96 : 22 }}
             placeholderTextColor={hexToRgba(colors['text'], 0.5)}
             placeholder="Enter location, price, property type, property amenities and features etc."
             onChangeText={setSearchInput}
-            multiline={isInputFocused || searchInput.length > 0}
+            multiline
             numberOfLines={isInputFocused || searchInput.length > 0 ? 4 : 1}
             onFocus={() => setIsInputFocused(true)}
             onBlur={() => setIsInputFocused(false)}
