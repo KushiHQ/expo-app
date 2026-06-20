@@ -305,7 +305,7 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
           }}
           style={{
             position: 'absolute',
-            top: 0,
+            top: '100%',
             left: 0,
             right: 0,
             bottom: 0,
