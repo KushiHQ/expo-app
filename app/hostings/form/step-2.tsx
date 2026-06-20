@@ -1,25 +1,30 @@
-import Button from '@/components/atoms/a-button';
-import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
-import HostingRoomImage from '@/components/atoms/a-hosting-room-image';
-import LoadingModal from '@/components/atoms/a-loading-modal';
-import ThemedText from '@/components/atoms/a-themed-text';
-import DetailsLayout from '@/components/layouts/details';
-import HostingStepper from '@/components/molecules/m-hosting-stepper';
-import ThemedModal from '@/components/molecules/m-modal';
-import SectionCard from '@/components/molecules/m-section-card';
-import RoomItemCard from '@/components/organisms/o-room-item-card';
-import { PROPERTY_BLURHASH } from '@/lib/constants/images';
-import { Fonts } from '@/lib/constants/theme';
-import { useHostingFormRoomUtils } from '@/lib/hooks/forms/use-hosting-form-room-utils';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { hexToRgba } from '@/lib/utils/colors';
-import { Image } from 'expo-image';
-import { useLocalSearchParams } from 'expo-router';
-import { useRouter } from '@/lib/hooks/use-router';
-import { Room } from '@/lib/types/enums/hostings';
-import { Layers } from 'lucide-react-native';
-import React, { useRef } from 'react';
-import { RefreshControl, TextInput, View } from 'react-native';
+import Button from "@/components/atoms/a-button";
+import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
+import HostingRoomImage from "@/components/atoms/a-hosting-room-image";
+import LoadingModal from "@/components/atoms/a-loading-modal";
+import ThemedText from "@/components/atoms/a-themed-text";
+import DetailsLayout from "@/components/layouts/details";
+import HostingStepper from "@/components/molecules/m-hosting-stepper";
+import ThemedModal from "@/components/molecules/m-modal";
+import SectionCard from "@/components/molecules/m-section-card";
+import RoomItemCard from "@/components/organisms/o-room-item-card";
+import {
+  DraggableItem,
+  useReorderController,
+} from "@/components/molecules/m-draggable-reorder";
+import { PROPERTY_BLURHASH } from "@/lib/constants/images";
+import { Fonts } from "@/lib/constants/theme";
+import { useHostingFormRoomUtils } from "@/lib/hooks/forms/use-hosting-form-room-utils";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { hexToRgba } from "@/lib/utils/colors";
+import { Image } from "expo-image";
+import { useLocalSearchParams } from "expo-router";
+import { useRouter } from "@/lib/hooks/use-router";
+import { Room } from "@/lib/types/enums/hostings";
+import { Layers } from "lucide-react-native";
+import React, { useRef } from "react";
+import { RefreshControl, ScrollView, TextInput, View } from "react-native";
+import { CameraLinear } from "@/components/icons/i-camera";
 
 export default function NewHostingStep2() {
   const router = useRouter();
@@ -45,14 +50,45 @@ export default function NewHostingStep2() {
     updateActiveRoom,
     setDeleteModalIndex,
     handleDeleteActiveRoom,
+    handleSetCoverImage,
+    coverImageUrl,
+    handleReorderRooms,
+    handleReorderRoomImages,
   } = useHostingFormRoomUtils(String(id));
+
+  // Long-press drag-to-reorder: rooms (vertical) and a room's photos (horizontal).
+  const roomReorder = useReorderController({
+    axis: "y",
+    count: rooms.length,
+    estimatedSize: 210,
+    enabled: rooms.length > 1,
+    onReorder: handleReorderRooms,
+  });
+  const imageReorder = useReorderController({
+    axis: "x",
+    count:
+      activeModalIndex !== undefined
+        ? (rooms[activeModalIndex]?.images.length ?? 0)
+        : 0,
+    estimatedSize: 96,
+    enabled:
+      activeModalIndex !== undefined &&
+      (rooms[activeModalIndex]?.images.length ?? 0) > 1,
+    onReorder: (from, to) => {
+      if (activeModalIndex !== undefined)
+        handleReorderRoomImages(activeModalIndex, from, to);
+    },
+  });
 
   const allRoomTypesUsed = rooms.length >= 20;
 
   // Quality floor: require at least 5 photos across all spaces before the host
   // can continue, and surface progress so the requirement is clear.
   const MIN_PHOTOS = 5;
-  const totalPhotos = rooms.reduce((sum, room) => sum + (room.images?.length ?? 0), 0);
+  const totalPhotos = rooms.reduce(
+    (sum, room) => sum + (room.images?.length ?? 0),
+    0,
+  );
   const hasEnoughPhotos = totalPhotos >= MIN_PHOTOS;
 
   const [refreshing, setRefreshing] = React.useState(false);
@@ -89,28 +125,51 @@ export default function NewHostingStep2() {
             title="Spaces & Photos"
             subtitle="Add space types and upload media for each space"
           >
-            {/* Existing room cards */}
-            {rooms.map((room, index) => (
-              <RoomItemCard
-                key={room.id ?? `room-${index}`}
-                index={index}
-                room={room}
-                rooms={rooms}
-                colors={colors}
-                hostingRoomSaving={hostingRoomSaving}
-                handleSaveHostingRoom={handleSaveHostingRoom}
-                handleRoomImageEdit={handleRoomImageEdit}
-                handleDeleteImage={handleDeleteImage}
-                setActiveModalIndex={setActiveModalIndex}
-              />
-            ))}
+            {/* Existing room cards — long-press a card to drag & reorder */}
+            {rooms.length > 0 && (
+              <View>
+                {rooms.length > 1 && (
+                  <ThemedText
+                    style={{
+                      fontSize: 11,
+                      color: hexToRgba(colors.text, 0.35),
+                      marginBottom: 10,
+                    }}
+                  >
+                    Long-press a space to drag and reorder
+                  </ThemedText>
+                )}
+                {rooms.map((room, index) => (
+                  <DraggableItem
+                    key={room.id ?? `room-${index}`}
+                    controller={roomReorder}
+                    index={index}
+                    gap={14}
+                  >
+                    <RoomItemCard
+                      index={index}
+                      room={room}
+                      rooms={rooms}
+                      colors={colors}
+                      hostingRoomSaving={hostingRoomSaving}
+                      handleSaveHostingRoom={handleSaveHostingRoom}
+                      handleRoomImageEdit={handleRoomImageEdit}
+                      handleDeleteImage={handleDeleteImage}
+                      setActiveModalIndex={setActiveModalIndex}
+                      coverImageUrl={coverImageUrl}
+                      handleSetCoverImage={handleSetCoverImage}
+                    />
+                  </DraggableItem>
+                ))}
+              </View>
+            )}
 
             {/* Empty state */}
             {rooms.length === 0 && (
               <View
                 style={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  alignItems: "center",
+                  justifyContent: "center",
                   gap: 10,
                   borderRadius: 12,
                   paddingVertical: 32,
@@ -122,11 +181,12 @@ export default function NewHostingStep2() {
                   style={{
                     fontSize: 13,
                     color: hexToRgba(colors.text, 0.4),
-                    textAlign: 'center',
+                    textAlign: "center",
                     lineHeight: 20,
                   }}
                 >
-                  No spaces added yet.{'\n'}Use the selector below to add your first space.
+                  No spaces added yet.{"\n"}Use the selector below to add your
+                  first space.
                 </ThemedText>
               </View>
             )}
@@ -144,18 +204,23 @@ export default function NewHostingStep2() {
                 handleRoomImageEdit={handleRoomImageEdit}
                 handleDeleteImage={handleDeleteImage}
                 setActiveModalIndex={setActiveModalIndex}
+                coverImageUrl={coverImageUrl}
+                handleSetCoverImage={handleSetCoverImage}
               />
             )}
           </SectionCard>
 
           <View
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
+              flexDirection: "row",
+              alignItems: "center",
               gap: 8,
               borderRadius: 12,
               padding: 12,
-              backgroundColor: hexToRgba(hasEnoughPhotos ? colors.primary : colors.text, 0.06),
+              backgroundColor: hexToRgba(
+                hasEnoughPhotos ? colors.primary : colors.text,
+                0.06,
+              ),
             }}
           >
             <ThemedText
@@ -186,17 +251,30 @@ export default function NewHostingStep2() {
               </ThemedText>
 
               {rooms[activeModalIndex].images.length > 0 && (
-                <View className="flex-row flex-wrap gap-2">
-                  {rooms[activeModalIndex].images.slice(0, 6).map((img, id) => (
-                    <HostingRoomImage
-                      src={img}
-                      key={id}
-                      imageIndex={id}
-                      roomIndex={activeModalIndex}
-                      onDeleteRoomImage={deleteRoomImage}
-                    />
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingVertical: 2 }}
+                >
+                  {rooms[activeModalIndex].images.map((img, id) => (
+                    <DraggableItem
+                      key={img}
+                      controller={imageReorder}
+                      index={id}
+                      gap={8}
+                    >
+                      <HostingRoomImage
+                        src={img}
+                        imageIndex={id}
+                        roomIndex={activeModalIndex}
+                        onDeleteRoomImage={deleteRoomImage}
+                        isCover={!!coverImageUrl && img === coverImageUrl}
+                        canSetCover={!img.startsWith("file")}
+                        onSetCover={handleSetCoverImage}
+                      />
+                    </DraggableItem>
                   ))}
-                </View>
+                </ScrollView>
               )}
 
               <View className="gap-3">
@@ -207,7 +285,9 @@ export default function NewHostingStep2() {
                       value={rooms.at(activeIndex)?.count?.toString()}
                       label="Count"
                       inputMode="numeric"
-                      onChangeText={(v) => updateActiveRoom({ count: Number(v) })}
+                      onChangeText={(v) =>
+                        updateActiveRoom({ count: Number(v) })
+                      }
                       placeholder="How many of this space"
                       returnKeyType="next"
                       onSubmitEditing={() => descriptionRef.current?.focus()}
@@ -220,9 +300,9 @@ export default function NewHostingStep2() {
                       backgroundColor: hexToRgba(colors.text, 0.08),
                       borderRadius: 10,
                     }}
-                    className="items-center justify-center px-4"
+                    className="mb-2 flex-row items-center gap-1.5 px-4 py-2"
                   >
-                    <ThemedText style={{ fontSize: 12 }}>Add{'\n'}Photos</ThemedText>
+                    <CameraLinear color={colors.text} size={24} />
                   </Button>
                 </View>
                 <FloatingLabelInput
@@ -234,7 +314,9 @@ export default function NewHostingStep2() {
                   placeholder="Brief description of this space"
                   containerStyle={{ minHeight: 80 }}
                   numberOfLines={4}
-                  onChangeText={(description) => updateActiveRoom({ description })}
+                  onChangeText={(description) =>
+                    updateActiveRoom({ description })
+                  }
                   returnKeyType="done"
                 />
               </View>
@@ -276,7 +358,10 @@ export default function NewHostingStep2() {
             <View className="gap-6">
               <ThemedText style={{ fontFamily: Fonts.medium }}>
                 Delete this space
-                {rooms[deleteModalIndex]?.images.length ? ' and all its photos' : ''}?
+                {rooms[deleteModalIndex]?.images.length
+                  ? " and all its photos"
+                  : ""}
+                ?
               </ThemedText>
               <View className="items-center gap-3">
                 <View className="h-28 w-32">
@@ -284,11 +369,11 @@ export default function NewHostingStep2() {
                     source={
                       rooms[deleteModalIndex]?.images.length
                         ? {
-                            uri: rooms[deleteModalIndex].images[0],
-                          }
-                        : require('@/assets/images/room-image.jpg')
+                          uri: rooms[deleteModalIndex].images[0],
+                        }
+                        : require("@/assets/images/room-image.jpg")
                     }
-                    style={{ height: '100%', width: '100%', borderRadius: 10 }}
+                    style={{ height: "100%", width: "100%", borderRadius: 10 }}
                     contentFit="cover"
                     transition={300}
                     placeholder={{ blurhash: PROPERTY_BLURHASH }}
@@ -297,8 +382,12 @@ export default function NewHostingStep2() {
                     priority="high"
                   />
                 </View>
-                <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
-                  {rooms[deleteModalIndex] ? Room[rooms[deleteModalIndex].name] : ''}
+                <ThemedText
+                  style={{ fontFamily: Fonts.semibold, fontSize: 18 }}
+                >
+                  {rooms[deleteModalIndex]
+                    ? Room[rooms[deleteModalIndex].name]
+                    : ""}
                 </ThemedText>
               </View>
               <View className="flex-row items-center gap-2">
@@ -309,7 +398,11 @@ export default function NewHostingStep2() {
                 >
                   <ThemedText content="shade">Cancel</ThemedText>
                 </Button>
-                <Button type="error" className="flex-1" onPress={handleDeleteActiveRoom}>
+                <Button
+                  type="error"
+                  className="flex-1"
+                  onPress={handleDeleteActiveRoom}
+                >
                   <ThemedText content="error">Delete</ThemedText>
                 </Button>
               </View>

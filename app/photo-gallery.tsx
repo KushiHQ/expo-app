@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -6,28 +6,50 @@ import {
   useWindowDimensions,
   useColorScheme,
   Pressable,
-} from 'react-native';
-import Button from '@/components/atoms/a-button';
-import ThemedText from '@/components/atoms/a-themed-text';
-import { StatusBar } from 'expo-status-bar';
-import { useGalleryStore } from '@/lib/stores/gallery';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import ImagePicker from 'react-native-image-crop-picker';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { FluentImageEdit24Regular } from '@/components/icons/i-edit';
-import { Check, ChevronLeft } from 'lucide-react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { cast } from '@/lib/types/utils';
-import { PROPERTY_BLURHASH } from '@/lib/constants/images';
-import { Image } from 'expo-image';
+} from "react-native";
+import Button from "@/components/atoms/a-button";
+import ThemedText from "@/components/atoms/a-themed-text";
+import { StatusBar } from "expo-status-bar";
+import { useGalleryStore } from "@/lib/stores/gallery";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import ImagePicker from "react-native-image-crop-picker";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { FluentImageEdit24Regular } from "@/components/icons/i-edit";
+import { Check, ChevronLeft } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { cast } from "@/lib/types/utils";
+import { PROPERTY_BLURHASH } from "@/lib/constants/images";
+import { Fonts } from "@/lib/constants/theme";
+import { Image } from "expo-image";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import TruncatedText from "@/components/atoms/a-truncated-text";
 
 export default function PhotoGalleryScreen() {
   const router = useRouter();
   const { width, height } = useWindowDimensions();
   const { redirect, fromCamera, viewOnly } = useLocalSearchParams();
-  const { gallery, activeIndex, setActiveIndex, updateActiveImage } = useGalleryStore();
+  const { gallery, captions, activeIndex, setActiveIndex, updateActiveImage } =
+    useGalleryStore();
   const colors = useThemeColors();
-  const colorScheme = useColorScheme() ?? 'light';
+  const caption = captions[activeIndex];
+
+  const [controlsVisible, setControlsVisible] = React.useState(true);
+  const controlsOpacity = useSharedValue(1);
+  const toggleControls = () => {
+    setControlsVisible((visible) => {
+      const next = !visible;
+      controlsOpacity.value = withTiming(next ? 1 : 0, { duration: 180 });
+      return next;
+    });
+  };
+  const chromeStyle = useAnimatedStyle(() => ({
+    opacity: controlsOpacity.value,
+  }));
+  const colorScheme = useColorScheme() ?? "light";
   const insets = useSafeAreaInsets();
 
   const flatListRef = useRef<FlatList>(null);
@@ -84,9 +106,9 @@ export default function PhotoGalleryScreen() {
       const croppedImage = await ImagePicker.openCropper({
         path: currentPhotoUri,
         cropping: true,
-        mediaType: 'photo',
+        mediaType: "photo",
         cropperActiveWidgetColor: colors.primary,
-        cropperStatusBarLight: colorScheme === 'light',
+        cropperStatusBarLight: colorScheme === "light",
         cropperToolbarColor: colors.background,
         cropperToolbarWidgetColor: colors.text,
         freeStyleCropEnabled: true,
@@ -95,9 +117,9 @@ export default function PhotoGalleryScreen() {
 
       updateActiveImage(croppedImage.path);
     } catch (error: any) {
-      if (error.code !== 'E_PICKER_CANCELLED') {
-        console.error('Error cropping photo: ', error);
-        alert('Could not crop photo.');
+      if (error.code !== "E_PICKER_CANCELLED") {
+        console.error("Error cropping photo: ", error);
+        alert("Could not crop photo.");
       }
     }
   };
@@ -120,23 +142,32 @@ export default function PhotoGalleryScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      <Pressable
-        onPress={router.back}
-        style={{
-          position: 'absolute',
-          top: insets.top + 12,
-          left: 20,
-          zIndex: 10,
-          backgroundColor: 'rgba(0,0,0,0.45)',
-          borderRadius: 12,
-          width: 40,
-          height: 40,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+      <Animated.View
+        pointerEvents={controlsVisible ? "auto" : "none"}
+        style={[
+          {
+            position: "absolute",
+            top: insets.top + 12,
+            left: 20,
+            zIndex: 10,
+          },
+          chromeStyle,
+        ]}
       >
-        <ChevronLeft color="#fff" size={22} />
-      </Pressable>
+        <Pressable
+          onPress={router.back}
+          style={{
+            backgroundColor: "rgba(0,0,0,0.45)",
+            borderRadius: 12,
+            width: 40,
+            height: 40,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ChevronLeft color="#fff" size={22} />
+        </Pressable>
+      </Animated.View>
 
       <FlatList
         ref={flatListRef}
@@ -146,18 +177,20 @@ export default function PhotoGalleryScreen() {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         renderItem={({ item }) => (
-          <Image
-            source={{
-              uri: item,
-            }}
-            transition={300}
-            style={{ width: width, height: height }}
-            placeholder={{ blurhash: PROPERTY_BLURHASH }}
-            placeholderContentFit="contain"
-            contentFit="contain"
-            cachePolicy="memory-disk"
-            priority="high"
-          />
+          <Pressable onPress={toggleControls}>
+            <Image
+              source={{
+                uri: item,
+              }}
+              transition={300}
+              style={{ width: width, height: height }}
+              placeholder={{ blurhash: PROPERTY_BLURHASH }}
+              placeholderContentFit="contain"
+              contentFit="contain"
+              cachePolicy="memory-disk"
+              priority="high"
+            />
+          </Pressable>
         )}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
@@ -167,15 +200,61 @@ export default function PhotoGalleryScreen() {
           index,
         })}
         onScrollToIndexFailed={handleScrollToIndexFailed}
-        initialScrollIndex={activeIndex >= 0 && activeIndex < gallery.length ? activeIndex : 0}
+        initialScrollIndex={
+          activeIndex >= 0 && activeIndex < gallery.length ? activeIndex : 0
+        }
       />
 
-      {viewOnly !== 'true' && (
+      {/* Room context overlay (room name + description) for the active image. */}
+      {caption && (caption.title || caption.subtitle) ? (
+        <Animated.View
+          pointerEvents={controlsVisible ? "box-none" : "none"}
+          style={[
+            {
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: height * 0.75,
+              bottom: 0,
+              backgroundColor: "rgba(0,0,0,0.6)",
+              paddingHorizontal: 20,
+              paddingTop: 20,
+              paddingBottom: insets.bottom + 20,
+            },
+            chromeStyle,
+          ]}
+        >
+          {caption.title ? (
+            <ThemedText
+              style={{
+                color: "#fff",
+                fontFamily: Fonts.semibold,
+                fontSize: 16,
+              }}
+            >
+              {caption.title}
+            </ThemedText>
+          ) : null}
+          {caption.subtitle ? (
+            <TruncatedText
+              text={caption.subtitle}
+              style={{
+                fontSize: 16,
+                fontFamily: Fonts.light,
+              }}
+            />
+          ) : null}
+        </Animated.View>
+      ) : null}
+
+      {viewOnly !== "true" && (
         <View style={styles.actions}>
           <Button onPress={handleEditPhoto} className="flex-1">
             <View className="flex-row gap-2">
               <FluentImageEdit24Regular color="#fff" size={20} />
-              <ThemedText style={{ fontSize: 14, color: '#fff' }}>Edit</ThemedText>
+              <ThemedText style={{ fontSize: 14, color: "#fff" }}>
+                Edit
+              </ThemedText>
             </View>
           </Button>
           <Button onPress={onUsePhotos} className="flex-1">
@@ -195,14 +274,14 @@ export default function PhotoGalleryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
+    backgroundColor: "black",
   },
   actions: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 40,
     left: 20,
     right: 20,
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 16,
   },
 });

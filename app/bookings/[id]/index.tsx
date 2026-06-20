@@ -54,6 +54,7 @@ import {
 import React from 'react';
 import { Pressable, View, Modal } from 'react-native';
 import BookingFeedbackPrompt from '@/components/molecules/m-booking-feedback-prompt';
+import { useFeedbackStore, canShowFeedback } from '@/lib/stores/feedback';
 import Pdf from 'react-native-pdf';
 
 const BOOKING_STATUS_COLORS: Record<string, string> = {
@@ -89,12 +90,20 @@ export default function UserBooking() {
   const [showFeedbackPrompt, setShowFeedbackPrompt] = React.useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = React.useState(false);
 
-  // Check if booking is completed and show feedback prompt
+  // Ask for app feedback once a booking is finalized (Completed) — but only
+  // once per booking, ever, and never more than once per cooldown window across
+  // the whole app, so we don't spam the user on every open.
   React.useEffect(() => {
-    if (booking?.status === BookingStatus.Completed && !feedbackSubmitted) {
-      setShowFeedbackPrompt(true);
-    }
-  }, [booking?.status, feedbackSubmitted]);
+    if (booking?.status !== BookingStatus.Completed) return;
+    const bid = cast<string>(id);
+    if (!bid) return;
+    const { handledBookings, markBookingHandled, markPromptShown } = useFeedbackStore.getState();
+    if (handledBookings[bid]) return; // already prompted for this booking
+    if (!canShowFeedback()) return; // global anti-spam cooldown
+    setShowFeedbackPrompt(true);
+    markBookingHandled(bid);
+    markPromptShown();
+  }, [booking?.status, id]);
   const loading = initiatingFinalize || finalizing || initiatingCancel || canceling;
 
   const coverUrl = booking?.hosting?.coverImage?.asset?.publicUrl;

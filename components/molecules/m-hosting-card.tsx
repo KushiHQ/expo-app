@@ -15,6 +15,7 @@ import { PROPERTY_BLURHASH } from '@/lib/constants/images';
 import { HostingQuery, HostingsQuery } from '@/lib/services/graphql/generated';
 import { capitalize } from '@/lib/utils/text';
 import HostingLikeButton from '../atoms/a-hosting-like-button';
+import ListingTypeBadge from '../atoms/a-listing-type-badge';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
@@ -29,7 +30,9 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
   const router = useRouter();
 
   const scale = useSharedValue(1);
-  const images = hosting.rooms.map((r) => r.images).flat();
+  // Server returns up to 4 images already ranked (cover/exterior first), so we
+  // render them directly instead of flattening every room's photos.
+  const images = hosting.images ?? [];
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -88,6 +91,9 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
             <TierBadge tier={hosting.verification.verificationTier} size="sm" />
           </View>
         ) : null}
+        <View className="absolute bottom-4 left-4">
+          <ListingTypeBadge listingType={hosting.listingType} variant="overlay" />
+        </View>
       </View>
       <Pressable
         disabled={disabled}

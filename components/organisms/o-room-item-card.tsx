@@ -1,16 +1,15 @@
-import React, { memo } from 'react';
-import { Room, ROOM_KEYS } from '@/lib/types/enums/hostings';
-import { RoomData } from '@/lib/stores/hostings';
-import { cast } from '@/lib/types/utils';
-import { ScrollView, View } from 'react-native';
-import SelectInput, { SelectOption } from '../molecules/m-select-input';
-import Button from '../atoms/a-button';
-import { hexToRgba } from '@/lib/utils/colors';
+import React, { memo } from "react";
+import { Room, ROOM_KEYS } from "@/lib/types/enums/hostings";
+import { RoomData } from "@/lib/stores/hostings";
+import { cast } from "@/lib/types/utils";
+import { ScrollView, View } from "react-native";
+import SelectInput, { SelectOption } from "../molecules/m-select-input";
+import Button from "../atoms/a-button";
+import { hexToRgba } from "@/lib/utils/colors";
 import {
   Bed,
   Briefcase,
   Building2,
-  Camera,
   Clock,
   Coffee,
   DoorOpen,
@@ -30,9 +29,10 @@ import {
   Utensils,
   Wind,
   Wrench,
-} from 'lucide-react-native';
-import ThemedText from '../atoms/a-themed-text';
-import HostingRoomImage from '../atoms/a-hosting-room-image';
+} from "lucide-react-native";
+import ThemedText from "../atoms/a-themed-text";
+import HostingRoomImage from "../atoms/a-hosting-room-image";
+import { CameraLinear } from "../icons/i-camera";
 
 const ROOM_ICONS: Partial<Record<keyof typeof Room, LucideIcon>> = {
   Exterior: MapPin,
@@ -77,6 +77,9 @@ export interface RoomItemCardProps {
   handleRoomImageEdit: (index: number) => void;
   handleDeleteImage: (roomIndex: number, imageIndex: number) => void;
   setActiveModalIndex: (index?: number | undefined) => void;
+  /** publicUrl of the hosting's current cover image, for badging. */
+  coverImageUrl?: string;
+  handleSetCoverImage?: (roomIndex: number, imageIndex: number) => void;
 }
 
 const RoomItemCard = memo(
@@ -90,6 +93,8 @@ const RoomItemCard = memo(
     handleRoomImageEdit,
     handleDeleteImage,
     setActiveModalIndex,
+    coverImageUrl,
+    handleSetCoverImage,
   }: RoomItemCardProps) => {
     const usedNames = React.useMemo(
       () => rooms.filter((_, i) => i !== index).map((r) => r.name),
@@ -97,7 +102,10 @@ const RoomItemCard = memo(
     );
 
     const availableOptions = React.useMemo(
-      () => ALL_ROOM_OPTIONS.filter((o) => !usedNames.includes(o.value as keyof typeof Room)),
+      () =>
+        ALL_ROOM_OPTIONS.filter(
+          (o) => !usedNames.includes(o.value as keyof typeof Room),
+        ),
       [usedNames],
     );
 
@@ -129,11 +137,11 @@ const RoomItemCard = memo(
           className="overflow-hidden"
           style={{
             borderWidth: 1,
-            borderStyle: 'dashed',
+            borderStyle: "dashed",
             borderColor: hexToRgba(colors.text, 0.18),
             minHeight: 61,
             borderRadius: 16,
-            overflow: 'hidden',
+            overflow: "hidden",
           }}
         >
           <SelectInput
@@ -160,14 +168,14 @@ const RoomItemCard = memo(
           borderRadius: 16,
           borderWidth: 1,
           borderColor: hexToRgba(colors.text, 0.1),
-          overflow: 'hidden',
+          overflow: "hidden",
         }}
       >
         {/* Header: icon + room type selector */}
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
+            flexDirection: "row",
+            alignItems: "center",
             gap: 10,
             paddingHorizontal: 12,
             paddingTop: 12,
@@ -180,8 +188,8 @@ const RoomItemCard = memo(
               height: 36,
               borderRadius: 10,
               backgroundColor: hexToRgba(colors.text, 0.08),
-              alignItems: 'center',
-              justifyContent: 'center',
+              alignItems: "center",
+              justifyContent: "center",
               flexShrink: 0,
             }}
           >
@@ -212,15 +220,17 @@ const RoomItemCard = memo(
                 backgroundColor: hexToRgba(colors.text, 0.04),
                 borderWidth: 1,
                 borderColor: hexToRgba(colors.text, 0.08),
-                borderStyle: 'dashed',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'row',
+                borderStyle: "dashed",
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "row",
                 gap: 7,
               }}
             >
-              <Camera color={hexToRgba(colors.text, 0.28)} size={14} />
-              <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.32) }}>
+              <CameraLinear color={hexToRgba(colors.text, 0.28)} size={14} />
+              <ThemedText
+                style={{ fontSize: 12, color: hexToRgba(colors.text, 0.32) }}
+              >
                 Tap "Add Photos" to showcase this space
               </ThemedText>
             </View>
@@ -237,6 +247,9 @@ const RoomItemCard = memo(
                   imageIndex={id}
                   roomIndex={index}
                   onDeleteRoomImage={handleDeleteImage}
+                  isCover={!!coverImageUrl && img === coverImageUrl}
+                  canSetCover={!img.startsWith("file")}
+                  onSetCover={handleSetCoverImage}
                 />
               ))}
             </ScrollView>
@@ -246,9 +259,9 @@ const RoomItemCard = memo(
         {/* Footer: count label + actions */}
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
             paddingHorizontal: 12,
             paddingBottom: 12,
             paddingTop: 6,
@@ -256,10 +269,12 @@ const RoomItemCard = memo(
             borderTopColor: hexToRgba(colors.text, 0.07),
           }}
         >
-          <ThemedText style={{ fontSize: 11, color: hexToRgba(colors.text, 0.42) }}>
-            {room.count} {room.count === 1 ? 'space' : 'spaces'}
+          <ThemedText
+            style={{ fontSize: 11, color: hexToRgba(colors.text, 0.42) }}
+          >
+            {room.count} {room.count === 1 ? "space" : "spaces"}
           </ThemedText>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View style={{ flexDirection: "row", gap: 8 }}>
             <Button
               onPress={onEditImage}
               disabled={hostingRoomSaving}
@@ -270,7 +285,7 @@ const RoomItemCard = memo(
                 borderRadius: 10,
               }}
             >
-              <Camera color={colors.text} size={13} />
+              <CameraLinear color={colors.text} size={13} />
               <ThemedText style={{ fontSize: 12 }}>Add Photos</ThemedText>
             </Button>
             <Button
@@ -292,6 +307,6 @@ const RoomItemCard = memo(
   },
 );
 
-RoomItemCard.displayName = 'RoomItemCard';
+RoomItemCard.displayName = "RoomItemCard";
 
 export default RoomItemCard;

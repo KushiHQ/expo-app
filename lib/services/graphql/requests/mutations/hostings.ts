@@ -205,6 +205,38 @@ export const CREATE_UPDATE_HOSTING_ROOM_IMAGE = gql`
   }
 `;
 
+export const SET_HOSTING_COVER_IMAGE = gql`
+  mutation SetHostingCoverImage($hostingRoomImageId: String!) {
+    setHostingCoverImage(hostingRoomImageId: $hostingRoomImageId) {
+      message
+      data {
+        id
+        sequence
+        asset {
+          id
+          publicUrl
+        }
+      }
+    }
+  }
+`;
+
+export const REORDER_HOSTING_ROOMS = gql`
+  mutation ReorderHostingRooms($hostingId: String!, $orderedRoomIds: [String!]!) {
+    reorderHostingRooms(hostingId: $hostingId, orderedRoomIds: $orderedRoomIds) {
+      message
+    }
+  }
+`;
+
+export const REORDER_HOSTING_ROOM_IMAGES = gql`
+  mutation ReorderHostingRoomImages($roomId: String!, $orderedImageIds: [String!]!) {
+    reorderHostingRoomImages(roomId: $roomId, orderedImageIds: $orderedImageIds) {
+      message
+    }
+  }
+`;
+
 export const DELETE_HOSTING_ROOM_IMAGE = gql`
   mutation DeleteHostingRoomImage($hostingRoomImageId: String!) {
     deleteHostingRoomImage(hostingRoomImageId: $hostingRoomImageId) {

@@ -5,6 +5,7 @@ import { TablerMessage2, TablerMessage2Filled } from '@/components/icons/i-messa
 import { MingcuteUser3Fill, MingcuteUser3Line } from '@/components/icons/i-user';
 import SidebarNav, { type SidebarNavItem } from '@/components/organisms/o-sidebar-nav';
 import AuthGuard from '@/components/guards/auth-guard';
+import FeedbackHost from '@/components/organisms/o-feedback-host';
 import React from 'react';
 import { Fonts } from '@/lib/constants/theme';
 import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
@@ -180,10 +181,16 @@ export default function Layout() {
         <View style={{ flex: 1, flexDirection: 'row' }}>
           <SidebarNav items={SIDEBAR_ITEMS} mode="host" onModeSwitch={handleSwitchToGuest} />
           <View style={{ flex: 1 }}>{tabs}</View>
+          <FeedbackHost />
         </View>
       </AuthGuard>
     );
   }
 
-  return <AuthGuard>{tabs}</AuthGuard>;
+  return (
+    <AuthGuard>
+      {tabs}
+      <FeedbackHost />
+    </AuthGuard>
+  );
 }

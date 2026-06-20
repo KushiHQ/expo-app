@@ -4,6 +4,7 @@ import { LinkIcon } from '@/components/icons/i-link';
 import { TablerMessage2, TablerMessage2Filled } from '@/components/icons/i-message';
 import { MingcuteUser3Fill, MingcuteUser3Line } from '@/components/icons/i-user';
 import SidebarNav, { type SidebarNavItem } from '@/components/organisms/o-sidebar-nav';
+import FeedbackHost from '@/components/organisms/o-feedback-host';
 import React from 'react';
 import { Fonts } from '@/lib/constants/theme';
 import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
@@ -184,9 +185,15 @@ export default function Layout() {
       <View style={{ flex: 1, flexDirection: 'row' }}>
         <SidebarNav items={SIDEBAR_ITEMS} mode="guest" onModeSwitch={handleSwitchToHost} />
         <View style={{ flex: 1 }}>{tabs}</View>
+        <FeedbackHost />
       </View>
     );
   }
 
-  return tabs;
+  return (
+    <>
+      {tabs}
+      <FeedbackHost />
+    </>
+  );
 }

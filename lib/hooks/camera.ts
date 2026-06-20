@@ -1,6 +1,6 @@
 import { Href, usePathname } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
-import { useGalleryStore } from '../stores/gallery';
+import { GalleryCaption, useGalleryStore } from '../stores/gallery';
 import { cast } from '../types/utils';
 
 type CameraRedirectOptions = {
@@ -14,6 +14,7 @@ type GalleryRedirectOptions = {
   activeIndex?: number;
   redirect: Href;
   images?: string[];
+  captions?: GalleryCaption[];
   viewOnly?: boolean;
   fromCamera?: boolean;
 };
@@ -43,7 +44,7 @@ export const useCameraScreen = () => {
 
 export const usePhotoGalleryScreen = () => {
   const router = useRouter();
-  const { setGallery, setActiveIndex } = useGalleryStore();
+  const { setGallery, setActiveIndex, setCaptions } = useGalleryStore();
 
   const redirect = (opts: GalleryRedirectOptions) => {
     let path = `/photo-gallery?redirect=${opts.redirect}`;
@@ -53,6 +54,8 @@ export const usePhotoGalleryScreen = () => {
     if (opts.images) {
       setGallery(opts.images);
     }
+    // Always set captions (clears stale ones from other galleries).
+    setCaptions(opts.captions ?? []);
     if (opts.fromCamera !== undefined) {
       path = `${path}&fromCamera=${opts.fromCamera}`;
     }

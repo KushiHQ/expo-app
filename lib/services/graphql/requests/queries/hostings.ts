@@ -17,6 +17,15 @@ export const AI_HOSTING_CHAT_PREDICTIONS = gql`
   }
 `;
 
+export const AI_HOSTING_CONTENT_SUGGESTION = gql`
+  query AiHostingContentSuggestion($hostingId: String!) {
+    aiHostingContentSuggestion(hostingId: $hostingId) {
+      title
+      description
+    }
+  }
+`;
+
 export const TENANCY_AGREEMENT_TEMPLATE = gql`
   query TenancyAgreementTemplate {
     tenancyAgreementTemplate {
@@ -129,6 +138,14 @@ export const HOSTING_QUERY = gql`
           publicUrl
         }
       }
+      images(limit: 4) {
+        id
+        asset {
+          id
+          publicUrl
+          originalFilename
+        }
+      }
       paymentDetails {
         id
         accountNumber
@@ -223,14 +240,11 @@ export const HOSTING_QUERY = gql`
 `;
 
 export const HOSTINGS_QUERY = gql`
-  query Hostings(
-    $filters: HostingFilterInput
-    $pagination: PaginationInput
-    $roomsPagination2: PaginationInput
-  ) {
+  query Hostings($filters: HostingFilterInput, $pagination: PaginationInput) {
     hostings(filters: $filters, pagination: $pagination) {
       id
       price
+      listingType
       totalRatings
       averageRating
       country
@@ -254,15 +268,12 @@ export const HOSTINGS_QUERY = gql`
           publicUrl
         }
       }
-      rooms(pagination: $roomsPagination2) {
+      images(limit: 4) {
         id
-        images {
+        asset {
           id
-          asset {
-            id
-            publicUrl
-            originalFilename
-          }
+          publicUrl
+          originalFilename
         }
       }
       paymentInterval
@@ -340,6 +351,7 @@ export const HOST_LISTINGS_QUERY = gql`
       title
       state
       city
+      listingType
       publishStatus
       bookingApplicationsCount
       createdAt

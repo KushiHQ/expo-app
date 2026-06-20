@@ -29,6 +29,7 @@ import HostingGalleryComponent from '@/components/molecules/m-hosting-gallery';
 import HostingReviews from '@/components/organisms/o-hosting-reviews';
 import HostingLocation from '@/components/molecules/m-hosting-location';
 import AVerificationTierBadge from '@/components/atoms/a-verification-tier-badge';
+import ListingTypeBadge from '@/components/atoms/a-listing-type-badge';
 
 export default function HostingDetails() {
   const router = useRouter();
@@ -251,6 +252,9 @@ export default function HostingDetails() {
                 <ThemedText style={{ fontSize: 14, fontFamily: Fonts.light }}>
                   {hosting?.city}, {hosting?.state}
                 </ThemedText>
+                <View className="mt-2 flex-row">
+                  <ListingTypeBadge listingType={hosting?.listingType} />
+                </View>
                 <View className="flex-row items-center gap-1">
                   <MynauiStarSolid size={14} color={colors.accent} />
                   <ThemedText style={{ fontSize: 14 }}>

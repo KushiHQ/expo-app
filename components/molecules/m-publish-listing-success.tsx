@@ -16,10 +16,12 @@ const PublishListingSuccess: React.FC<Props> = ({ show, onClose, hostingId }) =>
   const router = useRouter();
 
   const handleGetVerified = () => {
-    onClose();
-    if (hostingId) {
-      router.push(`/hostings/form/verification/overview?id=${hostingId}`);
-    }
+    if (!hostingId) return;
+    // Tear down the publish form stack and land on the verification overview.
+    // (Don't call onClose first — that routes to the dashboard and the push
+    // below never lands.)
+    router.dismissAll();
+    router.replace(`/hostings/form/verification/overview?id=${hostingId}`);
   };
 
   return (

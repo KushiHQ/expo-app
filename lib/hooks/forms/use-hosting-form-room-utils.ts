@@ -6,6 +6,9 @@ import {
   useCreateOrUpdateHostingRoomMutation,
   useDeleteHostingRoomImageMutation,
   useDeleteHostingRoomMutation,
+  useReorderHostingRoomImagesMutation,
+  useReorderHostingRoomsMutation,
+  useSetHostingCoverImageMutation,
 } from '@/lib/services/graphql/generated';
 import React from 'react';
 import { useFocusEffect } from 'expo-router';
@@ -37,6 +40,8 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
     updateRoom,
     deleteRoomImage,
     updateActiveRoomImage,
+    moveRoom,
+    moveRoomImage,
   } = useHostingRoomsStore();
 
   const { hosting, refetch: refetchHosting, fetching: fetchingHosting } = useHostingForm(hostingId);
@@ -45,10 +50,19 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
     useCreateOrUpdateHostingRoomMutation();
   const [{ fetching: deleteingImage }, deleteImageMutate] = useDeleteHostingRoomImageMutation();
   const [{ fetching: deletingRoom }, deleteRoomMutate] = useDeleteHostingRoomMutation();
+  const [{ fetching: settingCover }, setCoverMutate] = useSetHostingCoverImageMutation();
+  const [{ fetching: reorderingRooms }, reorderRoomsMutate] = useReorderHostingRoomsMutation();
+  const [{ fetching: reorderingImages }, reorderImagesMutate] =
+    useReorderHostingRoomImagesMutation();
   const [addingImagesCount, setAddingImagesCount] = React.useState(0);
   const addingImages = addingImagesCount > 0;
 
-  const loading = deleteingImage || deletingRoom || hostingRoomSaving || addingImages;
+  const loading =
+    deleteingImage || deletingRoom || hostingRoomSaving || addingImages || settingCover;
+
+  // The hosting's current cover is its highest-sequence image; match displayed
+  // thumbnails against this URL to badge the active cover.
+  const coverImageUrl = hosting?.coverImage?.asset?.publicUrl;
 
   // Sync rooms from server data whenever hosting updates (data-driven, not focus-driven).
   // hosting is kept fresh by useHostingForm which calls refreshHosting() on every refetch,
@@ -148,6 +162,70 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
     }
   };
 
+  const handleSetCoverImage = (roomIndex: number, imageIndex: number) => {
+    const room = rooms[roomIndex];
+    const image = room.images[imageIndex];
+    // Only saved (uploaded) images have a server id to promote.
+    if (image.startsWith('file')) return;
+
+    const imageId = hosting?.rooms
+      .find((r) => r.id === room.id)
+      ?.images.find((i) => i.asset.publicUrl === image)?.id;
+    if (!imageId) return;
+
+    setCoverMutate({ hostingRoomImageId: imageId }).then((res) => {
+      if (res.error) {
+        handleError(res.error);
+      }
+      if (res.data?.setHostingCoverImage.message) {
+        show({
+          type: 'success',
+          text2: res.data.setHostingCoverImage.message,
+        });
+        refetchHosting();
+      }
+    });
+  };
+
+  // Drag-to-reorder rooms: reflect the move locally (optimistic), persist the
+  // new id order, then refetch to reconcile sequences (and revert on error).
+  const handleReorderRooms = (from: number, to: number) => {
+    if (from === to) return;
+    moveRoom(from, to);
+    if (!hosting?.id) return;
+
+    const orderedRoomIds = useHostingRoomsStore
+      .getState()
+      .rooms.map((r) => r.id)
+      .filter((id): id is string => !!id);
+    if (orderedRoomIds.length < 2) return;
+
+    reorderRoomsMutate({ hostingId: hosting.id, orderedRoomIds }).then((res) => {
+      if (res.error) handleError(res.error);
+      refetchHosting();
+    });
+  };
+
+  // Drag-to-reorder images within a room. The store holds image URLs, so map
+  // the new URL order back to server image ids (saved images only) to persist.
+  const handleReorderRoomImages = (roomIndex: number, from: number, to: number) => {
+    if (from === to) return;
+    const roomId = rooms[roomIndex]?.id;
+    moveRoomImage(roomIndex, from, to);
+    if (!roomId) return;
+
+    const serverImages = hosting?.rooms.find((r) => r.id === roomId)?.images ?? [];
+    const orderedImageIds = (useHostingRoomsStore.getState().rooms[roomIndex]?.images ?? [])
+      .map((url) => serverImages.find((i) => i.asset.publicUrl === url)?.id)
+      .filter((id): id is string => !!id);
+    if (orderedImageIds.length < 2) return;
+
+    reorderImagesMutate({ roomId, orderedImageIds }).then((res) => {
+      if (res.error) handleError(res.error);
+      refetchHosting();
+    });
+  };
+
   const handleDeleteActiveRoom = () => {
     const roomId = rooms[activeIndex].id;
     if (roomId) {
@@ -205,6 +283,16 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
     });
   };
 
+  // Opening a room's details modal must also point activeIndex at that room.
+  // The modal's count/description inputs, updateActiveRoom, and the save call
+  // all key off activeIndex — without this they'd read/write/save whatever room
+  // activeIndex last pointed at (index 0 by default), so edits to any other
+  // room landed on the wrong room. Closing (undefined) leaves activeIndex be.
+  const openRoomModal = (index?: number) => {
+    if (typeof index === 'number') setActiveIndex(index);
+    setActiveModalIndex(index);
+  };
+
   return {
     activeModalIndex,
     deleteModalIndex,
@@ -218,10 +306,16 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
     updateActiveRoom,
     setDeleteModalIndex,
     deleteRoomImage,
-    setActiveModalIndex,
+    setActiveModalIndex: openRoomModal,
     handleDeleteImage,
     handleDeleteActiveRoom,
     handleSaveHostingRoom,
     handleRoomImageEdit,
+    handleSetCoverImage,
+    coverImageUrl,
+    handleReorderRooms,
+    handleReorderRoomImages,
+    reorderingRooms,
+    reorderingImages,
   };
 };

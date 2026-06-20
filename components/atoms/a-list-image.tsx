@@ -1,5 +1,6 @@
 import { PROPERTY_BLURHASH } from '@/lib/constants/images';
 import { usePhotoGalleryScreen } from '@/lib/hooks/camera';
+import { GalleryCaption } from '@/lib/stores/gallery';
 import { cast } from '@/lib/types/utils';
 import { Image, ImageStyle } from 'expo-image';
 import { usePathname } from 'expo-router';
@@ -11,6 +12,7 @@ type Props = {
   src: string;
   index: number;
   images?: string[];
+  captions?: GalleryCaption[];
   deletable?: boolean;
   openable?: boolean;
   width?: DimensionValue;
@@ -25,6 +27,7 @@ const ListImage: React.FC<Props> = ({
   deletable,
   openable,
   images,
+  captions,
   style,
   width,
   height,
@@ -40,6 +43,7 @@ const ListImage: React.FC<Props> = ({
     redirect({
       redirect: cast(pathname),
       images,
+      captions,
       activeIndex: index,
       viewOnly: true,
       push: true,
