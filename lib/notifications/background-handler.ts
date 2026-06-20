@@ -24,9 +24,7 @@ notifee.onBackgroundEvent(async (event) => {
 
     // Verification notification → open verification overview
     if (data?.intent === 'verification' && data?.hostingId) {
-      await Linking.openURL(
-        `kushi://hostings/form/verification/overview?id=${data.hostingId}`,
-      );
+      await Linking.openURL(`kushi://hostings/form/verification/overview?id=${data.hostingId}`);
       return;
     }
 

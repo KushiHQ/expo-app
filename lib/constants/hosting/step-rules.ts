@@ -18,9 +18,7 @@ export function showTenancySteps(
  * Whether the amenities / features step should be shown.
  * Land plots have no buildings — no amenities to list.
  */
-export function showAmenitiesStep(
-  propertyType?: string | null,
-): boolean {
+export function showAmenitiesStep(propertyType?: string | null): boolean {
   if (propertyType === PropertyType.LandPlots) return false;
   return true;
 }

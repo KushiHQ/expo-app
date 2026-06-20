@@ -57,27 +57,27 @@ export default function HostingDiscoveryMap() {
   const focusedMarker: MapHosting[] =
     isFocusedMode && latitude && longitude
       ? [
-        {
-          id: hostingId!,
-          latitude: Number(latitude),
-          longitude: Number(longitude),
-          price: Number(price ?? 0),
-          title: decodeURIComponent(title ?? ''),
-        },
-      ]
+          {
+            id: hostingId!,
+            latitude: Number(latitude),
+            longitude: Number(longitude),
+            price: Number(price ?? 0),
+            title: decodeURIComponent(title ?? ''),
+          },
+        ]
       : [];
 
   const mapHostings: MapHosting[] = isFocusedMode
     ? focusedMarker
     : (data?.hostings
-      ?.map((h) => ({
-        id: h.id,
-        latitude: Number(h.latitude),
-        longitude: Number(h.longitude),
-        price: Number(h.price),
-        title: h.title ?? '',
-      }))
-      .filter((h) => !isNaN(h.latitude) && !isNaN(h.longitude)) ?? []);
+        ?.map((h) => ({
+          id: h.id,
+          latitude: Number(h.latitude),
+          longitude: Number(h.longitude),
+          price: Number(h.price),
+          title: h.title ?? '',
+        }))
+        .filter((h) => !isNaN(h.latitude) && !isNaN(h.longitude)) ?? []);
 
   const handleMarkerSelect = (mapH: MapHosting) => {
     if (isFocusedMode) return;
