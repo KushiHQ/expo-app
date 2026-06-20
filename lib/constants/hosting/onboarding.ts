@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react-native';
+import { showTenancySteps, showAmenitiesStep } from './step-rules';
 
 export type OnboardingStep = {
   icon: LucideIcon | React.FC<CustomSvgProps>;
@@ -71,3 +72,33 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
       "Our team will review your submission. You'll be notified as soon as your listing is approved and goes live!",
   },
 ];
+
+/**
+ * Returns the visible steps and a mapping from original step index
+ * to filtered position. Used by onboarding.tsx and step navigation.
+ *
+ * Original indices:
+ *   0 = Property Details, 1 = Photos, 2 = Location, 3 = Amenities,
+ *   4 = Price, 5 = Mandate, 6 = Tenancy Terms, 7 = Review, 8 = Verified
+ */
+export function getVisibleSteps(
+  listingType?: string | null,
+  propertyType?: string | null,
+): { steps: OnboardingStep[]; indexMap: number[] } {
+  const tenancy = showTenancySteps(listingType, propertyType);
+  const amenities = showAmenitiesStep(propertyType);
+
+  const steps: OnboardingStep[] = [];
+  const indexMap: number[] = [];
+
+  ONBOARDING_STEPS.forEach((step, originalIndex) => {
+    if (originalIndex === 3 && !amenities) return;
+    if (originalIndex === 5 && !tenancy) return;
+    if (originalIndex === 6 && !tenancy) return;
+
+    steps.push(step);
+    indexMap.push(originalIndex);
+  });
+
+  return { steps, indexMap };
+}

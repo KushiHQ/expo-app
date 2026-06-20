@@ -10,17 +10,19 @@ import SectionCard from '@/components/molecules/m-section-card';
 import SelectInput, { SelectOption } from '@/components/molecules/m-select-input';
 import SelectedPaymentDetails from '@/components/molecules/m-selected-payment-detail';
 import { Fonts } from '@/lib/constants/theme';
+import { showTenancySteps } from '@/lib/constants/hosting/step-rules';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useBanksQuery } from '@/lib/services/external/banks';
 import {
+  Bank,
+  ListingType,
   PaymentInterval,
+  useBanksQuery,
   useCreateUpdateHostPaymentDetailsMutation,
   useHostPaymentDetailsQuery,
   useResolveBankAccountQuery,
   VerifyAccountInput,
 } from '@/lib/services/graphql/generated';
-import { Bank } from '@/lib/types/queries/banks';
 import { hexToRgba } from '@/lib/utils/colors';
 import { handleError } from '@/lib/utils/error';
 import { useLocalSearchParams } from 'expo-router';
@@ -36,16 +38,11 @@ export default function NewHostingStep5() {
   const serviceChargeRef = useRef<TextInput>(null);
   const cautionFeeRef = useRef<TextInput>(null);
   const maxOccupantsRef = useRef<TextInput>(null);
-  const { data } = useBanksQuery();
+  const [{ data: banksData }] = useBanksQuery({
+    requestPolicy: 'cache-first',
+  });
   const { id } = useLocalSearchParams();
-  const {
-    input,
-    mutate,
-    updateInput,
-    hosting,
-    mutating,
-    fetching: fetchingHosting,
-  } = useHostingForm(id);
+  const { input, mutate, updateInput, hosting, mutating } = useHostingForm(id);
   const [selectedAccount, setSelectedAcount] = React.useState(hosting?.paymentDetails);
   const [newAccountInput, setNewAccountInput] = React.useState({} as VerifyAccountInput);
   const [{ data: hostPaymentDetails }, refetchPaymentDetails] = useHostPaymentDetailsQuery({
@@ -101,6 +98,7 @@ export default function NewHostingStep5() {
   }, [
     resolveData,
     newAccountInput.bankCode,
+    newAccountInput.accountNumber,
     refetchPaymentDetails,
     savePaymentDetails,
     selectedAccount,
@@ -111,7 +109,10 @@ export default function NewHostingStep5() {
     mutate({ input: { ...input, paymentDetailsId: selectedAccount?.id } }).then((res) => {
       if (res.error) handleError(res.error);
       if (res.data?.createOrUpdateHosting) {
-        router.push(`/hostings/form/step-6?id=${res.data?.createOrUpdateHosting.data?.id}`);
+        const nextStep = showTenancySteps(hosting?.listingType, hosting?.propertyType)
+          ? `/hostings/form/step-6?id=${res.data?.createOrUpdateHosting.data?.id}`
+          : `/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`;
+        router.push(nextStep);
         toast.show({
           type: 'success',
           text1: 'Success',
@@ -124,6 +125,7 @@ export default function NewHostingStep5() {
   const loading = creatingPaymentDetail || resolving || mutating;
   const canSaveNewAccount =
     !!(newAccountInput.bankCode && newAccountInput.accountNumber) && !resolving;
+  const isSale = hosting?.listingType === ListingType.Sale;
 
   return (
     <>
@@ -133,7 +135,7 @@ export default function NewHostingStep5() {
           <HostingStepper
             onPress={handleMutate}
             loading={mutating}
-            disabled={!selectedAccount || !input.paymentInterval || !input.price}
+            disabled={!selectedAccount || !input.price || (!isSale && !input.paymentInterval)}
             step={5}
           />
         }
@@ -143,89 +145,114 @@ export default function NewHostingStep5() {
           <SectionCard
             icon={<CircleDollarSign size={16} color={colors.primary} />}
             title="Pricing"
-            subtitle="Set the rental price and optional fees"
+            subtitle={isSale ? 'Set the sale price' : 'Set the rental price and optional fees'}
           >
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <View style={{ flex: 1 }}>
-                <SelectInput
-                  focused
-                  label="Payment Interval"
-                  placeholder="Annually"
-                  defaultValue={
-                    input.paymentInterval
-                      ? {
-                          label: input.paymentInterval,
-                          value: input.paymentInterval,
-                        }
-                      : undefined
-                  }
-                  onSelect={(v) => updateInput({ paymentInterval: v.value })}
-                  options={Object.keys(PaymentInterval).map((v) => ({
-                    label: v,
-                    value: PaymentInterval[v as keyof typeof PaymentInterval],
-                  }))}
-                  renderItem={SelectOption}
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <FloatingLabelInput
-                  focused
-                  inputMode="numeric"
-                  label="Rent Price"
-                  value={Number(input.price).toLocaleString()}
-                  onChangeText={(v) =>
-                    updateInput({
-                      price: v.replace('₦', '').replaceAll(',', ''),
-                    })
-                  }
-                  placeholder="₦ 0"
-                  returnKeyType="next"
-                  onSubmitEditing={() => serviceChargeRef.current?.focus()}
-                  blurOnSubmit={false}
-                />
-              </View>
-            </View>
+            {isSale ? (
+              <FloatingLabelInput
+                focused
+                inputMode="numeric"
+                label="Sale Price"
+                value={Number(input.price).toLocaleString()}
+                onChangeText={(v) =>
+                  updateInput({
+                    price: v.replace('₦', '').replaceAll(',', ''),
+                  })
+                }
+                placeholder="₦ 0"
+                returnKeyType="done"
+                blurOnSubmit={true}
+              />
+            ) : (
+              <>
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  <View style={{ flex: 1 }}>
+                    <SelectInput
+                      focused
+                      label="Payment Interval"
+                      placeholder="Annually"
+                      defaultValue={
+                        input.paymentInterval
+                          ? {
+                              label: input.paymentInterval,
+                              value: input.paymentInterval,
+                            }
+                          : undefined
+                      }
+                      onSelect={(v) => updateInput({ paymentInterval: v.value })}
+                      options={Object.keys(PaymentInterval).map((v) => ({
+                        label: PaymentInterval[v as keyof typeof PaymentInterval]
+                          .split('_')
+                          .join(' '),
+                        value: PaymentInterval[v as keyof typeof PaymentInterval],
+                      }))}
+                      renderItem={SelectOption}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <FloatingLabelInput
+                      focused
+                      inputMode="numeric"
+                      label="Rent Price"
+                      value={Number(input.price).toLocaleString()}
+                      onChangeText={(v) =>
+                        updateInput({
+                          price: v.replace('₦', '').replaceAll(',', ''),
+                        })
+                      }
+                      placeholder="₦ 0"
+                      returnKeyType="next"
+                      onSubmitEditing={() => serviceChargeRef.current?.focus()}
+                      blurOnSubmit={false}
+                    />
+                  </View>
+                </View>
 
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <View style={{ flex: 1 }}>
-                <FloatingLabelInput
-                  ref={serviceChargeRef}
-                  focused
-                  inputMode="numeric"
-                  label="Service Charge"
-                  value={
-                    input.serviceCharge ? Number(input.serviceCharge).toLocaleString() : undefined
-                  }
-                  onChangeText={(v) =>
-                    updateInput({
-                      serviceCharge: v.replace('₦', '').replaceAll(',', ''),
-                    })
-                  }
-                  placeholder="Optional"
-                  returnKeyType="next"
-                  onSubmitEditing={() => cautionFeeRef.current?.focus()}
-                  blurOnSubmit={false}
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <FloatingLabelInput
-                  ref={cautionFeeRef}
-                  focused
-                  inputMode="numeric"
-                  label="Caution Fee"
-                  value={input.cautionFee ? Number(input.cautionFee).toLocaleString() : undefined}
-                  onChangeText={(v) =>
-                    updateInput({
-                      cautionFee: v.replace('₦', '').replaceAll(',', ''),
-                    })
-                  }
-                  placeholder="Optional"
-                  returnKeyType="next"
-                  onSubmitEditing={() => maxOccupantsRef.current?.focus()}
-                  blurOnSubmit={false}
-                />
-              </View>
-            </View>
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  <View style={{ flex: 1 }}>
+                    <FloatingLabelInput
+                      ref={serviceChargeRef}
+                      focused
+                      inputMode="numeric"
+                      label="Service Charge"
+                      value={
+                        input.serviceCharge
+                          ? Number(input.serviceCharge).toLocaleString()
+                          : undefined
+                      }
+                      onChangeText={(v) =>
+                        updateInput({
+                          serviceCharge: v.replace('₦', '').replaceAll(',', ''),
+                        })
+                      }
+                      placeholder="Optional"
+                      returnKeyType="next"
+                      onSubmitEditing={() => cautionFeeRef.current?.focus()}
+                      blurOnSubmit={false}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <FloatingLabelInput
+                      ref={cautionFeeRef}
+                      focused
+                      inputMode="numeric"
+                      label="Caution Fee"
+                      value={
+                        input.cautionFee ? Number(input.cautionFee).toLocaleString() : undefined
+                      }
+                      onChangeText={(v) =>
+                        updateInput({
+                          cautionFee: v.replace('₦', '').replaceAll(',', ''),
+                        })
+                      }
+                      placeholder="Optional"
+                      returnKeyType="next"
+                      onSubmitEditing={() => maxOccupantsRef.current?.focus()}
+                      blurOnSubmit={false}
+                    />
+                  </View>
+                </View>
+              </>
+            )}
           </SectionCard>
 
           {/* Payout account section */}
@@ -340,7 +367,7 @@ export default function NewHostingStep5() {
                     getLabelString={(v) => v?.name ?? ''}
                     renderItem={BankSelectOption}
                     getValueString={(v: Bank) => v?.name}
-                    options={data ?? []}
+                    options={banksData?.banks ?? []}
                   />
                   <Button
                     type="primary"

@@ -48,19 +48,23 @@ const ExpoMap: React.FC<Props> = ({
     };
   }, []);
 
+  const lat = coordinates?.latitude;
+  const lng = coordinates?.longitude;
+
   useEffect(() => {
-    if (coordinates && mapRef.current) {
+    if (lat !== undefined && lng !== undefined && mapRef.current) {
+      const delta = 0.1 / Math.pow(2, zoom - 12);
       mapRef.current.animateToRegion(
         {
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
+          latitude: lat,
+          longitude: lng,
+          latitudeDelta: delta,
+          longitudeDelta: delta,
         },
         1000,
       );
     }
-  }, [coordinates]);
+  }, [lat, lng, zoom]);
 
   const formatPrice = (price: number) => {
     if (price >= 1000000) return `${(price / 1000000).toFixed(1)}M`;

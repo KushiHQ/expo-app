@@ -14,6 +14,8 @@ import {
   Clock,
   Coffee,
   DoorOpen,
+  Droplets,
+  Fence,
   Home,
   LucideIcon,
   MapPin,
@@ -22,6 +24,8 @@ import {
   Palette,
   ShoppingBag,
   Stethoscope,
+  TreePine,
+  Trees,
   Users,
   Utensils,
   Wind,
@@ -50,6 +54,11 @@ const ROOM_ICONS: Partial<Record<keyof typeof Room, LucideIcon>> = {
   StudioSpace: Palette,
   WorkshopArea: Wrench,
   StorageArea: Package,
+  PlotBoundary: Fence,
+  FrontArea: TreePine,
+  BackArea: Trees,
+  GateEntrance: DoorOpen,
+  WellBorehole: Droplets,
   Others: MoreHorizontal,
 };
 
@@ -132,8 +141,8 @@ const RoomItemCard = memo(
             searchField="label"
             defaultValue={undefined}
             className="border-0"
-            label="Add New Room"
-            placeholder="Select a room type to showcase..."
+            label="Add New Space"
+            placeholder="Select a space type to showcase..."
             onSelect={onSelectRoom}
             options={availableOptions}
             renderItem={SelectOption}
@@ -183,8 +192,8 @@ const RoomItemCard = memo(
               searchable
               searchField="label"
               defaultValue={{ label: Room[room.name], value: room.name }}
-              label="Room Type"
-              placeholder="Select room type"
+              label="Space Type"
+              placeholder="Select space type"
               className="border-0"
               onSelect={onSelectRoom}
               options={availableOptions}

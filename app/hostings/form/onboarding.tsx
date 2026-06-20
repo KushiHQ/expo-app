@@ -3,7 +3,7 @@ import { FluentFormMultiple24Regular } from '@/components/icons/i-document';
 import DetailsLayout from '@/components/layouts/details';
 import HostingFormOnboardingAction from '@/components/molecules/m-hosting-form-onboarding-action';
 import TopListingCard from '@/components/molecules/m-top-listing-card';
-import { ONBOARDING_STEPS } from '@/lib/constants/hosting/onboarding';
+import { ONBOARDING_STEPS, getVisibleSteps } from '@/lib/constants/hosting/onboarding';
 import { Fonts } from '@/lib/constants/theme';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
@@ -40,78 +40,116 @@ export default function HostingOnboarding() {
     if (!fetching) setRefreshing(false);
   }, [fetching]);
 
+  const { steps: visibleSteps, indexMap } = React.useMemo(
+    () => getVisibleSteps(hosting?.listingType, hosting?.propertyType),
+    [hosting?.listingType, hosting?.propertyType],
+  );
+
   const actions = React.useMemo(() => {
     const actions: Record<number, Action> = {};
-    ONBOARDING_STEPS.forEach((_, index) => {
-      actions[index] = {
+    visibleSteps.forEach((_, filteredIndex) => {
+      const originalIndex = indexMap[filteredIndex];
+      const isLast = filteredIndex === visibleSteps.length - 1;
+      actions[filteredIndex] = {
         filled: false,
         disabled: true,
-        link:
-          index == ONBOARDING_STEPS.length - 1
-            ? `/hostings/form/verification/overview?id=${hosting?.id}`
-            : `/hostings/form/step-${index + 1}?id=${hosting?.id}`,
+        link: isLast
+          ? `/hostings/form/verification/overview?id=${hosting?.id}`
+          : `/hostings/form/step-${originalIndex + 1}?id=${hosting?.id}`,
       };
     });
 
     if (hosting) {
-      actions[0].filled = !!hosting.title && !!hosting.propertyType && !!hosting.listingType;
-      actions[0].disabled = false;
+      // Find filteredIndex for each original step
+      const idx = (original: number) => indexMap.indexOf(original);
+
+      // Step 0: Property Details
+      const i0 = idx(0);
+      if (i0 >= 0) {
+        actions[i0].filled = !!hosting.title && !!hosting.propertyType && !!hosting.listingType;
+        actions[i0].disabled = false;
+      }
 
       // Step 1: Photos
-      actions[1].filled = !!hosting.rooms?.some((room) => room?.images && room.images.length > 0);
+      const i1 = idx(1);
+      if (i1 >= 0) {
+        actions[i1].filled = !!hosting.rooms?.some((room) => room?.images && room.images.length > 0);
+      }
 
       // Step 2: Location
-      actions[2].filled = !!(
-        hosting.longitude &&
-        hosting.latitude &&
-        hosting.state &&
-        hosting.country &&
-        hosting.city &&
-        hosting.postalCode &&
-        hosting.contact
-      );
+      const i2 = idx(2);
+      if (i2 >= 0) {
+        actions[i2].filled = !!(
+          hosting.longitude &&
+          hosting.latitude &&
+          hosting.state &&
+          hosting.country &&
+          hosting.city &&
+          hosting.postalCode &&
+          hosting.contact
+        );
+      }
 
       // Step 3: Amenities
-      actions[3].filled = !!hosting.facilities?.length;
+      const i3 = idx(3);
+      if (i3 >= 0) {
+        actions[i3].filled = !!hosting.facilities?.length;
+      }
 
       // Step 4: Pricing
-      actions[4].filled = !!(hosting.paymentInterval && hosting.price && hosting.paymentDetails);
+      const i4 = idx(4);
+      if (i4 >= 0) {
+        actions[i4].filled = !!(hosting.paymentInterval && hosting.price && hosting.paymentDetails);
+      }
 
       // Step 5: Mandate
-      const v = hosting.verification;
-      actions[5].filled = !!(
-        v?.landlordFullName &&
-        v?.landlordAddress &&
-        v?.propertyRelationship &&
-        v?.declOwnership &&
-        v?.declLitigation &&
-        v?.declIndemnity
-      );
+      const i5 = idx(5);
+      if (i5 >= 0) {
+        const v = hosting.verification;
+        actions[i5].filled = !!(
+          v?.landlordFullName &&
+          v?.landlordAddress &&
+          v?.propertyRelationship &&
+          v?.declOwnership &&
+          v?.declLitigation &&
+          v?.declIndemnity
+        );
+      }
 
       // Step 6: Tenancy Terms
-      actions[6].filled = !!(
-        hosting.tenancyAgreementTemplate?.sections &&
-        hosting.tenancyAgreementTemplate.sections?.length > 0 &&
-        hosting.host?.signature?.publicUrl
-      );
+      const i6 = idx(6);
+      if (i6 >= 0) {
+        actions[i6].filled = !!(
+          hosting.tenancyAgreementTemplate?.sections &&
+          hosting.tenancyAgreementTemplate.sections?.length > 0 &&
+          hosting.host?.signature?.publicUrl
+        );
+      }
 
       // Step 7: Review & Publish
-      actions[7].filled =
-        hosting.publishStatus === PublishStatus.Inreview ||
-        hosting.publishStatus === PublishStatus.Live;
+      const i7 = idx(7);
+      if (i7 >= 0) {
+        actions[i7].filled =
+          hosting.publishStatus === PublishStatus.Inreview ||
+          hosting.publishStatus === PublishStatus.Live;
+      }
 
       // Step 8: Get Verified
-      actions[8].filled = hosting.publishStatus === PublishStatus.Live;
+      const i8 = idx(8);
+      if (i8 >= 0) {
+        actions[i8].filled = hosting.publishStatus === PublishStatus.Live;
+      }
     }
 
-    ONBOARDING_STEPS.forEach((_, index) => {
-      if (index !== 0) {
-        actions[index]['disabled'] = actions[index - 1].disabled || !actions[index - 1].filled;
+    visibleSteps.forEach((_, filteredIndex) => {
+      if (filteredIndex !== 0) {
+        actions[filteredIndex]['disabled'] =
+          actions[filteredIndex - 1].disabled || !actions[filteredIndex - 1].filled;
       }
     });
 
     return actions;
-  }, [hosting]);
+  }, [hosting, visibleSteps, indexMap]);
 
   return (
     <DetailsLayout
@@ -157,17 +195,17 @@ export default function HostingOnboarding() {
           </HostingFormOnboardingAction>
         </View>
         <View className="mt-8 gap-4">
-          {ONBOARDING_STEPS.map((step, index) => {
+          {visibleSteps.map((step, filteredIndex) => {
             return (
               <HostingFormOnboardingAction
-                key={index}
+                key={filteredIndex}
                 onPress={() => {
-                  if (actions[index]?.link) {
-                    router.push(actions[index]!.link);
+                  if (actions[filteredIndex]?.link) {
+                    router.push(actions[filteredIndex]!.link);
                   }
                 }}
-                disabled={!actions[index]?.link || actions[index]?.disabled}
-                color={actions[index]?.filled ? 'primary' : 'default'}
+                disabled={!actions[filteredIndex]?.link || actions[filteredIndex]?.disabled}
+                color={actions[filteredIndex]?.filled ? 'primary' : 'default'}
                 icon={step.icon}
               >
                 <View className="flex-1">

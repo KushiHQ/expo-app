@@ -7,6 +7,7 @@ import HostingStepper from '@/components/molecules/m-hosting-stepper';
 import SectionCard from '@/components/molecules/m-section-card';
 import SelectInput, { SelectOption } from '@/components/molecules/m-select-input';
 import { HOSTING_VERIFICATION_OPTIONS } from '@/lib/constants/hosting/verification';
+import { showTenancySteps } from '@/lib/constants/hosting/step-rules';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { cast } from '@/lib/types/utils';
@@ -32,6 +33,12 @@ export default function NewHostingStep6() {
     updateVerificationInput,
     hosting,
   } = useHostingForm(id);
+
+  React.useEffect(() => {
+    if (hosting && !showTenancySteps(hosting.listingType, hosting.propertyType)) {
+      router.replace(`/hostings/form/step-8?id=${hosting.id}`);
+    }
+  }, [hosting]);
 
   const handleMutate = () => {
     verificationMutate({ input: cast(verificationInput) }).then((res) => {

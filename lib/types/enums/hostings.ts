@@ -84,6 +84,11 @@ export const Room = {
   StudioSpace: 'Studio Space',
   WorkshopArea: 'Workshop Area',
   StorageArea: 'Storage Area',
+  PlotBoundary: 'Plot Boundary',
+  FrontArea: 'Front Area',
+  BackArea: 'Back Area',
+  GateEntrance: 'Gate / Entrance',
+  WellBorehole: 'Well / Borehole',
   Others: 'Others',
 } as const;
 
@@ -463,6 +468,26 @@ export const ROOMS_BY_VARIANT: RoomHostingMapping[] = [
   {
     room: 'StorageArea',
     hostingVariants: [PropertyType.Storage, PropertyType.Industrial, PropertyType.CommercialRetail],
+  },
+  {
+    room: Room.PlotBoundary,
+    hostingVariants: [PropertyType.LandPlots, PropertyType.Agricultural],
+  },
+  {
+    room: Room.FrontArea,
+    hostingVariants: [PropertyType.LandPlots, PropertyType.Residential, PropertyType.Agricultural],
+  },
+  {
+    room: Room.BackArea,
+    hostingVariants: [PropertyType.LandPlots, PropertyType.Residential, PropertyType.Agricultural],
+  },
+  {
+    room: Room.GateEntrance,
+    hostingVariants: [PropertyType.LandPlots, PropertyType.Residential, PropertyType.CommercialRetail, PropertyType.Agricultural],
+  },
+  {
+    room: Room.WellBorehole,
+    hostingVariants: [PropertyType.LandPlots, PropertyType.Agricultural],
   },
   {
     room: Room.Others,

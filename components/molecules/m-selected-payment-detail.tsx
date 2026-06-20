@@ -1,11 +1,11 @@
-import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import BankLogo from '@/components/atoms/a-bank-logo';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { HostPaymentDetailsQuery } from '@/lib/services/graphql/generated';
-import { Image } from 'expo-image';
 import { Platform, View } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Fonts } from '@/lib/constants/theme';
+import { getBankLogoUrl } from '@/lib/utils/bank-logos';
 
 type Props = {
   details: HostPaymentDetailsQuery['hostPaymentDetails'][number];
@@ -13,6 +13,10 @@ type Props = {
 
 const SelectedPaymentDetails: React.FC<Props> = ({ details }) => {
   const colors = useThemeColors();
+  const logoUrl = getBankLogoUrl({
+    imageUrl: details.bankDetails?.image,
+    slug: details.bankDetails?.slug,
+  });
 
   return (
     <View
@@ -34,23 +38,7 @@ const SelectedPaymentDetails: React.FC<Props> = ({ details }) => {
         }),
       }}
     >
-      <View className="h-[36px] max-w-[65px] flex-1 border">
-        <Image
-          source={{
-            uri: details.bankDetails?.image,
-          }}
-          style={{
-            height: '100%',
-            borderRadius: 999,
-          }}
-          contentFit="contain"
-          transition={300}
-          placeholder={{ blurhash: PROPERTY_BLURHASH }}
-          placeholderContentFit="cover"
-          cachePolicy="memory-disk"
-          priority="high"
-        />
-      </View>
+      <BankLogo name={details.bankDetails?.name} uri={logoUrl} />
       <View>
         <ThemedText style={{ fontFamily: Fonts.medium }}>
           {details.accountName ?? 'Account Name'}

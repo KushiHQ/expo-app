@@ -1,8 +1,9 @@
-import { Bank } from '@/lib/types/queries/banks';
+import BankLogo from '@/components/atoms/a-bank-logo';
+import { Bank } from '@/lib/services/graphql/generated';
+import { getBankLogoUrl } from '@/lib/utils/bank-logos';
 import { View } from 'react-native';
 import { SelectionDetails } from './m-select-input';
 import React from 'react';
-import { Image } from 'expo-image';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import ThemedText from '../atoms/a-themed-text';
 import Checkbox from '../atoms/a-checkbox';
@@ -12,39 +13,15 @@ type Props = Bank & SelectionDetails;
 
 const BankSelectOption: React.FC<Props> = ({ selected, ...bank }) => {
   const colors = useThemeColors();
-  const image = bank.logo
-    ? `https://raw.githubusercontent.com/supermx1/nigerian-banks-api/main/${bank.logo}`
-    : 'https://png.pngtree.com/png-clipart/20190619/original/pngtree-concept-banking-logo-png-image_4017929.jpg';
+  const logoUrl = getBankLogoUrl({
+    imageUrl: bank.image,
+    slug: bank.slug,
+  });
 
   return (
     <View className="flex-row items-center justify-between">
       <View className="flex-row items-center gap-4">
-        <View
-          className="h-[36px] w-[36px] border"
-          style={{
-            borderRadius: 999,
-            borderColor: colors.primary,
-          }}
-        >
-          <Image
-            source={{
-              uri: image,
-            }}
-            style={{
-              height: '100%',
-              width: '100%',
-              borderRadius: 999,
-            }}
-            contentFit="cover"
-            transition={300}
-            placeholder={{
-              uri: 'https://png.pngtree.com/png-clipart/20190619/original/pngtree-concept-banking-logo-png-image_4017929.jpg',
-            }}
-            placeholderContentFit="cover"
-            cachePolicy="memory-disk"
-            priority="high"
-          />
-        </View>
+        <BankLogo borderColor={colors.primary} contentFit="cover" name={bank.name} uri={logoUrl} />
         <ThemedText>{bank.name}</ThemedText>
       </View>
       <Checkbox

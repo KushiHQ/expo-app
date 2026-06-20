@@ -17,13 +17,17 @@ import { FluentTextBulletListSquareEdit20Regular } from '@/components/icons/i-ed
 import Skeleton from '@/components/atoms/a-skeleton';
 import TenancyAgreementVariableText from '@/components/molecules/m-tenancy-aggreement-variable-text';
 import { useTenancyTermsForm } from '@/lib/hooks/forms/use-tenancy-terms-form';
+import { showTenancySteps } from '@/lib/constants/hosting/step-rules';
 import { subClauseConditionMet } from '@/lib/utils/hosting/tenancyAgreement';
 import MemoizedSubClause from '@/components/organisms/o-memoised-sub-clause';
 import { MemoizedEditSection } from '@/components/organisms/o-memoised-edit-sub-clause';
 import { FileText, PenLine } from 'lucide-react-native';
 import { Fonts } from '@/lib/constants/theme';
 
+import { useRouter } from '@/lib/hooks/use-router';
+
 export default function NewHostingStep7() {
+  const router = useRouter();
   const colors = useThemeColors();
   const { id } = useLocalSearchParams();
 
@@ -48,6 +52,12 @@ export default function NewHostingStep7() {
     hasSubClause,
     allTemplateSections,
   } = useTenancyTermsForm(String(id));
+
+  React.useEffect(() => {
+    if (hosting && !showTenancySteps(hosting.listingType, hosting.propertyType)) {
+      router.replace(`/hostings/form/step-8?id=${hosting.id}`);
+    }
+  }, [hosting]);
 
   const [refreshing, setRefreshing] = React.useState(false);
   React.useEffect(() => {

@@ -87,7 +87,7 @@ export default function NewHostingStep2() {
           <SectionCard
             icon={<Layers size={16} color={colors.primary} />}
             title="Spaces & Photos"
-            subtitle="Add room types and upload media for each space"
+            subtitle="Add space types and upload media for each space"
           >
             {/* Existing room cards */}
             {rooms.map((room, index) => (
@@ -126,7 +126,7 @@ export default function NewHostingStep2() {
                     lineHeight: 20,
                   }}
                 >
-                  No rooms added yet.{'\n'}Use the selector below to add your first space.
+                  No spaces added yet.{'\n'}Use the selector below to add your first space.
                 </ThemedText>
               </View>
             )}
@@ -208,7 +208,7 @@ export default function NewHostingStep2() {
                       label="Count"
                       inputMode="numeric"
                       onChangeText={(v) => updateActiveRoom({ count: Number(v) })}
-                      placeholder="How many of this room"
+                      placeholder="How many of this space"
                       returnKeyType="next"
                       onSubmitEditing={() => descriptionRef.current?.focus()}
                       blurOnSubmit={false}
@@ -246,7 +246,7 @@ export default function NewHostingStep2() {
                   disabled={hostingRoomSaving}
                   onPress={() => setDeleteModalIndex(activeIndex)}
                 >
-                  <ThemedText content="error">Delete Room</ThemedText>
+                  <ThemedText content="error">Delete Space</ThemedText>
                 </Button>
                 <Button
                   disabled={hostingRoomSaving}
@@ -275,7 +275,7 @@ export default function NewHostingStep2() {
           {deleteModalIndex !== undefined && (
             <View className="gap-6">
               <ThemedText style={{ fontFamily: Fonts.medium }}>
-                Delete this room
+                Delete this space
                 {rooms[deleteModalIndex]?.images.length ? ' and all its photos' : ''}?
               </ThemedText>
               <View className="items-center gap-3">

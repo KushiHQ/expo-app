@@ -8,6 +8,7 @@ import SectionCard from '@/components/molecules/m-section-card';
 import TextSelectButton from '@/components/molecules/m-text-select-button';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { showAmenitiesStep } from '@/lib/constants/hosting/step-rules';
 import { FACILITIES_BY_VARIANT } from '@/lib/types/enums/hostings';
 import { cast } from '@/lib/types/utils';
 import { hexToRgba } from '@/lib/utils/colors';
@@ -25,7 +26,13 @@ export default function NewHostingStep4() {
   const colors = useThemeColors();
   const { id } = useLocalSearchParams();
   const [newFacility, setNewFacility] = React.useState<string | null>(null);
-  const { input, mutate, updateInput, mutating, fetching: fetchingHosting } = useHostingForm(id);
+  const { input, mutate, updateInput, mutating, fetching: fetchingHosting, hosting } = useHostingForm(id);
+
+  React.useEffect(() => {
+    if (hosting && !showAmenitiesStep(hosting.propertyType)) {
+      router.replace(`/hostings/form/step-5?id=${hosting.id}`);
+    }
+  }, [hosting]);
 
   const facilities = React.useMemo(() => {
     const selected = input.facilities ?? [];
