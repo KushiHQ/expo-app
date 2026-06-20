@@ -73,7 +73,9 @@ export default function HostingOnboarding() {
       // Step 1: Photos
       const i1 = idx(1);
       if (i1 >= 0) {
-        actions[i1].filled = !!hosting.rooms?.some((room) => room?.images && room.images.length > 0);
+        actions[i1].filled = !!hosting.rooms?.some(
+          (room) => room?.images && room.images.length > 0,
+        );
       }
 
       // Step 2: Location

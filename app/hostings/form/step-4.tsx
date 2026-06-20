@@ -26,7 +26,14 @@ export default function NewHostingStep4() {
   const colors = useThemeColors();
   const { id } = useLocalSearchParams();
   const [newFacility, setNewFacility] = React.useState<string | null>(null);
-  const { input, mutate, updateInput, mutating, fetching: fetchingHosting, hosting } = useHostingForm(id);
+  const {
+    input,
+    mutate,
+    updateInput,
+    mutating,
+    fetching: fetchingHosting,
+    hosting,
+  } = useHostingForm(id);
 
   React.useEffect(() => {
     if (hosting && !showAmenitiesStep(hosting.propertyType)) {

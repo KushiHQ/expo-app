@@ -483,7 +483,12 @@ export const ROOMS_BY_VARIANT: RoomHostingMapping[] = [
   },
   {
     room: Room.GateEntrance,
-    hostingVariants: [PropertyType.LandPlots, PropertyType.Residential, PropertyType.CommercialRetail, PropertyType.Agricultural],
+    hostingVariants: [
+      PropertyType.LandPlots,
+      PropertyType.Residential,
+      PropertyType.CommercialRetail,
+      PropertyType.Agricultural,
+    ],
   },
   {
     room: Room.WellBorehole,

@@ -32,7 +32,11 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
     const raw = notification.data;
     if (!raw) return {};
     if (typeof raw === 'string') {
-      try { return JSON.parse(raw); } catch { return {}; }
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return {};
+      }
     }
     return raw;
   }, [notification.data]);
@@ -167,7 +171,12 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
           {/* Action button — only shown when there's a route */}
           {hasRoute && (
             <View className="mt-2 self-start">
-              <Button variant="outline" type="shade" className="px-3 py-1.5" onPress={handleButtonPress}>
+              <Button
+                variant="outline"
+                type="shade"
+                className="px-3 py-1.5"
+                onPress={handleButtonPress}
+              >
                 <ThemedText
                   style={{
                     fontSize: 11,
