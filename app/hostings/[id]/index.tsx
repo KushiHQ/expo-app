@@ -55,7 +55,7 @@ export default function HostingDetails() {
 		const slug = `${slugify(hosting?.title ?? "")}___${id}`;
 		const base =
 			process.env.EXPO_PUBLIC_SHARE_PROPERTY_URL ||
-			"https://kushicorp.com/hostings/<slug>";
+			"https://kushicorp.com/guest/<slug>";
 		const shareUrl = base.replace("<slug>", slug);
 		try {
 			await Share.share({

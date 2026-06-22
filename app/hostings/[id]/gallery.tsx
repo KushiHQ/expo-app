@@ -1,16 +1,17 @@
-import ListImage from '@/components/atoms/a-list-image';
-import ThemedText from '@/components/atoms/a-themed-text';
-import DetailsLayout from '@/components/layouts/details';
-import { Fonts } from '@/lib/constants/theme';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useHostingQuery } from '@/lib/services/graphql/generated';
-import { Room } from '@/lib/types/enums/hostings';
-import { cast } from '@/lib/types/utils';
-import { hexToRgba } from '@/lib/utils/colors';
-import { useLocalSearchParams } from 'expo-router';
-import React from 'react';
-import { View } from 'react-native';
-import { SimpleGrid } from 'react-native-super-grid';
+import ListImage from "@/components/atoms/a-list-image";
+import ThemedText from "@/components/atoms/a-themed-text";
+import DetailsLayout from "@/components/layouts/details";
+import { Fonts } from "@/lib/constants/theme";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { useHostingQuery } from "@/lib/services/graphql/generated";
+import { Room } from "@/lib/types/enums/hostings";
+import { cast } from "@/lib/types/utils";
+import { hexToRgba } from "@/lib/utils/colors";
+import { extractHostingImages } from "@/lib/utils/hosting/images";
+import { useLocalSearchParams } from "expo-router";
+import React from "react";
+import { View } from "react-native";
+import { SimpleGrid } from "react-native-super-grid";
 
 export default function HostingGallery() {
   const { id } = useLocalSearchParams();
@@ -18,21 +19,10 @@ export default function HostingGallery() {
   const [{ data }] = useHostingQuery({ variables: { hostingId: cast(id) } });
 
   const hosting = data?.hosting;
-
-  const images =
-    hosting?.rooms
-      .map((r) => r.images)
-      .flat()
-      .map((i) => i.asset.publicUrl) ?? [];
-
-  // Per-image room context for the fullscreen viewer, aligned with `images`.
-  const captions =
-    hosting?.rooms.flatMap((room) =>
-      room.images.map(() => ({
-        title: Room[room.name as keyof typeof Room] ?? room.name,
-        subtitle: room.description ?? undefined,
-      })),
-    ) ?? [];
+  const { captions, images } = React.useMemo(
+    () => extractHostingImages(hosting),
+    [hosting],
+  );
 
   const getIndex = (src: string) => {
     const index = images.findIndex((c) => c === src);
@@ -49,7 +39,9 @@ export default function HostingGallery() {
               {/* Room section header: name + space count + photo count + description */}
               <View className="px-2">
                 <View className="flex-row flex-wrap items-center gap-2">
-                  <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 16 }}>
+                  <ThemedText
+                    style={{ fontFamily: Fonts.semibold, fontSize: 16 }}
+                  >
                     {Room[room.name as keyof typeof Room] ?? room.name}
                   </ThemedText>
                   {room.count && room.count > 1 ? (
@@ -62,14 +54,20 @@ export default function HostingGallery() {
                       }}
                     >
                       <ThemedText
-                        style={{ fontSize: 11, fontFamily: Fonts.semibold, color: colors.primary }}
+                        style={{
+                          fontSize: 11,
+                          fontFamily: Fonts.semibold,
+                          color: colors.primary,
+                        }}
                       >
                         ×{room.count}
                       </ThemedText>
                     </View>
                   ) : null}
-                  <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.4) }}>
-                    {photoCount} {photoCount === 1 ? 'photo' : 'photos'}
+                  <ThemedText
+                    style={{ fontSize: 12, color: hexToRgba(colors.text, 0.4) }}
+                  >
+                    {photoCount} {photoCount === 1 ? "photo" : "photos"}
                   </ThemedText>
                 </View>
                 {room.description ? (
@@ -98,7 +96,12 @@ export default function HostingGallery() {
                       <ListImage
                         width="100%"
                         height={80}
-                        style={{ height: 80, width: '100%', borderRadius: 12, maxWidth: 150 }}
+                        style={{
+                          height: 80,
+                          width: "100%",
+                          borderRadius: 12,
+                          maxWidth: 150,
+                        }}
                         images={images}
                         captions={captions}
                         openable

@@ -216,8 +216,6 @@ export default function PhotoGalleryScreen() {
               right: 0,
               top: height * 0.75,
               bottom: 0,
-              // iOS: needs an explicit zIndex to sit above the FlatList once a
-              // sibling (the back button) has one — otherwise it renders behind.
               zIndex: 5,
               backgroundColor: "rgba(0,0,0,0.6)",
               paddingHorizontal: 20,
