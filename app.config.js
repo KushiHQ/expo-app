@@ -61,7 +61,6 @@ export default ({ config }) => ({
 			
 			"android.permission.FOREGROUND_SERVICE_CAMERA",
 			"android.permission.FOREGROUND_SERVICE_MICROPHONE",
-			"android.permission.FOREGROUND_SERVICE_PHONE_CALL",
 			"android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING",
 			"android.permission.MANAGE_OWN_CALLS",
 			"android.permission.READ_PHONE_STATE",
@@ -144,6 +143,7 @@ export default ({ config }) => ({
 			return config;
 		},
 		"./lib/plugins/withNotifeeForeground.js",
+		"./lib/plugins/withTrimForegroundServices.js",
 		"./lib/plugins/withAndroidSigning.js",
 		"./lib/plugins/withLockScreen.js",
 		"./lib/plugins/withGradleVersion.js",
