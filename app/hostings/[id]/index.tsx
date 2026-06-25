@@ -31,6 +31,7 @@ import { MynauiStarSolid } from "@/components/icons/i-star";
 import HostingHost from "@/components/molecules/m-hosting-host";
 import HostingFacilities from "@/components/molecules/m-hosting-facilities";
 import HostingGalleryComponent from "@/components/molecules/m-hosting-gallery";
+import { getAssetResizeUrl } from "@/lib/utils/urls";
 import HostingReviews from "@/components/organisms/o-hosting-reviews";
 import HostingLocation from "@/components/molecules/m-hosting-location";
 import AVerificationTierBadge from "@/components/atoms/a-verification-tier-badge";
@@ -238,7 +239,9 @@ export default function HostingDetails() {
 									(img, index) => (
 										<Image
 											source={{
-												uri: img.asset?.publicUrl,
+												uri: img.asset?.id
+													? getAssetResizeUrl(img.asset.id, 1280, 960)
+													: img.asset?.publicUrl,
 											}}
 											style={{ height: "100%", width: "100%" }}
 											contentFit="cover"
@@ -247,6 +250,7 @@ export default function HostingDetails() {
 											placeholderContentFit="cover"
 											cachePolicy="memory-disk"
 											priority="high"
+											recyclingKey={img.id}
 											key={index}
 										/>
 									),

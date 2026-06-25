@@ -18,6 +18,7 @@ import {
 	PaymentInterval,
 } from "@/lib/services/graphql/generated";
 import { capitalize } from "@/lib/utils/text";
+import { getAssetResizeUrl } from "@/lib/utils/urls";
 import HostingLikeButton from "../atoms/a-hosting-like-button";
 import ListingTypeBadge from "../atoms/a-listing-type-badge";
 import Animated, {
@@ -74,7 +75,9 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 					{images.map((img) => (
 						<Image
 							source={{
-								uri: img.asset?.publicUrl,
+								uri: img.asset?.id
+									? getAssetResizeUrl(img.asset.id, 640, 480)
+									: img.asset?.publicUrl,
 							}}
 							style={{ height: "100%", width: "100%" }}
 							contentFit="cover"
@@ -83,6 +86,7 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 							placeholderContentFit="cover"
 							cachePolicy="memory-disk"
 							priority="high"
+							recyclingKey={img.id}
 							key={img.id}
 						/>
 					))}

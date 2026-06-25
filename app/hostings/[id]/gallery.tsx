@@ -7,7 +7,8 @@ import { useHostingQuery } from "@/lib/services/graphql/generated";
 import { Room } from "@/lib/types/enums/hostings";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
-import { extractHostingImages } from "@/lib/utils/hosting/images";
+import { extractHostingImages, galleryImageUri } from "@/lib/utils/hosting/images";
+import { getAssetResizeUrl } from "@/lib/utils/urls";
 import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import { View } from "react-native";
@@ -105,8 +106,12 @@ export default function HostingGallery() {
                         images={images}
                         captions={captions}
                         openable
-                        src={item.asset.publicUrl}
-                        index={getIndex(item.asset.publicUrl)}
+                        src={
+                          item.asset.id
+                            ? getAssetResizeUrl(item.asset.id, 200, 200, 80)
+                            : item.asset.publicUrl
+                        }
+                        index={getIndex(galleryImageUri(item.asset))}
                       />
                     </View>
                   )}
