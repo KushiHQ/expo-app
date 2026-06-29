@@ -13,6 +13,7 @@ import { StatusBar } from "expo-status-bar";
 import { useGalleryStore } from "@/lib/stores/gallery";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import ImagePicker from "react-native-image-crop-picker";
+import * as FileSystem from "expo-file-system/legacy";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { FluentImageEdit24Regular } from "@/components/icons/i-edit";
 import { Check, ChevronLeft } from "lucide-react-native";
@@ -32,7 +33,7 @@ export default function PhotoGalleryScreen() {
   const router = useRouter();
   const { width, height } = useWindowDimensions();
   const { redirect, fromCamera, viewOnly } = useLocalSearchParams();
-  const { gallery, captions, activeIndex, setActiveIndex, updateActiveImage } =
+  const { gallery, captions, activeIndex, setActiveIndex, updateActiveImage, setReplacement } =
     useGalleryStore();
   const colors = useThemeColors();
   const caption = captions[activeIndex];
@@ -101,10 +102,20 @@ export default function PhotoGalleryScreen() {
   const handleEditPhoto = async () => {
     if (gallery.length === 0) return;
     const currentPhotoUri = gallery[activeIndex];
+    const isRemote = /^https?:\/\//.test(currentPhotoUri);
 
     try {
+      // The cropper can only open a LOCAL file. For an already-uploaded photo
+      // (https:// URL), download it to a cache file first, then crop that.
+      let cropPath = currentPhotoUri;
+      if (isRemote) {
+        const dest = `${FileSystem.cacheDirectory}edit-${Date.now()}.jpg`;
+        const { uri } = await FileSystem.downloadAsync(currentPhotoUri, dest);
+        cropPath = uri;
+      }
+
       const croppedImage = await ImagePicker.openCropper({
-        path: currentPhotoUri,
+        path: cropPath,
         cropping: true,
         mediaType: "photo",
         cropperActiveWidgetColor: colors.primary,
@@ -115,11 +126,18 @@ export default function PhotoGalleryScreen() {
         enableRotationGesture: true,
       });
 
+      // Remember which already-uploaded image this edit replaces, so the upload
+      // step updates that server image in place instead of adding a duplicate.
+      // Carry the original URL forward when re-editing an earlier edit.
+      const originalUrl = useGalleryStore.getState().replacements[currentPhotoUri]
+        ?? (isRemote ? currentPhotoUri : undefined);
+      if (originalUrl) setReplacement(croppedImage.path, originalUrl);
+
       updateActiveImage(croppedImage.path);
     } catch (error: any) {
       if (error.code !== "E_PICKER_CANCELLED") {
         console.error("Error cropping photo: ", error);
-        alert("Could not crop photo.");
+        alert("Could not edit photo. Please try again.");
       }
     }
   };

@@ -84,6 +84,9 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
       const currentGallery = useGalleryStore.getState().gallery;
       if (currentGallery.length === 0) return;
 
+      // Map of edited copy → the already-uploaded URL it replaces (read before clear).
+      const replacements = useGalleryStore.getState().replacements;
+
       // Immediately reflect the gallery images in local state (mix of existing
       // https:// URLs and new file:// URIs).
       updateActiveRoom({ images: currentGallery });
@@ -95,8 +98,19 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
       const fileUris = currentGallery.filter((image) => image.startsWith('file'));
       if (fileUris.length === 0) return;
 
-      useUploadStore.getState().enqueue(roomId, fileUris);
-    }, [activeIndex, clearGallery, updateActiveRoom]),
+      // For an edited copy of an already-uploaded photo, resolve the server image id
+      // so the upload replaces it in place instead of adding a duplicate.
+      const serverImages = hosting?.rooms.find((r) => r.id === roomId)?.images ?? [];
+      const items = fileUris.map((uri) => {
+        const originalUrl = replacements[uri];
+        const replaceImageId = originalUrl
+          ? serverImages.find((i) => i.asset.publicUrl === originalUrl)?.id
+          : undefined;
+        return { uri, replaceImageId };
+      });
+
+      useUploadStore.getState().enqueue(roomId, items);
+    }, [activeIndex, clearGallery, updateActiveRoom, hosting]),
   );
 
   // When the upload queue is fully clear (nothing uploading AND no failures left),

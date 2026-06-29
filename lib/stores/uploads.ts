@@ -25,7 +25,13 @@ export type UploadTask = {
   roomId: string;
   status: ImageUploadStatus;
   attempts: number;
+  /** When set, replace this existing server image in place (edited photo) rather
+   *  than creating a new one. */
+  replaceImageId?: string;
 };
+
+/** A photo to upload. `replaceImageId` updates an existing server image in place. */
+export type UploadItem = { uri: string; replaceImageId?: string };
 
 interface UploadState {
   /** Active room-image uploads, keyed by uri. Successful ones are removed. */
@@ -33,7 +39,7 @@ interface UploadState {
   /** Completed / total for the current run (drives the progress toast). */
   done: number;
   total: number;
-  enqueue: (roomId: string, localUris: string[]) => Promise<void>;
+  enqueue: (roomId: string, items: UploadItem[]) => Promise<void>;
   retry: (uri: string) => void;
   retryAll: () => void;
   /** Re-queue interrupted/failed uploads (called once after rehydration). */
@@ -90,7 +96,13 @@ export const useUploadStore = create<UploadState>()(
             CreateHostingRoomImageMutation,
             CreateHostingRoomImageMutationVariables
           >(CREATE_UPDATE_HOSTING_ROOM_IMAGE, {
-            input: { roomId: task.roomId, asset: generateRNFile(uri) },
+            input: {
+              // With an id, the server replaces that image's asset in place
+              // (preserving its order/cover); without, it creates a new image.
+              ...(task.replaceImageId ? { id: task.replaceImageId } : {}),
+              roomId: task.roomId,
+              asset: generateRNFile(uri),
+            },
           });
 
           const url = res.data?.createHostingRoomImage.data?.asset.publicUrl;
@@ -127,10 +139,11 @@ export const useUploadStore = create<UploadState>()(
         done: 0,
         total: 0,
 
-        enqueue: async (roomId, localUris) => {
-          if (localUris.length === 0) return;
+        enqueue: async (roomId, items) => {
+          if (items.length === 0) return;
           await ensureDir();
-          for (const localUri of localUris) {
+          for (const item of items) {
+            const localUri = item.uri;
             const ext = (localUri.split(".").pop() || "jpg").split("?")[0].slice(0, 5);
             const dest = `${UPLOAD_DIR}${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
             let uri = localUri;
@@ -143,7 +156,16 @@ export const useUploadStore = create<UploadState>()(
               // Copy failed — upload the original uri (won't survive a kill, but works now).
             }
             set((s) => ({
-              tasks: { ...s.tasks, [uri]: { uri, roomId, status: "queued", attempts: 0 } },
+              tasks: {
+                ...s.tasks,
+                [uri]: {
+                  uri,
+                  roomId,
+                  status: "queued",
+                  attempts: 0,
+                  replaceImageId: item.replaceImageId,
+                },
+              },
               total: s.total + 1,
             }));
           }
