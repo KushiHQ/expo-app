@@ -1,0 +1,27 @@
+diff --git a/node_modules/react-native-image-crop-picker/ios/src/ImageCropPicker.mm b/node_modules/react-native-image-crop-picker/ios/src/ImageCropPicker.mm
+index 354ad09..7ed0fcb 100644
+--- a/node_modules/react-native-image-crop-picker/ios/src/ImageCropPicker.mm
++++ b/node_modules/react-native-image-crop-picker/ios/src/ImageCropPicker.mm
+@@ -375,6 +375,22 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
+     
+     NSString *path = [options objectForKey:@"path"];
+ 
++    // Full-resolution local load: React Native's ImageLoader downsamples large
++    // images on decode, which softens the result on iOS (Android reads the file
++    // directly and stays sharp). openCropper is always handed a local file, so
++    // read it straight from disk to preserve the original resolution.
++    NSURL *localURL = [NSURL URLWithString:path];
++    UIImage *localImage = nil;
++    if (localURL && [localURL isFileURL]) {
++        localImage = [UIImage imageWithContentsOfFile:[localURL path]];
++    } else if ([path hasPrefix:@"/"]) {
++        localImage = [UIImage imageWithContentsOfFile:path];
++    }
++    if (localImage) {
++        [self cropImage:[localImage fixOrientation]];
++        return;
++    }
++
+     [[self.bridge moduleForName:@"ImageLoader" lazilyLoadIfNecessary:YES] loadImageWithURLRequest:[RCTConvert NSURLRequest:path] callback:^(NSError *error, UIImage *image) {
+         if (error) {
+             self.reject(ERROR_CROPPER_IMAGE_NOT_FOUND_KEY, ERROR_CROPPER_IMAGE_NOT_FOUND_MSG, nil);
