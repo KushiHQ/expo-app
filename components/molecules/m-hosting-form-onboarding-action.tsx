@@ -1,6 +1,8 @@
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { CustomSvgProps } from '@/lib/types/svgType';
 import { hexToRgba } from '@/lib/utils/colors';
+import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { Image } from 'expo-image';
 import { LucideIcon } from 'lucide-react-native';
 import React from 'react';
 import { Pressable, View } from 'react-native';
@@ -14,6 +16,8 @@ export type HostingActionItem = {
 
 type Props = {
   icon: LucideIcon | React.FC<CustomSvgProps>;
+  /** When set, shows this image (e.g. a unit's cover photo) instead of the icon. */
+  image?: string;
   onPress?: () => void;
   disabled?: boolean;
   color?: 'primary' | 'accent' | 'default';
@@ -25,11 +29,18 @@ const HostingFormOnboardingAction: React.FC<Props> = ({
   disabled,
   color = 'default',
   icon,
+  image,
   children,
 }) => {
   const colors = useThemeColors();
 
   const Icon = icon;
+  const leadingBorderColor =
+    color === 'primary'
+      ? hexToRgba(colors.primary, 0.2)
+      : color === 'accent'
+        ? hexToRgba(colors.accent, 0.2)
+        : hexToRgba(colors.text, 0.1);
 
   return (
     <Pressable
@@ -54,20 +65,32 @@ const HostingFormOnboardingAction: React.FC<Props> = ({
               : undefined,
       }}
     >
-      <View
-        className="h-12 w-12 items-center justify-center rounded-full border"
-        style={{
-          backgroundColor: hexToRgba(colors.primary, 0.1),
-          borderColor:
-            color === 'primary'
-              ? hexToRgba(colors.primary, 0.2)
-              : color === 'accent'
-                ? hexToRgba(colors.accent, 0.2)
-                : hexToRgba(colors.text, 0.1),
-        }}
-      >
-        <Icon size={20} color={colors.text} />
-      </View>
+      {image ? (
+        <View
+          className="h-12 w-12 overflow-hidden rounded-2xl border"
+          style={{ borderColor: leadingBorderColor }}
+        >
+          <Image
+            source={{ uri: image }}
+            style={{ height: '100%', width: '100%' }}
+            contentFit="cover"
+            transition={300}
+            placeholder={{ blurhash: PROPERTY_BLURHASH }}
+            placeholderContentFit="cover"
+            cachePolicy="memory-disk"
+          />
+        </View>
+      ) : (
+        <View
+          className="h-12 w-12 items-center justify-center rounded-full border"
+          style={{
+            backgroundColor: hexToRgba(colors.primary, 0.1),
+            borderColor: leadingBorderColor,
+          }}
+        >
+          <Icon size={20} color={colors.text} />
+        </View>
+      )}
       {children}
     </Pressable>
   );

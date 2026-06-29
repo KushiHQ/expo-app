@@ -52,8 +52,8 @@ import {
   User,
 } from 'lucide-react-native';
 import React from 'react';
-import { Pressable, View, Modal } from 'react-native';
-import BookingFeedbackPrompt from '@/components/molecules/m-booking-feedback-prompt';
+import { Pressable, View } from 'react-native';
+import FeedbackPromptModal from '@/components/molecules/m-feedback-prompt-modal';
 import { useFeedbackStore, canShowFeedback } from '@/lib/stores/feedback';
 import Pdf from 'react-native-pdf';
 
@@ -698,31 +698,15 @@ export default function UserBooking() {
       <LoadingModal visible={loading} />
 
       {/* Booking Feedback Prompt Modal */}
-      <Modal
+      <FeedbackPromptModal
         visible={showFeedbackPrompt && !feedbackSubmitted}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowFeedbackPrompt(false)}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: hexToRgba(colors.background, 0.8),
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 24,
-          }}
-        >
-          <BookingFeedbackPrompt
-            bookingId={cast(id)}
-            onDismiss={() => setShowFeedbackPrompt(false)}
-            onSubmit={() => {
-              setFeedbackSubmitted(true);
-              setShowFeedbackPrompt(false);
-            }}
-          />
-        </View>
-      </Modal>
+        bookingId={cast(id)}
+        onDismiss={() => setShowFeedbackPrompt(false)}
+        onSubmit={() => {
+          setFeedbackSubmitted(true);
+          setShowFeedbackPrompt(false);
+        }}
+      />
     </>
   );
 }

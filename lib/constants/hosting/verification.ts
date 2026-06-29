@@ -11,13 +11,13 @@ export const HOSTING_VERIFICATION_OPTIONS: {
   {
     label: 'Agent',
     value: HostingPropertyRelationship.Agent,
-    description: 'I am the legal owner of this property with full rights to lease it.',
+    description:
+      'I am an attorney or agent with a direct mandate from the owner to manage this property.',
   },
   {
     label: 'Landlord',
     value: HostingPropertyRelationship.Landlord,
-    description:
-      'I am an attorney or agent with a direct mandate from the owner to manage this property.',
+    description: 'I am the legal owner of this property with full rights to lease it.',
   },
   {
     label: 'Subletter',

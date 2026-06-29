@@ -10,7 +10,7 @@ import { hexToRgba } from '@/lib/utils/colors';
 import { IconParkOutlineDot } from '../icons/i-circle';
 import ListingOptions from '../molecules/m-listing-options';
 import { useRouter } from '@/lib/hooks/use-router';
-import { HostListingsQuery, PublishStatus } from '@/lib/services/graphql/generated';
+import { HostingKind, HostListingsQuery, PublishStatus } from '@/lib/services/graphql/generated';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
@@ -37,6 +37,8 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete }) => {
   const handlePressOut = () => {
     scale.value = withSpring(1);
   };
+
+  const isParent = hosting.kind === HostingKind.Parent;
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -111,18 +113,31 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete }) => {
             {hosting.city}, {hosting.state}
           </ThemedText>
           <View className="mt-1 flex-row items-center justify-between">
-            <View className="flex-row items-center gap-1.5">
-              <IconParkOutlineDot color={statusColor} size={10} />
-              <Text
-                style={{
-                  fontSize: 11,
-                  color: statusColor,
-                  fontFamily: Fonts.semibold,
-                  textTransform: 'capitalize',
-                }}
-              >
-                {hosting.publishStatus}
-              </Text>
+            <View className="flex-row items-center gap-2">
+              <View className="flex-row items-center gap-1.5">
+                <IconParkOutlineDot color={statusColor} size={10} />
+                <Text
+                  style={{
+                    fontSize: 11,
+                    color: statusColor,
+                    fontFamily: Fonts.semibold,
+                    textTransform: 'capitalize',
+                  }}
+                >
+                  {hosting.publishStatus}
+                </Text>
+              </View>
+              {isParent ? (
+                <Text
+                  style={{
+                    fontSize: 11,
+                    color: hexToRgba(colors.text, 0.55),
+                    fontFamily: Fonts.medium,
+                  }}
+                >
+                  · {hosting.childCount} unit{hosting.childCount === 1 ? '' : 's'}
+                </Text>
+              ) : null}
             </View>
             <ThemedText
               style={{

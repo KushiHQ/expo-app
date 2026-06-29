@@ -8,6 +8,7 @@ export default function Layout() {
       <Stack.Screen name="onboarding" options={{ headerShown: false }} />
       <Stack.Screen name="step-1" options={{ headerShown: false }} />
       <Stack.Screen name="step-2" options={{ headerShown: false }} />
+      <Stack.Screen name="step-2-video" options={{ headerShown: false }} />
       <Stack.Screen name="step-3" options={{ headerShown: false }} />
       <Stack.Screen name="step-4" options={{ headerShown: false }} />
       <Stack.Screen name="step-5" options={{ headerShown: false }} />

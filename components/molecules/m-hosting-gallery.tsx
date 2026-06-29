@@ -9,6 +9,7 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { HostingQuery } from "@/lib/services/graphql/generated";
 import ListImage from "../atoms/a-list-image";
+import VideoCard from "./m-video-card";
 import { extractHostingImages } from "@/lib/utils/hosting/images";
 
 type Props = {
@@ -39,6 +40,16 @@ const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
           </ThemedText>
         </Link>
       </View>
+      {hosting?.video?.asset?.publicUrl && (
+        <View className="mt-4">
+          <VideoCard
+            source={hosting.video.asset.publicUrl}
+            durationSeconds={hosting.video.durationSeconds ?? undefined}
+            title="Property tour"
+            style={{ width: "100%", height: 200, borderRadius: 12 }}
+          />
+        </View>
+      )}
       <View className="mt-4 flex-row gap-3">
         {(images ?? []).slice(0, 3).map((img, index) => (
           <View key={index} className="flex-1">

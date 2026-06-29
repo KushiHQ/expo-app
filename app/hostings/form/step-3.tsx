@@ -92,7 +92,7 @@ export default function NewHostingStep3() {
             onPress={handleMutate}
             disabled={mutating || !input.contact || !input.longitude || !input.latitude}
             loading={mutating}
-            step={3}
+            step={4}
           />
         }
       >

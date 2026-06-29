@@ -7,11 +7,16 @@ import { ONBOARDING_STEPS, getVisibleSteps } from '@/lib/constants/hosting/onboa
 import { Fonts } from '@/lib/constants/theme';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { PublishStatus, useBookingApplicationsCountQuery } from '@/lib/services/graphql/generated';
+import {
+  HostingKind,
+  PublishStatus,
+  useBookingApplicationsCountQuery,
+} from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
-import { Href, useLocalSearchParams } from 'expo-router';
+import { capitalize } from '@/lib/utils/text';
+import { Href, router as expoRouter, useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
-import { CircleQuestionMark } from 'lucide-react-native';
+import { CircleQuestionMark, Store } from 'lucide-react-native';
 import React from 'react';
 import { RefreshControl, View } from 'react-native';
 
@@ -19,6 +24,8 @@ type Action = {
   filled: boolean;
   disabled: boolean;
   link: Href;
+  /** optional steps never gate the steps after them, even when not filled */
+  optional?: boolean;
 };
 
 export default function HostingOnboarding() {
@@ -55,7 +62,13 @@ export default function HostingOnboarding() {
         disabled: true,
         link: isLast
           ? `/hostings/form/verification/overview?id=${hosting?.id}`
-          : `/hostings/form/step-${originalIndex + 1}?id=${hosting?.id}`,
+          : `/hostings/form/${
+              originalIndex === 2
+                ? 'step-2-video'
+                : originalIndex < 2
+                  ? `step-${originalIndex + 1}`
+                  : `step-${originalIndex}`
+            }?id=${hosting?.id}`,
       };
     });
 
@@ -78,10 +91,18 @@ export default function HostingOnboarding() {
         );
       }
 
-      // Step 2: Location
-      const i2 = idx(2);
-      if (i2 >= 0) {
-        actions[i2].filled = !!(
+      // Step 2: Video Walkthrough — optional: reflect whether a video exists,
+      // but mark optional so an empty one never blocks the steps after it.
+      const iVideo = idx(2);
+      if (iVideo >= 0) {
+        actions[iVideo].filled = !!hosting.video;
+        actions[iVideo].optional = true;
+      }
+
+      // Step 3: Location
+      const iLocation = idx(3);
+      if (iLocation >= 0) {
+        actions[iLocation].filled = !!(
           hosting.longitude &&
           hosting.latitude &&
           hosting.state &&
@@ -92,23 +113,27 @@ export default function HostingOnboarding() {
         );
       }
 
-      // Step 3: Amenities
-      const i3 = idx(3);
-      if (i3 >= 0) {
-        actions[i3].filled = !!hosting.facilities?.length;
+      // Step 4: Amenities
+      const iAmenities = idx(4);
+      if (iAmenities >= 0) {
+        actions[iAmenities].filled = !!hosting.facilities?.length;
       }
 
-      // Step 4: Pricing
-      const i4 = idx(4);
-      if (i4 >= 0) {
-        actions[i4].filled = !!(hosting.paymentInterval && hosting.price && hosting.paymentDetails);
+      // Step 5: Pricing
+      const iPricing = idx(5);
+      if (iPricing >= 0) {
+        actions[iPricing].filled = !!(
+          hosting.paymentInterval &&
+          hosting.price &&
+          hosting.paymentDetails
+        );
       }
 
-      // Step 5: Mandate
-      const i5 = idx(5);
-      if (i5 >= 0) {
+      // Step 6: Mandate
+      const iMandate = idx(6);
+      if (iMandate >= 0) {
         const v = hosting.verification;
-        actions[i5].filled = !!(
+        actions[iMandate].filled = !!(
           v?.landlordFullName &&
           v?.landlordAddress &&
           v?.propertyRelationship &&
@@ -118,35 +143,37 @@ export default function HostingOnboarding() {
         );
       }
 
-      // Step 6: Tenancy Terms
-      const i6 = idx(6);
-      if (i6 >= 0) {
-        actions[i6].filled = !!(
+      // Step 7: Tenancy Terms
+      const iTenancy = idx(7);
+      if (iTenancy >= 0) {
+        actions[iTenancy].filled = !!(
           hosting.tenancyAgreementTemplate?.sections &&
           hosting.tenancyAgreementTemplate.sections?.length > 0 &&
           hosting.host?.signature?.publicUrl
         );
       }
 
-      // Step 7: Review & Publish
-      const i7 = idx(7);
-      if (i7 >= 0) {
-        actions[i7].filled =
+      // Step 8: Review & Publish
+      const iReview = idx(8);
+      if (iReview >= 0) {
+        actions[iReview].filled =
           hosting.publishStatus === PublishStatus.Inreview ||
           hosting.publishStatus === PublishStatus.Live;
       }
 
-      // Step 8: Get Verified
-      const i8 = idx(8);
-      if (i8 >= 0) {
-        actions[i8].filled = hosting.publishStatus === PublishStatus.Live;
+      // Step 9: Get Verified
+      const iVerified = idx(9);
+      if (iVerified >= 0) {
+        actions[iVerified].filled = hosting.publishStatus === PublishStatus.Live;
       }
     }
 
     visibleSteps.forEach((_, filteredIndex) => {
       if (filteredIndex !== 0) {
-        actions[filteredIndex]['disabled'] =
-          actions[filteredIndex - 1].disabled || !actions[filteredIndex - 1].filled;
+        const prev = actions[filteredIndex - 1];
+        // An optional previous step (e.g. the video walkthrough) never blocks
+        // the next step, even if it hasn't been filled.
+        actions[filteredIndex]['disabled'] = prev.disabled || (!prev.filled && !prev.optional);
       }
     });
 
@@ -174,28 +201,77 @@ export default function HostingOnboarding() {
           future tenants.
         </ThemedText>
         <TopListingCard onPress={() => router.push(`/hostings/${hosting?.id}`)} hosting={hosting} />
-        <View className="border-b py-4" style={{ borderColor: hexToRgba(colors.text, 0.15) }}>
-          <HostingFormOnboardingAction
-            icon={FluentFormMultiple24Regular}
-            color="accent"
-            onPress={() => router.push(`/hostings/${hosting?.id}/booking-applications/`)}
-          >
-            <View className="flex-1">
-              <ThemedText style={{ fontFamily: Fonts.bold }}>
-                Booking Applications (
-                {Number(countData?.bookingApplicationsCount ?? '0').toLocaleString()})
+        {/* A parent property isn't booked directly — applications belong to its
+            units — so the booking-applications section is hidden for parents. */}
+        {hosting?.kind !== HostingKind.Parent ? (
+          <View className="border-b py-4" style={{ borderColor: hexToRgba(colors.text, 0.15) }}>
+            <HostingFormOnboardingAction
+              icon={FluentFormMultiple24Regular}
+              color="accent"
+              onPress={() => router.push(`/hostings/${hosting?.id}/booking-applications/`)}
+            >
+              <View className="flex-1">
+                <ThemedText style={{ fontFamily: Fonts.bold }}>
+                  Booking Applications (
+                  {Number(countData?.bookingApplicationsCount ?? '0').toLocaleString()})
+                </ThemedText>
+                <ThemedText
+                  style={{
+                    fontSize: 12,
+                    color: hexToRgba(colors.text, 0.6),
+                  }}
+                >
+                  Review and manage pending tenant applications for this property.
+                </ThemedText>
+              </View>
+            </HostingFormOnboardingAction>
+          </View>
+        ) : null}
+
+        {/* Units — only for a parent property. Lists its child units; tap to
+            manage one (drills into that unit's own onboarding). */}
+        {hosting && hosting.kind === HostingKind.Parent ? (
+          <View className="border-b py-4" style={{ borderColor: hexToRgba(colors.text, 0.15) }}>
+            <ThemedText style={{ fontFamily: Fonts.bold, marginBottom: 10 }}>
+              Units ({hosting.children.length})
+            </ThemedText>
+            {hosting.children.length === 0 ? (
+              <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
+                No units yet. Add one with the + button and choose this property as its parent.
               </ThemedText>
-              <ThemedText
-                style={{
-                  fontSize: 12,
-                  color: hexToRgba(colors.text, 0.6),
-                }}
-              >
-                Review and manage pending tenant applications for this property.
-              </ThemedText>
-            </View>
-          </HostingFormOnboardingAction>
-        </View>
+            ) : (
+              <View className="gap-3">
+                {hosting.children.map((unit) => (
+                  <HostingFormOnboardingAction
+                    key={unit.id}
+                    icon={Store}
+                    image={unit.coverImage?.asset?.publicUrl ?? undefined}
+                    color={unit.publishStatus === PublishStatus.Live ? 'primary' : 'default'}
+                    onPress={() =>
+                      expoRouter.push(`/hostings/form/onboarding?id=${unit.id}` as Href)
+                    }
+                  >
+                    <View className="flex-1">
+                      <ThemedText style={{ fontFamily: Fonts.bold }} numberOfLines={1}>
+                        {unit.title ?? 'Untitled unit'}
+                      </ThemedText>
+                      <ThemedText
+                        style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}
+                      >
+                        {unit.price
+                          ? `₦${Number(unit.price).toLocaleString()}`
+                          : 'No price set'}
+                        {' · '}
+                        {capitalize(String(unit.publishStatus ?? 'draft'))}
+                      </ThemedText>
+                    </View>
+                  </HostingFormOnboardingAction>
+                ))}
+              </View>
+            )}
+          </View>
+        ) : null}
+
         <View className="mt-8 gap-4">
           {visibleSteps.map((step, filteredIndex) => {
             return (

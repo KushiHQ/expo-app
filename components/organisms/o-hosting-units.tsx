@@ -1,0 +1,112 @@
+import React from "react";
+import { View, Pressable } from "react-native";
+import { Image } from "expo-image";
+import { ChevronRight } from "lucide-react-native";
+import ThemedText from "../atoms/a-themed-text";
+import { Fonts } from "@/lib/constants/theme";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import { hexToRgba } from "@/lib/utils/colors";
+import { PROPERTY_BLURHASH } from "@/lib/constants/images";
+import { useRouter } from "@/lib/hooks/use-router";
+import { capitalize } from "@/lib/utils/text";
+import {
+  HostingKind,
+  HostingQuery,
+  PaymentInterval,
+  PublishStatus,
+} from "@/lib/services/graphql/generated";
+
+type Props = {
+  hosting?: HostingQuery["hosting"];
+  isHost?: boolean;
+};
+
+/**
+ * "Available units" list shown on a parent property's detail page. Guests see only
+ * published units; the owner sees all of them (drafts included).
+ */
+const HostingUnits: React.FC<Props> = ({ hosting, isHost }) => {
+  const colors = useThemeColors();
+  const router = useRouter();
+
+  if (!hosting || hosting.kind !== HostingKind.Parent) return null;
+
+  const units = (hosting.children ?? []).filter(
+    (u) => isHost || u.publishStatus === PublishStatus.Live,
+  );
+
+  return (
+    <View className="mt-8">
+      <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
+        Available units ({units.length})
+      </ThemedText>
+      {units.length === 0 ? (
+        <ThemedText
+          style={{
+            marginTop: 12,
+            fontSize: 13,
+            color: hexToRgba(colors.text, 0.5),
+          }}
+        >
+          No units are available yet.
+        </ThemedText>
+      ) : (
+        <View className="mt-4 gap-3">
+          {units.map((unit) => (
+            <Pressable
+              key={unit.id}
+              onPress={() => router.push(`/hostings/${unit.id}`)}
+              className="flex-row items-center gap-3 rounded-2xl p-3"
+              style={{ backgroundColor: hexToRgba(colors.text, 0.03) }}
+            >
+              <Image
+                source={{ uri: unit.coverImage?.asset?.publicUrl }}
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 12,
+                  backgroundColor: colors["surface-01"],
+                }}
+                contentFit="cover"
+                transition={300}
+                placeholder={{ blurhash: PROPERTY_BLURHASH }}
+                cachePolicy="memory-disk"
+              />
+              <View className="flex-1">
+                <ThemedText
+                  numberOfLines={1}
+                  style={{ fontFamily: Fonts.semibold, fontSize: 15 }}
+                >
+                  {unit.title ?? "Untitled unit"}
+                </ThemedText>
+                <ThemedText
+                  style={{
+                    fontSize: 13,
+                    color: colors.primary,
+                    fontFamily: Fonts.semibold,
+                  }}
+                >
+                  ₦{Number(unit.price ?? 0).toLocaleString()}
+                  {unit.paymentInterval &&
+                  unit.paymentInterval !== PaymentInterval.OneTimePayment
+                    ? ` · ${capitalize(unit.paymentInterval)}`
+                    : ""}
+                </ThemedText>
+                {isHost && unit.publishStatus !== PublishStatus.Live ? (
+                  <ThemedText
+                    style={{ fontSize: 11, color: hexToRgba(colors.text, 0.45) }}
+                  >
+                    {capitalize(String(unit.publishStatus ?? "draft"))}
+                  </ThemedText>
+                ) : null}
+              </View>
+              <ChevronRight size={18} color={hexToRgba(colors.text, 0.4)} />
+            </Pressable>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
+
+export default HostingUnits;

@@ -38,6 +38,7 @@ import CheckboxInput from "@/components/molecules/m-checkbox-input";
 import { Room } from "@/lib/types/enums/hostings";
 import { removeTypenames } from "@/lib/utils/graphql/cleanup";
 import { Fonts } from "@/lib/constants/theme";
+import { useUploadStore } from "@/lib/stores/uploads";
 
 export default function NewHostingStep8() {
   const router = useRouter();
@@ -110,6 +111,10 @@ export default function NewHostingStep8() {
 
   const isLive = hosting?.publishStatus === PublishStatus.Live;
 
+  // Block publishing (not unpublishing) while room-image uploads are still
+  // pending or failed, so a listing never goes live with missing photos.
+  const uploadsInFlight = useUploadStore((s) => Object.keys(s.tasks).length > 0);
+
   return (
     <>
       <DetailsLayout
@@ -119,8 +124,10 @@ export default function NewHostingStep8() {
             onTogglePublish={handleMutate}
             published={isLive}
             loading={mutating}
-            disabled={(!accepted.tos || !accepted.truth) && !isLive}
-            step={8}
+            disabled={
+              ((!accepted.tos || !accepted.truth) || uploadsInFlight) && !isLive
+            }
+            step={9}
           />
         }
       >
@@ -141,6 +148,32 @@ export default function NewHostingStep8() {
             </ThemedText>{" "}
             icon on any section to make changes.
           </ThemedText>
+
+          {/* Publish blocked while photos are still uploading */}
+          {uploadsInFlight && !isLive ? (
+            <View
+              style={{
+                borderRadius: 12,
+                padding: 12,
+                backgroundColor: hexToRgba(colors.primary, 0.08),
+                borderWidth: 1,
+                borderColor: hexToRgba(colors.primary, 0.2),
+              }}
+            >
+              <ThemedText
+                style={{ fontSize: 13, fontFamily: Fonts.medium, color: colors.primary }}
+              >
+                Photos are still uploading
+              </ThemedText>
+              <ThemedText
+                style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6), marginTop: 2 }}
+              >
+                Publishing is enabled once all your photos finish uploading (see the
+                progress bar up top). This keeps your listing from going live with
+                missing images.
+              </ThemedText>
+            </View>
+          ) : null}
 
           {/* Live preview card */}
           {hosting && (

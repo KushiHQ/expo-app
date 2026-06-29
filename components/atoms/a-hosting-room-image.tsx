@@ -1,8 +1,9 @@
 import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { useUploadStore } from '@/lib/stores/uploads';
 import { Image } from 'expo-image';
-import { Star, X } from 'lucide-react-native';
+import { RotateCcw, Star, X } from 'lucide-react-native';
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 
 type Props = {
   src: string;
@@ -25,6 +26,11 @@ const HostingRoomImage: React.FC<Props> = ({
   canSetCover,
   onSetCover,
 }) => {
+  // Background-upload status for this thumbnail (keyed by its local file:// uri);
+  // clears automatically once the url swaps to the uploaded one.
+  const uploadStatus = useUploadStore((s) => s.tasks[src]?.status);
+  const retryUpload = useUploadStore((s) => s.retry);
+
   return (
     <View
       style={{
@@ -46,6 +52,38 @@ const HostingRoomImage: React.FC<Props> = ({
         cachePolicy="memory-disk"
         priority="high"
       />
+
+      {/* Upload status overlay: spinner while uploading, tap-to-retry on failure. */}
+      {uploadStatus === 'uploading' ? (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: 12,
+            backgroundColor: 'rgba(0,0,0,0.45)',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <ActivityIndicator color="#fff" size="small" />
+        </View>
+      ) : uploadStatus === 'error' ? (
+        <Pressable
+          onPress={() => retryUpload(src)}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: 12,
+            backgroundColor: 'rgba(180,30,30,0.5)',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+          }}
+        >
+          <RotateCcw color="#fff" size={18} strokeWidth={2.5} />
+        </Pressable>
+      ) : null}
 
       {/* Cover badge / set-as-cover control (top-left) */}
       {isCover ? (

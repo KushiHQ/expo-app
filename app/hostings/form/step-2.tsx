@@ -114,7 +114,7 @@ export default function NewHostingStep2() {
             disabled={!rooms.length || !hasEnoughPhotos}
             step={2}
             onPress={() => {
-              router.push(`/hostings/form/step-3?id=${hosting?.id}`);
+              router.push(`/hostings/form/step-2-video?id=${hosting?.id}`);
             }}
           />
         }

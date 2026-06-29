@@ -1,6 +1,7 @@
 import { MagePreviewFill } from '@/components/icons/i-preview';
 import { SolarTagPriceOutline } from '@/components/icons/i-price';
 import { SolarVerifiedCheckOutline } from '@/components/icons/i-verified';
+import { Video } from '@/components/icons/i-camera';
 import { CustomSvgProps } from '@/lib/types/svgType';
 import {
   FileSignature,
@@ -29,6 +30,12 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     icon: Images,
     title: 'Add Photos',
     description: 'Add clear images for each room.',
+  },
+  {
+    icon: Video,
+    title: 'Record a Video Walkthrough',
+    description:
+      'Optionally record a short tour (up to 5 minutes) so guests can see the property in motion.',
   },
   {
     icon: MapPinHouse,
@@ -78,8 +85,9 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
  * to filtered position. Used by onboarding.tsx and step navigation.
  *
  * Original indices:
- *   0 = Property Details, 1 = Photos, 2 = Location, 3 = Amenities,
- *   4 = Price, 5 = Mandate, 6 = Tenancy Terms, 7 = Review, 8 = Verified
+ *   0 = Property Details, 1 = Photos, 2 = Video Walkthrough, 3 = Location,
+ *   4 = Amenities, 5 = Price, 6 = Mandate, 7 = Tenancy Terms,
+ *   8 = Review, 9 = Verified
  */
 export function getVisibleSteps(
   listingType?: string | null,
@@ -92,9 +100,9 @@ export function getVisibleSteps(
   const indexMap: number[] = [];
 
   ONBOARDING_STEPS.forEach((step, originalIndex) => {
-    if (originalIndex === 3 && !amenities) return;
-    if (originalIndex === 5 && !tenancy) return;
+    if (originalIndex === 4 && !amenities) return;
     if (originalIndex === 6 && !tenancy) return;
+    if (originalIndex === 7 && !tenancy) return;
 
     steps.push(step);
     indexMap.push(originalIndex);

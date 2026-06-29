@@ -1,9 +1,6 @@
 import React from 'react';
-import { Modal, View } from 'react-native';
-import BookingFeedbackPrompt from '@/components/molecules/m-booking-feedback-prompt';
+import FeedbackPromptModal from '@/components/molecules/m-feedback-prompt-modal';
 import { canShowFeedback, useFeedbackStore } from '@/lib/stores/feedback';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { hexToRgba } from '@/lib/utils/colors';
 
 /** Probability of asking for feedback in a given app session (when eligible). */
 const RANDOM_CHANCE = 0.2;
@@ -16,7 +13,6 @@ const SHOW_DELAY_MS = 5000;
  * store — so it never spams and never stacks on top of a booking-feedback prompt.
  */
 export default function FeedbackHost() {
-  const colors = useThemeColors();
   const [visible, setVisible] = React.useState(false);
 
   React.useEffect(() => {
@@ -35,24 +31,11 @@ export default function FeedbackHost() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (!visible) return null;
-
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={() => setVisible(false)}>
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: hexToRgba(colors.background, 0.8),
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 24,
-        }}
-      >
-        <BookingFeedbackPrompt
-          onDismiss={() => setVisible(false)}
-          onSubmit={() => setVisible(false)}
-        />
-      </View>
-    </Modal>
+    <FeedbackPromptModal
+      visible={visible}
+      onDismiss={() => setVisible(false)}
+      onSubmit={() => setVisible(false)}
+    />
   );
 }

@@ -28,6 +28,9 @@ interface HostingRoomsStore {
   deleteRoomImage: (roomIndex: number, imageIndex: number) => void;
   deleteRoom: (roomIndex: number) => void;
   updateActiveRoomImage: (imageIndex: number, image: string) => void;
+  /** Swap an image URL (e.g. local file:// → uploaded https://) in a room by id,
+   *  independent of which room is active. Used by the background upload queue. */
+  replaceRoomImageUrl: (roomId: string, fromUrl: string, toUrl: string) => void;
   moveRoom: (from: number, to: number) => void;
   moveRoomImage: (roomIndex: number, from: number, to: number) => void;
 }
@@ -97,6 +100,19 @@ export const useHostingRoomsStore = create<HostingRoomsStore>((set, get) => ({
       const rooms = [...state.rooms];
       rooms[state.activeIndex].images[imageIndex] = image;
 
+      return { rooms };
+    });
+  },
+  replaceRoomImageUrl(roomId, fromUrl, toUrl) {
+    set((state) => {
+      const rooms = state.rooms.map((room) => {
+        if (room.id !== roomId) return room;
+        const idx = room.images.indexOf(fromUrl);
+        if (idx === -1) return room;
+        const images = [...room.images];
+        images[idx] = toUrl;
+        return { ...room, images };
+      });
       return { rooms };
     });
   },
@@ -179,10 +195,16 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>(
         saved,
         reviews,
         reviewAverage,
+        parent,
+        childCount,
+        children,
+        isBookable,
+        priceFrom,
         tenancyAgreementTemplate,
         __typename,
         verification,
         images,
+        video,
         bookingApplicationsCount,
         ...rest
       } = hosting;
@@ -192,6 +214,7 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>(
         verificationTier,
         createdAt: createdAt2,
         lastUpdated: lastUpdated2,
+        tierTooltip,
         ...vRest
       } = verification ?? {};
 

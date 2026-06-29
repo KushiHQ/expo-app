@@ -144,8 +144,6 @@ export default function VideoWalkthroughScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const video = await cameraRef.current?.recordAsync({
         maxDuration: MAX_DURATION,
-        videoCodec: 'h264',
-        videoQuality: '720p',
       });
 
       if (video?.uri) {
@@ -196,7 +194,6 @@ export default function VideoWalkthroughScreen() {
         name: 'walkthrough.mp4',
       } as unknown as File;
 
-      // @ts-expect-error — urql Upload scalar accepts { uri, type, name }
       const result = await requestHostingVerificationTier({
         input: {
           hostingId: id,

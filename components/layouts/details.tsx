@@ -15,7 +15,7 @@ import { hexToRgba } from '@/lib/utils/colors';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import ThemedText from '../atoms/a-themed-text';
 import { ChevronLeft, Share2Icon } from 'lucide-react-native';
-import { useLocalSearchParams, usePathname } from 'expo-router';
+import { Href, useLocalSearchParams, usePathname } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
 import { Image } from 'expo-image';
 import { EventEmitter } from '@/lib/utils/event-emitter';
@@ -144,6 +144,16 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 
     const Wrapper = background === 'solid' ? ThemedView : View;
 
+    // On a hosting-form step, offer a "Done" action that returns to the form's
+    // onboarding hub and drops the step history — so a host who jumped in to edit
+    // a single step can exit cleanly instead of backing through every step.
+    const isFormStep = path.includes('/hostings/form/step');
+    const handleDone = () => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      const target = `/hostings/form/onboarding${id ? `?id=${id}` : ''}` as Href;
+      router.dismissTo(target);
+    };
+
     const handleSupportPress = async () => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
@@ -263,6 +273,24 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                 </View>
               </View>
               <View className="flex-row items-center gap-3">
+                {isFormStep && (
+                  <Pressable
+                    onPress={handleDone}
+                    aria-label="Done editing"
+                    hitSlop={12}
+                    className="h-11 items-center justify-center px-1"
+                  >
+                    <ThemedText
+                      style={{
+                        fontSize: 15,
+                        fontFamily: Fonts.semibold,
+                        color: colors.primary,
+                      }}
+                    >
+                      Done
+                    </ThemedText>
+                  </Pressable>
+                )}
                 {withSupport && (
                   <Pressable
                     onPress={handleSupportPress}

@@ -5,11 +5,13 @@ import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import {
+	HostingKind,
 	ListingType,
 	PaymentInterval,
 	useHostingQuery,
 	useInitiateHostingChatMutation,
 } from "@/lib/services/graphql/generated";
+import HostingUnits from "@/components/organisms/o-hosting-units";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
@@ -122,6 +124,29 @@ export default function HostingDetails() {
 						>
 							<ThemedText content="primary">Edit Listing</ThemedText>
 						</Button>
+					</View>
+				) : hosting?.kind === HostingKind.Parent ? (
+					<View
+						style={{
+							backgroundColor: colors.background,
+							paddingHorizontal: 16,
+							paddingBottom: 32,
+							paddingTop: 12,
+							borderTopWidth: 1,
+							borderTopColor: hexToRgba(colors.text, 0.08),
+						}}
+					>
+						<ThemedText
+							style={{
+								fontSize: 13,
+								color: hexToRgba(colors.text, 0.6),
+								textAlign: "center",
+							}}
+						>
+							{hosting.childCount}{" "}
+							{hosting.childCount === 1 ? "unit" : "units"} available — choose
+							one above to apply.
+						</ThemedText>
 					</View>
 				) : hosting?.listingType === ListingType.Sale ? (
 					<View
@@ -334,6 +359,31 @@ export default function HostingDetails() {
 								<View className="mt-2 flex-row">
 									<ListingTypeBadge listingType={hosting?.listingType} />
 								</View>
+								{hosting?.parentId ? (
+									<Pressable
+										onPress={() =>
+											router.push(`/hostings/${hosting.parentId}`)
+										}
+										style={{
+											marginTop: 8,
+											alignSelf: "flex-start",
+											borderRadius: 999,
+											paddingVertical: 6,
+											paddingHorizontal: 12,
+											backgroundColor: hexToRgba(colors.primary, 0.1),
+										}}
+									>
+										<ThemedText
+											style={{
+												fontSize: 12,
+												fontFamily: Fonts.medium,
+												color: colors.primary,
+											}}
+										>
+											Part of {hosting.parent?.title ?? "this property"} ›
+										</ThemedText>
+									</Pressable>
+								) : null}
 								<View className="flex-row items-center gap-1">
 									<MynauiStarSolid size={14} color={colors.accent} />
 									<ThemedText style={{ fontSize: 14 }}>
@@ -364,6 +414,8 @@ export default function HostingDetails() {
 						</View>
 						<HostingHost hosting={hosting} isHost={isHost} />
 						<HostingFacilities hosting={hosting} />
+						<HostingUnits hosting={hosting} isHost={isHost} />
+
 						<HostingGalleryComponent hosting={hosting} />
 						<HostingReviews hosting={hosting} />
 						<HostingLocation hosting={hosting} />

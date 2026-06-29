@@ -109,10 +109,11 @@ export default function NewHostingStep5() {
     mutate({ input: { ...input, paymentDetailsId: selectedAccount?.id } }).then((res) => {
       if (res.error) handleError(res.error);
       if (res.data?.createOrUpdateHosting) {
-        const nextStep = showTenancySteps(hosting?.listingType, hosting?.propertyType)
-          ? `/hostings/form/step-6?id=${res.data?.createOrUpdateHosting.data?.id}`
-          : `/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`;
-        router.push(nextStep);
+        router.push(
+          showTenancySteps(hosting?.listingType, hosting?.propertyType)
+            ? `/hostings/form/step-6?id=${res.data?.createOrUpdateHosting.data?.id}`
+            : `/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`,
+        );
         toast.show({
           type: 'success',
           text1: 'Success',
@@ -136,7 +137,7 @@ export default function NewHostingStep5() {
             onPress={handleMutate}
             loading={mutating}
             disabled={!selectedAccount || !input.price || (!isSale && !input.paymentInterval)}
-            step={5}
+            step={6}
           />
         }
       >

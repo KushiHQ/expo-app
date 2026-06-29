@@ -470,19 +470,19 @@ export const ROOMS_BY_VARIANT: RoomHostingMapping[] = [
     hostingVariants: [PropertyType.Storage, PropertyType.Industrial, PropertyType.CommercialRetail],
   },
   {
-    room: Room.PlotBoundary,
+    room: 'PlotBoundary',
     hostingVariants: [PropertyType.LandPlots, PropertyType.Agricultural],
   },
   {
-    room: Room.FrontArea,
+    room: 'FrontArea',
     hostingVariants: [PropertyType.LandPlots, PropertyType.Residential, PropertyType.Agricultural],
   },
   {
-    room: Room.BackArea,
+    room: 'BackArea',
     hostingVariants: [PropertyType.LandPlots, PropertyType.Residential, PropertyType.Agricultural],
   },
   {
-    room: Room.GateEntrance,
+    room: 'GateEntrance',
     hostingVariants: [
       PropertyType.LandPlots,
       PropertyType.Residential,
@@ -491,11 +491,11 @@ export const ROOMS_BY_VARIANT: RoomHostingMapping[] = [
     ],
   },
   {
-    room: Room.WellBorehole,
+    room: 'WellBorehole',
     hostingVariants: [PropertyType.LandPlots, PropertyType.Agricultural],
   },
   {
-    room: Room.Others,
+    room: 'Others',
     hostingVariants: Object.values(PropertyType),
   },
 ];

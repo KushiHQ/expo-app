@@ -17,6 +17,8 @@ export const CREATE_UPDATE_HOSTING_MUTATION = gql`
       message
       data {
         id
+        kind
+        parentId
         title
         propertyType
         listingType
@@ -212,6 +214,31 @@ export const SET_HOSTING_COVER_IMAGE = gql`
       data {
         id
         sequence
+        asset {
+          id
+          publicUrl
+        }
+      }
+    }
+  }
+`;
+
+export const CREATE_HOSTING_VIDEO_UPLOAD_URL = gql`
+  mutation CreateHostingVideoUploadUrl($hostingId: String!, $contentType: String!) {
+    createHostingVideoUploadUrl(hostingId: $hostingId, contentType: $contentType) {
+      assetId
+      uploadUrl
+    }
+  }
+`;
+
+export const SET_HOSTING_VIDEO = gql`
+  mutation SetHostingVideo($input: VideoWalkthroughInput!, $assetId: String!) {
+    setHostingVideo(input: $input, assetId: $assetId) {
+      message
+      data {
+        id
+        durationSeconds
         asset {
           id
           publicUrl

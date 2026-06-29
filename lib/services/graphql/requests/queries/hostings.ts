@@ -63,6 +63,29 @@ export const HOSTING_QUERY = gql`
   query Hosting($hostingId: String!, $pagination: PaginationInput) {
     hosting(hostingId: $hostingId) {
       id
+      kind
+      parentId
+      childCount
+      priceFrom
+      isBookable
+      parent {
+        id
+        title
+      }
+      children {
+        id
+        title
+        price
+        paymentInterval
+        listingType
+        publishStatus
+        isBookable
+        coverImage {
+          asset {
+            publicUrl
+          }
+        }
+      }
       title
       propertyType
       listingType
@@ -133,6 +156,15 @@ export const HOSTING_QUERY = gql`
         id
         createdAt
         lastUpdated
+        asset {
+          id
+          publicUrl
+        }
+      }
+      video {
+        id
+        durationSeconds
+        recordedAt
         asset {
           id
           publicUrl
@@ -243,6 +275,10 @@ export const HOSTINGS_QUERY = gql`
   query Hostings($filters: HostingFilterInput, $pagination: PaginationInput) {
     hostings(filters: $filters, pagination: $pagination) {
       id
+      kind
+      childCount
+      priceFrom
+      isBookable
       price
       listingType
       totalRatings
@@ -340,6 +376,9 @@ export const HOST_LISTINGS_QUERY = gql`
   query HostListings($pagination: PaginationInput, $filters: HostingFilterInput) {
     hostings(pagination: $pagination, filters: $filters) {
       id
+      kind
+      parentId
+      childCount
       coverImage {
         id
         asset {

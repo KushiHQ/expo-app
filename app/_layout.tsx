@@ -17,6 +17,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import ToastContainer from '@/components/atoms/a-toast-container';
+import UploadProgress from '@/components/organisms/o-upload-progress';
 import { NotificationProvider } from '@/components/contexts/notifications';
 import GraphqlClientProvider from '@/components/providers/graphql-client';
 import TansStackProvider from '@/components/providers/tanstack';
@@ -151,6 +152,7 @@ function RootLayout() {
                         <Stack.Screen name="logout" options={{ headerShown: false }} />
                       </Stack>
                       <StatusBar style="auto" />
+                      <UploadProgress />
                       <ToastContainer />
                     </ThemeProvider>
                   </NotificationProvider>

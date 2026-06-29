@@ -270,9 +270,12 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
 
       {isInputFocused && searchInput.length > 5 && (
         <View
-          className="absolute left-0 right-0 mt-2 overflow-hidden rounded-[20px] border shadow-lg"
+          className="mt-2 overflow-hidden rounded-[20px] border shadow-lg"
+          // In-flow (not absolute): an absolutely-positioned dropdown sitting
+          // below the parent's box is invisible to touches on Android, so the
+          // suggestions render but can't be tapped. Keeping it in normal flow
+          // lets the container grow to contain it and stay tappable.
           style={{
-            top: "100%",
             backgroundColor: colors.background,
             borderColor: hexToRgba(colors.text, 0.1),
             maxHeight: 300,

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useFocusEffect } from 'expo-router';
 import {
   useCreateOrUpdateHostingMutation,
   useHostingQuery,
@@ -41,6 +42,20 @@ export const useHostingForm = (id?: string | string[]) => {
       refreshHosting(data.hosting);
     }
   }, [data]);
+
+  // Re-sync the shared form store to THIS screen's hosting whenever it regains
+  // focus. The shared store holds one hosting at a time, so after editing a unit
+  // and backing out to its parent's onboarding, the store would still hold the
+  // unit — the data-keyed effect above doesn't re-fire on a plain refocus when the
+  // (cached) query data is unchanged. This restores the focused screen's hosting.
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!data) return;
+      if (useActiveFormHosingStore.getState().input.id !== data.hosting.id) {
+        initiate(data.hosting);
+      }
+    }, [data, initiate]),
+  );
 
   const safeMutate = React.useCallback(
     (variables: Parameters<typeof mutate>[0]) =>

@@ -7,6 +7,11 @@ allowBuilds:
 
 nodeLinker: hoisted
 
+overrides:
+  react-native-svg: 15.12.1
+  react-native-webview: 13.15.0
+  protobufjs: ^7.5.9
+
 patchedDependencies:
   react-native-callkeep: patches/react-native-callkeep.patch
 

@@ -6,9 +6,16 @@ import SelectInput, {
   SelectOption,
 } from "@/components/molecules/m-select-input";
 import AiContentSuggestion from "@/components/molecules/m-ai-content-suggestion";
+import ThemedText from "@/components/atoms/a-themed-text";
 import { useHostingForm } from "@/lib/hooks/hosting-form";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { ListingType } from "@/lib/services/graphql/generated";
+import { useUser } from "@/lib/hooks/user";
+import {
+  HostingKind,
+  ListingType,
+  useHostListingsQuery,
+} from "@/lib/services/graphql/generated";
+import { hexToRgba } from "@/lib/utils/colors";
 import { PROPERTY_TYPE } from "@/lib/types/enums/hostings";
 import { cast } from "@/lib/types/utils";
 import { handleError } from "@/lib/utils/error";
@@ -30,7 +37,34 @@ export default function NewHostingStep1() {
     updateInput,
     fetching,
     refetch: refetchHosting,
+    hosting,
   } = useHostingForm(id);
+  const { user } = useUser();
+
+  // Parent / child kind. Seed from the input, else the fetched hosting, else standalone.
+  const currentKind =
+    (input.kind as HostingKind | undefined) ??
+    hosting?.kind ??
+    HostingKind.Standalone;
+  const currentParentId = input.parentId ?? hosting?.parentId ?? null;
+  // A plaza that already has shops can't change kind (server enforces this too).
+  const kindLocked =
+    hosting?.kind === HostingKind.Parent && (hosting?.childCount ?? 0) > 0;
+
+  const KIND_OPTIONS = [
+    { label: "Standalone listing", value: HostingKind.Standalone },
+    { label: "Parent (a multi-unit property)", value: HostingKind.Parent },
+    { label: "Child (a unit within a property)", value: HostingKind.Child },
+  ];
+
+  // Eligible parents = the host's own Parent/Standalone listings (not this one).
+  const [{ data: parentListings }] = useHostListingsQuery({
+    variables: { filters: { creatorId: user.user?.id } },
+    pause: currentKind !== HostingKind.Child || !user.user?.id,
+  });
+  const parentOptions = (parentListings?.hostings ?? [])
+    .filter((h) => h.kind !== HostingKind.Child && h.id !== id)
+    .map((h) => ({ label: h.title ?? "Untitled listing", value: h.id }));
 
   const [refreshing, setRefreshing] = React.useState(false);
   React.useEffect(() => {
@@ -76,7 +110,8 @@ export default function NewHostingStep1() {
             !input?.title?.length ||
             !input.propertyType?.length ||
             !input.listingType?.length ||
-            !input.description?.length
+            !input.description?.length ||
+            (currentKind === HostingKind.Child && !currentParentId)
           }
           step={1}
         />
@@ -89,6 +124,79 @@ export default function NewHostingStep1() {
           style={{ minHeight: 180 }}
           subtitle="Title, property type, and listing style"
         >
+          <View
+            pointerEvents={kindLocked ? "none" : "auto"}
+            style={kindLocked ? { opacity: 0.55 } : undefined}
+          >
+            <SelectInput
+              focused
+              label="Listing kind"
+              placeholder="Standalone listing"
+              defaultValue={{
+                label:
+                  KIND_OPTIONS.find((o) => o.value === currentKind)?.label ??
+                  "Standalone listing",
+                value: currentKind,
+              }}
+              options={KIND_OPTIONS}
+              onSelect={(v) =>
+                updateInput({
+                  kind: v.value,
+                  // clear the parent unless this is (still) a child
+                  parentId:
+                    v.value === HostingKind.Child ? currentParentId : null,
+                })
+              }
+              renderItem={SelectOption}
+            />
+          </View>
+          {kindLocked ? (
+            <ThemedText
+              style={{
+                fontSize: 12,
+                marginTop: 6,
+                color: hexToRgba(colors.text, 0.5),
+              }}
+            >
+              This property already has units, so its kind is locked.
+            </ThemedText>
+          ) : null}
+
+          {currentKind === HostingKind.Child ? (
+            <View style={{ marginTop: 12 }}>
+              <SelectInput
+                searchable
+                searchField="label"
+                focused
+                label="Parent listing"
+                placeholder="Select the property this unit belongs to"
+                defaultValue={
+                  currentParentId
+                    ? {
+                        label:
+                          parentOptions.find((o) => o.value === currentParentId)
+                            ?.label ?? "Selected property",
+                        value: currentParentId,
+                      }
+                    : undefined
+                }
+                options={parentOptions}
+                onSelect={(v) => updateInput({ parentId: v.value })}
+                renderItem={SelectOption}
+              />
+              <ThemedText
+                style={{
+                  fontSize: 12,
+                  marginTop: 6,
+                  color: hexToRgba(colors.text, 0.5),
+                }}
+              >
+                This unit inherits the property's location, mandate, tenancy
+                terms and payout — you can edit them as you go.
+              </ThemedText>
+            </View>
+          ) : null}
+
           <FloatingLabelInput
             focused
             label="Title"

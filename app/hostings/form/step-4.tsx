@@ -84,7 +84,7 @@ export default function NewHostingStep4() {
             onPress={handleMutate}
             disabled={mutating || !input.facilities?.length}
             loading={mutating}
-            step={4}
+            step={5}
           />
         }
       >

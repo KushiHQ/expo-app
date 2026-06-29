@@ -13,6 +13,7 @@ import Skeleton from "../atoms/a-skeleton";
 import { useRouter } from "@/lib/hooks/use-router";
 import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import {
+	HostingKind,
 	HostingQuery,
 	HostingsQuery,
 	PaymentInterval,
@@ -40,6 +41,8 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 
 	const scale = useSharedValue(1);
 	const images = hosting.images ?? [];
+	// A parent property shows "from ₦X" + a unit count instead of a single price/rating.
+	const isMultiUnit = hosting.kind === HostingKind.Parent;
 
 	const animatedStyle = useAnimatedStyle(() => ({
 		transform: [{ scale: scale.value }],
@@ -101,11 +104,28 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 						<TierBadge tier={hosting.verification.verificationTier} size="sm" />
 					</View>
 				) : null}
-				<View className="absolute bottom-4 left-4">
+				<View className="absolute bottom-4 left-4 flex-row items-center gap-2">
 					<ListingTypeBadge
 						listingType={hosting.listingType}
 						variant="overlay"
 					/>
+					{isMultiUnit ? (
+						<View
+							style={{ backgroundColor: hexToRgba("#000000", 0.55) }}
+							className="rounded-full px-2.5 py-1"
+						>
+							<ThemedText
+								numberOfLines={1}
+								style={{
+									color: "#fff",
+									fontSize: 11,
+									fontFamily: Fonts.semibold,
+								}}
+							>
+								{hosting.childCount + " " + (hosting.childCount === 1 ? "unit" : "units")}
+							</ThemedText>
+						</View>
+					) : null}
 				</View>
 			</View>
 			<Pressable
@@ -136,7 +156,11 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 								color: colors.primary,
 							}}
 						>
-							₦{Number(hosting.price)?.toLocaleString()}
+							{isMultiUnit
+								? hosting.priceFrom != null
+									? `from ₦${Number(hosting.priceFrom).toLocaleString()}`
+									: "—"
+								: `₦${Number(hosting.price)?.toLocaleString()}`}
 						</ThemedText>
 					</View>
 
@@ -158,29 +182,42 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 						>
 							{formatDate(hosting.createdAt)}
 						</ThemedText>
-						<View className="flex-row items-center gap-1.5">
-							<MynauiStarSolid color={colors.primary} size={14} />
-							<View className="flex-row items-center gap-1">
-								<ThemedText
-									style={{
-										fontFamily: Fonts.semibold,
-										fontSize: 13,
-										color: colors.text,
-									}}
-								>
-									{Number(hosting.averageRating ?? "0").toFixed(1)}
-								</ThemedText>
-								<ThemedText
-									style={{
-										fontFamily: Fonts.regular,
-										fontSize: 12,
-										color: hexToRgba(colors.text, 0.5),
-									}}
-								>
-									({Number(hosting.totalRatings ?? "0").toFixed(1)})
-								</ThemedText>
+						{isMultiUnit ? (
+							<ThemedText
+								style={{
+									fontFamily: Fonts.semibold,
+									fontSize: 13,
+									color: colors.primary,
+								}}
+							>
+								{hosting.childCount}{" "}
+								{hosting.childCount === 1 ? "unit" : "units"} available
+							</ThemedText>
+						) : (
+							<View className="flex-row items-center gap-1.5">
+								<MynauiStarSolid color={colors.primary} size={14} />
+								<View className="flex-row items-center gap-1">
+									<ThemedText
+										style={{
+											fontFamily: Fonts.semibold,
+											fontSize: 13,
+											color: colors.text,
+										}}
+									>
+										{Number(hosting.averageRating ?? "0").toFixed(1)}
+									</ThemedText>
+									<ThemedText
+										style={{
+											fontFamily: Fonts.regular,
+											fontSize: 12,
+											color: hexToRgba(colors.text, 0.5),
+										}}
+									>
+										({Number(hosting.totalRatings ?? "0").toFixed(1)})
+									</ThemedText>
+								</View>
 							</View>
-						</View>
+						)}
 					</View>
 				</View>
 			</Pressable>

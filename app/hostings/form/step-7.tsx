@@ -86,7 +86,7 @@ export default function NewHostingStep7() {
             disabled={
               !input.tenancyAgreementTemplate || !hostQueryData?.authHost.signature?.publicUrl
             }
-            step={7}
+            step={8}
           />
         }
       >

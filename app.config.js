@@ -98,6 +98,7 @@ export default ({ config }) => ({
 	owner: "kushi-digital-innovations-ltd",
 
 	plugins: [
+		"expo-video",
 		[
 			"expo-build-properties",
 			{
@@ -148,6 +149,7 @@ export default ({ config }) => ({
 		"./lib/plugins/withLockScreen.js",
 		"./lib/plugins/withGradleVersion.js",
 		"./lib/plugins/withGradleJvmArgs.js",
+		"./lib/plugins/withMedia3Version.js",
 		"expo-audio",
 		"expo-web-browser",
 		[

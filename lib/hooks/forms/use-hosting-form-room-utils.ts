@@ -1,8 +1,7 @@
 import { RoomData, useHostingRoomsStore } from '@/lib/stores/hostings';
+import { useUploadStore } from '@/lib/stores/uploads';
 import { useHostingForm } from '../hosting-form';
 import {
-  CreateHostingRoomImageMutation,
-  CreateHostingRoomImageMutationVariables,
   useCreateOrUpdateHostingRoomMutation,
   useDeleteHostingRoomImageMutation,
   useDeleteHostingRoomMutation,
@@ -13,9 +12,6 @@ import {
 import React from 'react';
 import { useFocusEffect } from 'expo-router';
 import { useGalleryStore } from '@/lib/stores/gallery';
-import { formMutation } from '@/lib/services/graphql/utils/fetch';
-import { CREATE_UPDATE_HOSTING_ROOM_IMAGE } from '@/lib/services/graphql/requests/mutations/hostings';
-import { generateRNFile } from '@/lib/utils/file';
 import { handleError } from '@/lib/utils/error';
 import { useToast } from '@/lib/hooks/use-toast';
 import { cast } from '@/lib/types/utils';
@@ -39,7 +35,6 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
     updateActiveRoom,
     updateRoom,
     deleteRoomImage,
-    updateActiveRoomImage,
     moveRoom,
     moveRoomImage,
   } = useHostingRoomsStore();
@@ -54,11 +49,10 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
   const [{ fetching: reorderingRooms }, reorderRoomsMutate] = useReorderHostingRoomsMutation();
   const [{ fetching: reorderingImages }, reorderImagesMutate] =
     useReorderHostingRoomImagesMutation();
-  const [addingImagesCount, setAddingImagesCount] = React.useState(0);
-  const addingImages = addingImagesCount > 0;
 
-  const loading =
-    deleteingImage || deletingRoom || hostingRoomSaving || addingImages || settingCover;
+  // Image uploads run in a background queue (see useUploadStore) and no longer
+  // block the wizard — so `addingImages` is intentionally NOT part of `loading`.
+  const loading = deleteingImage || deletingRoom || hostingRoomSaving || settingCover;
 
   // The hosting's current cover is its highest-sequence image; match displayed
   // thumbnails against this URL to badge the active cover.
@@ -81,8 +75,10 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
     }
   }, [hosting]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // On returning from the camera, upload any new file:// images and then do a single
-  // refetch after all uploads finish so the server state is re-synced cleanly.
+  // On returning from the camera, reflect the picked photos immediately, then hand
+  // the new file:// images to the background upload queue. The wizard is NOT blocked
+  // while they upload — thumbnails show their own per-image status and the URL is
+  // swapped to the uploaded one in place as each finishes.
   useFocusEffect(
     React.useCallback(() => {
       const currentGallery = useGalleryStore.getState().gallery;
@@ -96,44 +92,26 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
       const roomId = useHostingRoomsStore.getState().rooms[activeIndex]?.id;
       if (!roomId) return;
 
-      const fileEntries = currentGallery
-        .map((image, index) => ({ image, index }))
-        .filter(({ image }) => image.startsWith('file'));
+      const fileUris = currentGallery.filter((image) => image.startsWith('file'));
+      if (fileUris.length === 0) return;
 
-      if (fileEntries.length === 0) return;
-
-      setAddingImagesCount(fileEntries.length);
-
-      const uploads = fileEntries.map(({ image, index }) =>
-        formMutation<CreateHostingRoomImageMutation, CreateHostingRoomImageMutationVariables>(
-          CREATE_UPDATE_HOSTING_ROOM_IMAGE,
-          { input: { roomId, asset: generateRNFile(image) } },
-        )
-          .then((res) => {
-            setAddingImagesCount((c) => c - 1);
-            if (res.error) {
-              handleError(res.error);
-            }
-            if (res.data?.createHostingRoomImage.data) {
-              show({
-                type: 'success',
-                text1: 'Success',
-                text2: res.data.createHostingRoomImage.message,
-              });
-              updateActiveRoomImage(index, res.data.createHostingRoomImage.data.asset.publicUrl);
-            }
-          })
-          .catch(() => {
-            setAddingImagesCount((c) => c - 1);
-          }),
-      );
-
-      // Single refetch after all uploads complete so setRooms() sees the full picture.
-      Promise.allSettled(uploads).then(() => {
-        refetchHosting();
-      });
-    }, [activeIndex, clearGallery, refetchHosting, show, updateActiveRoom, updateActiveRoomImage]),
+      useUploadStore.getState().enqueue(roomId, fileUris);
+    }, [activeIndex, clearGallery, updateActiveRoom]),
   );
+
+  // When the upload queue is fully clear (nothing uploading AND no failures left),
+  // refetch once so hosting.rooms picks up the new images' server ids (needed for
+  // delete / set-cover / reorder). We wait for a truly empty queue — not just the
+  // end of in-flight uploads — so a failed thumbnail (and its retry control) isn't
+  // wiped by the server re-sync before the host can retry it.
+  const pendingUploads = useUploadStore((s) => Object.keys(s.tasks).length);
+  const prevPendingUploads = React.useRef(0);
+  React.useEffect(() => {
+    if (prevPendingUploads.current > 0 && pendingUploads === 0) {
+      refetchHosting();
+    }
+    prevPendingUploads.current = pendingUploads;
+  }, [pendingUploads, refetchHosting]);
 
   const handleDeleteImage = (roomIndex: number, imageIndex: number) => {
     const room = rooms[roomIndex];
