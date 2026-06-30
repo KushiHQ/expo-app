@@ -57,6 +57,7 @@ const HostingUnitCard: React.FC<Props> = ({
         {coverUrl ? (
           <Image
             source={{ uri: coverUrl }}
+            recyclingKey={coverUrl}
             style={{ width: '100%', height: '100%' }}
             contentFit="cover"
             transition={300}

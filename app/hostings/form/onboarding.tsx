@@ -16,6 +16,7 @@ import {
 import { hexToRgba } from '@/lib/utils/colors';
 import { Href, useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
+import { getAssetResizeUrl } from '@/lib/utils/urls';
 import { CircleQuestionMark } from 'lucide-react-native';
 import React from 'react';
 import { RefreshControl, View } from 'react-native';
@@ -245,7 +246,11 @@ export default function HostingOnboarding() {
                   <HostingUnitCard
                     key={unit.id}
                     title={unit.title}
-                    coverUrl={unit.coverImage?.asset?.publicUrl ?? undefined}
+                    coverUrl={
+                      unit.coverImage?.asset?.id
+                        ? getAssetResizeUrl(unit.coverImage.asset.id, 240, 240, 80)
+                        : (unit.coverImage?.asset?.publicUrl ?? undefined)
+                    }
                     price={unit.price}
                     paymentInterval={unit.paymentInterval}
                     publishStatus={unit.publishStatus}

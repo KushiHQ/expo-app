@@ -82,6 +82,8 @@ export interface RoomItemCardProps {
   handleSetCoverImage?: (roomIndex: number, imageIndex: number) => void;
   /** Tapping a photo opens the fullscreen swipe/edit gallery at that image. */
   onOpenImage?: (roomIndex: number, imageIndex: number) => void;
+  /** Maps a room-image url to a small proxied thumbnail (perf). */
+  resolveThumb?: (url: string) => string;
 }
 
 const RoomItemCard = memo(
@@ -98,6 +100,7 @@ const RoomItemCard = memo(
     coverImageUrl,
     handleSetCoverImage,
     onOpenImage,
+    resolveThumb,
   }: RoomItemCardProps) => {
     const usedNames = React.useMemo(
       () => rooms.filter((_, i) => i !== index).map((r) => r.name),
@@ -246,6 +249,7 @@ const RoomItemCard = memo(
               {room.images.map((img, id) => (
                 <HostingRoomImage
                   src={img}
+                  displayUri={resolveThumb ? resolveThumb(img) : undefined}
                   key={id}
                   imageIndex={id}
                   roomIndex={index}

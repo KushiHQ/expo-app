@@ -7,6 +7,9 @@ import { ActivityIndicator, Pressable, View } from 'react-native';
 
 type Props = {
   src: string;
+  /** Optional resized/proxied uri to DISPLAY (keeps `src` as the identity used for
+   *  upload-status, cover-matching and delete). Falls back to `src`. */
+  displayUri?: string;
   roomIndex: number;
   imageIndex: number;
   onDeleteRoomImage?: (roomIndex: number, imageIndex: number) => void;
@@ -21,6 +24,7 @@ type Props = {
 
 const HostingRoomImage: React.FC<Props> = ({
   src,
+  displayUri,
   roomIndex,
   imageIndex,
   onDeleteRoomImage,
@@ -50,7 +54,8 @@ const HostingRoomImage: React.FC<Props> = ({
         style={{ height: '100%', width: '100%' }}
       >
         <Image
-          source={{ uri: src }}
+          source={{ uri: displayUri ?? src }}
+          recyclingKey={src}
           style={{ height: '100%', width: '100%', borderRadius: isCover ? 10 : 12 }}
           contentFit="cover"
           transition={400}

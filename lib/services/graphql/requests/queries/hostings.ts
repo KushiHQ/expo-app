@@ -82,6 +82,7 @@ export const HOSTING_QUERY = gql`
         isBookable
         coverImage {
           asset {
+            id
             publicUrl
           }
         }

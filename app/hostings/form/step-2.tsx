@@ -53,6 +53,7 @@ export default function NewHostingStep2() {
     handleDeleteActiveRoom,
     handleSetCoverImage,
     coverImageUrl,
+    resolveThumb,
     handleReorderRooms,
     handleReorderRoomImages,
   } = useHostingFormRoomUtils(String(id));
@@ -160,6 +161,7 @@ export default function NewHostingStep2() {
                       coverImageUrl={coverImageUrl}
                       handleSetCoverImage={handleSetCoverImage}
                       onOpenImage={handleOpenRoomImage}
+                      resolveThumb={resolveThumb}
                     />
                   </DraggableItem>
                 ))}
