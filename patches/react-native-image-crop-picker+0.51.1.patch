@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-image-crop-picker/ios/src/ImageCropPicker.mm b/node_modules/react-native-image-crop-picker/ios/src/ImageCropPicker.mm
-index 354ad09..7ed0fcb 100644
+index 354ad09..189fb65 100644
 --- a/node_modules/react-native-image-crop-picker/ios/src/ImageCropPicker.mm
 +++ b/node_modules/react-native-image-crop-picker/ios/src/ImageCropPicker.mm
 @@ -375,6 +375,22 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
@@ -25,6 +25,26 @@ index 354ad09..7ed0fcb 100644
      [[self.bridge moduleForName:@"ImageLoader" lazilyLoadIfNecessary:YES] loadImageWithURLRequest:[RCTConvert NSURLRequest:path] callback:^(NSError *error, UIImage *image) {
          if (error) {
              self.reject(ERROR_CROPPER_IMAGE_NOT_FOUND_KEY, ERROR_CROPPER_IMAGE_NOT_FOUND_MSG, nil);
+@@ -807,13 +823,12 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
+                    didCropImage:(UIImage *)croppedImage
+                   usingCropRect:(CGRect)cropRect {
+     
+-    // we have correct rect, but not correct dimensions
+-    // so resize image
+-    CGSize desiredImageSize = CGSizeMake([[[self options] objectForKey:@"width"] intValue],
+-                                         [[[self options] objectForKey:@"height"] intValue]);
+-    
+-    UIImage *resizedImage = [croppedImage resizedImageToFitInSize:desiredImageSize scaleIfSmaller:YES];
+-    ImageResult *imageResult = [self.compression compressImage:resizedImage withOptions:self.options];
++    // Keep the crop at full resolution. The library otherwise resizes the result
++    // to the `width`/`height` options — which DEFAULT to 200x200 — squashing every
++    // crop/rotate into a tiny, blurry thumbnail. We never request fixed output
++    // dimensions, so hand the full-resolution crop straight to compression
++    // (which still honors compressImageMaxWidth/Height + compressImageQuality).
++    ImageResult *imageResult = [self.compression compressImage:croppedImage withOptions:self.options];
+     
+     NSString *filePath = [self persistFile:imageResult.data];
+     if (filePath == nil) {
 diff --git a/node_modules/react-native-image-crop-picker/ios/src/UIImage+Extension.m b/node_modules/react-native-image-crop-picker/ios/src/UIImage+Extension.m
 index 68de553..94e83f0 100644
 --- a/node_modules/react-native-image-crop-picker/ios/src/UIImage+Extension.m
