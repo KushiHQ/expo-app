@@ -1,5 +1,8 @@
 import { getMimeTypeFromExtension } from '@/lib/utils/file';
 import { CombinedError } from 'urql';
+
+/** Hard ceiling so a half-open connection can never hang an upload forever. */
+const DEFAULT_TIMEOUT_MS = 75_000;
 import { DocumentNode } from 'graphql';
 import { print } from 'graphql/language/printer';
 import { getAuthTokens } from '@/lib/utils/auth';
@@ -62,6 +65,10 @@ function manualExtractFiles(variables: any) {
 
 interface FormMutationOptions {
   headers?: Record<string, string>;
+  /** External signal to cancel the request (e.g. the upload queue clearing/cancelling). */
+  signal?: AbortSignal;
+  /** Hard request timeout in ms (default 75s). */
+  timeoutMs?: number;
 }
 
 export async function formMutation<R, V>(
@@ -77,47 +84,63 @@ export async function formMutation<R, V>(
   const authTokens = await getAuthTokens();
 
   const hasFiles = filesMap.size > 0;
+  const url = process.env.EXPO_PUBLIC_GRAPHQL_URL ?? '';
+
+  // Bound every request: an internal timeout plus an optional external signal
+  // (so the upload queue can cancel in-flight requests on clear/remove). Without
+  // this a flaky network can leave a request half-open forever and wedge the queue.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+  if (options.signal) {
+    if (options.signal.aborted) controller.abort();
+    else options.signal.addEventListener('abort', () => controller.abort());
+  }
 
   let response: Response;
+  try {
+    if (!hasFiles) {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: authTokens?.access ? `Bearer ${authTokens.access}` : '',
+          ...options.headers,
+        },
+        body: operations,
+        signal: controller.signal,
+      });
+    } else {
+      const formData = new FormData();
+      formData.append('operations', operations);
 
-  if (!hasFiles) {
-    response = await fetch(process.env.EXPO_PUBLIC_GRAPHQL_URL ?? '', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: authTokens?.access ? `Bearer ${authTokens.access}` : '',
-        ...options.headers,
-      },
-      body: operations,
-    });
-  } else {
-    const formData = new FormData();
-    formData.append('operations', operations);
+      const map: Record<string, string[]> = {};
+      let index = 0;
 
-    const map: Record<string, string[]> = {};
-    let index = 0;
+      for (const [file, paths] of filesMap) {
+        const fieldName = `${index}`;
+        map[fieldName] = paths.map((p) => `variables.${p.join('.')}`);
+        formData.append(fieldName, {
+          uri: file.uri,
+          name: file.name,
+          type: file.type,
+        } as any);
+        index++;
+      }
 
-    for (const [file, paths] of filesMap) {
-      const fieldName = `${index}`;
-      map[fieldName] = paths.map((p) => `variables.${p.join('.')}`);
-      formData.append(fieldName, {
-        uri: file.uri,
-        name: file.name,
-        type: file.type,
-      } as any);
-      index++;
+      formData.append('map', JSON.stringify(map));
+
+      response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: authTokens?.access ? `Bearer ${authTokens.access}` : '',
+          ...options.headers,
+        },
+        body: formData,
+        signal: controller.signal,
+      });
     }
-
-    formData.append('map', JSON.stringify(map));
-
-    response = await fetch(process.env.EXPO_PUBLIC_GRAPHQL_URL ?? '', {
-      method: 'POST',
-      headers: {
-        Authorization: authTokens?.access ? `Bearer ${authTokens.access}` : '',
-        ...options.headers,
-      },
-      body: formData,
-    });
+  } finally {
+    clearTimeout(timer);
   }
 
   if (!response.ok) {
@@ -131,5 +154,12 @@ export async function formMutation<R, V>(
     console.error('GraphQL errors:', result.errors);
   }
 
-  return result;
+  // Surface GraphQL errors as a real `error` so callers' `res.error` checks work
+  // (previously it was always undefined — dead code in the upload queue).
+  return {
+    ...result,
+    error: result.errors?.length
+      ? new CombinedError({ graphQLErrors: result.errors })
+      : result.error,
+  };
 }

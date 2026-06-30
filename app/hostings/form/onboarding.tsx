@@ -14,7 +14,7 @@ import {
   useBookingApplicationsCountQuery,
 } from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
-import { Href, router as expoRouter, useLocalSearchParams } from 'expo-router';
+import { Href, useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
 import { CircleQuestionMark } from 'lucide-react-native';
 import React from 'react';
@@ -250,7 +250,7 @@ export default function HostingOnboarding() {
                     paymentInterval={unit.paymentInterval}
                     publishStatus={unit.publishStatus}
                     onPress={() =>
-                      expoRouter.push(`/hostings/form/onboarding?id=${unit.id}` as Href)
+                      router.push(`/hostings/form/onboarding?id=${unit.id}` as Href)
                     }
                   />
                 ))}
