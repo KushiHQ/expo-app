@@ -6,7 +6,7 @@ import { hexToRgba } from '@/lib/utils/colors';
 import { SURFACE } from '@/lib/constants/surface';
 import { capitalize } from '@/lib/utils/text';
 import { Image } from 'expo-image';
-import { ChevronRight, Image as ImageIcon } from 'lucide-react-native';
+import { ChevronRight, Image as ImageIcon, Trash2 } from 'lucide-react-native';
 import React from 'react';
 import { Pressable, View } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
@@ -18,6 +18,8 @@ type Props = {
   paymentInterval?: string | null;
   publishStatus?: PublishStatus | null;
   onPress?: () => void;
+  /** When set, shows a delete affordance for this unit. */
+  onDelete?: () => void;
 };
 
 const STATUS: Record<string, { label: string; color: string }> = {
@@ -40,6 +42,7 @@ const HostingUnitCard: React.FC<Props> = ({
   paymentInterval,
   publishStatus,
   onPress,
+  onDelete,
 }) => {
   const colors = useThemeColors();
   const status = STATUS[publishStatus ?? PublishStatus.Draft] ?? STATUS[PublishStatus.Draft];
@@ -100,8 +103,13 @@ const HostingUnitCard: React.FC<Props> = ({
         </View>
       </View>
 
-      {/* Drill-in affordance */}
-      <View className="pr-3">
+      {/* Delete + drill-in affordances */}
+      <View className="flex-row items-center pr-3" style={{ gap: 2 }}>
+        {onDelete ? (
+          <Pressable onPress={onDelete} hitSlop={8} style={{ padding: 6 }}>
+            <Trash2 size={17} color={hexToRgba(colors.text, 0.4)} />
+          </Pressable>
+        ) : null}
         <ChevronRight size={20} color={hexToRgba(colors.text, 0.4)} />
       </View>
     </Pressable>

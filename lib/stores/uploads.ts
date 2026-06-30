@@ -320,6 +320,22 @@ export const useUploadStore = create<UploadState>()(
             }
             set({ tasks: next });
             pump();
+
+            // Sweep orphaned upload copies (files with no matching task) left by
+            // past sessions, so the persistent folder can't grow unbounded.
+            try {
+              const entries = await FileSystem.readDirectoryAsync(UPLOAD_DIR);
+              const referenced = new Set(Object.keys(next));
+              await Promise.all(
+                entries.map((name) =>
+                  referenced.has(UPLOAD_DIR + name)
+                    ? Promise.resolve()
+                    : FileSystem.deleteAsync(UPLOAD_DIR + name, { idempotent: true }).catch(() => {}),
+                ),
+              );
+            } catch {
+              // dir missing or unreadable — nothing to sweep
+            }
           })();
         },
       };

@@ -21,10 +21,22 @@ type Props = BaseProps & {
   type?: 'primary' | 'shade' | 'tinted' | 'background' | 'error' | 'text' | 'accent';
 };
 
-const Button: React.FC<Props> = ({ style, children, loading, variant, type, onPress, ...rest }) => {
+const Button: React.FC<Props> = ({
+  style,
+  children,
+  loading,
+  variant,
+  type,
+  onPress,
+  disabled,
+  ...rest
+}) => {
   const colors = useThemeColors();
+  // A disabled OR loading button must not register taps (and must not buzz).
+  const isDisabled = !!disabled || !!loading;
 
   const handlePress = (event: GestureResponderEvent) => {
+    if (isDisabled) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onPress?.(event);
   };
@@ -61,7 +73,7 @@ const Button: React.FC<Props> = ({ style, children, loading, variant, type, onPr
 
   return (
     <Pressable
-      style={[
+      style={({ pressed }) => [
         styles.button,
         variant === 'outline'
           ? { borderWidth: 1.5, borderColor: typeColor }
@@ -82,9 +94,11 @@ const Button: React.FC<Props> = ({ style, children, loading, variant, type, onPr
         isPrimary && variant !== 'text' && styles.primaryShadow,
         isError && styles.errorShadow,
         style,
-        rest.disabled && styles.disabled,
+        isDisabled && styles.disabled,
+        pressed && !isDisabled && styles.pressed,
       ]}
       onPress={handlePress}
+      disabled={isDisabled}
       {...rest}
     >
       {loading ? <ActivityIndicator size="small" color={color} /> : children}
@@ -131,5 +145,8 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.52,
+  },
+  pressed: {
+    opacity: 0.85,
   },
 });

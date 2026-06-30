@@ -103,6 +103,7 @@ export default function PhotoGalleryScreen() {
     if (gallery.length === 0) return;
     const currentPhotoUri = gallery[activeIndex];
     const isRemote = /^https?:\/\//.test(currentPhotoUri);
+    let tempSource: string | undefined;
 
     try {
       // The cropper can only open a LOCAL file. For an already-uploaded photo
@@ -112,6 +113,7 @@ export default function PhotoGalleryScreen() {
         const dest = `${FileSystem.cacheDirectory}edit-${Date.now()}.jpg`;
         const { uri } = await FileSystem.downloadAsync(currentPhotoUri, dest);
         cropPath = uri;
+        tempSource = uri;
       }
 
       const croppedImage = await ImagePicker.openCropper({
@@ -156,6 +158,10 @@ export default function PhotoGalleryScreen() {
         console.error("Error cropping photo: ", error);
         alert("Could not edit photo. Please try again.");
       }
+    } finally {
+      // Remove the temp download we cropped from (the cropper output is a separate
+      // file). Prevents edit-*.jpg sources piling up in the cache over a session.
+      if (tempSource) FileSystem.deleteAsync(tempSource, { idempotent: true }).catch(() => {});
     }
   };
 

@@ -13,6 +13,7 @@ import ThemedModal from './m-modal';
 import { useDeleteHostingMutation, HostListingsQuery } from '@/lib/services/graphql/generated';
 import LoadingModal from '../atoms/a-loading-modal';
 import { toast } from '@/lib/hooks/use-toast';
+import { handleError } from '@/lib/utils/error';
 
 type Props = {
   open: boolean;
@@ -32,12 +33,16 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting, onDelete }) =
 
   const handleDelete = () => {
     deleteHosting({ hostingId: hosting.id }).then((res) => {
+      // Previously errors were silently swallowed — surface them so a failed
+      // delete doesn't look like nothing happened.
+      if (res.error) {
+        handleError(res.error);
+        return;
+      }
       if (res.data?.deleteHosting) {
-        toast.show({
-          type: 'success',
-          text1: 'Success',
-          text2: res.data.deleteHosting.message,
-        });
+        // Always read as "deleted" to the host (the server may archive a booked
+        // listing under the hood) — see decision #4.
+        toast.show({ type: 'success', text1: 'Deleted', text2: 'Your listing was deleted.' });
         setDeleteOpen(false);
         onClose();
         onDelete?.();

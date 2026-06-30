@@ -178,12 +178,20 @@ interface ActiveFormHostingStore {
 }
 
 export const useActiveFormHosingStore = create<ActiveFormHostingStore>(
-  (set) => ({
+  (set, get) => ({
     input: {} as HostingInput,
     verificationInput: {} as HostingVerificationInput,
     hosting: {} as HostingQuery["hosting"],
 
     initiate: (hosting) => {
+      // No-op when the incoming hosting is unchanged — initiate() deep-spreads the
+      // whole hosting and runs on every refocus, so guarding it avoids needless
+      // state churn / re-renders (WS-12).
+      const prev = get().hosting;
+      if (prev && prev.id && prev.id === hosting.id && prev.lastUpdated === hosting.lastUpdated) {
+        return;
+      }
+
       const {
         host,
         lastUpdated,

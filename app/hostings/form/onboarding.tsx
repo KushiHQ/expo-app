@@ -12,11 +12,17 @@ import {
   HostingKind,
   PublishStatus,
   useBookingApplicationsCountQuery,
+  useDeleteHostingMutation,
 } from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Href, useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
 import { getAssetResizeUrl } from '@/lib/utils/urls';
+import ThemedModal from '@/components/molecules/m-modal';
+import Button from '@/components/atoms/a-button';
+import { toast } from '@/lib/hooks/use-toast';
+import { handleError } from '@/lib/utils/error';
+import { cast } from '@/lib/types/utils';
 import { CircleQuestionMark } from 'lucide-react-native';
 import React from 'react';
 import { RefreshControl, View } from 'react-native';
@@ -47,6 +53,33 @@ export default function HostingOnboarding() {
   React.useEffect(() => {
     if (!fetching) setRefreshing(false);
   }, [fetching]);
+
+  const [{ fetching: deletingUnit }, deleteUnit] = useDeleteHostingMutation();
+  const [unitToDelete, setUnitToDelete] = React.useState<{ id: string; title: string } | null>(
+    null,
+  );
+
+  // A deleted unit must simply vanish from the host's view. The server archives
+  // (rather than hard-deletes) a unit that has bookings, so we also hide archived
+  // units and always speak of it as "deleted" — the host never sees "archived".
+  const units = (hosting?.children ?? []).filter(
+    (u) => u.publishStatus !== PublishStatus.Archived,
+  );
+
+  const confirmDeleteUnit = () => {
+    if (!unitToDelete) return;
+    deleteUnit({ hostingId: unitToDelete.id }).then((res) => {
+      if (res.error) {
+        handleError(res.error);
+        return;
+      }
+      if (res.data?.deleteHosting) {
+        toast.show({ type: 'success', text1: 'Deleted', text2: 'The unit was deleted.' });
+        setUnitToDelete(null);
+        refetch();
+      }
+    });
+  };
 
   const { steps: visibleSteps, indexMap } = React.useMemo(
     () => getVisibleSteps(hosting?.listingType, hosting?.propertyType),
@@ -182,6 +215,7 @@ export default function HostingOnboarding() {
   }, [hosting, visibleSteps, indexMap]);
 
   return (
+    <>
     <DetailsLayout
       title="Hosting"
       refreshControl={
@@ -234,15 +268,15 @@ export default function HostingOnboarding() {
         {hosting && hosting.kind === HostingKind.Parent ? (
           <View className="border-b py-4" style={{ borderColor: hexToRgba(colors.text, 0.15) }}>
             <ThemedText style={{ fontFamily: Fonts.bold, marginBottom: 10 }}>
-              Units ({hosting.children.length})
+              Units ({units.length})
             </ThemedText>
-            {hosting.children.length === 0 ? (
+            {units.length === 0 ? (
               <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
                 No units yet. Add one with the + button and choose this property as its parent.
               </ThemedText>
             ) : (
               <View className="gap-3">
-                {hosting.children.map((unit) => (
+                {units.map((unit) => (
                   <HostingUnitCard
                     key={unit.id}
                     title={unit.title}
@@ -256,6 +290,9 @@ export default function HostingOnboarding() {
                     publishStatus={unit.publishStatus}
                     onPress={() =>
                       router.push(`/hostings/form/onboarding?id=${unit.id}` as Href)
+                    }
+                    onDelete={() =>
+                      setUnitToDelete({ id: cast(unit.id), title: unit.title ?? 'this unit' })
                     }
                   />
                 ))}
@@ -295,5 +332,29 @@ export default function HostingOnboarding() {
         </View>
       </View>
     </DetailsLayout>
+      <ThemedModal visible={!!unitToDelete} onClose={() => setUnitToDelete(null)}>
+        <View className="mt-8 items-center gap-2">
+          <ThemedText style={{ fontFamily: Fonts.medium }}>Delete this unit?</ThemedText>
+          <ThemedText
+            style={{ color: hexToRgba(colors.text, 0.6), fontSize: 14, textAlign: 'center' }}
+          >
+            "{unitToDelete?.title}" will be removed from this property. This can't be undone.
+          </ThemedText>
+          <View className="mt-8 w-full flex-row gap-4">
+            <Button type="tinted" className="flex-1" onPress={() => setUnitToDelete(null)}>
+              <ThemedText content="tinted">Cancel</ThemedText>
+            </Button>
+            <Button
+              type="error"
+              className="flex-1"
+              loading={deletingUnit}
+              onPress={confirmDeleteUnit}
+            >
+              <ThemedText content="error">Delete</ThemedText>
+            </Button>
+          </View>
+        </View>
+      </ThemedModal>
+    </>
   );
 }
