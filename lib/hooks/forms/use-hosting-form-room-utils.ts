@@ -10,15 +10,17 @@ import {
   useSetHostingCoverImageMutation,
 } from '@/lib/services/graphql/generated';
 import React from 'react';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, usePathname } from 'expo-router';
 import { useGalleryStore } from '@/lib/stores/gallery';
 import { handleError } from '@/lib/utils/error';
 import { useToast } from '@/lib/hooks/use-toast';
 import { cast } from '@/lib/types/utils';
-import { useCameraScreen } from '../camera';
+import { useCameraScreen, usePhotoGalleryScreen } from '../camera';
 
 export const useHostingFormRoomUtils = (hostingId: string) => {
   const { redirect } = useCameraScreen();
+  const { redirect: openGallery } = usePhotoGalleryScreen();
+  const pathname = usePathname();
   const { show } = useToast();
 
   const clearGallery = useGalleryStore((state) => state.clearGallery);
@@ -275,6 +277,22 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
     });
   };
 
+  // Tapping a photo on a room card jumps straight into the fullscreen gallery at
+  // that image — swipe to browse, edit in place. Returning to this screen runs
+  // the focus effect above, which uploads any edits. `redirect: pathname` points
+  // the gallery's "Use Photos" back here so that effect fires.
+  const handleOpenRoomImage = (roomIndex: number, imageIndex: number) => {
+    const images = rooms.at(roomIndex)?.images ?? [];
+    if (images.length === 0) return;
+    setActiveIndex(roomIndex);
+    openGallery({
+      images,
+      activeIndex: imageIndex,
+      redirect: cast(pathname),
+      push: true,
+    });
+  };
+
   // Opening a room's details modal must also point activeIndex at that room.
   // The modal's count/description inputs, updateActiveRoom, and the save call
   // all key off activeIndex — without this they'd read/write/save whatever room
@@ -303,6 +321,7 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
     handleDeleteActiveRoom,
     handleSaveHostingRoom,
     handleRoomImageEdit,
+    handleOpenRoomImage,
     handleSetCoverImage,
     coverImageUrl,
     handleReorderRooms,

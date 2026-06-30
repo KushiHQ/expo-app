@@ -80,6 +80,8 @@ export interface RoomItemCardProps {
   /** publicUrl of the hosting's current cover image, for badging. */
   coverImageUrl?: string;
   handleSetCoverImage?: (roomIndex: number, imageIndex: number) => void;
+  /** Tapping a photo opens the fullscreen swipe/edit gallery at that image. */
+  onOpenImage?: (roomIndex: number, imageIndex: number) => void;
 }
 
 const RoomItemCard = memo(
@@ -95,6 +97,7 @@ const RoomItemCard = memo(
     setActiveModalIndex,
     coverImageUrl,
     handleSetCoverImage,
+    onOpenImage,
   }: RoomItemCardProps) => {
     const usedNames = React.useMemo(
       () => rooms.filter((_, i) => i !== index).map((r) => r.name),
@@ -250,6 +253,7 @@ const RoomItemCard = memo(
                   isCover={!!coverImageUrl && img === coverImageUrl}
                   canSetCover={!img.startsWith("file")}
                   onSetCover={handleSetCoverImage}
+                  onPress={onOpenImage}
                 />
               ))}
             </ScrollView>

@@ -2,6 +2,7 @@ import ThemedText from '@/components/atoms/a-themed-text';
 import { FluentFormMultiple24Regular } from '@/components/icons/i-document';
 import DetailsLayout from '@/components/layouts/details';
 import HostingFormOnboardingAction from '@/components/molecules/m-hosting-form-onboarding-action';
+import HostingUnitCard from '@/components/molecules/m-hosting-unit-card';
 import TopListingCard from '@/components/molecules/m-top-listing-card';
 import { ONBOARDING_STEPS, getVisibleSteps } from '@/lib/constants/hosting/onboarding';
 import { Fonts } from '@/lib/constants/theme';
@@ -13,10 +14,9 @@ import {
   useBookingApplicationsCountQuery,
 } from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
-import { capitalize } from '@/lib/utils/text';
 import { Href, router as expoRouter, useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
-import { CircleQuestionMark, Store } from 'lucide-react-native';
+import { CircleQuestionMark } from 'lucide-react-native';
 import React from 'react';
 import { RefreshControl, View } from 'react-native';
 
@@ -242,30 +242,17 @@ export default function HostingOnboarding() {
             ) : (
               <View className="gap-3">
                 {hosting.children.map((unit) => (
-                  <HostingFormOnboardingAction
+                  <HostingUnitCard
                     key={unit.id}
-                    icon={Store}
-                    image={unit.coverImage?.asset?.publicUrl ?? undefined}
-                    color={unit.publishStatus === PublishStatus.Live ? 'primary' : 'default'}
+                    title={unit.title}
+                    coverUrl={unit.coverImage?.asset?.publicUrl ?? undefined}
+                    price={unit.price}
+                    paymentInterval={unit.paymentInterval}
+                    publishStatus={unit.publishStatus}
                     onPress={() =>
                       expoRouter.push(`/hostings/form/onboarding?id=${unit.id}` as Href)
                     }
-                  >
-                    <View className="flex-1">
-                      <ThemedText style={{ fontFamily: Fonts.bold }} numberOfLines={1}>
-                        {unit.title ?? 'Untitled unit'}
-                      </ThemedText>
-                      <ThemedText
-                        style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}
-                      >
-                        {unit.price
-                          ? `₦${Number(unit.price).toLocaleString()}`
-                          : 'No price set'}
-                        {' · '}
-                        {capitalize(String(unit.publishStatus ?? 'draft'))}
-                      </ThemedText>
-                    </View>
-                  </HostingFormOnboardingAction>
+                  />
                 ))}
               </View>
             )}

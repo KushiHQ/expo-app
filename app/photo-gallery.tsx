@@ -135,14 +135,22 @@ export default function PhotoGalleryScreen() {
         enableRotationGesture: true,
       });
 
+      // react-native-image-crop-picker returns a RAW filesystem path on iOS (no
+      // "file://" scheme). The upload pipeline keys local images by a "file"
+      // prefix, so without normalizing, an edited photo is silently never
+      // uploaded and reverts on the next refetch. Add the scheme if missing.
+      const editedUri = /^\w+:\/\//.test(croppedImage.path)
+        ? croppedImage.path
+        : `file://${croppedImage.path}`;
+
       // Remember which already-uploaded image this edit replaces, so the upload
       // step updates that server image in place instead of adding a duplicate.
       // Carry the original URL forward when re-editing an earlier edit.
       const originalUrl = useGalleryStore.getState().replacements[currentPhotoUri]
         ?? (isRemote ? currentPhotoUri : undefined);
-      if (originalUrl) setReplacement(croppedImage.path, originalUrl);
+      if (originalUrl) setReplacement(editedUri, originalUrl);
 
-      updateActiveImage(croppedImage.path);
+      updateActiveImage(editedUri);
     } catch (error: any) {
       if (error.code !== "E_PICKER_CANCELLED") {
         console.error("Error cropping photo: ", error);

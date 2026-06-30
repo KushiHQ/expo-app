@@ -45,6 +45,7 @@ export default function NewHostingStep2() {
     refetchHosting,
     handleSaveHostingRoom,
     handleRoomImageEdit,
+    handleOpenRoomImage,
     handleDeleteImage,
     setActiveModalIndex,
     updateActiveRoom,
@@ -158,6 +159,7 @@ export default function NewHostingStep2() {
                       setActiveModalIndex={setActiveModalIndex}
                       coverImageUrl={coverImageUrl}
                       handleSetCoverImage={handleSetCoverImage}
+                      onOpenImage={handleOpenRoomImage}
                     />
                   </DraggableItem>
                 ))}

@@ -15,6 +15,8 @@ type Props = {
   /** Show the "set as cover" control (only for saved/uploaded images). */
   canSetCover?: boolean;
   onSetCover?: (roomIndex: number, imageIndex: number) => void;
+  /** Tapping the photo opens it in the fullscreen swipe/edit gallery. */
+  onPress?: (roomIndex: number, imageIndex: number) => void;
 };
 
 const HostingRoomImage: React.FC<Props> = ({
@@ -25,6 +27,7 @@ const HostingRoomImage: React.FC<Props> = ({
   isCover,
   canSetCover,
   onSetCover,
+  onPress,
 }) => {
   // Background-upload status for this thumbnail (keyed by its local file:// uri);
   // clears automatically once the url swaps to the uploaded one.
@@ -42,16 +45,21 @@ const HostingRoomImage: React.FC<Props> = ({
         borderColor: isCover ? '#FFA500' : 'transparent',
       }}
     >
-      <Image
-        source={{ uri: src }}
-        style={{ height: '100%', width: '100%', borderRadius: isCover ? 10 : 12 }}
-        contentFit="cover"
-        transition={400}
-        placeholder={{ blurhash: PROPERTY_BLURHASH }}
-        placeholderContentFit="cover"
-        cachePolicy="memory-disk"
-        priority="high"
-      />
+      <Pressable
+        onPress={() => onPress?.(roomIndex, imageIndex)}
+        style={{ height: '100%', width: '100%' }}
+      >
+        <Image
+          source={{ uri: src }}
+          style={{ height: '100%', width: '100%', borderRadius: isCover ? 10 : 12 }}
+          contentFit="cover"
+          transition={400}
+          placeholder={{ blurhash: PROPERTY_BLURHASH }}
+          placeholderContentFit="cover"
+          cachePolicy="memory-disk"
+          priority="high"
+        />
+      </Pressable>
 
       {/* Upload status overlay: spinner while uploading, tap-to-retry on failure. */}
       {uploadStatus === 'uploading' ? (
