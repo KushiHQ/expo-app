@@ -96,6 +96,39 @@ export const PROPERTY_TYPE = Object.values(PropertyType);
 export const FACILITIES = Object.values(Facility);
 export const ROOM_KEYS = cast<(keyof typeof Room)[]>(Object.keys(Room));
 
+/**
+ * Everyday words hosts actually search for, mapped to the formal property type.
+ * Used to make the property-type picker findable (typing "flat"/"shop" surfaces
+ * the right type) — see WS-8.
+ */
+export const PROPERTY_TYPE_SEARCH_TERMS: Record<PropertyType, string[]> = {
+  [PropertyType.Residential]: [
+    'house', 'home', 'flat', 'apartment', 'duplex', 'bungalow', 'room',
+    'self contain', 'self-contain', 'bq', 'boys quarters', 'terrace',
+    'maisonette', 'mini flat', 'penthouse',
+  ],
+  [PropertyType.CommercialRetail]: [
+    'shop', 'store', 'plaza', 'mall', 'supermarket', 'boutique', 'kiosk',
+    'retail', 'showroom', 'stall',
+  ],
+  [PropertyType.Office]: ['office', 'workspace', 'co-working', 'coworking', 'suite', 'corporate'],
+  [PropertyType.Storage]: ['warehouse', 'lockup', 'lock-up', 'godown', 'storage', 'depot', 'container'],
+  [PropertyType.EventVenue]: ['event', 'hall', 'venue', 'banquet', 'reception', 'party', 'wedding'],
+  [PropertyType.Industrial]: ['factory', 'industrial', 'manufacturing', 'plant', 'workshop'],
+  [PropertyType.CreativeStudio]: ['studio', 'creative', 'photography', 'recording', 'film'],
+  [PropertyType.Hospitality]: [
+    'hotel', 'shortlet', 'short-let', 'short let', 'guesthouse', 'guest house',
+    'bnb', 'b&b', 'airbnb', 'lodge', 'motel', 'hostel', 'inn',
+  ],
+  [PropertyType.LandPlots]: ['land', 'plot', 'acre', 'farm land', 'bare land', 'parcel', 'plots'],
+  [PropertyType.Parking]: ['parking', 'car park', 'garage', 'lot'],
+  [PropertyType.Agricultural]: ['farm', 'agriculture', 'agricultural', 'plantation', 'ranch'],
+  [PropertyType.Medical]: ['clinic', 'hospital', 'medical', 'health', 'pharmacy'],
+  [PropertyType.Educational]: ['school', 'college', 'classroom', 'training', 'lecture', 'university'],
+  [PropertyType.Religious]: ['church', 'mosque', 'temple', 'worship', 'chapel'],
+  [PropertyType.Custom]: ['other', 'custom', 'misc'],
+};
+
 export interface FacilityHostingMapping {
   facility: Facility;
   hostingVariants: PropertyType[];
@@ -499,3 +532,16 @@ export const ROOMS_BY_VARIANT: RoomHostingMapping[] = [
     hostingVariants: Object.values(PropertyType),
   },
 ];
+
+/**
+ * Space types relevant to a given property type (WS-7). A Land listing shouldn't
+ * offer "Bedroom"; an Office shouldn't offer "Well / Borehole". Derived from
+ * ROOMS_BY_VARIANT; "Others" maps to every type so it's always available. Falls
+ * back to all space types when the property type is unknown.
+ */
+export const roomsForPropertyType = (propertyType?: string | null): (keyof typeof Room)[] => {
+  const match = PROPERTY_TYPE.find((p) => p === propertyType) as PropertyType | undefined;
+  if (!match) return ROOM_KEYS;
+  const keys = ROOMS_BY_VARIANT.filter((m) => m.hostingVariants.includes(match)).map((m) => m.room);
+  return keys.length ? keys : ROOM_KEYS;
+};

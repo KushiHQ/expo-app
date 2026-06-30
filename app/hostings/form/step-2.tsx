@@ -21,9 +21,9 @@ import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { useRouter } from "@/lib/hooks/use-router";
 import { Room } from "@/lib/types/enums/hostings";
-import { Layers } from "lucide-react-native";
+import { Layers, Plus } from "lucide-react-native";
 import React, { useRef } from "react";
-import { RefreshControl, ScrollView, TextInput, View } from "react-native";
+import { Pressable, RefreshControl, ScrollView, TextInput, View } from "react-native";
 import { CameraLinear } from "@/components/icons/i-camera";
 
 export default function NewHostingStep2() {
@@ -54,18 +54,29 @@ export default function NewHostingStep2() {
     handleSetCoverImage,
     coverImageUrl,
     resolveThumb,
-    handleReorderRooms,
     handleReorderRoomImages,
   } = useHostingFormRoomUtils(String(id));
 
-  // Long-press drag-to-reorder: rooms (vertical) and a room's photos (horizontal).
-  const roomReorder = useReorderController({
-    axis: "y",
-    count: rooms.length,
-    estimatedSize: 210,
-    enabled: rooms.length > 1,
-    onReorder: handleReorderRooms,
-  });
+  const propertyType = hosting?.propertyType ?? undefined;
+
+  // Group rooms by space type, preserving add order (= date added). Same-type
+  // rooms render together under one header with a count badge; each instance is
+  // still its own card with its own photos (WS-6).
+  const groups = React.useMemo(() => {
+    const order: (keyof typeof Room)[] = [];
+    const map: Record<string, { room: (typeof rooms)[number]; index: number }[]> = {};
+    rooms.forEach((room, index) => {
+      if (!map[room.name]) {
+        map[room.name] = [];
+        order.push(room.name);
+      }
+      map[room.name].push({ room, index });
+    });
+    return order.map((name) => ({ name, items: map[name] }));
+  }, [rooms]);
+
+  // Photos within a space can be drag-reordered (in the details modal). Rooms are
+  // grouped by type now, so room-level manual reorder is retired for the moment.
   const imageReorder = useReorderController({
     axis: "x",
     count:
@@ -127,31 +138,43 @@ export default function NewHostingStep2() {
             title="Spaces & Photos"
             subtitle="Add space types and upload media for each space"
           >
-            {/* Existing room cards — long-press a card to drag & reorder */}
-            {rooms.length > 0 && (
-              <View>
-                {rooms.length > 1 && (
-                  <ThemedText
-                    style={{
-                      fontSize: 11,
-                      color: hexToRgba(colors.text, 0.35),
-                      marginBottom: 10,
-                    }}
-                  >
-                    Long-press a space to drag and reorder
+            {/* Grouped spaces — same type together, each instance its own card */}
+            {groups.map((group) => (
+              <View key={group.name} style={{ marginBottom: 18 }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 10,
+                  }}
+                >
+                  <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 15 }}>
+                    {Room[group.name]}
                   </ThemedText>
-                )}
-                {rooms.map((room, index) => (
-                  <DraggableItem
-                    key={room.id ?? `room-${index}`}
-                    controller={roomReorder}
-                    index={index}
-                    gap={14}
-                  >
+                  {group.items.length > 1 && (
+                    <View
+                      style={{
+                        paddingHorizontal: 8,
+                        paddingVertical: 2,
+                        borderRadius: 999,
+                        backgroundColor: hexToRgba(colors.primary, 0.14),
+                      }}
+                    >
+                      <ThemedText
+                        style={{ fontSize: 11, fontFamily: Fonts.semibold, color: colors.primary }}
+                      >
+                        ×{group.items.length}
+                      </ThemedText>
+                    </View>
+                  )}
+                </View>
+                <View style={{ gap: 12 }}>
+                  {group.items.map(({ room, index }, i) => (
                     <RoomItemCard
+                      key={room.id ?? `room-${index}`}
                       index={index}
                       room={room}
-                      rooms={rooms}
                       colors={colors}
                       hostingRoomSaving={hostingRoomSaving}
                       handleSaveHostingRoom={handleSaveHostingRoom}
@@ -162,11 +185,41 @@ export default function NewHostingStep2() {
                       handleSetCoverImage={handleSetCoverImage}
                       onOpenImage={handleOpenRoomImage}
                       resolveThumb={resolveThumb}
+                      propertyType={propertyType}
+                      instanceLabel={
+                        group.items.length > 1
+                          ? `${Room[group.name]} ${i + 1}`
+                          : Room[group.name]
+                      }
                     />
-                  </DraggableItem>
-                ))}
+                  ))}
+                  <Pressable
+                    onPress={() =>
+                      handleSaveHostingRoom(rooms.length, {
+                        name: group.name,
+                        images: [],
+                        count: 1,
+                      })
+                    }
+                    disabled={hostingRoomSaving}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 6,
+                      paddingVertical: 10,
+                      borderRadius: 12,
+                      backgroundColor: hexToRgba(colors.text, 0.04),
+                    }}
+                  >
+                    <Plus size={15} color={hexToRgba(colors.text, 0.6)} />
+                    <ThemedText style={{ fontSize: 13, color: hexToRgba(colors.text, 0.6) }}>
+                      Add another {Room[group.name]}
+                    </ThemedText>
+                  </Pressable>
+                </View>
               </View>
-            )}
+            ))}
 
             {/* Empty state */}
             {rooms.length === 0 && (
@@ -189,19 +242,18 @@ export default function NewHostingStep2() {
                     lineHeight: 20,
                   }}
                 >
-                  No spaces added yet.{"\n"}Use the selector below to add your
-                  first space.
+                  No spaces added yet.{"\n"}Pick a space type below to add your
+                  first one.
                 </ThemedText>
               </View>
             )}
 
-            {/* Add new room card */}
+            {/* Add a new space type (duplicates allowed; filtered to the property) */}
             {!allRoomTypesUsed && (
               <RoomItemCard
                 key={`add-room-${rooms.length}`}
                 index={rooms.length}
                 room={undefined}
-                rooms={rooms}
                 colors={colors}
                 hostingRoomSaving={hostingRoomSaving}
                 handleSaveHostingRoom={handleSaveHostingRoom}
@@ -210,6 +262,7 @@ export default function NewHostingStep2() {
                 setActiveModalIndex={setActiveModalIndex}
                 coverImageUrl={coverImageUrl}
                 handleSetCoverImage={handleSetCoverImage}
+                propertyType={propertyType}
               />
             )}
           </SectionCard>
@@ -282,33 +335,17 @@ export default function NewHostingStep2() {
               )}
 
               <View className="gap-3">
-                <View className="flex-row gap-3">
-                  <View className="flex-1">
-                    <FloatingLabelInput
-                      focused
-                      value={rooms.at(activeIndex)?.count?.toString()}
-                      label="Count"
-                      inputMode="numeric"
-                      onChangeText={(v) =>
-                        updateActiveRoom({ count: Number(v) })
-                      }
-                      placeholder="How many of this space"
-                      returnKeyType="next"
-                      onSubmitEditing={() => descriptionRef.current?.focus()}
-                      blurOnSubmit={false}
-                    />
-                  </View>
-                  <Button
-                    onPress={() => handleRoomImageEdit(activeModalIndex)}
-                    style={{
-                      backgroundColor: hexToRgba(colors.text, 0.08),
-                      borderRadius: 10,
-                    }}
-                    className="mb-2 flex-row items-center gap-1.5 px-4 py-2"
-                  >
-                    <CameraLinear color={colors.text} size={24} />
-                  </Button>
-                </View>
+                <Button
+                  onPress={() => handleRoomImageEdit(activeModalIndex)}
+                  style={{
+                    backgroundColor: hexToRgba(colors.text, 0.08),
+                    borderRadius: 10,
+                  }}
+                  className="flex-row items-center justify-center gap-2 py-3"
+                >
+                  <CameraLinear color={colors.text} size={20} />
+                  <ThemedText style={{ fontSize: 13 }}>Add photos</ThemedText>
+                </Button>
                 <FloatingLabelInput
                   ref={descriptionRef}
                   focused

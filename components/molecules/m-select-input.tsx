@@ -107,11 +107,15 @@ const SelectInput = <T extends object>(props: Props<T>) => {
   const filtered = React.useMemo(() => {
     let result = options;
     if (rest.searchable && search) {
-      result = options.filter((v) =>
-        String(cast<Record<string, string>>(v)[rest.searchField])
-          .toLowerCase()
-          .includes(search.toLowerCase()),
-      );
+      const q = search.toLowerCase();
+      result = options.filter((v) => {
+        const rec = cast<Record<string, any>>(v);
+        const field = String(rec[rest.searchField] ?? '').toLowerCase();
+        // Options may carry `searchTerms: string[]` (synonyms/aliases) so a search
+        // matches everyday words too, e.g. "flat" -> Residential.
+        const terms: string[] = Array.isArray(rec.searchTerms) ? rec.searchTerms : [];
+        return field.includes(q) || terms.some((t) => String(t).toLowerCase().includes(q));
+      });
     }
     return [...result].sort((a, b) => {
       const fieldA = rest.searchable
@@ -276,6 +280,8 @@ export type SelectOptionType = {
   label: string;
   description?: string;
   value: string;
+  /** Optional synonyms/aliases that also match search (e.g. "flat" -> Residential). */
+  searchTerms?: string[];
 };
 
 export const SelectOption: React.FC<SelectOptionType & SelectionDetails> = ({

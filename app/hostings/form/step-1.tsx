@@ -16,7 +16,7 @@ import {
   useHostListingsQuery,
 } from "@/lib/services/graphql/generated";
 import { hexToRgba } from "@/lib/utils/colors";
-import { PROPERTY_TYPE } from "@/lib/types/enums/hostings";
+import { PROPERTY_TYPE, PROPERTY_TYPE_SEARCH_TERMS, PropertyType } from "@/lib/types/enums/hostings";
 import { cast } from "@/lib/types/utils";
 import { handleError } from "@/lib/utils/error";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -211,14 +211,20 @@ export default function NewHostingStep1() {
             <View style={{ flex: 1 }}>
               <SelectInput
                 focused
+                searchable
+                searchField="label"
                 label="Property Type"
-                placeholder="Residential"
+                placeholder="Search e.g. flat, shop, land…"
                 defaultValue={
                   input.propertyType
-                    ? { label: input.propertyType, value: input.propertyType }
+                    ? { label: input.propertyType, value: input.propertyType, searchTerms: [] }
                     : undefined
                 }
-                options={PROPERTY_TYPE.map((v) => ({ label: v, value: v }))}
+                options={PROPERTY_TYPE.map((v) => ({
+                  label: v,
+                  value: v,
+                  searchTerms: PROPERTY_TYPE_SEARCH_TERMS[v as PropertyType] ?? [],
+                }))}
                 onSelect={(v) => updateInput({ propertyType: v.value })}
                 renderItem={SelectOption}
               />

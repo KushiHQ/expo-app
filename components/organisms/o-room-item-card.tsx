@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { Room, ROOM_KEYS } from "@/lib/types/enums/hostings";
+import { Room, roomsForPropertyType } from "@/lib/types/enums/hostings";
 import { RoomData } from "@/lib/stores/hostings";
 import { cast } from "@/lib/types/utils";
 import { ScrollView, View } from "react-native";
@@ -34,6 +34,7 @@ import ThemedText from "../atoms/a-themed-text";
 import HostingRoomImage from "../atoms/a-hosting-room-image";
 import { CameraLinear } from "../icons/i-camera";
 import { SURFACE } from "@/lib/constants/surface";
+import { Fonts } from "@/lib/constants/theme";
 
 const ROOM_ICONS: Partial<Record<keyof typeof Room, LucideIcon>> = {
   Exterior: MapPin,
@@ -63,15 +64,10 @@ const ROOM_ICONS: Partial<Record<keyof typeof Room, LucideIcon>> = {
   Others: MoreHorizontal,
 };
 
-const ALL_ROOM_OPTIONS = ROOM_KEYS.map((v) => ({
-  label: Room[v as keyof typeof Room],
-  value: v,
-}));
-
 export interface RoomItemCardProps {
   index: number;
+  /** Undefined renders the "add a space" selector. */
   room?: RoomData;
-  rooms: RoomData[];
   colors: { text: string; background?: string };
   hostingRoomSaving: boolean;
   handleSaveHostingRoom: (index: number, data: RoomData) => void;
@@ -81,17 +77,18 @@ export interface RoomItemCardProps {
   /** publicUrl of the hosting's current cover image, for badging. */
   coverImageUrl?: string;
   handleSetCoverImage?: (roomIndex: number, imageIndex: number) => void;
-  /** Tapping a photo opens the fullscreen swipe/edit gallery at that image. */
   onOpenImage?: (roomIndex: number, imageIndex: number) => void;
-  /** Maps a room-image url to a small proxied thumbnail (perf). */
   resolveThumb?: (url: string) => string;
+  /** Property type, to scope the space-type options (WS-7). */
+  propertyType?: string;
+  /** Client-rendered instance label, e.g. "Bedroom 2" (WS-6). */
+  instanceLabel?: string;
 }
 
 const RoomItemCard = memo(
   ({
     index,
     room,
-    rooms,
     colors,
     hostingRoomSaving,
     handleSaveHostingRoom,
@@ -102,30 +99,26 @@ const RoomItemCard = memo(
     handleSetCoverImage,
     onOpenImage,
     resolveThumb,
+    propertyType,
+    instanceLabel,
   }: RoomItemCardProps) => {
-    const usedNames = React.useMemo(
-      () => rooms.filter((_, i) => i !== index).map((r) => r.name),
-      [rooms, index],
-    );
-
-    const availableOptions = React.useMemo(
-      () =>
-        ALL_ROOM_OPTIONS.filter(
-          (o) => !usedNames.includes(o.value as keyof typeof Room),
-        ),
-      [usedNames],
+    // Spaces relevant to this property type; duplicates ARE allowed now — each
+    // pick creates a separate room instance (WS-6/WS-7).
+    const spaceOptions = React.useMemo(
+      () => roomsForPropertyType(propertyType).map((v) => ({ label: Room[v], value: v })),
+      [propertyType],
     );
 
     const onSelectRoom = React.useCallback(
       (v: { label: string; value: string }) => {
         handleSaveHostingRoom(index, {
           name: cast(v.value),
-          images: room?.images ?? [],
-          count: room?.count ?? 1,
-          description: room?.description,
+          images: [],
+          count: 1,
+          description: undefined,
         });
       },
-      [index, handleSaveHostingRoom, room],
+      [index, handleSaveHostingRoom],
     );
 
     const onEditImage = React.useCallback(
@@ -138,6 +131,7 @@ const RoomItemCard = memo(
       [index, setActiveModalIndex],
     );
 
+    // Add-a-space selector
     if (!room) {
       return (
         <View
@@ -156,10 +150,10 @@ const RoomItemCard = memo(
             searchField="label"
             defaultValue={undefined}
             className="border-0"
-            label="Add New Space"
-            placeholder="Select a space type to showcase..."
+            label="Add a space"
+            placeholder="Search a space type to add…"
             onSelect={onSelectRoom}
-            options={availableOptions}
+            options={spaceOptions}
             renderItem={SelectOption}
           />
         </View>
@@ -177,14 +171,14 @@ const RoomItemCard = memo(
           overflow: "hidden",
         }}
       >
-        {/* Header: icon + room type selector */}
+        {/* Header: icon + instance label */}
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
             gap: 10,
-            paddingHorizontal: 12,
-            paddingTop: 12,
+            paddingHorizontal: 14,
+            paddingTop: 14,
             paddingBottom: 8,
           }}
         >
@@ -201,19 +195,9 @@ const RoomItemCard = memo(
           >
             <RoomIcon color={colors.text} size={16} />
           </View>
-          <View style={{ flex: 1 }}>
-            <SelectInput
-              searchable
-              searchField="label"
-              defaultValue={{ label: Room[room.name], value: room.name }}
-              label="Space Type"
-              placeholder="Select space type"
-              className="border-0"
-              onSelect={onSelectRoom}
-              options={availableOptions}
-              renderItem={SelectOption}
-            />
-          </View>
+          <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 15 }} numberOfLines={1}>
+            {instanceLabel ?? Room[room.name]}
+          </ThemedText>
         </View>
 
         {/* Image strip */}
@@ -224,9 +208,6 @@ const RoomItemCard = memo(
                 height: 80,
                 borderRadius: 12,
                 backgroundColor: hexToRgba(colors.text, 0.04),
-                borderWidth: 1,
-                borderColor: hexToRgba(colors.text, 0.08),
-                borderStyle: "dashed",
                 alignItems: "center",
                 justifyContent: "center",
                 flexDirection: "row",
@@ -234,9 +215,7 @@ const RoomItemCard = memo(
               }}
             >
               <CameraLinear color={hexToRgba(colors.text, 0.28)} size={14} />
-              <ThemedText
-                style={{ fontSize: 12, color: hexToRgba(colors.text, 0.32) }}
-              >
+              <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.32) }}>
                 Tap "Add Photos" to showcase this space
               </ThemedText>
             </View>
@@ -264,51 +243,37 @@ const RoomItemCard = memo(
           )}
         </View>
 
-        {/* Footer: count label + actions */}
+        {/* Footer: actions */}
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent: "flex-end",
+            gap: 8,
             paddingHorizontal: 12,
             paddingBottom: 12,
-            paddingTop: 6,
-            borderTopWidth: 1,
-            borderTopColor: hexToRgba(colors.text, 0.07),
+            paddingTop: 4,
           }}
         >
-          <ThemedText
-            style={{ fontSize: 11, color: hexToRgba(colors.text, 0.42) }}
+          <Button
+            onPress={onEditImage}
+            disabled={hostingRoomSaving}
+            variant="outline"
+            className="flex-row items-center gap-1.5 px-3 py-2"
+            style={{ borderColor: hexToRgba(colors.text, 0.2), borderRadius: 10 }}
           >
-            {room.count} {room.count === 1 ? "space" : "spaces"}
-          </ThemedText>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <Button
-              onPress={onEditImage}
-              disabled={hostingRoomSaving}
-              variant="outline"
-              className="flex-row items-center gap-1.5 px-3 py-2"
-              style={{
-                borderColor: hexToRgba(colors.text, 0.2),
-                borderRadius: 10,
-              }}
-            >
-              <CameraLinear color={colors.text} size={13} />
-              <ThemedText style={{ fontSize: 12 }}>Add Photos</ThemedText>
-            </Button>
-            <Button
-              variant="outline"
-              disabled={hostingRoomSaving}
-              className="px-3 py-2"
-              style={{
-                borderColor: hexToRgba(colors.text, 0.2),
-                borderRadius: 10,
-              }}
-              onPress={onOpenDetails}
-            >
-              <ThemedText style={{ fontSize: 12 }}>Details</ThemedText>
-            </Button>
-          </View>
+            <CameraLinear color={colors.text} size={13} />
+            <ThemedText style={{ fontSize: 12 }}>Add Photos</ThemedText>
+          </Button>
+          <Button
+            variant="outline"
+            disabled={hostingRoomSaving}
+            className="px-3 py-2"
+            style={{ borderColor: hexToRgba(colors.text, 0.2), borderRadius: 10 }}
+            onPress={onOpenDetails}
+          >
+            <ThemedText style={{ fontSize: 12 }}>Details</ThemedText>
+          </Button>
         </View>
       </View>
     );
