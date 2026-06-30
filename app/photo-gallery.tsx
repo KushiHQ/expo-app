@@ -118,6 +118,11 @@ export default function PhotoGalleryScreen() {
         path: cropPath,
         cropping: true,
         mediaType: "photo",
+        // width/height default to 200, which makes the cropper open with a
+        // pre-applied 1:1 crop box the user has to undo. Setting them to 0 skips
+        // the forced aspect ratio so editing opens on the full, uncropped image.
+        width: 0,
+        height: 0,
         // iOS defaults compressImageQuality to 0.8, re-encoding the crop as a
         // lossy JPEG and visibly softening it (Android doesn't). Force full
         // quality so an edited photo stays as sharp as the original.
