@@ -33,6 +33,7 @@ import {
 import ThemedText from "../atoms/a-themed-text";
 import HostingRoomImage from "../atoms/a-hosting-room-image";
 import { CameraLinear } from "../icons/i-camera";
+import { SURFACE } from "@/lib/constants/surface";
 
 const ROOM_ICONS: Partial<Record<keyof typeof Room, LucideIcon>> = {
   Exterior: MapPin,
@@ -171,9 +172,8 @@ const RoomItemCard = memo(
       <View
         style={{
           backgroundColor: hexToRgba(colors.text, 0.05),
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: hexToRgba(colors.text, 0.1),
+          borderRadius: 20,
+          boxShadow: SURFACE.shadow,
           overflow: "hidden",
         }}
       >

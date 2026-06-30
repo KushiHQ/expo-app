@@ -3,6 +3,7 @@ import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { PublishStatus } from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import { capitalize } from '@/lib/utils/text';
 import { Image } from 'expo-image';
 import { ChevronRight, Image as ImageIcon } from 'lucide-react-native';
@@ -46,10 +47,10 @@ const HostingUnitCard: React.FC<Props> = ({
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center overflow-hidden rounded-2xl border"
+      className="flex-row items-center overflow-hidden rounded-2xl"
       style={{
-        borderColor: hexToRgba(colors.text, 0.12),
-        backgroundColor: hexToRgba(colors.text, 0.04),
+        backgroundColor: hexToRgba(colors.text, 0.05),
+        boxShadow: SURFACE.shadow,
       }}
     >
       {/* Cover */}

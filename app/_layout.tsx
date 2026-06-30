@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react-native';
+import { MODAL_SCREEN_OPTIONS } from '@/lib/constants/navigation';
 import {
   Inter_100Thin,
   Inter_200ExtraLight,
@@ -141,8 +142,8 @@ function RootLayout() {
                         <Stack.Screen name="auth" options={{ headerShown: false }} />
                         <Stack.Screen name="guest" options={{ headerShown: false }} />
                         <Stack.Screen name="host" options={{ headerShown: false }} />
-                        <Stack.Screen name="camera" options={{ headerShown: false }} />
-                        <Stack.Screen name="photo-gallery" options={{ headerShown: false }} />
+                        <Stack.Screen name="camera" options={MODAL_SCREEN_OPTIONS} />
+                        <Stack.Screen name="photo-gallery" options={MODAL_SCREEN_OPTIONS} />
                         <Stack.Screen name="hostings" options={{ headerShown: false }} />
                         <Stack.Screen name="kyc" options={{ headerShown: false }} />
                         <Stack.Screen name="bookings" options={{ headerShown: false }} />

@@ -1,6 +1,7 @@
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { CustomSvgProps } from '@/lib/types/svgType';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import { PROPERTY_BLURHASH } from '@/lib/constants/images';
 import { Image } from 'expo-image';
 import { LucideIcon } from 'lucide-react-native';
@@ -47,22 +48,17 @@ const HostingFormOnboardingAction: React.FC<Props> = ({
       onPress={onPress}
       disabled={disabled}
       className={twMerge(
-        'flex-row items-center gap-4 rounded-3xl border p-[14px]',
+        'flex-row items-center gap-4 rounded-3xl p-[14px]',
         disabled && 'opacity-50',
       )}
       style={{
-        borderColor:
-          color === 'primary'
-            ? hexToRgba(colors.primary, 0.2)
-            : color === 'accent'
-              ? hexToRgba(colors.accent, 0.2)
-              : hexToRgba(colors.text, 0.15),
         backgroundColor:
           color === 'primary'
             ? hexToRgba(colors.primary, 0.15)
             : color === 'accent'
               ? hexToRgba(colors.accent, 0.15)
-              : undefined,
+              : hexToRgba(colors.text, 0.05),
+        boxShadow: color === 'primary' ? SURFACE.glow : SURFACE.shadow,
       }}
     >
       {image ? (
