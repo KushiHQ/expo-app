@@ -1,6 +1,6 @@
 import { ToastEntry } from '@/lib/stores/toast-store';
 import { Fonts } from '@/lib/constants/theme';
-import { CheckCircle, Info, XCircle } from 'lucide-react-native';
+import { CheckCircle, Info, X, XCircle } from 'lucide-react-native';
 import { useCallback, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -12,27 +12,29 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+// Soft/cloudy: one neutral frosted near-black surface for every type — the
+// colour is carried by the icon badge + a soft coloured glow + a faint shimmer,
+// never by tinting the whole surface.
+const SURFACE_BG = 'rgba(16,16,18,0.97)';
+
 const TYPE = {
   success: {
-    bg: 'rgba(4, 20, 11, 0.96)',
-    shadow: '#22C55E',
-    icon: '#22C55E',
-    iconBg: 'rgba(34, 197, 94, 0.13)',
-    shimmer: 'rgba(34,197,94,0.07)',
+    icon: '#34D399',
+    iconBg: 'rgba(52,211,153,0.15)',
+    glow: 'rgba(52,211,153,0.4)',
+    shimmer: 'rgba(52,211,153,0.06)',
   },
   error: {
-    bg: 'rgba(22, 4, 4, 0.96)',
-    shadow: '#EF4444',
-    icon: '#EF4444',
-    iconBg: 'rgba(239, 68, 68, 0.13)',
-    shimmer: 'rgba(239,68,68,0.07)',
+    icon: '#F87171',
+    iconBg: 'rgba(248,113,113,0.15)',
+    glow: 'rgba(248,113,113,0.4)',
+    shimmer: 'rgba(248,113,113,0.06)',
   },
   info: {
-    bg: 'rgba(4, 8, 26, 0.96)',
-    shadow: '#3B82F6',
-    icon: '#3B82F6',
-    iconBg: 'rgba(59, 130, 246, 0.13)',
-    shimmer: 'rgba(59,130,246,0.07)',
+    icon: '#5B8CFF',
+    iconBg: 'rgba(91,140,255,0.15)',
+    glow: 'rgba(91,140,255,0.38)',
+    shimmer: 'rgba(91,140,255,0.06)',
   },
 } as const;
 
@@ -86,10 +88,10 @@ export default function ToastItem({ toast, onDismiss }: Props) {
   return (
     <GestureDetector gesture={pan}>
       <Animated.View style={animStyle}>
-        {/* Glow halo */}
-        <View style={[styles.glowWrap, { shadowColor: cfg.shadow }]}>
-          {/* Toast surface */}
-          <View style={[styles.surface, { backgroundColor: cfg.bg }]}>
+        {/* Soft coloured glow halo */}
+        <View style={[styles.glowWrap, { boxShadow: `0px 8px 26px -8px ${cfg.glow}` }]}>
+          {/* Toast surface — neutral frosted near-black */}
+          <View style={[styles.surface, { backgroundColor: SURFACE_BG }]}>
             {/* Top-half glass highlight — simulates frosted reflection */}
             <View
               pointerEvents="none"
@@ -133,7 +135,7 @@ export default function ToastItem({ toast, onDismiss }: Props) {
 
             {/* Close */}
             <TouchableOpacity style={styles.closeBtn} onPress={dismissWithFade} hitSlop={10}>
-              <Text style={styles.closeX}>✕</Text>
+              <X size={15} color="rgba(154,160,166,0.6)" />
             </TouchableOpacity>
           </View>
         </View>
@@ -144,28 +146,24 @@ export default function ToastItem({ toast, onDismiss }: Props) {
 
 const styles = StyleSheet.create({
   glowWrap: {
-    borderRadius: 20,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.38,
-    shadowRadius: 22,
-    elevation: 10,
+    borderRadius: 22,
   },
   surface: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 20,
+    borderRadius: 22,
     minHeight: 62,
     overflow: 'hidden',
   },
   shimmerTop: {
     bottom: '50%', // only covers the top half of the toast
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
   },
   iconBadge: {
     width: 34,
     height: 34,
-    borderRadius: 10,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 14,
@@ -181,20 +179,20 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: Fonts.semibold,
     fontSize: 13,
-    color: '#F1F5F9',
+    color: '#F3F3F3',
     marginBottom: 2,
     letterSpacing: 0.15,
   },
   message: {
     fontFamily: Fonts.regular,
     fontSize: 12,
-    color: 'rgba(148,163,184,0.9)',
+    color: '#9AA0A6',
     lineHeight: 17,
   },
   messageSolo: {
     fontFamily: Fonts.medium,
     fontSize: 13,
-    color: '#E2E8F0',
+    color: '#EDEDED',
     lineHeight: 18,
     letterSpacing: 0.1,
   },
@@ -211,10 +209,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 16,
     justifyContent: 'center',
-  },
-  closeX: {
-    fontSize: 11,
-    color: 'rgba(148,163,184,0.5)',
-    fontFamily: Fonts.medium,
   },
 });
