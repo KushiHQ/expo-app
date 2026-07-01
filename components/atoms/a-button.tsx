@@ -5,7 +5,6 @@ import React from 'react';
 import {
   ActivityIndicator,
   GestureResponderEvent,
-  Platform,
   Pressable,
   PressableProps,
   StyleProp,
@@ -144,35 +143,14 @@ const styles = StyleSheet.create({
     // Full-pill CTA per the soft/cloudy spec (radii: CTAs = full pills).
     borderRadius: 999,
   },
-  // Warm glow on the primary CTA — Platform.select (proven to paint on both
-  // platforms) rather than a boxShadow string.
+  // Warm amber glow on the primary CTA. A COLOURED boxShadow — a dark
+  // Platform.select shadow is invisible on the near-black background, so the
+  // glow has to be tinted. Safe now that `style` is a plain array.
   primaryShadow: {
-    ...Platform.select({
-      ios: {
-        shadowColor: '#F59E0B',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.4,
-        shadowRadius: 14,
-      },
-      android: {
-        elevation: 8,
-        shadowColor: '#F59E0B',
-      },
-    }),
+    boxShadow: '0px 8px 24px -6px rgba(245,158,11,0.55)',
   },
   errorShadow: {
-    ...Platform.select({
-      ios: {
-        shadowColor: '#EF4444',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.32,
-        shadowRadius: 10,
-      },
-      android: {
-        elevation: 6,
-        shadowColor: '#EF4444',
-      },
-    }),
+    boxShadow: '0px 8px 22px -8px rgba(239,68,68,0.5)',
   },
   disabled: {
     opacity: 0.5,
