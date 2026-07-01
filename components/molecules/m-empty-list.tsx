@@ -6,6 +6,7 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { Image } from 'expo-image';
 import { capitalize } from '@/lib/utils/text';
 import { Fonts } from '@/lib/constants/theme';
+import { SURFACE } from '@/lib/constants/surface';
 import Button from '../atoms/a-button';
 
 type Props = {
@@ -18,15 +19,18 @@ const EmptyList: React.FC<Props> = ({ message, buttonTitle, onButtonPress }) => 
   const colors = useThemeColors();
 
   return (
-    <View className="items-center justify-center gap-6 p-8 py-20">
+    <View className="items-center justify-center gap-6 p-8 py-16">
       <View
-        className="rounded-3xl p-6"
-        style={{ backgroundColor: hexToRgba(colors.primary, 0.05) }}
+        className="rounded-full p-7"
+        style={{
+          backgroundColor: hexToRgba(colors.primary, 0.07),
+          boxShadow: SURFACE.glow,
+        }}
       >
         <Image
           style={{
-            width: 220,
-            height: 150,
+            width: 190,
+            height: 140,
             objectFit: 'contain',
           }}
           source={require('@/assets/images/empty-folder-3d.png')}
@@ -36,8 +40,9 @@ const EmptyList: React.FC<Props> = ({ message, buttonTitle, onButtonPress }) => 
         <ThemedText
           style={{
             color: colors.text,
-            fontFamily: Fonts.semibold,
+            fontFamily: Fonts.bold,
             fontSize: 18,
+            letterSpacing: -0.3,
             textAlign: 'center',
           }}
         >
@@ -47,19 +52,18 @@ const EmptyList: React.FC<Props> = ({ message, buttonTitle, onButtonPress }) => 
           style={{
             color: hexToRgba(colors.text, 0.5),
             fontFamily: Fonts.medium,
-            fontSize: 14,
+            fontSize: 13.5,
             textAlign: 'center',
-            paddingHorizontal: 20,
+            lineHeight: 20,
+            maxWidth: 280,
           }}
         >
-          It looks like there's nothing here at the moment. Check back later or try refreshing.
+          It looks like there’s nothing here at the moment. Check back later or try refreshing.
         </ThemedText>
       </View>
       {buttonTitle && onButtonPress && (
-        <Button onPress={onButtonPress} type="primary" className="mt-4 px-10 py-3.5">
-          <ThemedText style={{ fontFamily: Fonts.semibold, color: '#fff' }}>
-            {buttonTitle}
-          </ThemedText>
+        <Button onPress={onButtonPress} type="primary" className="mt-2 px-8">
+          <ThemedText content="primary">{buttonTitle}</ThemedText>
         </Button>
       )}
     </View>
