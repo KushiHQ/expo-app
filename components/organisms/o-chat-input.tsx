@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import { Send, Mic, Camera, Paperclip } from 'lucide-react-native';
 import { Fonts } from '@/lib/constants/theme';
 import * as DocumentPicker from 'expo-document-picker';
@@ -133,7 +134,6 @@ const ChatInput: React.FC<Props> = ({
           styles.container,
           {
             backgroundColor: colors.background,
-            borderColor: hexToRgba(colors.text, 0.1),
           },
         ]}
       >
@@ -156,7 +156,8 @@ const ChatInput: React.FC<Props> = ({
               style={[
                 styles.inputContainer,
                 {
-                  backgroundColor: colors['surface-01'],
+                  backgroundColor: hexToRgba(colors.text, 0.05),
+                  boxShadow: SURFACE.shadow,
                   height: inputHeight + 16,
                   paddingBottom: inputHeight > minHeight ? 8 : 0,
                 },
@@ -205,7 +206,8 @@ const ChatInput: React.FC<Props> = ({
               style={[
                 styles.sendButton,
                 {
-                  backgroundColor: hasMessage ? colors.primary : colors['surface-01'],
+                  backgroundColor: hasMessage ? colors.primary : hexToRgba(colors.text, 0.05),
+                  ...(hasMessage ? {} : { boxShadow: SURFACE.shadow }),
                 },
                 sendAnimatedStyle,
               ]}

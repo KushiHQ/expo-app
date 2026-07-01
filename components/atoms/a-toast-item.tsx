@@ -15,7 +15,6 @@ import Animated, {
 const TYPE = {
   success: {
     bg: 'rgba(4, 20, 11, 0.96)',
-    border: 'rgba(34, 197, 94, 0.28)',
     shadow: '#22C55E',
     icon: '#22C55E',
     iconBg: 'rgba(34, 197, 94, 0.13)',
@@ -23,7 +22,6 @@ const TYPE = {
   },
   error: {
     bg: 'rgba(22, 4, 4, 0.96)',
-    border: 'rgba(239, 68, 68, 0.28)',
     shadow: '#EF4444',
     icon: '#EF4444',
     iconBg: 'rgba(239, 68, 68, 0.13)',
@@ -31,7 +29,6 @@ const TYPE = {
   },
   info: {
     bg: 'rgba(4, 8, 26, 0.96)',
-    border: 'rgba(59, 130, 246, 0.28)',
     shadow: '#3B82F6',
     icon: '#3B82F6',
     iconBg: 'rgba(59, 130, 246, 0.13)',
@@ -92,7 +89,7 @@ export default function ToastItem({ toast, onDismiss }: Props) {
         {/* Glow halo */}
         <View style={[styles.glowWrap, { shadowColor: cfg.shadow }]}>
           {/* Toast surface */}
-          <View style={[styles.surface, { backgroundColor: cfg.bg, borderColor: cfg.border }]}>
+          <View style={[styles.surface, { backgroundColor: cfg.bg }]}>
             {/* Top-half glass highlight — simulates frosted reflection */}
             <View
               pointerEvents="none"
@@ -157,7 +154,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 20,
-    borderWidth: 1,
     minHeight: 62,
     overflow: 'hidden',
   },

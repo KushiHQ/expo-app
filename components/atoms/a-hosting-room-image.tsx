@@ -45,8 +45,7 @@ const HostingRoomImage: React.FC<Props> = ({
         width: 88,
         height: 88,
         borderRadius: 12,
-        borderWidth: isCover ? 2 : 0,
-        borderColor: isCover ? '#FFA500' : 'transparent',
+        boxShadow: isCover ? '0px 0px 0px 2px rgba(255,165,0,0.85), 0px 8px 22px -10px rgba(255,165,0,0.40)' : undefined,
       }}
     >
       <Pressable
@@ -56,7 +55,7 @@ const HostingRoomImage: React.FC<Props> = ({
         <Image
           source={{ uri: displayUri ?? src }}
           recyclingKey={src}
-          style={{ height: '100%', width: '100%', borderRadius: isCover ? 10 : 12 }}
+          style={{ height: '100%', width: '100%', borderRadius: 12 }}
           contentFit="cover"
           transition={400}
           placeholder={{ blurhash: PROPERTY_BLURHASH }}

@@ -149,8 +149,7 @@ export default function UserBookings() {
         {/* Tab bar */}
         <View
           onLayout={onTabBarLayout}
-          className="relative flex-row items-center border-b"
-          style={{ borderBottomColor: hexToRgba(colors.text, 0.05) }}
+          className="relative flex-row items-center"
         >
           {MAIN_TABS.map((tab, index) => (
             <TouchableOpacity

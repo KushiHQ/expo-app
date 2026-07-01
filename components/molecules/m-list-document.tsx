@@ -2,6 +2,7 @@ import { DocumentPickerAsset } from 'expo-document-picker';
 import { Download, X } from 'lucide-react-native';
 import React from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
+import { SURFACE } from '@/lib/constants/surface';
 import {
   FluentDocumentImage16Regular,
   FluentDocumentPdf32Filled,
@@ -90,7 +91,10 @@ const ListDocument: React.FC<Props> = ({
     <Pressable
       onPress={handleOpen}
       className="relative h-16 w-[150px] rounded-2xl p-2"
-      style={{ borderColor: hexToRgba(colors.text, 0.2), borderWidth: 1 }}
+      style={{
+        backgroundColor: hexToRgba(colors.text, 0.05),
+        boxShadow: SURFACE.shadow,
+      }}
     >
       <View className="relative flex-row items-center gap-2">
         <Icon size={30} color={colors.primary} />

@@ -239,7 +239,7 @@ export default function HostingOnboarding() {
         {/* A parent property isn't booked directly — applications belong to its
             units — so the booking-applications section is hidden for parents. */}
         {hosting?.kind !== HostingKind.Parent ? (
-          <View className="border-b py-4" style={{ borderColor: hexToRgba(colors.text, 0.15) }}>
+          <View className="py-4">
             <HostingFormOnboardingAction
               icon={FluentFormMultiple24Regular}
               color="accent"
@@ -266,7 +266,7 @@ export default function HostingOnboarding() {
         {/* Units — only for a parent property. Lists its child units; tap to
             manage one (drills into that unit's own onboarding). */}
         {hosting && hosting.kind === HostingKind.Parent ? (
-          <View className="border-b py-4" style={{ borderColor: hexToRgba(colors.text, 0.15) }}>
+          <View className="py-4">
             <ThemedText style={{ fontFamily: Fonts.bold, marginBottom: 10 }}>
               Units ({units.length})
             </ThemedText>

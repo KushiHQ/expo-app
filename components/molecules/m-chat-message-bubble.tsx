@@ -103,9 +103,9 @@ const ChatMessageBubble: React.FC<Props> = ({
             paddingHorizontal: 14,
             paddingVertical: 9,
             borderRadius: 20,
-            backgroundColor: isMissed ? hexToRgba(colors.error, 0.08) : colors['surface-01'],
-            borderWidth: 0.5,
-            borderColor: isMissed ? hexToRgba(colors.error, 0.25) : hexToRgba(colors.text, 0.12),
+            backgroundColor: isMissed
+              ? hexToRgba(colors.error, 0.08)
+              : hexToRgba(colors.text, 0.05),
           }}
         >
           <CallIcon size={15} color={tint} strokeWidth={2} />
@@ -215,8 +215,7 @@ const ChatMessageBubble: React.FC<Props> = ({
           {
             paddingHorizontal: 14,
             paddingVertical: 10,
-            backgroundColor: isSender ? colors.primary : colors['surface-01'],
-            ...(isSender ? {} : { borderWidth: 0.5, borderColor: hexToRgba(colors.text, 0.12) }),
+            backgroundColor: isSender ? colors.primary : hexToRgba(colors.text, 0.07),
           },
         ]}
       >

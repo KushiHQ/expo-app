@@ -3,6 +3,7 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Image } from 'expo-image';
 import { Pressable, View } from 'react-native';
+import { SURFACE } from '@/lib/constants/surface';
 import { VaadinPaintbrush } from '../icons/i-brush';
 import ThemedText from '../atoms/a-themed-text';
 import { SolarMedalStarBold } from '../icons/i-medal';
@@ -25,10 +26,10 @@ const UserProfileSummary: React.FC<Props> = ({ edit, onPressAvatar, avatarUri })
   return (
     <View className="min-w-[40px] flex-1 items-center gap-3">
       <Pressable
-        className="relative h-[78px] w-[78px] border-[2px]"
+        className="relative h-[78px] w-[78px]"
         style={{
           borderRadius: 999,
-          borderColor: hexToRgba(colors.text, 0.7),
+          boxShadow: SURFACE.shadow,
         }}
         onPress={edit ? onPressAvatar : undefined}
         disabled={!edit}

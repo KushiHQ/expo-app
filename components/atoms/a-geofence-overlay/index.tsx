@@ -33,14 +33,14 @@ function formatDistance(meters: number): string {
   return `${(meters / 1000).toFixed(1)}km`;
 }
 
-function getGeofenceColor(distance: number): { bg: string; border: string; text: string } {
+function getGeofenceColor(distance: number): { bg: string; text: string } {
   if (distance <= CLOSE_THRESHOLD) {
-    return { bg: 'rgba(34, 197, 94, 0.25)', border: 'rgba(34, 197, 94, 0.6)', text: '#22C55E' };
+    return { bg: 'rgba(34, 197, 94, 0.16)', text: '#22C55E' };
   }
   if (distance <= MEDIUM_THRESHOLD) {
-    return { bg: 'rgba(251, 191, 36, 0.25)', border: 'rgba(251, 191, 36, 0.6)', text: '#FBBF24' };
+    return { bg: 'rgba(251, 191, 36, 0.16)', text: '#FBBF24' };
   }
-  return { bg: 'rgba(239, 68, 68, 0.25)', border: 'rgba(239, 68, 68, 0.6)', text: '#EF4444' };
+  return { bg: 'rgba(239, 68, 68, 0.16)', text: '#EF4444' };
 }
 
 function getLabel(distance: number): string {
@@ -131,7 +131,7 @@ const GeofenceOverlay: React.FC<Props> = ({ hostingLatitude, hostingLongitude, v
 
   return (
     <View style={styles.container}>
-      <View style={styles.mapContainer}>
+      <View style={[styles.mapContainer, { boxShadow: '0px 10px 28px -16px rgba(0,0,0,0.42)' } as any]}>
         <MapView
           ref={mapRef}
           style={styles.map}
@@ -178,7 +178,6 @@ const GeofenceOverlay: React.FC<Props> = ({ hostingLatitude, hostingLongitude, v
             styles.distanceBadge,
             {
               backgroundColor: geofenceColor.bg,
-              borderColor: geofenceColor.border,
             },
           ]}
         >
@@ -216,8 +215,6 @@ const styles = StyleSheet.create({
     height: 110,
     borderRadius: 16,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
     backgroundColor: 'rgba(15, 23, 42, 0.85)',
   },
   map: {
@@ -261,8 +258,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
+    borderRadius: 999,
   },
   distanceDot: {
     width: 7,
@@ -289,10 +285,8 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: 999,
     backgroundColor: 'rgba(15, 23, 42, 0.75)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   searchingPulse: {
     width: 7,

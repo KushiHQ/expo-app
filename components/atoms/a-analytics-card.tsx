@@ -5,6 +5,7 @@ import ThemedText from "./a-themed-text";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
 import { Fonts } from "@/lib/constants/theme";
+import { SURFACE } from "@/lib/constants/surface";
 import { TablerCurrencyNaira } from "../icons/i-currency";
 import { LucideIcon, Info } from "lucide-react-native";
 import Tooltip from "./a-tooltip";
@@ -36,10 +37,8 @@ const AnalyticsCard: React.FC<Props> = ({
     <View
       style={{
         borderRadius: 14,
-        backgroundColor: colors.surface,
-        borderWidth: 1,
-        borderColor: hexToRgba(colors.text, 0.05),
-        elevation: 1,
+        backgroundColor: hexToRgba(colors.text, 0.05),
+        boxShadow: SURFACE.shadow,
       }}
       className={twMerge(
         "mb-2 flex-1 gap-4 p-5",

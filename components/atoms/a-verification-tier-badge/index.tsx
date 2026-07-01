@@ -2,8 +2,6 @@ import React from 'react';
 import { View } from 'react-native';
 import { Award, ShieldCheck as CheckBadge } from 'lucide-react-native';
 import ThemedText from './../a-themed-text';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { hexToRgba } from '@/lib/utils/colors';
 import { Fonts } from '@/lib/constants/theme';
 import { HostingVerificationTier } from '@/lib/services/graphql/generated';
 import { formatTierLabel } from '@/lib/utils/verification/tier';
@@ -16,8 +14,6 @@ type Props = {
 };
 
 const TierBadge: React.FC<Props> = ({ tier, size = 'md', tooltipDescription }) => {
-  const colors = useThemeColors();
-
   const isKushiVetted = tier === HostingVerificationTier.KushiVetted;
   const isUnverified = tier === HostingVerificationTier.Unverified;
 
@@ -28,12 +24,6 @@ const TierBadge: React.FC<Props> = ({ tier, size = 'md', tooltipDescription }) =
       : '#8AB4F8';
   const labelHex = isUnverified ? 'rgba(255, 255, 255, 0.75)' : '#FFFFFF';
   const containerBg = 'rgba(8, 8, 8, 0.9)';
-  const borderHex = isKushiVetted
-    ? 'rgba(255, 176, 32, 0.5)'
-    : isUnverified
-      ? 'rgba(255, 255, 255, 0.2)'
-      : hexToRgba(colors.secondary, 0.6);
-
   const paddingH = size === 'sm' ? 8 : 10;
   const paddingV = size === 'sm' ? 3 : 5;
   const iconSize = size === 'sm' ? 10 : 12;
@@ -46,8 +36,6 @@ const TierBadge: React.FC<Props> = ({ tier, size = 'md', tooltipDescription }) =
         paddingHorizontal: paddingH,
         paddingVertical: paddingV,
         backgroundColor: containerBg,
-        borderWidth: 1,
-        borderColor: borderHex,
       }}
       accessibilityLabel={`Verification tier: ${formatTierLabel(tier)}`}
     >

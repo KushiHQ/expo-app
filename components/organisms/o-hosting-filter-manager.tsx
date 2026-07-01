@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SURFACE } from "@/lib/constants/surface";
 import { LineiconsSearch1 } from "../icons/i-search";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
@@ -153,15 +154,9 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
             : "min-h-[56px] items-center py-2.5"
           }`}
         style={{
-          backgroundColor: isMapView ? colors.background : colors["surface-01"],
-          borderWidth: 1,
-          borderColor: hexToRgba(colors.text, 0.05),
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.04,
-          shadowRadius: 12,
-          elevation: 2,
-        }}
+          backgroundColor: isMapView ? colors.background : hexToRgba(colors.text, 0.05),
+          boxShadow: SURFACE.shadow,
+        } as any}
       >
         <View
           className="flex-1 flex-row gap-2"
@@ -270,26 +265,26 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
 
       {isInputFocused && searchInput.length > 5 && (
         <View
-          className="mt-2 overflow-hidden rounded-[20px] border shadow-lg"
+          className="mt-2 overflow-hidden rounded-[20px]"
           // In-flow (not absolute): an absolutely-positioned dropdown sitting
           // below the parent's box is invisible to touches on Android, so the
           // suggestions render but can't be tapped. Keeping it in normal flow
           // lets the container grow to contain it and stay tappable.
           style={{
-            backgroundColor: colors.background,
-            borderColor: hexToRgba(colors.text, 0.1),
+            backgroundColor: hexToRgba(colors.text, 0.05),
+            boxShadow: SURFACE.shadowHigh,
             maxHeight: 300,
             zIndex: 100,
             elevation: 12,
-          }}
+          } as any}
         >
           {fetching ? (
             <View className="items-center justify-center">
               {Array.from({ length: 3 }).map((_, index) => (
                 <View
                   key={index}
-                  className="flex-row items-center gap-4 border-b p-4"
-                  style={{ borderBottomColor: hexToRgba(colors.text, 0.05) }}
+                  className="flex-row items-center gap-4 p-4"
+                  style={{ borderBottomWidth: 1, borderBottomColor: hexToRgba(colors.text, 0.05) }}
                 >
                   <Skeleton
                     style={{ width: 38, height: 38, borderRadius: 12 }}
@@ -307,8 +302,8 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
                 <Pressable
                   key={idx}
                   onPress={() => handleSelectPrediction(prediction.filters)}
-                  className="flex-row items-center gap-4 border-b p-4"
-                  style={{ borderBottomColor: hexToRgba(colors.text, 0.05) }}
+                  className="flex-row items-center gap-4 p-4"
+                  style={{ borderBottomWidth: 1, borderBottomColor: hexToRgba(colors.text, 0.05) }}
                 >
                   <View
                     style={{

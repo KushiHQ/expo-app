@@ -61,7 +61,7 @@ export default function KycNIN() {
             className="border-t p-4"
             style={{
               backgroundColor: colors.background,
-              borderColor: hexToRgba(colors.text, 0.2),
+              borderColor: hexToRgba(colors.text, 0.045),
             }}
           >
             <Button

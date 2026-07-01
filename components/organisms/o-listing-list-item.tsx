@@ -13,6 +13,7 @@ import { useRouter } from '@/lib/hooks/use-router';
 import { HostingKind, HostListingsQuery, PublishStatus } from '@/lib/services/graphql/generated';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { SURFACE } from '@/lib/constants/surface';
 
 type Props = {
   hosting: HostListingsQuery['hostings'][number];
@@ -61,7 +62,7 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete }) => {
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         className="flex-row items-center gap-4 rounded-2xl p-3"
-        style={{ backgroundColor: colors['surface-01'] }}
+        style={{ backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any}
       >
         <View className="h-[80px] w-[100px] overflow-hidden rounded-xl">
           <Image

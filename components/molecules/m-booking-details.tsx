@@ -17,6 +17,8 @@ import { BookingQuery, BookingsQuery } from '@/lib/services/graphql/generated';
 import { calculateBookingDuration } from '@/lib/utils/time';
 import { getBookingStatus } from '@/lib/utils/bookings';
 import { capitalize } from '@/lib/utils/text';
+import { SURFACE } from '@/lib/constants/surface';
+import SoftDivider from '../atoms/a-soft-divider';
 
 type Props = {
   open: boolean;
@@ -71,10 +73,13 @@ const PrintableText: React.FC<PrintableProps> = ({ printing, children }) => {
 const BarcodeSection: React.FC<SubProps> = ({ booking, printing }) => {
   const colors = useThemeColors();
   return (
-    <View className="border-b pb-4" style={{ borderColor: hexToRgba(colors.text, 0.2) }}>
+    <View style={{ paddingBottom: 16 }}>
       <View
-        className="overflow-hidden rounded-[14px] border p-2"
-        style={{ borderColor: printing ? '#000000' : colors.text }}
+        className="overflow-hidden rounded-[14px] p-2"
+        style={{
+          backgroundColor: printing ? '#f5f5f5' : hexToRgba(colors.text, 0.05),
+          ...(printing ? {} : { boxShadow: SURFACE.shadow }),
+        }}
       >
         <ThemedBarcode
           width={400}
@@ -98,6 +103,7 @@ const BarcodeSection: React.FC<SubProps> = ({ booking, printing }) => {
           </View>
         </View>
       </View>
+      {!printing && <SoftDivider style={{ marginTop: 16 }} />}
     </View>
   );
 };
@@ -107,10 +113,11 @@ const DateAndDurationSection: React.FC<SubProps> = ({ booking, printing }) => {
 
   return (
     <View
+      className="mt-4 gap-4 rounded-xl p-4"
       style={{
-        borderColor: hexToRgba(printing ? '#000000' : colors.text, 0.2),
+        backgroundColor: printing ? '#f5f5f5' : hexToRgba(colors.text, 0.05),
+        ...(printing ? {} : { boxShadow: SURFACE.shadow }),
       }}
-      className="mt-4 gap-4 rounded-xl border p-4"
     >
       <View className="flex-row items-center justify-between">
         <PrintableLabel printing={printing}>Date</PrintableLabel>
@@ -125,9 +132,9 @@ const DateAndDurationSection: React.FC<SubProps> = ({ booking, printing }) => {
           {new Date(booking.expiryDate ?? '').toLocaleDateString()}
         </PrintableText>
         <ThemedText
-          className="rounded border px-2"
+          className="rounded-full px-2"
           style={{
-            borderColor: hexToRgba(printing ? '#000000' : colors.text, 0.2),
+            backgroundColor: hexToRgba(printing ? '#000000' : colors.text, 0.06),
             fontSize: 13,
             color: hexToRgba(printing ? '#000000' : colors.text, 0.6),
           }}
@@ -144,19 +151,19 @@ const FeesSection: React.FC<SubProps> = ({ booking, printing }) => {
   const total = Number(booking.amount ?? '0') + Number(booking.guestServiceCharge ?? '0');
   return (
     <View
+      className="mt-4 gap-4 rounded-xl p-4"
       style={{
-        borderColor: hexToRgba(printing ? '#000000' : colors.text, 0.2),
+        backgroundColor: printing ? '#f5f5f5' : hexToRgba(colors.text, 0.05),
+        ...(printing ? {} : { boxShadow: SURFACE.shadow }),
       }}
-      className="mt-4 gap-4 rounded-xl border p-4"
     >
       {booking.feeLineItems?.map((item, index) => (
-        <View
-          key={item.key}
-          className="flex-row items-center justify-between border-b pb-4"
-          style={{ borderColor: hexToRgba(printing ? '#000000' : colors.text, 0.1) }}
-        >
-          <PrintableLabel printing={printing}>{item.label}</PrintableLabel>
-          <PrintableText printing={printing}>₦{Number(item.amount).toLocaleString()}</PrintableText>
+        <View key={item.key} style={{ gap: 8 }}>
+          <View className="flex-row items-center justify-between">
+            <PrintableLabel printing={printing}>{item.label}</PrintableLabel>
+            <PrintableText printing={printing}>₦{Number(item.amount).toLocaleString()}</PrintableText>
+          </View>
+          {!printing && <SoftDivider />}
         </View>
       ))}
       <View className="flex-row items-center justify-between">

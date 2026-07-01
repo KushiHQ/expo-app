@@ -20,26 +20,21 @@ const TextPill: React.FC<Props> = ({ icon, children, selected, onSelect }) => {
 
   return (
     <Pressable
-      className="flex-row items-center gap-2.5 rounded-2xl px-5 py-2.5"
+      className="flex-row items-center gap-2.5 rounded-full px-5 py-2.5"
       style={{
-        backgroundColor: selected ? colors.primary : colors['surface-01'],
-        borderWidth: 1,
-        borderColor: selected ? colors.primary : hexToRgba(colors.text, 0.05),
-        shadowColor: selected ? colors.primary : '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: selected ? 0.2 : 0,
-        shadowRadius: 8,
-        elevation: selected ? 4 : 0,
+        backgroundColor: selected
+          ? hexToRgba(colors.primary, 0.14)
+          : hexToRgba(colors.text, 0.05),
       }}
       onPress={() => onSelect?.(children)}
     >
-      {Icon && <Icon size={16} color={selected ? '#fff' : hexToRgba(colors.text, 0.7)} />}
+      {Icon && <Icon size={16} color={selected ? colors.primary : hexToRgba(colors.text, 0.7)} />}
       <ThemedText
         className="whitespace-nowrap"
         style={{
           fontSize: 13,
           fontFamily: selected ? Fonts.semibold : Fonts.medium,
-          color: selected ? '#fff' : hexToRgba(colors.text, 0.8),
+          color: selected ? colors.primary : hexToRgba(colors.text, 0.8),
         }}
       >
         {capitalize(children.replaceAll('_', ' '))}

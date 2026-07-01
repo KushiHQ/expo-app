@@ -15,10 +15,12 @@ const RatingPill: React.FC<Props> = ({ children, selected, onSelect }) => {
 
   return (
     <Pressable
-      className="flex-row items-center gap-2 rounded-full border p-1 px-3"
+      className="flex-row items-center gap-2 rounded-full p-1 px-3"
       onPress={() => onSelect?.(children)}
       style={{
-        borderColor: selected ? hexToRgba(colors['accent'], 0.6) : hexToRgba(colors['text'], 0.2),
+        backgroundColor: selected
+          ? hexToRgba(colors.primary, 0.14)
+          : hexToRgba(colors.text, 0.05),
       }}
     >
       <HugeiconsStar

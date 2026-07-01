@@ -235,7 +235,7 @@ const SignaturePad: React.FC<Props> = ({ onSave, existingUrl, uploading }) => {
           <SafeAreaView style={[styles.modalRoot, { backgroundColor: colors.background }]}>
             <StatusBar barStyle="light-content" />
 
-            <View style={[styles.modalHeader, { borderBottomColor: hexToRgba(colors.text, 0.08) }]}>
+            <View style={styles.modalHeader}>
               <TouchableOpacity onPress={() => setModalOpen(false)} hitSlop={12}>
                 <Text style={[styles.cancelText, { color: hexToRgba(colors.text, 0.5) }]}>
                   Cancel
@@ -333,7 +333,6 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 12,
     backgroundColor: '#ffffff',
-    borderWidth: 1,
     overflow: 'hidden',
   },
   retakeBtn: {
@@ -381,7 +380,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 14,
-    borderBottomWidth: 1,
   },
   cancelText: {
     fontFamily: Fonts.regular,

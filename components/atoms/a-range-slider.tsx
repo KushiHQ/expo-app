@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput } from 'react-native';
 import Slider from 'rn-range-slider';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 
 const formatValue = (value: number, currencySymbol: string): string => {
   if (value >= 1_000_000) {
@@ -127,7 +128,7 @@ const RangeSlider: FC<RangeSliderProps> = ({
 
       {withInput && (
         <View style={styles.inputsContainer}>
-          <View style={[styles.inputWrapper, { borderColor: hexToRgba(colors.text, 0.2) }]}>
+          <View style={[styles.inputWrapper, { backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any]}>
             <Text style={{ color: hexToRgba(colors.text, 0.6) }}>Min</Text>
             <View style={styles.inputInner}>
               <Text style={{ color: colors.text }}>{currencySymbol}</Text>
@@ -143,7 +144,7 @@ const RangeSlider: FC<RangeSliderProps> = ({
 
           <View style={[styles.dash, { backgroundColor: hexToRgba(colors.text, 0.5) }]} />
 
-          <View style={[styles.inputWrapper, { borderColor: hexToRgba(colors.text, 0.2) }]}>
+          <View style={[styles.inputWrapper, { backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any]}>
             <Text style={{ color: hexToRgba(colors.text, 0.6) }}>Max</Text>
             <View style={styles.inputInner}>
               <Text style={{ color: colors.text }}>{currencySymbol}</Text>
@@ -211,7 +212,6 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     flex: 1,
-    borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,

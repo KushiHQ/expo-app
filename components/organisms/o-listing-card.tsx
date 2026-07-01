@@ -13,6 +13,7 @@ import { IconParkOutlineDot } from '../icons/i-circle';
 import { HostingKind, HostListingsQuery, PublishStatus } from '@/lib/services/graphql/generated';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { SURFACE } from '@/lib/constants/surface';
 
 type Props = {
   hosting: HostListingsQuery['hostings'][number];
@@ -57,7 +58,7 @@ const ListingCard: React.FC<Props> = ({ hosting, onDelete }) => {
   return (
     <Animated.View style={[animatedStyle, { gap: 8 }]}>
       <Pressable onPress={handlePress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
-        <View className="gap-4 rounded-2xl p-4" style={{ backgroundColor: colors['surface-01'] }}>
+        <View className="gap-4 rounded-2xl p-4" style={{ backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any}>
           <View>
             <View className="flex-row items-start justify-between">
               <ThemedText

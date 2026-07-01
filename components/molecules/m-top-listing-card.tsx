@@ -9,6 +9,7 @@ import { hexToRgba } from '@/lib/utils/colors';
 import { MynauiStarSolid } from '../icons/i-star';
 import { HostAnalyticsQuery, HostingQuery } from '@/lib/services/graphql/generated';
 import { capitalize } from '@/lib/utils/text';
+import { SURFACE } from '@/lib/constants/surface';
 
 type Props = {
   hosting: HostAnalyticsQuery['hostAnalytics']['topListing'] | HostingQuery['hosting'];
@@ -20,13 +21,15 @@ const TopListingCard: React.FC<Props> = ({ hosting, onPress }) => {
 
   return (
     <Pressable
-      className="flex-row items-center gap-4 rounded-xl border p-2"
-      style={{ borderColor: hexToRgba(colors.text, 0.1) }}
+      className="flex-row items-center gap-4 rounded-xl p-2"
+      style={{
+        backgroundColor: hexToRgba(colors.text, 0.05),
+        boxShadow: SURFACE.shadow,
+      }}
       onPress={onPress}
     >
       <View
-        className="h-[90px] w-[107px] overflow-hidden rounded-xl border"
-        style={{ borderColor: colors.text }}
+        className="h-[90px] w-[107px] overflow-hidden rounded-xl"
       >
         <Image
           source={{

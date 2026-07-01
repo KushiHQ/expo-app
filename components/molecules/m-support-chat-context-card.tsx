@@ -10,6 +10,7 @@ import { Fonts } from '@/lib/constants/theme';
 import { useRouter } from '@/lib/hooks/use-router';
 import { SupportChatQuery, SupportItemType } from '@/lib/services/graphql/generated';
 import { capitalize } from '@/lib/utils/text';
+import { SURFACE } from '@/lib/constants/surface';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -194,16 +195,11 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
       onPressIn={() => (scale.value = withSpring(0.98))}
       onPressOut={() => (scale.value = withSpring(1))}
       onPress={canNavigate ? handlePress : undefined}
-      className="flex-row gap-4 rounded-2xl border p-3"
+      className="flex-row gap-4 rounded-2xl p-3"
       style={[
         {
-          backgroundColor: colors['surface-01'],
-          borderColor: hexToRgba(colors.text, 0.08),
-          shadowColor: colors.text,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.05,
-          shadowRadius: 10,
-          elevation: 2,
+          backgroundColor: hexToRgba(colors.text, 0.05),
+          boxShadow: SURFACE.shadow,
         },
         animatedStyle,
       ]}

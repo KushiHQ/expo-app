@@ -149,9 +149,7 @@ const FilePicker: React.FC<Props> = ({
       style={{
         padding: 12,
         borderRadius: 12,
-        borderWidth: 1,
-        borderColor: value ? colors.primary : hexToRgba(colors.text, 0.1),
-        backgroundColor: value ? hexToRgba(colors.primary, 0.08) : hexToRgba(colors.text, 0.04),
+        backgroundColor: value ? hexToRgba(colors.primary, 0.08) : hexToRgba(colors.text, 0.05),
       }}
     >
       <View className="flex-row items-center justify-between">

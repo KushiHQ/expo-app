@@ -1,5 +1,6 @@
 import { PROPERTY_BLURHASH } from '@/lib/constants/images';
 import { Fonts } from '@/lib/constants/theme';
+import { SURFACE } from '@/lib/constants/surface';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Image } from 'expo-image';
@@ -9,6 +10,7 @@ import { View } from 'react-native';
 import ThemedText from './a-themed-text';
 
 type Props = {
+  /** @deprecated no longer applied; kept for call-site compat */
   borderColor?: string;
   contentFit?: 'cover' | 'contain';
   name?: string | null;
@@ -18,7 +20,8 @@ type Props = {
 };
 
 const BankLogo: React.FC<Props> = ({
-  borderColor,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  borderColor: _borderColor,
   contentFit = 'contain',
   name,
   rounded = 999,
@@ -39,10 +42,9 @@ const BankLogo: React.FC<Props> = ({
     <View
       style={{
         alignItems: 'center',
-        backgroundColor: colors.background,
-        borderColor: borderColor ?? hexToRgba(colors.primary, 0.5),
+        backgroundColor: hexToRgba(colors.text, 0.05),
         borderRadius: rounded,
-        borderWidth: 1,
+        boxShadow: SURFACE.shadow,
         height: size,
         justifyContent: 'center',
         overflow: 'hidden',

@@ -19,10 +19,8 @@ const Chip: React.FC<Props> = ({ label, count }) => {
         gap: 5,
         paddingHorizontal: 11,
         paddingVertical: 6,
-        borderRadius: 20,
-        backgroundColor: hexToRgba(colors.primary, 0.08),
-        borderWidth: 1,
-        borderColor: hexToRgba(colors.primary, 0.15),
+        borderRadius: 999,
+        backgroundColor: hexToRgba(colors.primary, 0.14),
       }}
     >
       <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.82) }}>{label}</ThemedText>

@@ -8,8 +8,6 @@ const SummarySection: React.FC<{ children?: React.ReactNode }> = ({ children }) 
     <View
       className="gap-2 rounded-xl p-3"
       style={{
-        borderWidth: 2,
-        borderColor: hexToRgba(colors.primary, 0.08),
         backgroundColor: hexToRgba(colors.primary, 0.08),
       }}
     >

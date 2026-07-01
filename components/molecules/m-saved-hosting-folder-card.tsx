@@ -2,7 +2,8 @@ import moment from 'moment';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import ThemedView from '../atoms/a-themed-view';
 import { hexToRgba } from '@/lib/utils/colors';
-import { Alert, Platform, Pressable, View } from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
+import { SURFACE } from '@/lib/constants/surface';
 import { HugeiconsFolder03 } from '../icons/i-files';
 import ThemedText from '../atoms/a-themed-text';
 import { Fonts } from '@/lib/constants/theme';
@@ -69,22 +70,9 @@ const SavedHostingFolderCard: React.FC<Props> = ({ folder, onDelete }) => {
         style={{
           gap: 16,
           borderRadius: 20,
-          borderWidth: 1,
-          borderColor: hexToRgba(colors.primary, 0.12),
           padding: 18,
-          backgroundColor: colors['surface-01'],
-          ...Platform.select({
-            ios: {
-              shadowColor: colors.primary,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.08,
-              shadowRadius: 12,
-            },
-            android: {
-              elevation: 6,
-              shadowColor: hexToRgba(colors.primary, 0.15),
-            },
-          }),
+          backgroundColor: hexToRgba(colors.text, 0.05),
+          boxShadow: SURFACE.shadow,
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>

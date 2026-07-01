@@ -1,5 +1,6 @@
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import React from 'react';
 import { TextInput, TextInputProps, View } from 'react-native';
 
@@ -7,11 +8,10 @@ const TextArea: React.FC<TextInputProps> = (props) => {
   const colors = useThemeColors();
   return (
     <View
-      className="h-32 rounded-xl border p-2 pt-0"
+      className="h-32 rounded-xl p-2 pt-0"
       style={{
-        borderColor: hexToRgba(colors['text'], 0.15),
-        borderWidth: 1.5,
-        backgroundColor: hexToRgba(colors['text'], 0.055),
+        backgroundColor: hexToRgba(colors['text'], 0.05),
+        boxShadow: SURFACE.shadow,
       }}
     >
       <TextInput

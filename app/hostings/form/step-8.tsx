@@ -153,11 +153,9 @@ export default function NewHostingStep8() {
           {uploadsInFlight && !isLive ? (
             <View
               style={{
-                borderRadius: 12,
+                borderRadius: 14,
                 padding: 12,
-                backgroundColor: hexToRgba(colors.primary, 0.08),
-                borderWidth: 1,
-                borderColor: hexToRgba(colors.primary, 0.2),
+                backgroundColor: hexToRgba(colors.primary, 0.1),
               }}
             >
               <ThemedText
@@ -410,7 +408,7 @@ export default function NewHostingStep8() {
                 }}
               >
                 Verification requests are managed separately. After publishing,
-                head to the "Get Verified" card on the onboarding hub to upload
+                head to the “Get Verified” card on the onboarding hub to upload
                 documents and request a higher tier.
               </ThemedText>
             </View>
@@ -422,9 +420,7 @@ export default function NewHostingStep8() {
               gap: 12,
               padding: 16,
               borderRadius: 14,
-              backgroundColor: hexToRgba(colors.text, 0.03),
-              borderWidth: 1,
-              borderColor: hexToRgba(colors.text, 0.07),
+              backgroundColor: hexToRgba(colors.text, 0.05),
             }}
           >
             <CheckboxInput

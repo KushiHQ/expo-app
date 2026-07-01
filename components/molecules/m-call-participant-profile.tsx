@@ -8,6 +8,7 @@ import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
 import { PROPERTY_BLURHASH } from '@/lib/constants/images';
 import { Fonts } from '@/lib/constants/theme';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 
 type Props = {
   withDuration?: boolean;
@@ -20,10 +21,10 @@ const CallParticipantProfile: React.FC<Props> = ({ callData, withDuration }) => 
   return (
     <View className="flex-1 items-center justify-center gap-4 pb-28">
       <View
-        className="h-[160px] w-[160px] border-[6px]"
+        className="h-[160px] w-[160px]"
         style={{
           borderRadius: 999,
-          borderColor: colors.primary,
+          boxShadow: SURFACE.glow,
         }}
       >
         <Image

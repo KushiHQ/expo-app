@@ -149,8 +149,8 @@ const PhoneNumberSelectInput: React.FC<Props> = ({ defaultValue, onSelect }) => 
               }}
               phoneInputStyles={{
                 container: {
-                  backgroundColor: colors.background,
-                  borderColor: hexToRgba(colors.text, 0.2),
+                  backgroundColor: hexToRgba(colors.text, 0.05),
+                  borderWidth: 0,
                 },
                 flagContainer: { backgroundColor: colors.background },
                 callingCode: { color: colors.text },

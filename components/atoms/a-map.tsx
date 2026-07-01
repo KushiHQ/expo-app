@@ -161,8 +161,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
   },
   userLocationDot: {
     width: 12,

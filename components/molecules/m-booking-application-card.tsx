@@ -12,6 +12,7 @@ import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
 import { BookingApplication } from '@/lib/services/graphql/generated';
 import { Fonts } from '@/lib/constants/theme';
 import { MapPin, ChevronRight } from 'lucide-react-native';
+import { SURFACE } from '@/lib/constants/surface';
 
 type Props = {
   host?: boolean;
@@ -47,10 +48,9 @@ const BookingApplicationCard: React.FC<Props> = ({ application, host }) => {
       activeOpacity={0.75}
       style={{
         borderRadius: 16,
-        backgroundColor: colors['surface-01'],
+        backgroundColor: hexToRgba(colors.text, 0.05),
         overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: hexToRgba(colors.text, 0.06),
+        boxShadow: SURFACE.shadow,
       }}
     >
       {/* Cover image */}
@@ -68,17 +68,10 @@ const BookingApplicationCard: React.FC<Props> = ({ application, host }) => {
             position: 'absolute',
             top: 10,
             right: 10,
-            backgroundColor: hexToRgba(colors['surface-01'], 0.8),
-            borderRadius: 20,
+            backgroundColor: hexToRgba(statusColor, 0.18),
+            borderRadius: 999,
             paddingHorizontal: 10,
             paddingVertical: 4,
-            borderWidth: 1,
-            borderColor: hexToRgba(statusColor, 0.6),
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.3,
-            shadowRadius: 3,
-            elevation: 4,
           }}
         >
           <ThemedText

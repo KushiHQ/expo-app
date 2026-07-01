@@ -13,6 +13,8 @@ import { BookingsQuery } from '@/lib/services/graphql/generated';
 import { capitalize } from '@/lib/utils/text';
 import { getBookingStatus } from '@/lib/utils/bookings';
 import { useRouter } from '@/lib/hooks/use-router';
+import { SURFACE } from '@/lib/constants/surface';
+import SoftDivider from '../atoms/a-soft-divider';
 
 type Props = {
   booking: BookingsQuery['bookings'][number];
@@ -27,15 +29,18 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
 
   return (
     <>
-      <View className="gap-4 border-b pb-4" style={{ borderColor: hexToRgba(colors.text, 0.15) }}>
+      <View className="gap-4 pb-4">
+        <SoftDivider style={{ marginBottom: 4 }} />
         <Pressable
           onPress={() => router.push(`/bookings/${booking.id}`)}
-          className="flex-row items-center gap-4 rounded-xl border p-2"
-          style={{ borderColor: hexToRgba(colors.text, 0.15) }}
+          className="flex-row items-center gap-4 rounded-xl p-2"
+          style={{
+            backgroundColor: hexToRgba(colors.text, 0.05),
+            boxShadow: SURFACE.shadow,
+          }}
         >
           <View
-            className="h-[90px] w-[107px] overflow-hidden rounded-xl border"
-            style={{ borderColor: colors.text }}
+            className="h-[90px] w-[107px] overflow-hidden rounded-xl"
           >
             <Image
               source={{

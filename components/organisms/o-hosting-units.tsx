@@ -9,6 +9,7 @@ import { hexToRgba } from "@/lib/utils/colors";
 import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { useRouter } from "@/lib/hooks/use-router";
 import { capitalize } from "@/lib/utils/text";
+import { SURFACE } from "@/lib/constants/surface";
 import {
   HostingKind,
   HostingQuery,
@@ -57,7 +58,7 @@ const HostingUnits: React.FC<Props> = ({ hosting, isHost }) => {
               key={unit.id}
               onPress={() => router.push(`/hostings/${unit.id}`)}
               className="flex-row items-center gap-3 rounded-2xl p-3"
-              style={{ backgroundColor: hexToRgba(colors.text, 0.03) }}
+              style={{ backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any}
             >
               <Image
                 source={{ uri: unit.coverImage?.asset?.publicUrl }}
@@ -65,7 +66,7 @@ const HostingUnits: React.FC<Props> = ({ hosting, isHost }) => {
                   width: 64,
                   height: 64,
                   borderRadius: 12,
-                  backgroundColor: colors["surface-01"],
+                  backgroundColor: hexToRgba(colors.text, 0.05),
                 }}
                 contentFit="cover"
                 transition={300}
