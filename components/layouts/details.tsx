@@ -33,7 +33,14 @@ import { Fonts } from '@/lib/constants/theme';
 
 import * as Haptics from 'expo-haptics';
 import { Support } from '../icons/i-support';
-import { useInitiateSupportChatMutation, SupportItemType } from '@/lib/services/graphql/generated';
+import {
+  useInitiateSupportChatMutation,
+  SupportItemType,
+  useCreateOrUpdateHostingMutation,
+} from '@/lib/services/graphql/generated';
+import { useActiveFormHosingStore } from '@/lib/stores/hostings';
+import { removeTypenames } from '@/lib/utils/graphql/cleanup';
+import { handleError } from '@/lib/utils/error';
 
 type Props = {
   children?: React.ReactNode;
@@ -102,6 +109,8 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
     const { id, transactionId } = useLocalSearchParams();
     const { user } = useUser();
     const [initiateSupportChatResult, initiateSupportChat] = useInitiateSupportChatMutation();
+    const [, saveHosting] = useCreateOrUpdateHostingMutation();
+    const [doneSaving, setDoneSaving] = React.useState(false);
 
     // Track when safe area insets have been measured to avoid layout jumps.
     // On first render insets.bottom is 0, then transitions to the real value (e.g. 34px).
@@ -154,9 +163,23 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
     // onboarding hub and drops the step history — so a host who jumped in to edit
     // a single step can exit cleanly instead of backing through every step.
     const isFormStep = path.includes('/hostings/form/step');
-    const handleDone = () => {
+    const handleDone = async () => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       const target = `/hostings/form/onboarding${id ? `?id=${id}` : ''}` as Href;
+      // Persist the in-progress edits before leaving — users click Done
+      // expecting a save. Read the live form input straight from the store
+      // (no subscription) so this stays cheap on non-form screens.
+      const input = useActiveFormHosingStore.getState().input;
+      if (input && Object.keys(input).length > 0) {
+        setDoneSaving(true);
+        const res = await saveHosting({ input: removeTypenames(input) as typeof input });
+        setDoneSaving(false);
+        if (res.error) {
+          // Don't leave silently on a failed save — surface it and stay put.
+          handleError(res.error);
+          return;
+        }
+      }
       router.dismissTo(target);
     };
 
@@ -286,10 +309,12 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                 {isFormStep && (
                   <Pressable
                     onPress={handleDone}
+                    disabled={doneSaving}
                     aria-label="Done editing"
                     hitSlop={12}
-                    className="h-11 items-center justify-center px-1"
+                    className="h-11 flex-row items-center justify-center gap-1.5 px-1"
                   >
+                    {doneSaving && <ActivityIndicator size="small" color={colors.primary} />}
                     <ThemedText
                       style={{
                         fontSize: 15,
@@ -297,7 +322,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                         color: colors.primary,
                       }}
                     >
-                      Done
+                      {doneSaving ? 'Saving…' : 'Done'}
                     </ThemedText>
                   </Pressable>
                 )}
