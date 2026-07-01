@@ -93,7 +93,7 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
               chat.recipientUser.profile?.image?.publicUrl ??
               getDefaultProfileImageUrl(chat.recipientUser.profile.fullName ?? ''),
           }}
-          style={{ height: 56, width: 56, borderRadius: 28 }}
+          style={{ height: 48, width: 48, borderRadius: 24 }}
           contentFit="cover"
           transition={300}
           placeholder={{ blurhash: PROPERTY_BLURHASH }}
@@ -105,11 +105,11 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
               position: 'absolute',
               bottom: 0,
               right: 0,
-              width: 15,
-              height: 15,
-              borderRadius: 8,
+              width: 13,
+              height: 13,
+              borderRadius: 7,
               backgroundColor: colors.success,
-              borderWidth: 3,
+              borderWidth: 2.5,
               borderColor: colors.background,
             }}
           />
