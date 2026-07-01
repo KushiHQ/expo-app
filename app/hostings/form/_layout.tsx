@@ -15,7 +15,6 @@ export default function Layout() {
       <Stack.Screen name="step-5" options={{ headerShown: false }} />
       <Stack.Screen name="step-6" options={{ headerShown: false }} />
       <Stack.Screen name="step-7" options={{ headerShown: false }} />
-      <Stack.Screen name="step-7-video" options={{ headerShown: false }} />
       <Stack.Screen name="step-8" options={{ headerShown: false }} />
       <Stack.Screen name="verification" options={{ headerShown: false }} />
     </Stack>
