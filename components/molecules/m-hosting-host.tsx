@@ -5,10 +5,10 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import ThemedText from '../atoms/a-themed-text';
-import { CuidaBuildingOutline } from '../icons/i-home';
 import { TablerMessage2 } from '../icons/i-message';
 import { SolarPhoneOutline } from '../icons/i-phone';
 import { Fonts } from '@/lib/constants/theme';
+import { SURFACE } from '@/lib/constants/surface';
 import { HostingQuery, useInitiateHostingChatMutation } from '@/lib/services/graphql/generated';
 import moment from 'moment';
 import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
@@ -69,38 +69,47 @@ const HostingHost: React.FC<Props> = ({ hosting, isHost = false }) => {
       <View
         className="gap-4 pb-8"
       >
-        <ThemedText className="mt-4" style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
+        <ThemedText
+          className="mt-4"
+          style={{ fontFamily: Fonts.bold, fontSize: 17, letterSpacing: -0.3 }}
+        >
           Host
         </ThemedText>
         <View
-          className="gap-4 overflow-hidden rounded-xl p-6"
+          className="gap-4 overflow-hidden rounded-3xl p-5"
           style={{
             backgroundColor: hexToRgba(colors.text, 0.05),
+            boxShadow: SURFACE.shadow,
           }}
         >
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-2">
-              <View
-                className="h-8 w-8 overflow-hidden rounded-full"
-              >
-                <Image
-                  style={{
-                    height: '100%',
-                    width: '100%',
-                    objectFit: 'cover',
-                  }}
-                  source={{
-                    uri:
-                      hosting?.host.user.profile?.image?.publicUrl ??
-                      getDefaultProfileImageUrl(hosting?.host.user.profile.fullName ?? ''),
-                  }}
-                />
-              </View>
-              <ThemedText>{hosting?.host.user.profile.fullName}</ThemedText>
+          <View className="flex-row items-center gap-3">
+            <View className="h-11 w-11 overflow-hidden rounded-full">
+              <Image
+                style={{
+                  height: '100%',
+                  width: '100%',
+                  objectFit: 'cover',
+                }}
+                source={{
+                  uri:
+                    hosting?.host.user.profile?.image?.publicUrl ??
+                    getDefaultProfileImageUrl(hosting?.host.user.profile.fullName ?? ''),
+                }}
+              />
             </View>
-            <View className="flex-row items-center gap-2">
-              <CuidaBuildingOutline color={colors.accent} />
-              <ThemedText>{moment(hosting?.host.createdAt).fromNow()}</ThemedText>
+            <View className="gap-0.5">
+              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 15 }}>
+                {hosting?.host.user.profile.fullName}
+              </ThemedText>
+              <ThemedText
+                style={{
+                  fontSize: 12,
+                  color: hexToRgba(colors.text, 0.5),
+                  fontFamily: Fonts.medium,
+                }}
+              >
+                Joined {moment(hosting?.host.createdAt).fromNow()}
+              </ThemedText>
             </View>
           </View>
           {!isHost && (
@@ -126,8 +135,10 @@ const HostingHost: React.FC<Props> = ({ hosting, isHost = false }) => {
                   messageAnimatedStyle,
                 ]}
               >
-                <TablerMessage2 size={22} color="#fff" strokeWidth={2} />
-                <ThemedText style={{ color: '#fff', fontFamily: Fonts.semibold, fontSize: 16 }}>
+                <TablerMessage2 size={22} color={colors['primary-content']} strokeWidth={2} />
+                <ThemedText
+                  style={{ color: colors['primary-content'], fontFamily: Fonts.semibold, fontSize: 16 }}
+                >
                   Message
                 </ThemedText>
               </AnimatedPressable>

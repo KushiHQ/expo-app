@@ -248,32 +248,44 @@ export default function HostingDetails() {
 					<HostingDetailsSkeleton />
 				) : (
 					<>
-						<View
-							style={{ height: isTablet ? 420 : 300, boxShadow: SURFACE.shadow }}
-							className="overflow-hidden rounded-3xl"
-						>
-							<Carousel autoplay style={{ height: "100%", width: "100%" }}>
-								{(hosting?.rooms.map((r) => r.images).flat() ?? []).map(
-									(img, index) => (
-										<Image
-											source={{
-												uri: img.asset?.id
-													? getAssetResizeUrl(img.asset.id, 1280, 960)
-													: img.asset?.publicUrl,
-											}}
-											style={{ height: "100%", width: "100%" }}
-											contentFit="cover"
-											transition={300}
-											placeholder={{ blurhash: PROPERTY_BLURHASH }}
-											placeholderContentFit="cover"
-											cachePolicy="memory-disk"
-											priority="high"
-											recyclingKey={img.id}
-											key={index}
-										/>
-									),
-								)}
-							</Carousel>
+						<View style={{ height: isTablet ? 420 : 300 }} className="relative">
+							<View
+								style={{ boxShadow: SURFACE.shadow }}
+								className="h-full w-full overflow-hidden rounded-3xl"
+							>
+								<Carousel autoplay style={{ height: "100%", width: "100%" }}>
+									{(hosting?.rooms.map((r) => r.images).flat() ?? []).map(
+										(img, index) => (
+											<Image
+												source={{
+													uri: img.asset?.id
+														? getAssetResizeUrl(img.asset.id, 1280, 960)
+														: img.asset?.publicUrl,
+												}}
+												style={{ height: "100%", width: "100%" }}
+												contentFit="cover"
+												transition={300}
+												placeholder={{ blurhash: PROPERTY_BLURHASH }}
+												placeholderContentFit="cover"
+												cachePolicy="memory-disk"
+												priority="high"
+												recyclingKey={img.id}
+												key={index}
+											/>
+										),
+									)}
+								</Carousel>
+							</View>
+							{/* Verification tier badge sits over the carousel (outside the
+								clipped wrapper so its tooltip isn't cut off). */}
+							{hosting?.verification?.verificationTier && (
+								<View className="absolute left-4 top-4">
+									<AVerificationTierBadge
+										tier={hosting.verification.verificationTier}
+										tooltipDescription={hosting.verification.tierTooltip ?? undefined}
+									/>
+								</View>
+							)}
 						</View>
 						<View className="mt-8">
 							<View className="gap-1.5">
@@ -293,16 +305,6 @@ export default function HostingDetails() {
 										/>
 									)}
 								</View>
-								{hosting?.verification?.verificationTier && (
-									<View className="mt-2">
-										<AVerificationTierBadge
-											tier={hosting.verification.verificationTier}
-											tooltipDescription={
-												hosting.verification.tierTooltip ?? undefined
-											}
-										/>
-									</View>
-								)}
 								{isHost &&
 									hosting &&
 									!hosting.verification?.verificationTier && (
@@ -357,8 +359,22 @@ export default function HostingDetails() {
 										{[hosting?.city, hosting?.state].filter(Boolean).join(", ")}
 									</ThemedText>
 								</View>
-								<View className="mt-2 flex-row">
+								<View className="mt-2 flex-row items-center justify-between gap-3">
 									<ListingTypeBadge listingType={hosting?.listingType} />
+									<View
+										className="flex-row items-center gap-1.5 rounded-full px-2.5 py-1"
+										style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
+									>
+										<MynauiStarSolid size={13} color={colors.primary} />
+										<ThemedText style={{ fontSize: 13, fontFamily: Fonts.semibold }}>
+											{Number(hosting?.averageRating ?? "0").toFixed(1)}
+										</ThemedText>
+										<ThemedText
+											style={{ fontSize: 12, color: hexToRgba(colors.text, 0.45) }}
+										>
+											({Number(hosting?.totalRatings ?? "0")} reviews)
+										</ThemedText>
+									</View>
 								</View>
 								{hosting?.parentId ? (
 									<Pressable
@@ -385,18 +401,6 @@ export default function HostingDetails() {
 										</ThemedText>
 									</Pressable>
 								) : null}
-								<View
-									className="mt-2 flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-1"
-									style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
-								>
-									<MynauiStarSolid size={13} color={colors.primary} />
-									<ThemedText style={{ fontSize: 13, fontFamily: Fonts.semibold }}>
-										{Number(hosting?.averageRating ?? "0").toFixed(1)}
-									</ThemedText>
-									<ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.45) }}>
-										({Number(hosting?.totalRatings ?? "0")} reviews)
-									</ThemedText>
-								</View>
 							</View>
 							<View className="mt-8 pb-8">
 								<ThemedText

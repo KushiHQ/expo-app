@@ -151,7 +151,13 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 					</View>
 				</View>
 
-				<View className="gap-2 px-0.5">
+				<View
+					className="gap-2 rounded-3xl p-4"
+					style={{
+						backgroundColor: hexToRgba(colors.text, 0.05),
+						boxShadow: SURFACE.shadow,
+					}}
+				>
 					<View className="flex-row items-start justify-between gap-3">
 						<ThemedText
 							numberOfLines={1}
@@ -249,7 +255,10 @@ export const HostingCardSkeleton = () => {
 	return (
 		<View className="gap-3.5">
 			<Skeleton style={{ height: 300, borderRadius: 24 }} />
-			<View className="gap-2 px-0.5">
+			<View
+				className="gap-2 rounded-3xl p-4"
+				style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+			>
 				<View className="flex-row items-center justify-between">
 					<Skeleton style={{ height: 18, width: "55%", borderRadius: 6 }} />
 					<Skeleton style={{ height: 18, width: "22%", borderRadius: 6 }} />
