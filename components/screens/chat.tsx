@@ -61,25 +61,29 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
       onPress={() => router.push(`/chats/${chat.id}/`)}
       style={[
         {
-          backgroundColor: hexToRgba(colors.text, 0.05),
+          // Unread rows get a real warm FILL tint (renders regardless of
+          // shadow support); read rows stay neutral. Glow is a bonus on top.
+          backgroundColor: unread
+            ? hexToRgba(colors.primary, 0.08)
+            : hexToRgba(colors.text, 0.05),
           borderRadius: 22,
           marginBottom: 12,
           padding: 16,
           flexDirection: 'row',
           gap: 14,
           alignItems: 'center',
-          boxShadow: SURFACE.shadow,
+          boxShadow: unread ? SURFACE.glow : SURFACE.shadow,
         },
         animatedStyle,
       ]}
     >
-      {/* Avatar — an unread thread gets a warm glow ring instead of tinting
-          the whole card, a cleaner brand-led cue. */}
+      {/* Avatar — unread threads get a soft amber ring (a filled halo, so it
+          shows even without box-shadow) + a glow as a bonus. */}
       <View
         style={{
-          width: 58,
-          height: 58,
-          borderRadius: 29,
+          padding: unread ? 2.5 : 0,
+          borderRadius: 32,
+          backgroundColor: unread ? hexToRgba(colors.primary, 0.4) : 'transparent',
           boxShadow: unread ? SURFACE.glow : undefined,
         }}
       >
@@ -89,7 +93,7 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
               chat.recipientUser.profile?.image?.publicUrl ??
               getDefaultProfileImageUrl(chat.recipientUser.profile.fullName ?? ''),
           }}
-          style={{ height: 58, width: 58, borderRadius: 29 }}
+          style={{ height: 56, width: 56, borderRadius: 28 }}
           contentFit="cover"
           transition={300}
           placeholder={{ blurhash: PROPERTY_BLURHASH }}
@@ -99,14 +103,14 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
           <View
             style={{
               position: 'absolute',
-              bottom: 1,
-              right: 1,
-              width: 14,
-              height: 14,
-              borderRadius: 7,
+              bottom: 0,
+              right: 0,
+              width: 15,
+              height: 15,
+              borderRadius: 8,
               backgroundColor: colors.success,
-              borderWidth: 2.5,
-              borderColor: colors.surface,
+              borderWidth: 3,
+              borderColor: colors.background,
             }}
           />
         )}
