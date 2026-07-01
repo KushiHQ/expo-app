@@ -10,7 +10,7 @@ const common = {
   primary: '#F59E0B', // Lux Amber (Logo Primary)
   'primary-01': '#FEF3C7',
   'primary-04': '#FCD34D',
-  'primary-content': '#fff',
+  'primary-content': '#0A0A0A', // Dark ink on amber — crisp, high-contrast CTA (soft/cloudy spec)
   secondary: '#1E3A8A', // Deep Sapphire (Logo Blue)
   shade: '#0F172A', // Deep Navy Shade
   'shade-content': '#fff',
