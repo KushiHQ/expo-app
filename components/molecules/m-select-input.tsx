@@ -320,17 +320,15 @@ export const SelectOption: React.FC<SelectOptionType & SelectionDetails> = ({
       </View>
       <View
         style={{
-          width: 22,
-          height: 22,
-          borderRadius: 11,
-          borderWidth: 1.5,
-          borderColor: selected ? colors.primary : hexToRgba(colors.text, 0.3),
-          backgroundColor: selected ? colors.primary : 'transparent',
+          width: 24,
+          height: 24,
+          borderRadius: 12,
+          backgroundColor: selected ? colors.primary : hexToRgba(colors.text, 0.08),
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        {selected && <Check size={12} color={colors.background} strokeWidth={3} />}
+        {selected && <Check size={13} color={colors['primary-content']} strokeWidth={3} />}
       </View>
     </View>
   );

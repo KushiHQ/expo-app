@@ -10,8 +10,8 @@ import {
   ViewStyle,
 } from 'react-native';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import ThemedText from '../atoms/a-themed-text';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import { X } from 'lucide-react-native';
 
 type ModalSize = 'small' | 'medium' | 'large' | 'full';
@@ -67,7 +67,7 @@ const ThemedModal: React.FC<Props> = ({
         <Pressable style={styles.backdrop} onPress={onClose}>
           <View
             style={{
-              backgroundColor: hexToRgba(colors.text, 0.2),
+              backgroundColor: hexToRgba('#000000', 0.55),
               ...StyleSheet.absoluteFillObject,
             }}
           />
@@ -78,31 +78,19 @@ const ThemedModal: React.FC<Props> = ({
             styles.modalContent,
             {
               backgroundColor: colors.background,
+              boxShadow: SURFACE.shadowHigh,
               ...getSizeStyles(),
-              ...Platform.select({
-                ios: {
-                  shadowColor: colors.primary,
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 12,
-                },
-                android: {
-                  elevation: 8,
-                },
-              }),
             },
           ]}
         >
           {showCloseButton && (
             <Pressable
               onPress={onClose}
-              style={{ backgroundColor: hexToRgba(colors.text, 0.15) }}
-              className="absolute right-4 top-4 z-10 h-6 w-6 items-center justify-center rounded-full"
+              style={{ backgroundColor: hexToRgba(colors.text, 0.08) }}
+              className="absolute right-4 top-4 z-10 h-9 w-9 items-center justify-center rounded-full"
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <ThemedText style={{ fontSize: 24 }}>
-                <X color={colors.text} size={18} />
-              </ThemedText>
+              <X color={colors.text} size={18} />
             </Pressable>
           )}
 
@@ -129,11 +117,11 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   modalContent: {
-    borderRadius: 16,
+    borderRadius: 24,
     overflow: 'hidden',
   },
   bodyContent: {
-    padding: 20,
+    padding: 24,
   },
 });
 

@@ -104,7 +104,7 @@ const BottomSheet: FC<BottomSheetProps> = ({ scrollable = true, isVisible, onClo
 
   const rBackdropStyle = useAnimatedStyle(() => {
     return {
-      opacity: interpolate(translateY.value, [0, sheetHeight.value], [0.2, 0], Extrapolation.CLAMP),
+      opacity: interpolate(translateY.value, [0, sheetHeight.value], [0.55, 0], Extrapolation.CLAMP),
     };
   });
 
@@ -115,7 +115,7 @@ const BottomSheet: FC<BottomSheetProps> = ({ scrollable = true, isVisible, onClo
       <View style={StyleSheet.absoluteFill}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
           <Animated.View
-            style={[StyleSheet.absoluteFill, { backgroundColor: colors.text }, rBackdropStyle]}
+            style={[StyleSheet.absoluteFill, { backgroundColor: '#000000' }, rBackdropStyle]}
           />
         </Pressable>
 
@@ -160,8 +160,8 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'absolute',
     bottom: 0,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     zIndex: 1000,
   },
   handleContainer: {
