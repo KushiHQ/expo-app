@@ -10,10 +10,10 @@ export const SURFACE = {
    * the top edge (light catching the surface) plus a soft grounding shadow.
    */
   shadow:
-    "0px 12px 30px -14px rgba(0,0,0,0.55), inset 0px 1px 0px rgba(255,255,255,0.06)",
+    "0px 12px 30px -14px rgba(0,0,0,0.20), inset 0px 1px 0px rgba(255,255,255,0.06)",
   /** Stronger elevation for sheets / hero cards. */
   shadowHigh:
-    "0px 20px 44px -16px rgba(0,0,0,0.68), inset 0px 1px 0px rgba(255,255,255,0.08)",
+    "0px 20px 44px -16px rgba(0,0,0,0.30), inset 0px 1px 0px rgba(255,255,255,0.08)",
   /** Warm glow for selected/active surfaces and primary CTAs. */
   glow: "0px 8px 22px -10px rgba(255,165,0,0.30)",
   /** Stronger warm glow for the primary CTA button. */
