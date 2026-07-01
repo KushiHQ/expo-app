@@ -1,5 +1,19 @@
 import { gql } from 'urql';
 
+export const PROPERTY_TYPES = gql`
+  query PropertyTypes {
+    propertyTypes {
+      value
+      label
+      searchTerms
+      rooms
+      facilities
+      category
+      icon
+    }
+  }
+`;
+
 export const AI_HOSTING_CHAT_PREDICTIONS = gql`
   query AiHostingSearchPredictions($userInput: String!) {
     aiHostingSearchPredictions(userInput: $userInput) {

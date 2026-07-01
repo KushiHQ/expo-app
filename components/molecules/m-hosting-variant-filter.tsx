@@ -1,10 +1,10 @@
 import { ScrollView, View } from 'react-native';
 import TextPill from './m-text-pill-pill';
-import { PROPERTY_TYPE } from '@/lib/types/enums/hostings';
 import React from 'react';
 import { PROPERTY_TYPE_ICONS } from '@/lib/types/enums/hosting-icons';
 import { Home } from 'lucide-react-native';
 import { cast } from '@/lib/types/utils';
+import { usePropertyTypeConfig } from '@/lib/hooks/use-property-type-config';
 
 type Props = {
   value?: string;
@@ -12,6 +12,8 @@ type Props = {
 };
 
 export const HotingVariantFilter: React.FC<Props> = ({ onSelect, value = 'All' }) => {
+  const { propertyTypes } = usePropertyTypeConfig();
+
   const handleSelect = (variant: string) => {
     onSelect?.(variant);
   };
@@ -19,7 +21,7 @@ export const HotingVariantFilter: React.FC<Props> = ({ onSelect, value = 'All' }
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
       <View className="my-1 flex-row gap-2">
-        {['All', ...PROPERTY_TYPE].map((item, index) => {
+        {['All', ...propertyTypes.map((p) => p.value)].map((item, index) => {
           const Icon = PROPERTY_TYPE_ICONS[cast<keyof typeof PROPERTY_TYPE_ICONS>(item)] ?? Home;
           return (
             <TextPill icon={Icon} selected={value === item} onSelect={handleSelect} key={index}>

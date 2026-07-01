@@ -4232,6 +4232,11 @@ export type HostingVerificationTierQueryVariables = Exact<{
 
 export type HostingVerificationTierQuery = { __typename?: 'Query', hostingVerificationTier?: { __typename?: 'AdminVerificationTier', id: string, tier: string, description: string, color: string, price?: any | null, documentRequirements: Array<{ __typename?: 'AdminVerificationTierDocumentRequirement', title: string, description: string }> } | null };
 
+export type PropertyTypesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type PropertyTypesQuery = { __typename?: 'Query', propertyTypes: Array<{ __typename?: 'PropertyTypeConfig', value: string, label: string, searchTerms: Array<string>, rooms: Array<string>, facilities: Array<string>, category?: string | null, icon?: string | null }> };
+
 export type AiHostingSearchPredictionsQueryVariables = Exact<{
   userInput: Scalars['String']['input'];
 }>;
@@ -6636,6 +6641,23 @@ export const HostingVerificationTierDocument = gql`
 
 export function useHostingVerificationTierQuery(options: Omit<Urql.UseQueryArgs<HostingVerificationTierQueryVariables>, 'query'>) {
   return Urql.useQuery<HostingVerificationTierQuery, HostingVerificationTierQueryVariables>({ query: HostingVerificationTierDocument, ...options });
+};
+export const PropertyTypesDocument = gql`
+    query PropertyTypes {
+  propertyTypes {
+    value
+    label
+    searchTerms
+    rooms
+    facilities
+    category
+    icon
+  }
+}
+    `;
+
+export function usePropertyTypesQuery(options?: Omit<Urql.UseQueryArgs<PropertyTypesQueryVariables>, 'query'>) {
+  return Urql.useQuery<PropertyTypesQuery, PropertyTypesQueryVariables>({ query: PropertyTypesDocument, ...options });
 };
 export const AiHostingSearchPredictionsDocument = gql`
     query AiHostingSearchPredictions($userInput: String!) {
