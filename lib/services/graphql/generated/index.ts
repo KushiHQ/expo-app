@@ -4345,6 +4345,7 @@ export type TenancyAgreementTemplateQuery = { __typename?: 'Query', tenancyAgree
 export type HostingQueryVariables = Exact<{
   hostingId: Scalars['String']['input'];
   pagination?: InputMaybe<PaginationInput>;
+  childrenOnSale?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
 
 
@@ -6828,7 +6829,7 @@ export function useTenancyAgreementTemplateQuery(options?: Omit<Urql.UseQueryArg
   return Urql.useQuery<TenancyAgreementTemplateQuery, TenancyAgreementTemplateQueryVariables>({ query: TenancyAgreementTemplateDocument, ...options });
 };
 export const HostingDocument = gql`
-    query Hosting($hostingId: String!, $pagination: PaginationInput) {
+    query Hosting($hostingId: String!, $pagination: PaginationInput, $childrenOnSale: Boolean) {
   hosting(hostingId: $hostingId) {
     id
     kind
@@ -6840,7 +6841,7 @@ export const HostingDocument = gql`
       id
       title
     }
-    children(onSale: true) {
+    children(onSale: $childrenOnSale) {
       id
       kind
       parentId

@@ -46,7 +46,7 @@ export default function HostingDetails() {
 	const { id } = useLocalSearchParams();
 	const [_, initiateChat] = useInitiateHostingChatMutation();
 	const [{ data, error, fetching }] = useHostingQuery({
-		variables: { hostingId: cast(id) },
+		variables: { hostingId: cast(id), childrenOnSale: true },
 		requestPolicy: "cache-and-network",
 	});
 	const colors = useThemeColors();
@@ -141,9 +141,8 @@ export default function HostingDetails() {
 								textAlign: "center",
 							}}
 						>
-							{hosting.childCount}{" "}
-							{hosting.childCount === 1 ? "unit" : "units"} available — choose
-							one above to apply.
+							{hosting.childCount} {hosting.childCount === 1 ? "unit" : "units"}{" "}
+							available — choose one above to apply.
 						</ThemedText>
 					</View>
 				) : hosting?.listingType === ListingType.Sale ? (
@@ -260,7 +259,13 @@ export default function HostingDetails() {
 											<Image
 												source={{
 													uri: img.asset?.id
-														? getAssetResizeUrl(img.asset.id, 1280, 960, 85, img.asset.lastUpdated)
+														? getAssetResizeUrl(
+															img.asset.id,
+															1280,
+															960,
+															85,
+															img.asset.lastUpdated,
+														)
 														: img.asset?.publicUrl,
 												}}
 												style={{ height: "100%", width: "100%" }}
@@ -283,7 +288,9 @@ export default function HostingDetails() {
 								<View className="absolute left-4 top-4">
 									<AVerificationTierBadge
 										tier={hosting.verification.verificationTier}
-										tooltipDescription={hosting.verification.tierTooltip ?? undefined}
+										tooltipDescription={
+											hosting.verification.tierTooltip ?? undefined
+										}
 									/>
 								</View>
 							)}
@@ -295,7 +302,11 @@ export default function HostingDetails() {
 										numberOfLines={2}
 										ellipsizeMode="tail"
 										className="max-w-[82%]"
-										style={{ fontSize: 22, fontFamily: Fonts.bold, lineHeight: 28 }}
+										style={{
+											fontSize: 22,
+											fontFamily: Fonts.bold,
+											lineHeight: 28,
+										}}
 									>
 										{hosting?.title}
 									</ThemedText>
@@ -367,11 +378,16 @@ export default function HostingDetails() {
 										style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
 									>
 										<MynauiStarSolid size={13} color={colors.primary} />
-										<ThemedText style={{ fontSize: 13, fontFamily: Fonts.semibold }}>
+										<ThemedText
+											style={{ fontSize: 13, fontFamily: Fonts.semibold }}
+										>
 											{Number(hosting?.averageRating ?? "0").toFixed(1)}
 										</ThemedText>
 										<ThemedText
-											style={{ fontSize: 12, color: hexToRgba(colors.text, 0.45) }}
+											style={{
+												fontSize: 12,
+												color: hexToRgba(colors.text, 0.45),
+											}}
 										>
 											({Number(hosting?.totalRatings ?? "0")} reviews)
 										</ThemedText>
@@ -379,9 +395,7 @@ export default function HostingDetails() {
 								</View>
 								{hosting?.parentId ? (
 									<Pressable
-										onPress={() =>
-											router.push(`/hostings/${hosting.parentId}`)
-										}
+										onPress={() => router.push(`/hostings/${hosting.parentId}`)}
 										style={{
 											marginTop: 8,
 											alignSelf: "flex-start",

@@ -1,4 +1,4 @@
-import { gql } from 'urql';
+import { gql } from "urql";
 
 export const PROPERTY_TYPES = gql`
   query PropertyTypes {
@@ -74,7 +74,7 @@ export const TENANCY_AGREEMENT_TEMPLATE = gql`
 `;
 
 export const HOSTING_QUERY = gql`
-  query Hosting($hostingId: String!, $pagination: PaginationInput) {
+  query Hosting($hostingId: String!, $pagination: PaginationInput, $childrenOnSale: Boolean) {
     hosting(hostingId: $hostingId) {
       id
       kind
@@ -86,7 +86,7 @@ export const HOSTING_QUERY = gql`
         id
         title
       }
-      children(onSale: true) {
+      children(onSale: $childrenOnSale) {
         id
         kind
         parentId
