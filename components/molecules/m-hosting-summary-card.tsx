@@ -6,6 +6,7 @@ import ThemedText from '../atoms/a-themed-text';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { Fonts } from '@/lib/constants/theme';
 import { hexToRgba } from '@/lib/utils/colors';
+import { joinLocation } from '@/lib/utils/locations';
 import { SURFACE } from '@/lib/constants/surface';
 import { MynauiStarSolid } from '../icons/i-star';
 import { MapPin } from 'lucide-react-native';
@@ -60,7 +61,7 @@ const HostingSummaryCard: React.FC<Props> = ({ hosting }) => {
               fontFamily: Fonts.medium,
             }}
           >
-            {hosting.city}, {hosting.state}
+            {joinLocation(hosting.city, hosting.state)}
           </ThemedText>
         </View>
         <View
@@ -68,9 +69,7 @@ const HostingSummaryCard: React.FC<Props> = ({ hosting }) => {
           style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
         >
           <MynauiStarSolid color={colors.primary} size={12} />
-          <ThemedText
-            style={{ fontSize: 12, fontFamily: Fonts.semibold, color: colors.text }}
-          >
+          <ThemedText style={{ fontSize: 12, fontFamily: Fonts.semibold, color: colors.text }}>
             {Number(hosting.averageRating ?? '0').toFixed(1)}
           </ThemedText>
           <ThemedText

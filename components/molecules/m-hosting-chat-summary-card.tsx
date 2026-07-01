@@ -7,6 +7,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 import { MapPin } from 'lucide-react-native';
 import ThemedText from '../atoms/a-themed-text';
 import { hexToRgba } from '@/lib/utils/colors';
+import { joinLocation } from '@/lib/utils/locations';
 import { Fonts } from '@/lib/constants/theme';
 import { useRouter } from '@/lib/hooks/use-router';
 import { HostingChatQuery } from '@/lib/services/graphql/generated';
@@ -78,7 +79,7 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
                 fontFamily: Fonts.medium,
               }}
             >
-              {hosting?.city}, {hosting?.state}
+              {joinLocation(hosting?.city, hosting?.state)}
             </ThemedText>
           </View>
         </View>

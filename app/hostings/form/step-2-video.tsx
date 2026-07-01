@@ -5,9 +5,10 @@ import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo
 import * as Location from 'expo-location';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Video, X, RotateCcw } from 'lucide-react-native';
+import { Video, X, RotateCcw, Upload } from 'lucide-react-native';
 import DetailsLayout from '@/components/layouts/details';
 import VideoCard from '@/components/molecules/m-video-card';
 import HostingStepper from '@/components/molecules/m-hosting-stepper';
@@ -48,6 +49,10 @@ export default function HostingVideoStep() {
   const [isRecording, setIsRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [uploading, setUploading] = useState(false);
+  // Whether the pending video came from the library (vs recorded on-device), and
+  // its content type — an uploaded clip may be .mov/.mp4/etc.
+  const [isPicked, setIsPicked] = useState(false);
+  const [pickedContentType, setPickedContentType] = useState<string | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const durationRef = useRef(0);
@@ -98,6 +103,8 @@ export default function HostingVideoStep() {
     setIsRecording(true);
     setElapsed(0);
     durationRef.current = 0;
+    setIsPicked(false);
+    setPickedContentType(null);
     gpsStartRef.current = null;
     gpsEndRef.current = null;
     void sampleGps(gpsStartRef);
@@ -141,7 +148,11 @@ export default function HostingVideoStep() {
     if (!permission?.granted) {
       const r = await requestPermission();
       if (!r.granted) {
-        toast.show({ type: 'error', text1: 'Camera needed', text2: 'Allow camera access to record.' });
+        toast.show({
+          type: 'error',
+          text1: 'Camera needed',
+          text2: 'Allow camera access to record.',
+        });
         return;
       }
     }
@@ -149,6 +160,34 @@ export default function HostingVideoStep() {
     setElapsed(0);
     setRecorderOpen(true);
   }, [permission, micPermission, requestPermission, requestMicPermission]);
+
+  // Upload an existing walkthrough (e.g. a professionally-shot tour) instead of
+  // recording. Geofencing isn't enforced for walkthroughs — it's a showcase asset.
+  const pickVideo = useCallback(async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      toast.show({
+        type: 'error',
+        text1: 'Permission needed',
+        text2: 'Allow photo library access to upload a video.',
+      });
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['videos'],
+      quality: 1,
+    });
+    if (result.canceled || !result.assets?.length) return;
+
+    const asset = result.assets[0];
+    gpsStartRef.current = null;
+    gpsEndRef.current = null;
+    durationRef.current = asset.duration ? Math.round(asset.duration / 1000) : 1;
+    setPickedContentType(asset.mimeType ?? null);
+    setIsPicked(true);
+    setRecordedUri(asset.uri);
+  }, []);
 
   const handleContinue = useCallback(async () => {
     // No new local recording — keep whatever's saved (or nothing) and move on.
@@ -158,16 +197,20 @@ export default function HostingVideoStep() {
     }
     setUploading(true);
     try {
-      const contentType = recordedUri.toLowerCase().endsWith('.mov')
-        ? 'video/quicktime'
-        : 'video/mp4';
+      const contentType =
+        pickedContentType ??
+        (recordedUri.toLowerCase().endsWith('.mov') ? 'video/quicktime' : 'video/mp4');
 
       const target = await createUploadUrl({ hostingId, contentType });
       const t = target.data?.createHostingVideoUploadUrl;
       if (target.error || !t) {
         if (target.error) handleError(target.error);
         else
-          toast.show({ type: 'error', text1: "Couldn't start the upload", text2: 'Please try again.' });
+          toast.show({
+            type: 'error',
+            text1: "Couldn't start the upload",
+            text2: 'Please try again.',
+          });
         setUploading(false);
         return;
       }
@@ -187,7 +230,7 @@ export default function HostingVideoStep() {
         input: {
           hostingId,
           durationSeconds: durationRef.current || 1,
-          geofenceStatus: gpsStart ? 'captured' : 'no_gps',
+          geofenceStatus: isPicked ? 'uploaded' : gpsStart ? 'captured' : 'no_gps',
           gpsSamples: samples.length ? JSON.stringify(samples) : undefined,
           gpsStartLat: gpsStart?.latitude,
           gpsStartLng: gpsStart?.longitude,
@@ -213,7 +256,15 @@ export default function HostingVideoStep() {
       });
       setUploading(false);
     }
-  }, [recordedUri, hostingId, createUploadUrl, setHostingVideo, goNext]);
+  }, [
+    recordedUri,
+    hostingId,
+    isPicked,
+    pickedContentType,
+    createUploadUrl,
+    setHostingVideo,
+    goNext,
+  ]);
 
   return (
     <>
@@ -239,15 +290,25 @@ export default function HostingVideoStep() {
                 />
                 <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.5) }}>
                   {recordedUri
-                    ? 'New recording — tap Continue to save it.'
+                    ? isPicked
+                      ? 'Selected video — tap Continue to save it.'
+                      : 'New recording — tap Continue to save it.'
                     : `Saved walkthrough${existingDuration ? ` · ${fmt(existingDuration)}` : ''}`}
                 </ThemedText>
-                <Button type="shade" onPress={openRecorder} disabled={uploading}>
-                  <View className="flex-row items-center justify-center gap-2">
-                    <RotateCcw color={colors.text} size={18} />
-                    <ThemedText content="shade">Record a new video</ThemedText>
-                  </View>
-                </Button>
+                <View style={{ gap: 10 }}>
+                  <Button type="shade" onPress={openRecorder} disabled={uploading}>
+                    <View className="flex-row items-center justify-center gap-2">
+                      <RotateCcw color={colors.text} size={18} />
+                      <ThemedText content="shade">Record a new video</ThemedText>
+                    </View>
+                  </Button>
+                  <Button type="tinted" onPress={pickVideo} disabled={uploading}>
+                    <View className="flex-row items-center justify-center gap-2">
+                      <Upload color={colors.primary} size={18} />
+                      <ThemedText content="tinted">Upload a video</ThemedText>
+                    </View>
+                  </Button>
+                </View>
               </View>
             ) : (
               <View style={{ gap: 14, alignItems: 'center', paddingVertical: 18 }}>
@@ -266,11 +327,17 @@ export default function HostingVideoStep() {
                 <ThemedText
                   style={{ fontSize: 13, color: hexToRgba(colors.text, 0.6), textAlign: 'center' }}
                 >
-                  Show guests around — exterior, living areas, and rooms. You can skip this and add it
-                  later.
+                  Show guests around — exterior, living areas, and rooms. You can skip this and add
+                  it later.
                 </ThemedText>
                 <Button type="primary" onPress={openRecorder} className="w-full">
                   <ThemedText content="primary">Record video</ThemedText>
+                </Button>
+                <Button type="tinted" onPress={pickVideo} className="w-full">
+                  <View className="flex-row items-center justify-center gap-2">
+                    <Upload color={colors.primary} size={18} />
+                    <ThemedText content="tinted">Upload a video</ThemedText>
+                  </View>
                 </Button>
               </View>
             )}

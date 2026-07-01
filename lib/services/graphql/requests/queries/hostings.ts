@@ -413,6 +413,7 @@ export const HOST_LISTINGS_QUERY = gql`
         }
       }
       title
+      description
       state
       city
       listingType

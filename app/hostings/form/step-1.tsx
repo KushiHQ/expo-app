@@ -1,29 +1,25 @@
-import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
-import DetailsLayout from "@/components/layouts/details";
-import HostingStepper from "@/components/molecules/m-hosting-stepper";
-import SectionCard from "@/components/molecules/m-section-card";
-import SelectInput, {
-  SelectOption,
-} from "@/components/molecules/m-select-input";
-import AiContentSuggestion from "@/components/molecules/m-ai-content-suggestion";
-import ThemedText from "@/components/atoms/a-themed-text";
-import { useHostingForm } from "@/lib/hooks/hosting-form";
-import { usePropertyTypeConfig } from "@/lib/hooks/use-property-type-config";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { useUser } from "@/lib/hooks/user";
-import {
-  HostingKind,
-  ListingType,
-  useHostListingsQuery,
-} from "@/lib/services/graphql/generated";
-import { hexToRgba } from "@/lib/utils/colors";
-import { cast } from "@/lib/types/utils";
-import { handleError } from "@/lib/utils/error";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { AlignLeft, Building2 } from "lucide-react-native";
-import React, { useRef } from "react";
-import { RefreshControl, TextInput, View } from "react-native";
-import { toast } from "@/lib/hooks/use-toast";
+import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
+import DetailsLayout from '@/components/layouts/details';
+import HostingStepper from '@/components/molecules/m-hosting-stepper';
+import SectionCard from '@/components/molecules/m-section-card';
+import SelectInput, { SelectOption } from '@/components/molecules/m-select-input';
+import AiContentSuggestion from '@/components/molecules/m-ai-content-suggestion';
+import { ParentListingOption } from '@/components/molecules/m-parent-listing-option';
+import ThemedText from '@/components/atoms/a-themed-text';
+import { useHostingForm } from '@/lib/hooks/hosting-form';
+import { usePropertyTypeConfig } from '@/lib/hooks/use-property-type-config';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { useUser } from '@/lib/hooks/user';
+import { HostingKind, ListingType, useHostListingsQuery } from '@/lib/services/graphql/generated';
+import { hexToRgba } from '@/lib/utils/colors';
+import { joinLocation } from '@/lib/utils/locations';
+import { cast } from '@/lib/types/utils';
+import { handleError } from '@/lib/utils/error';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { AlignLeft, Building2 } from 'lucide-react-native';
+import React, { useRef } from 'react';
+import { RefreshControl, TextInput, View } from 'react-native';
+import { toast } from '@/lib/hooks/use-toast';
 
 export default function NewHostingStep1() {
   const router = useRouter();
@@ -44,18 +40,15 @@ export default function NewHostingStep1() {
 
   // Parent / child kind. Seed from the input, else the fetched hosting, else standalone.
   const currentKind =
-    (input.kind as HostingKind | undefined) ??
-    hosting?.kind ??
-    HostingKind.Standalone;
+    (input.kind as HostingKind | undefined) ?? hosting?.kind ?? HostingKind.Standalone;
   const currentParentId = input.parentId ?? hosting?.parentId ?? null;
   // A plaza that already has shops can't change kind (server enforces this too).
-  const kindLocked =
-    hosting?.kind === HostingKind.Parent && (hosting?.childCount ?? 0) > 0;
+  const kindLocked = hosting?.kind === HostingKind.Parent && (hosting?.childCount ?? 0) > 0;
 
   const KIND_OPTIONS = [
-    { label: "Standalone listing", value: HostingKind.Standalone },
-    { label: "Parent (a multi-unit property)", value: HostingKind.Parent },
-    { label: "Child (a unit within a property)", value: HostingKind.Child },
+    { label: 'Standalone listing', value: HostingKind.Standalone },
+    { label: 'Parent (a multi-unit property)', value: HostingKind.Parent },
+    { label: 'Child (a unit within a property)', value: HostingKind.Child },
   ];
 
   // Eligible parents = the host's own Parent/Standalone listings (not this one).
@@ -65,7 +58,13 @@ export default function NewHostingStep1() {
   });
   const parentOptions = (parentListings?.hostings ?? [])
     .filter((h) => h.kind !== HostingKind.Child && h.id !== id)
-    .map((h) => ({ label: h.title ?? "Untitled listing", value: h.id }));
+    .map((h) => ({
+      label: h.title ?? 'Untitled listing',
+      value: h.id,
+      image: h.coverImage?.asset.publicUrl ?? null,
+      location: joinLocation(h.city, h.state),
+      description: h.description ?? null,
+    }));
 
   const [refreshing, setRefreshing] = React.useState(false);
   React.useEffect(() => {
@@ -78,12 +77,10 @@ export default function NewHostingStep1() {
         handleError(res.error);
       }
       if (res.data?.createOrUpdateHosting) {
-        router.replace(
-          `/hostings/form/step-2?id=${res.data?.createOrUpdateHosting.data?.id}`,
-        );
+        router.replace(`/hostings/form/step-2?id=${res.data?.createOrUpdateHosting.data?.id}`);
         toast.show({
-          type: "success",
-          text1: "Success",
+          type: 'success',
+          text1: 'Success',
           text2: res.data.createOrUpdateHosting.message,
         });
       }
@@ -126,7 +123,7 @@ export default function NewHostingStep1() {
           subtitle="Title, property type, and listing style"
         >
           <View
-            pointerEvents={kindLocked ? "none" : "auto"}
+            pointerEvents={kindLocked ? 'none' : 'auto'}
             style={kindLocked ? { opacity: 0.55 } : undefined}
           >
             <SelectInput
@@ -135,8 +132,7 @@ export default function NewHostingStep1() {
               placeholder="Standalone listing"
               defaultValue={{
                 label:
-                  KIND_OPTIONS.find((o) => o.value === currentKind)?.label ??
-                  "Standalone listing",
+                  KIND_OPTIONS.find((o) => o.value === currentKind)?.label ?? 'Standalone listing',
                 value: currentKind,
               }}
               options={KIND_OPTIONS}
@@ -144,8 +140,7 @@ export default function NewHostingStep1() {
                 updateInput({
                   kind: v.value,
                   // clear the parent unless this is (still) a child
-                  parentId:
-                    v.value === HostingKind.Child ? currentParentId : null,
+                  parentId: v.value === HostingKind.Child ? currentParentId : null,
                 })
               }
               renderItem={SelectOption}
@@ -175,15 +170,15 @@ export default function NewHostingStep1() {
                   currentParentId
                     ? {
                         label:
-                          parentOptions.find((o) => o.value === currentParentId)
-                            ?.label ?? "Selected property",
+                          parentOptions.find((o) => o.value === currentParentId)?.label ??
+                          'Selected property',
                         value: currentParentId,
                       }
                     : undefined
                 }
                 options={parentOptions}
                 onSelect={(v) => updateInput({ parentId: v.value })}
-                renderItem={SelectOption}
+                renderItem={ParentListingOption}
               />
               <ThemedText
                 style={{
@@ -192,8 +187,8 @@ export default function NewHostingStep1() {
                   color: hexToRgba(colors.text, 0.5),
                 }}
               >
-                This unit inherits the parent property location, mandate,
-                tenancy terms and payout — you can edit them as you go.
+                This unit inherits the parent property location, mandate, tenancy terms and payout —
+                you can edit them as you go.
               </ThemedText>
             </View>
           ) : null}
@@ -208,7 +203,7 @@ export default function NewHostingStep1() {
             onSubmitEditing={() => descriptionRef.current?.focus()}
             blurOnSubmit={false}
           />
-          <View style={{ flexDirection: "row", gap: 12 }}>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
             <View style={{ flex: 1 }}>
               <SelectInput
                 focused
@@ -246,8 +241,7 @@ export default function NewHostingStep1() {
                 }))}
                 onSelect={(v) =>
                   updateInput({
-                    listingType:
-                      ListingType[v.value as keyof typeof ListingType],
+                    listingType: ListingType[v.value as keyof typeof ListingType],
                   })
                 }
                 renderItem={SelectOption}
@@ -259,9 +253,7 @@ export default function NewHostingStep1() {
         {id ? (
           <AiContentSuggestion
             hostingId={String(id)}
-            onApply={({ title, description }) =>
-              updateInput({ title, description })
-            }
+            onApply={({ title, description }) => updateInput({ title, description })}
           />
         ) : null}
 

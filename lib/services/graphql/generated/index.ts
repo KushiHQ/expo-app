@@ -4378,7 +4378,7 @@ export type HostListingsQueryVariables = Exact<{
 }>;
 
 
-export type HostListingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, childCount: number, title?: string | null, state?: string | null, city?: string | null, listingType?: ListingType | null, publishStatus?: PublishStatus | null, bookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, originalFilename?: string | null } } | null }> };
+export type HostListingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, childCount: number, title?: string | null, description?: string | null, state?: string | null, city?: string | null, listingType?: ListingType | null, publishStatus?: PublishStatus | null, bookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, originalFilename?: string | null } } | null }> };
 
 export type KycStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -7173,6 +7173,7 @@ export const HostListingsDocument = gql`
       }
     }
     title
+    description
     state
     city
     listingType

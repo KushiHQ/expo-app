@@ -10,6 +10,7 @@ import ImageScrim from '../atoms/a-image-scrim';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { Fonts } from '@/lib/constants/theme';
 import { hexToRgba } from '@/lib/utils/colors';
+import { joinLocation } from '@/lib/utils/locations';
 import { IconParkOutlineDot } from '../icons/i-circle';
 import { HostingKind, HostListingsQuery, PublishStatus } from '@/lib/services/graphql/generated';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
@@ -65,7 +66,9 @@ const ListingCard: React.FC<Props> = ({ hosting, onDelete, onDuplicate }) => {
       <Pressable onPress={handlePress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
         <View
           className="overflow-hidden rounded-3xl"
-          style={{ backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any}
+          style={
+            { backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any
+          }
         >
           <View className="relative aspect-[3/2] w-full">
             <Image
@@ -132,7 +135,7 @@ const ListingCard: React.FC<Props> = ({ hosting, onDelete, onDuplicate }) => {
                     fontFamily: Fonts.medium,
                   }}
                 >
-                  {hosting.city}, {hosting.state}
+                  {joinLocation(hosting.city, hosting.state)}
                 </ThemedText>
               </View>
             </View>

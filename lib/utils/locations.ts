@@ -15,6 +15,13 @@ export type LocationObject = {
   timezone: string;
 };
 
+/**
+ * Join location parts (city, state, country…) into a display string, dropping
+ * any that are empty/null so a missing field never leaves a dangling comma.
+ */
+export const joinLocation = (...parts: (string | null | undefined)[]) =>
+  parts.filter((p) => !!p && String(p).trim().length > 0).join(', ');
+
 export const getLocationAsync = async () => {
   try {
     const { status } = await Location.requestForegroundPermissionsAsync();

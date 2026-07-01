@@ -5,6 +5,7 @@ import { MapPin } from 'lucide-react-native';
 import React from 'react';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
+import { joinLocation } from '@/lib/utils/locations';
 import LocationCard from '../atoms/a-location-card';
 import { HostingQuery } from '@/lib/services/graphql/generated';
 import { SURFACE } from '@/lib/constants/surface';
@@ -24,7 +25,7 @@ const HostingLocation: React.FC<Props> = ({ hosting }) => {
       <View className="gap-1">
         <SectionHeader icon={MapPin} title="Pin the Location" />
         <ThemedText style={{ color: hexToRgba(colors.text, 0.6), fontSize: 16 }}>
-          {hosting?.city}, {hosting?.state}, {hosting?.country}
+          {joinLocation(hosting?.city, hosting?.state, hosting?.country)}
         </ThemedText>
       </View>
       <LocationCard

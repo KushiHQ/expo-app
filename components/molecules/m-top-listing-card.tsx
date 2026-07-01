@@ -6,6 +6,7 @@ import { Pressable, View } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
 import { Fonts } from '@/lib/constants/theme';
 import { hexToRgba } from '@/lib/utils/colors';
+import { joinLocation } from '@/lib/utils/locations';
 import { MynauiStarSolid } from '../icons/i-star';
 import { MapPin } from 'lucide-react-native';
 import { HostAnalyticsQuery, HostingQuery } from '@/lib/services/graphql/generated';
@@ -67,14 +68,12 @@ const TopListingCard: React.FC<Props> = ({ hosting, onPress }) => {
               fontFamily: Fonts.medium,
             }}
           >
-            {hosting?.city}, {hosting?.state}
+            {joinLocation(hosting?.city, hosting?.state)}
           </ThemedText>
         </View>
         <View className="mt-0.5 flex-row items-center justify-between gap-2">
           <View>
-            <ThemedText
-              style={{ fontFamily: Fonts.bold, fontSize: 15, color: colors.primary }}
-            >
+            <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 15, color: colors.primary }}>
               ₦{Number(hosting?.price ?? '0').toLocaleString()}
             </ThemedText>
             {intervalLabel ? (

@@ -7,6 +7,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 import { MapPin } from 'lucide-react-native';
 import ThemedText from '../atoms/a-themed-text';
 import { hexToRgba } from '@/lib/utils/colors';
+import { joinLocation } from '@/lib/utils/locations';
 import { Fonts } from '@/lib/constants/theme';
 import { useRouter } from '@/lib/hooks/use-router';
 import { SupportChatQuery, SupportItemType } from '@/lib/services/graphql/generated';
@@ -39,7 +40,8 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
     const s = (status ?? '').toUpperCase();
     if (['PAID', 'COMPLETED', 'SUCCESS', 'REFUNDED'].includes(s)) return colors.success;
     if (['PENDING', 'PROCESSING'].includes(s)) return colors.warning;
-    if (['CANCELED', 'CANCELLED', 'FAILED', 'NEEDS_RECONCILIATION'].includes(s)) return colors.error;
+    if (['CANCELED', 'CANCELLED', 'FAILED', 'NEEDS_RECONCILIATION'].includes(s))
+      return colors.error;
     return colors.primary;
   };
 
@@ -143,7 +145,7 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
                   fontFamily: Fonts.medium,
                 }}
               >
-                {effectiveHosting.city}, {effectiveHosting.state}
+                {joinLocation(effectiveHosting.city, effectiveHosting.state)}
               </ThemedText>
             </View>
           </View>
@@ -179,7 +181,7 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
                   fontFamily: Fonts.medium,
                 }}
               >
-                {effectiveHosting.city}, {effectiveHosting.state}
+                {joinLocation(effectiveHosting.city, effectiveHosting.state)}
               </ThemedText>
             </View>
           </View>
