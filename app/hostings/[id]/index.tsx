@@ -404,7 +404,7 @@ export default function HostingDetails() {
 								) : null}
 							</View>
 							<View
-								className="mt-8 rounded-3xl p-5"
+								className="my-8 rounded-3xl p-5"
 								style={{
 									backgroundColor: hexToRgba(colors.text, 0.05),
 									boxShadow: SURFACE.shadow,

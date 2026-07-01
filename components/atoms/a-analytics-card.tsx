@@ -48,7 +48,8 @@ const AnalyticsCard: React.FC<Props> = ({
       <View className="flex-row items-start justify-between gap-2">
         <View className="flex-1 flex-row items-center gap-1">
           <ThemedText
-            numberOfLines={2}
+            numberOfLines={1}
+            ellipsizeMode="tail"
             className="whitespace-nowrap"
             style={{
               fontFamily: Fonts.medium,

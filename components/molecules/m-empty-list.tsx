@@ -6,7 +6,6 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { Image } from 'expo-image';
 import { capitalize } from '@/lib/utils/text';
 import { Fonts } from '@/lib/constants/theme';
-import { SURFACE } from '@/lib/constants/surface';
 import Button from '../atoms/a-button';
 
 type Props = {
@@ -21,11 +20,6 @@ const EmptyList: React.FC<Props> = ({ message, buttonTitle, onButtonPress }) => 
   return (
     <View className="items-center justify-center gap-6 p-8 py-16">
       <View
-        className="rounded-full p-7"
-        style={{
-          backgroundColor: hexToRgba(colors.primary, 0.07),
-          boxShadow: SURFACE.glow,
-        }}
       >
         <Image
           style={{

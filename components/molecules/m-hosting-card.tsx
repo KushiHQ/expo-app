@@ -81,7 +81,7 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 				onPress={handlePress}
 				onPressIn={handlePressIn}
 				onPressOut={handlePressOut}
-				style={{ gap: 14 }}
+				style={{ gap: 10 }}
 			>
 				<View
 					style={{
