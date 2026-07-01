@@ -65,29 +65,33 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
   // thumbnails against this URL to badge the active cover.
   const coverImageUrl = hosting?.coverImage?.asset?.publicUrl;
 
-  // publicUrl -> asset id, so room thumbnails can render through the resize proxy
-  // instead of decoding full-resolution originals into 88px boxes (the dominant
-  // cause of lag/memory growth on photo-heavy units). The room store only holds
-  // url strings, so we resolve the id from the hosting data here.
-  const imageAssetIds = React.useMemo(() => {
-    const map: Record<string, string> = {};
+  // publicUrl -> { asset id, version } so room thumbnails render through the
+  // resize proxy instead of decoding full-resolution originals into 88px boxes
+  // (the dominant cause of lag/memory growth on photo-heavy units). The room
+  // store only holds url strings — publicUrl stays the identity key used by the
+  // delete/move/reorder lookups — while `version` (asset.lastUpdated) cache-busts
+  // the DISPLAY url so an in-place image edit shows the new photo, not the cached
+  // one. See RC2 in sprints/expo-state-freshness-plan.md.
+  const imageAssets = React.useMemo(() => {
+    const map: Record<string, { id: string; version?: string | null }> = {};
     hosting?.rooms?.forEach((r) =>
       r.images?.forEach((img) => {
-        if (img.asset?.publicUrl && img.asset?.id) map[img.asset.publicUrl] = img.asset.id;
+        if (img.asset?.publicUrl && img.asset?.id)
+          map[img.asset.publicUrl] = { id: img.asset.id, version: img.asset.lastUpdated };
       }),
     );
     return map;
   }, [hosting]);
 
-  // Resolve a room-image url to a small proxied thumbnail. Local file:// uris
-  // (still uploading) and unmapped urls pass through unchanged.
+  // Resolve a room-image url to a small, version-stamped proxied thumbnail. Local
+  // file:// uris (still uploading) and unmapped urls pass through unchanged.
   const resolveThumb = React.useCallback(
     (url: string) => {
       if (!url || url.startsWith('file')) return url;
-      const id = imageAssetIds[url];
-      return id ? getAssetResizeUrl(id, 240, 240, 80) : url;
+      const asset = imageAssets[url];
+      return asset ? getAssetResizeUrl(asset.id, 240, 240, 80, asset.version) : url;
     },
-    [imageAssetIds],
+    [imageAssets],
   );
 
   // Sync rooms from server data whenever hosting updates (data-driven, not focus-driven).

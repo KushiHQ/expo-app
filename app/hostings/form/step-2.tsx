@@ -341,6 +341,7 @@ export default function NewHostingStep2() {
                     >
                       <HostingRoomImage
                         src={img}
+                        displayUri={resolveThumb(img)}
                         imageIndex={id}
                         roomIndex={activeModalIndex}
                         onDeleteRoomImage={deleteRoomImage}
