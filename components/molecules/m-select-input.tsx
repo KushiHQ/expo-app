@@ -71,10 +71,18 @@ const SelectInput = <T extends object>(props: Props<T>) => {
 
   const valueStringFunc = props.getValueString ?? getValueString;
   const selectedValue = React.useMemo(() => valueStringFunc(cast(value)), [value, valueStringFunc]);
-  const selectedLabel = React.useMemo(
-    () => (props.getLabelString ?? getLabelString)(value, props.options),
-    [value, props.options, props.getLabelString],
-  );
+  const selectedLabel = React.useMemo(() => {
+    const labelFn = props.getLabelString ?? getLabelString;
+    // Prefer the freshest label from `options` matched by id — options may load
+    // after mount (async query), so a stored fallback label upgrades to the real
+    // one instead of staying stale.
+    if (value != null) {
+      const id = String(valueStringFunc(cast(value)));
+      const match = props.options.find((o) => String(valueStringFunc(cast(o))) === id);
+      if (match) return labelFn(cast(match), props.options);
+    }
+    return labelFn(value, props.options);
+  }, [value, props.options, props.getLabelString, valueStringFunc]);
 
   const hasValue = !!value;
   const shouldFloat = hasValue || !!rest.focused;
@@ -130,9 +138,16 @@ const SelectInput = <T extends object>(props: Props<T>) => {
     });
   }, [rest, search, options, valueStringFunc]);
 
+  // Sync the internal selection whenever the incoming default's id changes —
+  // e.g. it resolves after an async query (the parent-listing picker) or is set
+  // externally. Keyed on the id string so a fresh object identity each render
+  // doesn't loop, and so a selection the user just made (same id) isn't clobbered.
+  const defaultValueString =
+    props.defaultValue != null ? String(valueStringFunc(cast(props.defaultValue))) : undefined;
   React.useEffect(() => {
-    if (props.defaultValue && !value) setValue(props.defaultValue);
-  }, [props.defaultValue, value]);
+    setValue(props.defaultValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultValueString]);
 
   const handlePress = (e: GestureResponderEvent) => {
     e.preventDefault();

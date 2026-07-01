@@ -13,6 +13,7 @@ import { useUser } from '@/lib/hooks/user';
 import { HostingKind, ListingType, useHostListingsQuery } from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
 import { joinLocation } from '@/lib/utils/locations';
+import { Fonts } from '@/lib/constants/theme';
 import { cast } from '@/lib/types/utils';
 import { handleError } from '@/lib/utils/error';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -20,6 +21,9 @@ import { AlignLeft, Building2 } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { RefreshControl, TextInput, View } from 'react-native';
 import { toast } from '@/lib/hooks/use-toast';
+
+const DESCRIPTION_MIN = 40;
+const DESCRIPTION_MAX = 1500;
 
 export default function NewHostingStep1() {
   const router = useRouter();
@@ -37,6 +41,7 @@ export default function NewHostingStep1() {
   } = useHostingForm(id);
   const { user } = useUser();
   const { propertyTypes } = usePropertyTypeConfig();
+  const descLen = input.description?.length ?? 0;
 
   // Parent / child kind. Seed from the input, else the fetched hosting, else standalone.
   const currentKind =
@@ -260,21 +265,65 @@ export default function NewHostingStep1() {
         <SectionCard
           icon={<AlignLeft size={16} color={colors.primary} />}
           title="Description"
-          style={{ padding: 0, minHeight: 200 }}
           subtitle="Tell guests what makes your property special"
         >
-          <FloatingLabelInput
-            ref={descriptionRef}
-            focused
-            className="rounded-t-sm"
-            multiline
-            placeholder="A 4 bedroom bungalow with a spacious compound..."
-            containerStyle={{ minHeight: 200, borderWidth: 0 }}
-            numberOfLines={20}
-            value={cast(input.description)}
-            onChangeText={(v) => updateInput({ description: v })}
-            returnKeyType="default"
-          />
+          <View
+            style={{
+              backgroundColor: hexToRgba(colors.text, 0.06),
+              borderRadius: 16,
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              minHeight: 168,
+            }}
+          >
+            <TextInput
+              ref={descriptionRef}
+              multiline
+              textAlignVertical="top"
+              placeholder="A 4-bedroom bungalow with a spacious compound, 24/7 power, and a serene, gated neighbourhood…"
+              placeholderTextColor={hexToRgba(colors.text, 0.35)}
+              value={cast(input.description)}
+              onChangeText={(v) => updateInput({ description: v })}
+              maxLength={DESCRIPTION_MAX}
+              returnKeyType="default"
+              style={{
+                flex: 1,
+                minHeight: 132,
+                color: colors.text,
+                fontFamily: Fonts.regular,
+                fontSize: 15,
+                lineHeight: 23,
+              }}
+            />
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginTop: 10,
+              paddingHorizontal: 2,
+            }}
+          >
+            <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.45) }}>
+              {descLen === 0
+                ? 'A vivid description gets more applications'
+                : descLen < DESCRIPTION_MIN
+                  ? `Add ${DESCRIPTION_MIN - descLen} more character${
+                      DESCRIPTION_MIN - descLen === 1 ? '' : 's'
+                    }`
+                  : 'Great — that gives guests a real feel for it'}
+            </ThemedText>
+            <ThemedText
+              style={{
+                fontSize: 12,
+                fontFamily: Fonts.medium,
+                color: descLen >= DESCRIPTION_MIN ? colors.primary : hexToRgba(colors.text, 0.45),
+              }}
+            >
+              {descLen}/{DESCRIPTION_MAX}
+            </ThemedText>
+          </View>
         </SectionCard>
       </View>
     </DetailsLayout>
