@@ -55,6 +55,8 @@ export default function NewHostingStep2() {
     coverImageUrl,
     resolveThumb,
     handleReorderRoomImages,
+    handleMoveImages,
+    handleDeleteImages,
   } = useHostingFormRoomUtils(String(id));
 
   const propertyType = hosting?.propertyType ?? undefined;
@@ -74,6 +76,20 @@ export default function NewHostingStep2() {
     });
     return order.map((name) => ({ name, items: map[name] }));
   }, [rooms]);
+
+  // All SAVED spaces (move requires a persisted target room id), with their
+  // instance labels — a card offers every space but itself as a move target.
+  const roomTargets = React.useMemo(() => {
+    const out: { id: string; label: string; name: keyof typeof Room }[] = [];
+    groups.forEach((group) => {
+      group.items.forEach(({ room }, i) => {
+        if (!room.id) return;
+        const label = group.items.length > 1 ? `${Room[group.name]} ${i + 1}` : Room[group.name];
+        out.push({ id: room.id, label, name: group.name });
+      });
+    });
+    return out;
+  }, [groups]);
 
   // Photos within a space can be drag-reordered (in the details modal). Rooms are
   // grouped by type now, so room-level manual reorder is retired for the moment.
@@ -191,6 +207,9 @@ export default function NewHostingStep2() {
                           ? `${Room[group.name]} ${i + 1}`
                           : Room[group.name]
                       }
+                      moveTargets={roomTargets.filter((t) => t.id !== room.id)}
+                      onMoveImages={handleMoveImages}
+                      onDeleteImages={handleDeleteImages}
                     />
                   ))}
                   <Pressable

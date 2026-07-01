@@ -272,6 +272,14 @@ export const DELETE_HOSTING_ROOM_IMAGE = gql`
   }
 `;
 
+export const MOVE_HOSTING_ROOM_IMAGES = gql`
+  mutation MoveHostingRoomImages($targetRoomId: String!, $imageIds: [String!]!) {
+    moveHostingRoomImages(targetRoomId: $targetRoomId, imageIds: $imageIds) {
+      message
+    }
+  }
+`;
+
 export const DELETE_HOSTING_ROOM = gql`
   mutation DeleteHostingRoom($hostingRoomId: String!) {
     deleteHostingRoom(hostingRoomId: $hostingRoomId) {

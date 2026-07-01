@@ -1221,6 +1221,11 @@ export type HostingFilterInput = {
   state?: InputMaybe<Scalars['String']['input']>;
   street?: InputMaybe<Scalars['String']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * Minimum verification tier — matches listings verified at this tier OR
+   * higher (tiers are ordinal: unverified → kushi_vetted).
+   */
+  verificationTier?: InputMaybe<HostingVerificationTier>;
 };
 
 export type HostingInput = {
@@ -1726,6 +1731,12 @@ export type Mutations = {
   logout: MessageResponse;
   markAllNotificationsAsRead: MessageResponse;
   markNotificationAsRead: MessageResponse;
+  /**
+   * Move photos from one room/space to another within the same listing —
+   * e.g. splitting shots that were all created under a single "Bedroom" out
+   * to "Bedroom 2". Requires ownership of the target room and every image.
+   */
+  moveHostingRoomImages: MessageResponse;
   refreshToken: AuthTokenResponse;
   /**
    * Persist a host's manual image order within a room (drag-to-reorder).
@@ -2180,6 +2191,12 @@ export type MutationsMarkNotificationAsReadArgs = {
 };
 
 
+export type MutationsMoveHostingRoomImagesArgs = {
+  imageIds: Array<Scalars['String']['input']>;
+  targetRoomId: Scalars['String']['input'];
+};
+
+
 export type MutationsRefreshTokenArgs = {
   input: RefreshTokenInput;
 };
@@ -2525,6 +2542,24 @@ export type ProfileUpdateInput = {
   profilePicture?: InputMaybe<Scalars['Upload']['input']>;
 };
 
+/**
+ * A canonical, admin-editable property type + the rooms / facilities that are
+ * potential for it. Source of truth for clients and the AI. See
+ * sprints/app-constants-plan.md.
+ */
+export type PropertyTypeConfig = {
+  __typename?: 'PropertyTypeConfig';
+  category?: Maybe<Scalars['String']['output']>;
+  facilities: Array<Scalars['String']['output']>;
+  /** Icon name — clients map it to a component (with a fallback for unknown). */
+  icon?: Maybe<Scalars['String']['output']>;
+  label: Scalars['String']['output'];
+  rooms: Array<Scalars['String']['output']>;
+  searchTerms: Array<Scalars['String']['output']>;
+  /** The free string stored on `hosting.property_type`. */
+  value: Scalars['String']['output'];
+};
+
 export enum PublishStatus {
   Archived = 'ARCHIVED',
   Draft = 'DRAFT',
@@ -2665,6 +2700,12 @@ export type Query = {
   me: User;
   mySupportChats: Array<SupportChat>;
   notifications: Array<Notification>;
+  /**
+   * The canonical, admin-editable property types (with the rooms + facilities
+   * potential for each). Clients read this instead of hardcoding the list, and
+   * the AI reads the same source so predictions return valid values.
+   */
+  propertyTypes: Array<PropertyTypeConfig>;
   resolveBankAccount: Scalars['String']['output'];
   savedHosting: SavedHosting;
   savedHostingFolder: SavedHostingFolder;
@@ -3883,6 +3924,14 @@ export type DeleteHostingRoomImageMutationVariables = Exact<{
 
 
 export type DeleteHostingRoomImageMutation = { __typename?: 'Mutations', deleteHostingRoomImage: { __typename?: 'MessageResponse', message: string } };
+
+export type MoveHostingRoomImagesMutationVariables = Exact<{
+  targetRoomId: Scalars['String']['input'];
+  imageIds: Array<Scalars['String']['input']> | Scalars['String']['input'];
+}>;
+
+
+export type MoveHostingRoomImagesMutation = { __typename?: 'Mutations', moveHostingRoomImages: { __typename?: 'MessageResponse', message: string } };
 
 export type DeleteHostingRoomMutationVariables = Exact<{
   hostingRoomId: Scalars['String']['input'];
@@ -5551,6 +5600,17 @@ export const DeleteHostingRoomImageDocument = gql`
 
 export function useDeleteHostingRoomImageMutation() {
   return Urql.useMutation<DeleteHostingRoomImageMutation, DeleteHostingRoomImageMutationVariables>(DeleteHostingRoomImageDocument);
+};
+export const MoveHostingRoomImagesDocument = gql`
+    mutation MoveHostingRoomImages($targetRoomId: String!, $imageIds: [String!]!) {
+  moveHostingRoomImages(targetRoomId: $targetRoomId, imageIds: $imageIds) {
+    message
+  }
+}
+    `;
+
+export function useMoveHostingRoomImagesMutation() {
+  return Urql.useMutation<MoveHostingRoomImagesMutation, MoveHostingRoomImagesMutationVariables>(MoveHostingRoomImagesDocument);
 };
 export const DeleteHostingRoomDocument = gql`
     mutation DeleteHostingRoom($hostingRoomId: String!) {

@@ -2,9 +2,10 @@ import React, { memo } from "react";
 import { Room, roomsForPropertyType } from "@/lib/types/enums/hostings";
 import { RoomData } from "@/lib/stores/hostings";
 import { cast } from "@/lib/types/utils";
-import { ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import SelectInput, { SelectOption } from "../molecules/m-select-input";
 import Button from "../atoms/a-button";
+import BottomSheet from "../atoms/a-bottom-sheet";
 import { hexToRgba } from "@/lib/utils/colors";
 import {
   Bed,
@@ -15,6 +16,7 @@ import {
   DoorOpen,
   Droplets,
   Fence,
+  FolderInput,
   Home,
   LucideIcon,
   MapPin,
@@ -23,6 +25,7 @@ import {
   Palette,
   ShoppingBag,
   Stethoscope,
+  Trash2,
   TreePine,
   Trees,
   Users,
@@ -83,6 +86,12 @@ export interface RoomItemCardProps {
   propertyType?: string;
   /** Client-rendered instance label, e.g. "Bedroom 2" (WS-6). */
   instanceLabel?: string;
+  /** Other saved spaces in this listing (move targets). Enables select+move. */
+  moveTargets?: { id: string; label: string; name: keyof typeof Room }[];
+  /** Move the given image URLs (from this room) to another room. */
+  onMoveImages?: (targetRoomId: string, imageUrls: string[]) => void;
+  /** Delete the given image URLs from this room. */
+  onDeleteImages?: (roomIndex: number, imageUrls: string[]) => void;
 }
 
 const RoomItemCard = memo(
@@ -101,7 +110,47 @@ const RoomItemCard = memo(
     resolveThumb,
     propertyType,
     instanceLabel,
+    moveTargets,
+    onMoveImages,
+    onDeleteImages,
   }: RoomItemCardProps) => {
+    // Multi-select (move / delete) state, keyed by image URL.
+    const [selecting, setSelecting] = React.useState(false);
+    const [selected, setSelected] = React.useState<string[]>([]);
+    const [moveSheetOpen, setMoveSheetOpen] = React.useState(false);
+
+    const roomImages = React.useMemo(() => room?.images ?? [], [room?.images]);
+    const canSelect = !!moveTargets && moveTargets.length > 0 && roomImages.length > 0;
+
+    const exitSelect = React.useCallback(() => {
+      setSelecting(false);
+      setSelected([]);
+      setMoveSheetOpen(false);
+    }, []);
+
+    const toggleSelect = React.useCallback(
+      (_roomIndex: number, imageIndex: number) => {
+        const url = roomImages[imageIndex];
+        if (!url) return;
+        setSelected((prev) =>
+          prev.includes(url) ? prev.filter((u) => u !== url) : [...prev, url],
+        );
+      },
+      [roomImages],
+    );
+
+    const confirmMove = React.useCallback(
+      (targetRoomId: string) => {
+        onMoveImages?.(targetRoomId, selected);
+        exitSelect();
+      },
+      [onMoveImages, selected, exitSelect],
+    );
+
+    const deleteSelected = React.useCallback(() => {
+      onDeleteImages?.(index, selected);
+      exitSelect();
+    }, [onDeleteImages, index, selected, exitSelect]);
     // Spaces relevant to this property type; duplicates ARE allowed now — each
     // pick creates a separate room instance (WS-6/WS-7).
     const spaceOptions = React.useMemo(
@@ -195,9 +244,21 @@ const RoomItemCard = memo(
           >
             <RoomIcon color={colors.text} size={16} />
           </View>
-          <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 15 }} numberOfLines={1}>
+          <ThemedText
+            style={{ fontFamily: Fonts.semibold, fontSize: 15, flex: 1 }}
+            numberOfLines={1}
+          >
             {instanceLabel ?? Room[room.name]}
           </ThemedText>
+          {canSelect ? (
+            <Pressable onPress={() => (selecting ? exitSelect() : setSelecting(true))} hitSlop={8}>
+              <ThemedText
+                style={{ fontSize: 12, fontFamily: Fonts.semibold, color: colors.text }}
+              >
+                {selecting ? "Cancel" : "Select"}
+              </ThemedText>
+            </Pressable>
+          ) : null}
         </View>
 
         {/* Image strip */}
@@ -237,44 +298,129 @@ const RoomItemCard = memo(
                   canSetCover={!img.startsWith("file")}
                   onSetCover={handleSetCoverImage}
                   onPress={onOpenImage}
+                  selectMode={selecting}
+                  selected={selected.includes(img)}
+                  onToggleSelect={toggleSelect}
                 />
               ))}
             </ScrollView>
           )}
         </View>
 
-        {/* Footer: actions */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            gap: 8,
-            paddingHorizontal: 12,
-            paddingBottom: 12,
-            paddingTop: 4,
-          }}
-        >
-          <Button
-            onPress={onEditImage}
-            disabled={hostingRoomSaving}
-            variant="outline"
-            className="flex-row items-center gap-1.5 px-3 py-2"
-            style={{ borderColor: hexToRgba(colors.text, 0.2), borderRadius: 10 }}
+        {/* Footer: normal actions, or the multi-select move/delete bar. */}
+        {selecting ? (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 8,
+              paddingHorizontal: 12,
+              paddingBottom: 12,
+              paddingTop: 4,
+            }}
           >
-            <CameraLinear color={colors.text} size={13} />
-            <ThemedText style={{ fontSize: 12 }}>Add Photos</ThemedText>
-          </Button>
-          <Button
-            variant="outline"
-            disabled={hostingRoomSaving}
-            className="px-3 py-2"
-            style={{ borderColor: hexToRgba(colors.text, 0.2), borderRadius: 10 }}
-            onPress={onOpenDetails}
+            <ThemedText style={{ flex: 1, fontSize: 13, fontFamily: Fonts.semibold }}>
+              {selected.length} selected
+            </ThemedText>
+            <Button
+              variant="soft"
+              type="error"
+              disabled={selected.length === 0}
+              onPress={deleteSelected}
+              className="flex-row items-center gap-1.5 px-3 py-2"
+            >
+              <Trash2 color="#F87171" size={13} />
+              <ThemedText style={{ fontSize: 12, color: "#F87171", fontFamily: Fonts.semibold }}>
+                Delete
+              </ThemedText>
+            </Button>
+            <Button
+              type="primary"
+              disabled={selected.length === 0}
+              onPress={() => setMoveSheetOpen(true)}
+              className="flex-row items-center gap-1.5 px-3 py-2"
+            >
+              <FolderInput color={colors.background ?? "#0A0A0A"} size={13} />
+              <ThemedText content="primary" style={{ fontSize: 12 }}>
+                Move
+              </ThemedText>
+            </Button>
+          </View>
+        ) : (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              gap: 8,
+              paddingHorizontal: 12,
+              paddingBottom: 12,
+              paddingTop: 4,
+            }}
           >
-            <ThemedText style={{ fontSize: 12 }}>Details</ThemedText>
-          </Button>
-        </View>
+            <Button
+              onPress={onEditImage}
+              disabled={hostingRoomSaving}
+              variant="outline"
+              className="flex-row items-center gap-1.5 px-3 py-2"
+              style={{ borderColor: hexToRgba(colors.text, 0.2), borderRadius: 10 }}
+            >
+              <CameraLinear color={colors.text} size={13} />
+              <ThemedText style={{ fontSize: 12 }}>Add Photos</ThemedText>
+            </Button>
+            <Button
+              variant="outline"
+              disabled={hostingRoomSaving}
+              className="px-3 py-2"
+              style={{ borderColor: hexToRgba(colors.text, 0.2), borderRadius: 10 }}
+              onPress={onOpenDetails}
+            >
+              <ThemedText style={{ fontSize: 12 }}>Details</ThemedText>
+            </Button>
+          </View>
+        )}
+
+        {/* Move-to-space sheet */}
+        {moveTargets ? (
+          <BottomSheet isVisible={moveSheetOpen} onClose={() => setMoveSheetOpen(false)}>
+            <View style={{ gap: 2, paddingBottom: 4 }}>
+              <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 16 }}>
+                Move {selected.length} photo{selected.length === 1 ? "" : "s"} to…
+              </ThemedText>
+              <ThemedText
+                style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55), marginBottom: 10 }}
+              >
+                Pick a space in this listing.
+              </ThemedText>
+              {moveTargets.map((t) => {
+                const TargetIcon: LucideIcon = ROOM_ICONS[t.name] ?? Home;
+                return (
+                  <Pressable
+                    key={t.id}
+                    onPress={() => confirmMove(t.id)}
+                    style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12 }}
+                  >
+                    <View
+                      style={{
+                        width: 34,
+                        height: 34,
+                        borderRadius: 11,
+                        backgroundColor: hexToRgba(colors.text, 0.08),
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <TargetIcon color={colors.text} size={15} />
+                    </View>
+                    <ThemedText style={{ flex: 1, fontFamily: Fonts.semibold, fontSize: 14 }}>
+                      {t.label}
+                    </ThemedText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </BottomSheet>
+        ) : null}
       </View>
     );
   },

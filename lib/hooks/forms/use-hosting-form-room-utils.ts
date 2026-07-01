@@ -9,6 +9,8 @@ import {
   useReorderHostingRoomsMutation,
   useSetHostingCoverImageMutation,
 } from '@/lib/services/graphql/generated';
+import { useMutation } from 'urql';
+import { MOVE_HOSTING_ROOM_IMAGES } from '@/lib/services/graphql/requests/mutations/hostings';
 import React from 'react';
 import { useFocusEffect, usePathname } from 'expo-router';
 import { useGalleryStore } from '@/lib/stores/gallery';
@@ -52,6 +54,8 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
   const [{ fetching: reorderingRooms }, reorderRoomsMutate] = useReorderHostingRoomsMutation();
   const [{ fetching: reorderingImages }, reorderImagesMutate] =
     useReorderHostingRoomImagesMutation();
+  // Raw urql mutation (not a generated hook) so it works before/after codegen.
+  const [{ fetching: movingImages }, moveImagesMutate] = useMutation(MOVE_HOSTING_ROOM_IMAGES);
 
   // Image uploads run in a background queue (see useUploadStore) and no longer
   // block the wizard — so `addingImages` is intentionally NOT part of `loading`.
@@ -207,6 +211,45 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
     });
   };
 
+  // Resolve saved image URLs -> server image ids (unsaved file:// images have
+  // none and are skipped). Used by the multi-select move/delete actions.
+  const resolveImageIds = (imageUrls: string[]): string[] =>
+    imageUrls
+      .map(
+        (url) =>
+          hosting?.rooms.flatMap((r) => r.images).find((i) => i.asset.publicUrl === url)?.id,
+      )
+      .filter((id): id is string => !!id);
+
+  // Move selected photos to another space of this listing, then refetch so both
+  // spaces reconcile from the server (URLs -> ids, sequences).
+  const handleMoveImages = (targetRoomId: string, imageUrls: string[]) => {
+    const imageIds = resolveImageIds(imageUrls);
+    if (imageIds.length === 0) return;
+    moveImagesMutate({ targetRoomId, imageIds }).then((res) => {
+      if (res.error) handleError(res.error);
+      if (res.data?.moveHostingRoomImages.message) {
+        show({ type: 'success', text2: res.data.moveHostingRoomImages.message });
+        refetchHosting();
+      }
+    });
+  };
+
+  // Delete selected saved photos, then refetch to re-sync the room's images.
+  const handleDeleteImages = async (_roomIndex: number, imageUrls: string[]) => {
+    const imageIds = resolveImageIds(imageUrls);
+    if (imageIds.length === 0) return;
+    for (const id of imageIds) {
+      const res = await deleteImageMutate({ hostingRoomImageId: id });
+      if (res.error) handleError(res.error);
+    }
+    show({
+      type: 'success',
+      text2: `${imageIds.length} photo${imageIds.length === 1 ? '' : 's'} deleted`,
+    });
+    refetchHosting();
+  };
+
   // Drag-to-reorder rooms: reflect the move locally (optimistic), persist the
   // new id order, then refetch to reconcile sequences (and revert on error).
   const handleReorderRooms = (from: number, to: number) => {
@@ -353,6 +396,9 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
     resolveThumb,
     handleReorderRooms,
     handleReorderRoomImages,
+    handleMoveImages,
+    handleDeleteImages,
+    movingImages,
     reorderingRooms,
     reorderingImages,
   };

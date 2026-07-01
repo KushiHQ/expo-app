@@ -40,11 +40,22 @@ import Animated, { LinearTransition } from "react-native-reanimated";
 import { twMerge } from "tailwind-merge";
 import {
 	AiHostingSearchPredictionsQuery,
+	HostingVerificationTier,
 	useAiHostingSearchPredictionsQuery,
 } from "@/lib/services/graphql/generated";
+import { formatTierLabel } from "@/lib/utils/verification/tier";
 import Skeleton from "../atoms/a-skeleton";
 import { useRouter } from "@/lib/hooks/use-router";
 import { Reset } from "../icons/i-delete";
+
+// Minimum verification tier the guest can filter by (the server matches this
+// tier OR higher). "Unverified" is intentionally omitted — it's not a filter.
+const TIER_FILTER_OPTIONS: HostingVerificationTier[] = [
+	HostingVerificationTier.IdentityVerified,
+	HostingVerificationTier.AddressVerified,
+	HostingVerificationTier.TitleChecked,
+	HostingVerificationTier.KushiVetted,
+];
 type Props = {
 	isMapView?: boolean;
 };
@@ -544,6 +555,42 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
 											{String(index + 1)}
 										</RatingPill>
 									))}
+								</View>
+							</ScrollView>
+						</View>
+						<View className="gap-3">
+							<ThemedText style={{ fontSize: 14 }}>Verification</ThemedText>
+							<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+								<View className="my-1 flex-row gap-2">
+									{TIER_FILTER_OPTIONS.map((tier) => {
+										const active = filter.verificationTier === tier;
+										return (
+											<Pressable
+												key={tier}
+												onPress={() =>
+													updateFilter({
+														verificationTier: active ? undefined : tier,
+													})
+												}
+												className="rounded-full px-3.5 py-2"
+												style={{
+													backgroundColor: active
+														? hexToRgba(colors.primary, 0.16)
+														: hexToRgba(colors.text, 0.06),
+												}}
+											>
+												<ThemedText
+													style={{
+														fontSize: 12,
+														fontFamily: Fonts.semibold,
+														color: active ? colors.primary : colors.text,
+													}}
+												>
+													{formatTierLabel(tier)}
+												</ThemedText>
+											</Pressable>
+										);
+									})}
 								</View>
 							</ScrollView>
 						</View>

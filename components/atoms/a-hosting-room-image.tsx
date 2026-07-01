@@ -1,7 +1,7 @@
 import { PROPERTY_BLURHASH } from '@/lib/constants/images';
 import { useUploadStore } from '@/lib/stores/uploads';
 import { Image } from 'expo-image';
-import { RotateCcw, Star, X } from 'lucide-react-native';
+import { Check, RotateCcw, Star, X } from 'lucide-react-native';
 import React from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
@@ -20,6 +20,11 @@ type Props = {
   onSetCover?: (roomIndex: number, imageIndex: number) => void;
   /** Tapping the photo opens it in the fullscreen swipe/edit gallery. */
   onPress?: (roomIndex: number, imageIndex: number) => void;
+  /** Multi-select (move/delete) mode — tapping toggles selection instead of
+   *  opening, and the per-photo controls are hidden. */
+  selectMode?: boolean;
+  selected?: boolean;
+  onToggleSelect?: (roomIndex: number, imageIndex: number) => void;
 };
 
 const HostingRoomImage: React.FC<Props> = ({
@@ -32,6 +37,9 @@ const HostingRoomImage: React.FC<Props> = ({
   canSetCover,
   onSetCover,
   onPress,
+  selectMode,
+  selected,
+  onToggleSelect,
 }) => {
   // Background-upload status for this thumbnail (keyed by its local file:// uri);
   // clears automatically once the url swaps to the uploaded one.
@@ -45,11 +53,19 @@ const HostingRoomImage: React.FC<Props> = ({
         width: 88,
         height: 88,
         borderRadius: 12,
-        boxShadow: isCover ? '0px 0px 0px 2px rgba(255,165,0,0.85), 0px 8px 22px -10px rgba(255,165,0,0.40)' : undefined,
+        boxShadow: selected
+          ? '0px 0px 0px 2.5px rgba(245,158,11,0.95)'
+          : isCover
+            ? '0px 0px 0px 2px rgba(255,165,0,0.85), 0px 8px 22px -10px rgba(255,165,0,0.40)'
+            : undefined,
       }}
     >
       <Pressable
-        onPress={() => onPress?.(roomIndex, imageIndex)}
+        onPress={() =>
+          selectMode
+            ? onToggleSelect?.(roomIndex, imageIndex)
+            : onPress?.(roomIndex, imageIndex)
+        }
         style={{ height: '100%', width: '100%' }}
       >
         <Image
@@ -97,8 +113,28 @@ const HostingRoomImage: React.FC<Props> = ({
         </Pressable>
       ) : null}
 
+      {/* Select-mode check (top-right); replaces the per-photo controls. */}
+      {selectMode && (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 5,
+            right: 5,
+            width: 22,
+            height: 22,
+            borderRadius: 11,
+            backgroundColor: selected ? '#F59E0B' : 'rgba(0,0,0,0.5)',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {selected && <Check color="#0A0A0A" size={13} strokeWidth={3} />}
+        </View>
+      )}
+
       {/* Cover badge / set-as-cover control (top-left) */}
-      {isCover ? (
+      {!selectMode && isCover ? (
         <View
           style={{
             position: 'absolute',
@@ -115,7 +151,7 @@ const HostingRoomImage: React.FC<Props> = ({
         >
           <Star color="#000000" size={9} strokeWidth={2.5} fill="#000000" />
         </View>
-      ) : canSetCover ? (
+      ) : !selectMode && canSetCover ? (
         <Pressable
           onPress={() => onSetCover?.(roomIndex, imageIndex)}
           hitSlop={6}
@@ -135,22 +171,24 @@ const HostingRoomImage: React.FC<Props> = ({
         </Pressable>
       ) : null}
 
-      <Pressable
-        onPress={() => onDeleteRoomImage?.(roomIndex, imageIndex)}
-        style={{
-          position: 'absolute',
-          top: 4,
-          right: 4,
-          width: 20,
-          height: 20,
-          borderRadius: 10,
-          backgroundColor: 'rgba(0,0,0,0.72)',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <X color="#FFFFFF" size={10} strokeWidth={2.5} />
-      </Pressable>
+      {!selectMode && (
+        <Pressable
+          onPress={() => onDeleteRoomImage?.(roomIndex, imageIndex)}
+          style={{
+            position: 'absolute',
+            top: 4,
+            right: 4,
+            width: 20,
+            height: 20,
+            borderRadius: 10,
+            backgroundColor: 'rgba(0,0,0,0.72)',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <X color="#FFFFFF" size={10} strokeWidth={2.5} />
+        </Pressable>
+      )}
     </View>
   );
 };
