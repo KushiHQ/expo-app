@@ -59,7 +59,9 @@ export default function TransactionDetails() {
       case 'PROCESSING':
         return colors.warning;
       default:
-        return hexToRgba(colors.text, 0.5);
+        // Return a SOLID colour — callers wrap this in hexToRgba for the pill
+        // background, so an already-rgba value here would crash the parser.
+        return colors.text;
     }
   };
 
