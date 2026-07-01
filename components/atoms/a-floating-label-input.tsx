@@ -112,12 +112,11 @@ const FloatingLabelInput = React.forwardRef<TextInput, FloatingLabelInputProps>(
       <View className="relative">
         <Pressable
           onPress={handleConntainerPress}
-          className={twMerge('relative flex-1 rounded-xl border px-3', className)}
+          className={twMerge('relative flex-1 rounded-xl px-3', className)}
           style={[
             {
-              borderColor: hexToRgba(colors.text, 0.08),
-              borderWidth: 1.5,
-              backgroundColor: colors['surface-01'],
+              // Borderless soft field (soft/cloudy): subtle fill, lifts on focus.
+              backgroundColor: hexToRgba(colors.text, focused ? 0.1 : 0.06),
               paddingTop: label ? 22 : 10,
               paddingBottom: Platform.OS === 'ios' ? 10 : 6,
             },

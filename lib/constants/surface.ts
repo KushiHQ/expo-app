@@ -4,12 +4,12 @@
  * translucent FILL + soft SHADOW (+ optional glow) — never a hard 1px border.
  */
 export const SURFACE = {
-  /** Default soft ambient shadow for a raised surface. */
-  shadow: "0px 24px 60px -28px rgba(0,0,0,0.7)",
-  /** Stronger shadow for more-elevated surfaces (sheets, hero cards). */
-  shadowHigh: "0px 30px 70px -30px rgba(0,0,0,0.82)",
+  /** Default soft ambient shadow for a raised surface — kept subtle. */
+  shadow: "0px 10px 28px -16px rgba(0,0,0,0.42)",
+  /** Slightly stronger shadow for more-elevated surfaces (sheets, hero cards). */
+  shadowHigh: "0px 16px 38px -20px rgba(0,0,0,0.52)",
   /** Warm glow for selected/active surfaces and primary CTAs. */
-  glow: "0px 12px 34px -10px rgba(255,165,0,0.40)",
+  glow: "0px 8px 22px -10px rgba(255,165,0,0.30)",
   /** Fill alphas, applied to the theme text colour so they adapt to light/dark. */
   fillRaised: 0.05,
   fillHigh: 0.075,

@@ -1,4 +1,5 @@
 import ThemedText from '@/components/atoms/a-themed-text';
+import Surface from '@/components/atoms/a-surface';
 import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
@@ -16,24 +17,15 @@ type Props = {
 export default function SectionCard({ icon, title, subtitle, children, style }: Props) {
   const colors = useThemeColors();
   return (
-    <View
-      style={{
-        borderWidth: 1,
-        borderColor: hexToRgba(colors.text, 0.08),
-        borderRadius: 16,
-        overflow: 'hidden',
-      }}
-    >
+    <Surface radius={22} style={{ overflow: 'hidden' }}>
       <View
         style={{
           paddingHorizontal: 16,
-          paddingVertical: 14,
+          paddingTop: 15,
+          paddingBottom: 11,
           flexDirection: 'row',
           alignItems: 'center',
           gap: 10,
-          borderBottomWidth: 1,
-          borderBottomColor: hexToRgba(colors.text, 0.06),
-          backgroundColor: hexToRgba(colors.text, 0.02),
         }}
       >
         <View
@@ -63,7 +55,7 @@ export default function SectionCard({ icon, title, subtitle, children, style }: 
           )}
         </View>
       </View>
-      <View style={[{ padding: 16, gap: 14 }, style]}>{children}</View>
-    </View>
+      <View style={[{ padding: 16, paddingTop: 4, gap: 14 }, style]}>{children}</View>
+    </Surface>
   );
 }

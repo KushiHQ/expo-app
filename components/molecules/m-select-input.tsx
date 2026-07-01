@@ -167,9 +167,8 @@ const SelectInput = <T extends object>(props: Props<T>) => {
         onPress={handlePress}
         className={twMerge('relative overflow-hidden rounded-xl', props.className)}
         style={{
-          backgroundColor: colors['surface-01'],
-          borderWidth: 1.5,
-          borderColor: hexToRgba(colors.text, 0.08),
+          // Borderless soft field, lifts a touch while the sheet is open.
+          backgroundColor: hexToRgba(colors.text, open ? 0.1 : 0.06),
           paddingHorizontal: 12,
           paddingTop: props.label ? 22 : 14,
           paddingBottom: 10,
