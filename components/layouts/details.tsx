@@ -24,6 +24,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useGradualKeyboardAnimation } from '@/lib/hooks/keyboard';
 import ThemedView from '../atoms/a-themed-view';
+import AmbientGlow from '../atoms/a-ambient-glow';
 import { IonNotificationsOutline } from '../icons/i-notifications';
 import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
 import { useUser } from '@/lib/hooks/user';
@@ -186,6 +187,9 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 
     return (
       <Wrapper className="flex-1" style={backgroundStyles}>
+        {/* Ambient soft/cloudy glow — only on the hosting-form flow so it doesn't
+            bleed into chats/bookings/etc. */}
+        {isFormStep || path.includes('/hostings/form') ? <AmbientGlow /> : null}
         <SafeAreaView edges={isTablet ? ['top', 'bottom', 'right'] : undefined} className="flex-1">
           <View
             style={{
@@ -295,7 +299,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                   <Pressable
                     onPress={handleSupportPress}
                     disabled={initiateSupportChatResult.fetching}
-                    className="h-11 w-11 items-center justify-center rounded-2xl border"
+                    className="h-11 w-11 items-center justify-center rounded-2xl"
                     style={{
                       backgroundColor: colors['surface-01'],
                       borderColor: hexToRgba(colors.text, 0.08),
@@ -315,7 +319,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       onShare?.();
                     }}
-                    className="h-11 w-11 items-center justify-center rounded-2xl border"
+                    className="h-11 w-11 items-center justify-center rounded-2xl"
                     style={{
                       backgroundColor: colors['surface-01'],
                       borderColor: hexToRgba(colors.text, 0.08),
@@ -330,7 +334,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       router.push(buildCallURL(String(id), 'voice', true));
                     }}
-                    className="h-11 w-11 items-center justify-center rounded-2xl border"
+                    className="h-11 w-11 items-center justify-center rounded-2xl"
                     style={{
                       backgroundColor: colors['surface-01'],
                       borderColor: hexToRgba(colors.text, 0.08),
@@ -345,7 +349,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       router.push(buildCallURL(String(id), 'video', true));
                     }}
-                    className="h-11 w-11 items-center justify-center rounded-2xl border"
+                    className="h-11 w-11 items-center justify-center rounded-2xl"
                     style={{
                       backgroundColor: colors['surface-01'],
                       borderColor: hexToRgba(colors.text, 0.08),

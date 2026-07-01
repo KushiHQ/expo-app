@@ -124,7 +124,7 @@ const BottomSheet: FC<BottomSheetProps> = ({ scrollable = true, isVisible, onClo
             styles.bottomSheetContainer,
             {
               backgroundColor: colors.background,
-              borderColor: hexToRgba(colors.text, 0.1),
+              boxShadow: '0px -8px 30px -10px rgba(0,0,0,0.5)',
             },
             rBottomSheetStyle,
           ]}
@@ -162,7 +162,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    borderTopWidth: 1,
     zIndex: 1000,
   },
   handleContainer: {

@@ -297,10 +297,8 @@ export const SelectOption: React.FC<SelectOptionType & SelectionDetails> = ({
         alignItems: 'center',
         paddingVertical: 14,
         paddingHorizontal: 16,
-        borderRadius: 12,
-        borderWidth: 1.5,
-        borderColor: selected ? hexToRgba(colors.primary, 0.4) : hexToRgba(colors.text, 0.08),
-        backgroundColor: selected ? hexToRgba(colors.primary, 0.07) : colors['surface-01'],
+        borderRadius: 14,
+        backgroundColor: selected ? hexToRgba(colors.primary, 0.14) : hexToRgba(colors.text, 0.05),
         gap: 12,
       }}
     >
