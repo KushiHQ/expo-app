@@ -4,6 +4,7 @@ import { FluentAppsList24Filled, FluentAppsList24Regular } from '@/components/ic
 import { TablerMessage2, TablerMessage2Filled } from '@/components/icons/i-message';
 import { MingcuteUser3Fill, MingcuteUser3Line } from '@/components/icons/i-user';
 import SidebarNav, { type SidebarNavItem } from '@/components/organisms/o-sidebar-nav';
+import TabBar from '@/components/organisms/o-tab-bar';
 import AuthGuard from '@/components/guards/auth-guard';
 import FeedbackHost from '@/components/organisms/o-feedback-host';
 import React from 'react';
@@ -15,7 +16,6 @@ import { UserType } from '@/lib/types/users';
 import { EventEmitter } from '@/lib/utils/event-emitter';
 import { Tabs, useRouter, useSegments } from 'expo-router';
 import { View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Anchor the tab group to analytics so a cold start / restored navigation state
 // can't strand the user on a tab root (e.g. profile) with no way back.
@@ -57,15 +57,6 @@ export default function Layout() {
 
   const currentTab = segments[1];
 
-  const insets = useSafeAreaInsets();
-
-  const [tabBarBottomInset, setTabBarBottomInset] = React.useState(0);
-  React.useEffect(() => {
-    if (insets.bottom > 0 && tabBarBottomInset === 0) {
-      setTabBarBottomInset(insets.bottom);
-    }
-  }, [insets.bottom, tabBarBottomInset]);
-
   const handleTabPress = (tabName: string) => (e: any) => {
     if (currentTab === tabName) {
       e.preventDefault();
@@ -80,20 +71,9 @@ export default function Layout() {
 
   const tabs = (
     <Tabs
+      tabBar={(props) => <TabBar {...props} centerRouteName="guest" />}
       screenOptions={{
         tabBarActiveTintColor: colors['primary'],
-        tabBarStyle: isTablet
-          ? { display: 'none' }
-          : {
-              height: 80 + tabBarBottomInset,
-              backgroundColor: colors['background'],
-              borderTopColor: '#0000',
-              borderTopWidth: 1,
-            },
-        tabBarLabelStyle: {
-          fontSize: 14,
-          paddingTop: 2,
-        },
         animation: 'fade',
       }}
     >
