@@ -13,6 +13,7 @@ import { BookingApplication } from '@/lib/services/graphql/generated';
 import { Fonts } from '@/lib/constants/theme';
 import { MapPin, ChevronRight } from 'lucide-react-native';
 import { SURFACE } from '@/lib/constants/surface';
+import ImageScrim from '../atoms/a-image-scrim';
 
 type Props = {
   host?: boolean;
@@ -47,19 +48,22 @@ const BookingApplicationCard: React.FC<Props> = ({ application, host }) => {
       }}
       activeOpacity={0.75}
       style={{
-        borderRadius: 16,
+        borderRadius: 20,
         backgroundColor: hexToRgba(colors.text, 0.05),
         overflow: 'hidden',
         boxShadow: SURFACE.shadow,
       }}
     >
       {/* Cover image */}
-      <Image
-        source={coverUrl ? { uri: coverUrl } : FALLBACK_IMAGE}
-        placeholder={{ blurhash: PROPERTY_BLURHASH }}
-        contentFit="cover"
-        style={{ width: '100%', height: 110 }}
-      />
+      <View style={{ width: '100%', height: 120 }}>
+        <Image
+          source={coverUrl ? { uri: coverUrl } : FALLBACK_IMAGE}
+          placeholder={{ blurhash: PROPERTY_BLURHASH }}
+          contentFit="cover"
+          style={{ width: '100%', height: '100%' }}
+        />
+        <ImageScrim from="top" intensity={0.4} height="55%" />
+      </View>
 
       {/* Status pill overlay */}
       {application.status && (

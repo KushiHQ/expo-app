@@ -248,7 +248,7 @@ export default function UserBookings() {
                     paddingBottom: 20,
                   }}
                   renderItem={({ item }) => (
-                    <View className="mb-2">
+                    <View className="mb-4">
                       <BookingCard booking={item} />
                     </View>
                   )}
@@ -291,7 +291,7 @@ export default function UserBookings() {
                     paddingBottom: 20,
                   }}
                   renderItem={({ item }) => (
-                    <View className="mb-2">
+                    <View className="mb-3">
                       <BookingApplicationCard application={cast(item)} />
                     </View>
                   )}

@@ -7,14 +7,14 @@ import ThemedText from '../atoms/a-themed-text';
 import { Fonts } from '@/lib/constants/theme';
 import { hexToRgba } from '@/lib/utils/colors';
 import Button from '../atoms/a-button';
-import { ChevronDown } from 'lucide-react-native';
+import { ChevronDown, MapPin } from 'lucide-react-native';
+import { IconParkOutlineDot } from '../icons/i-circle';
 import BookingDetailsSheet from './m-booking-details';
 import { BookingsQuery } from '@/lib/services/graphql/generated';
 import { capitalize } from '@/lib/utils/text';
 import { getBookingStatus } from '@/lib/utils/bookings';
 import { useRouter } from '@/lib/hooks/use-router';
 import { SURFACE } from '@/lib/constants/surface';
-import SoftDivider from '../atoms/a-soft-divider';
 
 type Props = {
   booking: BookingsQuery['bookings'][number];
@@ -26,22 +26,27 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
   const [open, setOpen] = React.useState(false);
 
   const bookingStatus = getBookingStatus(booking);
+  const statusColor =
+    bookingStatus === 'pending'
+      ? colors.accent
+      : bookingStatus === 'active'
+        ? colors.success
+        : colors.error;
+
+  const location = [booking.hosting.city, booking.hosting.state].filter(Boolean).join(', ');
 
   return (
     <>
-      <View className="gap-4 pb-4">
-        <SoftDivider style={{ marginBottom: 4 }} />
+      <View className="gap-3">
         <Pressable
           onPress={() => router.push(`/bookings/${booking.id}`)}
-          className="flex-row items-center gap-4 rounded-xl p-2"
+          className="flex-row items-center gap-3.5 rounded-[20px] p-2.5"
           style={{
             backgroundColor: hexToRgba(colors.text, 0.05),
             boxShadow: SURFACE.shadow,
           }}
         >
-          <View
-            className="h-[90px] w-[107px] overflow-hidden rounded-xl"
-          >
+          <View className="h-[92px] w-[104px] overflow-hidden rounded-2xl">
             <Image
               source={{
                 uri: booking.hosting.coverImage?.asset.publicUrl,
@@ -55,45 +60,41 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
               priority="high"
             />
           </View>
-          <View className="flex-1 justify-between gap-2">
+          <View className="flex-1 gap-1.5">
             <ThemedText
-              style={{ fontSize: 18, fontFamily: Fonts.bold }}
+              style={{ fontSize: 15, fontFamily: Fonts.semibold }}
               ellipsizeMode="tail"
-              numberOfLines={2}
+              numberOfLines={1}
             >
               {booking.hosting.title}
             </ThemedText>
-            <ThemedText style={{ fontSize: 14, color: hexToRgba(colors.text, 0.6) }}>
-              {booking.hosting.city}, {booking.hosting.state}
-            </ThemedText>
-            <View className="flex-row items-center justify-between">
-              <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14 }}>
-                ₦{Number(booking.amount ?? '0').toLocaleString()}{' '}
-                {capitalize(booking.hosting.paymentInterval ?? '')}
+            {location ? (
+              <View className="flex-row items-center gap-1.5">
+                <MapPin size={12} color={hexToRgba(colors.text, 0.45)} />
+                <ThemedText
+                  numberOfLines={1}
+                  className="flex-1"
+                  style={{ fontSize: 13, color: hexToRgba(colors.text, 0.6), fontFamily: Fonts.medium }}
+                >
+                  {location}
+                </ThemedText>
+              </View>
+            ) : null}
+            <View className="mt-0.5 flex-row items-center justify-between gap-2">
+              <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 14 }}>
+                ₦{Number(booking.amount ?? '0').toLocaleString()}
+                <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 12, color: hexToRgba(colors.text, 0.5) }}>
+                  {' '}
+                  {capitalize(booking.hosting.paymentInterval ?? '')}
+                </ThemedText>
               </ThemedText>
               <View
-                className="max-w-[74px] flex-1 items-center justify-center rounded-lg p-1 px-2"
-                style={{
-                  backgroundColor: hexToRgba(
-                    bookingStatus === 'pending'
-                      ? colors.accent
-                      : bookingStatus === 'active'
-                        ? colors.success
-                        : colors.error,
-                    0.3,
-                  ),
-                }}
+                className="flex-row items-center gap-1.5 rounded-full px-2 py-0.5"
+                style={{ backgroundColor: hexToRgba(statusColor, 0.16) }}
               >
+                <IconParkOutlineDot color={statusColor} size={8} />
                 <ThemedText
-                  style={{
-                    fontSize: 12,
-                    color:
-                      bookingStatus === 'pending'
-                        ? colors.accent
-                        : bookingStatus === 'active'
-                          ? colors.success
-                          : colors.error,
-                  }}
+                  style={{ fontSize: 11, color: statusColor, fontFamily: Fonts.semibold }}
                 >
                   {capitalize(bookingStatus)}
                 </ThemedText>
@@ -101,10 +102,10 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
             </View>
           </View>
         </Pressable>
-        <Button onPress={() => setOpen(true)} type="tinted" style={{ paddingBlock: 4 }}>
+        <Button onPress={() => setOpen(true)} type="tinted" style={{ paddingVertical: 10 }}>
           <View className="flex-row items-center gap-2">
-            <ThemedText content="tinted">View Reciept</ThemedText>
-            <ChevronDown color={colors.primary} />
+            <ThemedText content="tinted">View Receipt</ThemedText>
+            <ChevronDown color={colors.primary} size={16} />
           </View>
         </Button>
       </View>
