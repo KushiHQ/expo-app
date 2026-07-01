@@ -84,7 +84,15 @@ const Button: React.FC<Props> = ({
           ? '#fff'
           : type === 'text'
             ? colors.background
-            : colors.text;
+            : // `tinted` is a secondary CTA: amber label on a soft amber wash.
+              type === 'tinted'
+              ? colors.primary
+              : colors.text;
+
+  // `tinted` is always a translucent wash of the primary colour (never a solid
+  // fill) — an iOS-style secondary button. Handled explicitly because otherwise
+  // it falls through to the solid `typeColor` and reads as a shadow-less primary.
+  const isTinted = type === 'tinted';
 
   const isSolid = variant !== 'outline' && variant !== 'soft' && variant !== 'text';
   const isPrimary = type === 'primary' && isSolid;
@@ -109,9 +117,11 @@ const Button: React.FC<Props> = ({
               paddingHorizontal: 0,
               alignItems: 'flex-start',
             }
-          : type
-            ? { backgroundColor: typeColor }
-            : {};
+          : isTinted
+            ? { backgroundColor: hexToRgba(colors.primary, 0.14) }
+            : type
+              ? { backgroundColor: typeColor }
+              : {};
 
   return (
     <Pressable
