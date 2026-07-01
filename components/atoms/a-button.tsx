@@ -57,20 +57,23 @@ const Button: React.FC<Props> = ({
     onPressOut?.(event);
   };
 
-  const typeColor =
-    type === 'primary'
-      ? colors.primary
-      : type === 'shade'
-        ? colors.shade
-        : type === 'accent'
-          ? colors.accent
-          : type === 'background'
-            ? colors.background
-            : type === 'text'
-              ? colors.text
-              : type === 'error'
-                ? colors.error
-                : hexToRgba(colors.primary, 0.2);
+  // A SOLID base hex for the type — safe to feed into hexToRgba for the
+  // soft/outline washes. (`typeColor` below may itself be an rgba for the
+  // no-type default, so never alpha that one.)
+  const baseColor =
+    type === 'shade'
+      ? colors.shade
+      : type === 'accent'
+        ? colors.accent
+        : type === 'background'
+          ? colors.background
+          : type === 'text'
+            ? colors.text
+            : type === 'error'
+              ? colors.error
+              : colors.primary;
+
+  const typeColor = type ? baseColor : hexToRgba(colors.primary, 0.2);
 
   const color =
     type === 'primary'
@@ -88,7 +91,7 @@ const Button: React.FC<Props> = ({
   const isError = type === 'error' && isSolid;
 
   // Soft-filled spinner adopts the accent colour; solid uses the content colour.
-  const spinnerColor = isSolid ? color : typeColor;
+  const spinnerColor = isSolid ? color : baseColor;
 
   // Resolve the container fill up-front as a plain style object (classic RN
   // props only — no boxShadow string) so the background always paints.
@@ -96,9 +99,9 @@ const Button: React.FC<Props> = ({
     variant === 'outline'
       ? // Borderless soft/outline variants — a translucent wash of the type
         // colour, no hard outline (soft/cloudy rule). `soft` reads stronger.
-        { backgroundColor: hexToRgba(typeColor, 0.1) }
+        { backgroundColor: hexToRgba(baseColor, 0.1) }
       : variant === 'soft'
-        ? { backgroundColor: hexToRgba(typeColor, 0.16) }
+        ? { backgroundColor: hexToRgba(baseColor, 0.16) }
         : variant === 'text'
           ? {
               backgroundColor: 'transparent',
