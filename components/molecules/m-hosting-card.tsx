@@ -264,7 +264,7 @@ export const HostingDetailsSkeleton = () => {
 	return (
 		<View className="gap-8">
 			{/* Carousel Area */}
-			<Skeleton style={{ height: 290, borderRadius: 12 }} />
+			<Skeleton style={{ height: 300, borderRadius: 24 }} />
 
 			<View className="gap-4">
 				{/* Title and Like Row */}

@@ -81,18 +81,18 @@ export default function GuestHome() {
               <View
                 style={{
                   flexDirection: numColumns > 1 ? 'row' : 'column',
-                  flexWrap: 'wrap',
-                  gap: 16,
-                  marginTop: 40,
+                  flexWrap: numColumns > 1 ? 'wrap' : 'nowrap',
+                  // In a single column `flex: 1` collapses the rows (no bounded
+                  // height) — give each skeleton full width and real spacing so
+                  // they fill the screen like the actual cards do.
+                  gap: numColumns > 1 ? 16 : 32,
+                  marginTop: 24,
                 }}
               >
                 {Array.from({ length: 6 }).map((_, index) => (
                   <View
                     key={index}
-                    style={{
-                      flex: 1,
-                      minWidth: numColumns > 1 ? '45%' : undefined,
-                    }}
+                    style={numColumns > 1 ? { flexBasis: '47%', flexGrow: 1 } : { width: '100%' }}
                   >
                     <HostingCardSkeleton />
                   </View>

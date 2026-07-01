@@ -21,6 +21,9 @@ const ThemedText: React.FC<ThemedTextProps> = ({ style, type = 'default', conten
         type === 'subtitle' ? styles.subtitle : undefined,
         type === 'link' ? styles.link : undefined,
         content && {
+          // `content` labels sit on filled buttons/pills — give them a heavier
+          // weight by default (callers can still override via `style`).
+          fontFamily: Fonts.semibold,
           color:
             content === 'primary'
               ? colors['primary-content']

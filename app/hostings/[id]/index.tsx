@@ -19,7 +19,8 @@ import { capitalize, slugify } from "@/lib/utils/text";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { useRouter } from "@/lib/hooks/use-router";
-import { MessageSquare } from "lucide-react-native";
+import { MapPin, MessageSquare } from "lucide-react-native";
+import { SURFACE } from "@/lib/constants/surface";
 import React from "react";
 import { Pressable, Share, View } from "react-native";
 import { useBreakpoint } from "@/lib/hooks/use-breakpoint";
@@ -112,8 +113,6 @@ export default function HostingDetails() {
 							paddingHorizontal: 16,
 							paddingBottom: 32,
 							paddingTop: 12,
-							borderTopWidth: 1,
-							borderTopColor: hexToRgba(colors.text, 0.045),
 						}}
 					>
 						<Button
@@ -132,8 +131,6 @@ export default function HostingDetails() {
 							paddingHorizontal: 16,
 							paddingBottom: 32,
 							paddingTop: 12,
-							borderTopWidth: 1,
-							borderTopColor: hexToRgba(colors.text, 0.045),
 						}}
 					>
 						<ThemedText
@@ -156,8 +153,6 @@ export default function HostingDetails() {
 							paddingBottom: 32,
 							paddingTop: 12,
 							gap: 10,
-							borderTopWidth: 1,
-							borderTopColor: hexToRgba(colors.text, 0.045),
 						}}
 					>
 						<View
@@ -204,7 +199,7 @@ export default function HostingDetails() {
 								<View
 									style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
 								>
-									<MessageSquare size={16} color="#fff" />
+									<MessageSquare size={16} color={colors["primary-content"]} />
 									<ThemedText content="primary">Message Host</ThemedText>
 								</View>
 							</Button>
@@ -254,8 +249,8 @@ export default function HostingDetails() {
 				) : (
 					<>
 						<View
-							style={{ height: isTablet ? 420 : 290 }}
-							className="overflow-hidden rounded-xl"
+							style={{ height: isTablet ? 420 : 300, boxShadow: SURFACE.shadow }}
+							className="overflow-hidden rounded-3xl"
 						>
 							<Carousel autoplay style={{ height: "100%", width: "100%" }}>
 								{(hosting?.rooms.map((r) => r.images).flat() ?? []).map(
@@ -284,11 +279,10 @@ export default function HostingDetails() {
 							<View className="gap-1.5">
 								<View className="flex-row items-center justify-between">
 									<ThemedText
-										numberOfLines={1}
+										numberOfLines={2}
 										ellipsizeMode="tail"
-										type="title"
-										className="max-w-[80%]"
-										style={{ fontSize: 18 }}
+										className="max-w-[82%]"
+										style={{ fontSize: 22, fontFamily: Fonts.bold, lineHeight: 28 }}
 									>
 										{hosting?.title}
 									</ThemedText>
@@ -351,9 +345,18 @@ export default function HostingDetails() {
 											</ThemedText>
 										</Pressable>
 									)}
-								<ThemedText style={{ fontSize: 14, fontFamily: Fonts.light }}>
-									{hosting?.city}, {hosting?.state}
-								</ThemedText>
+								<View className="flex-row items-center gap-1.5">
+									<MapPin size={13} color={hexToRgba(colors.text, 0.45)} />
+									<ThemedText
+										style={{
+											fontSize: 14,
+											fontFamily: Fonts.medium,
+											color: hexToRgba(colors.text, 0.6),
+										}}
+									>
+										{[hosting?.city, hosting?.state].filter(Boolean).join(", ")}
+									</ThemedText>
+								</View>
 								<View className="mt-2 flex-row">
 									<ListingTypeBadge listingType={hosting?.listingType} />
 								</View>
@@ -382,25 +385,27 @@ export default function HostingDetails() {
 										</ThemedText>
 									</Pressable>
 								) : null}
-								<View className="flex-row items-center gap-1">
-									<MynauiStarSolid size={14} color={colors.accent} />
-									<ThemedText style={{ fontSize: 14 }}>
+								<View
+									className="mt-2 flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-1"
+									style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
+								>
+									<MynauiStarSolid size={13} color={colors.primary} />
+									<ThemedText style={{ fontSize: 13, fontFamily: Fonts.semibold }}>
 										{Number(hosting?.averageRating ?? "0").toFixed(1)}
 									</ThemedText>
-									<ThemedText style={{ fontSize: 12, fontFamily: Fonts.light }}>
-										({Number(hosting?.totalRatings ?? "0").toFixed(1)} Reviews)
+									<ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.45) }}>
+										({Number(hosting?.totalRatings ?? "0")} reviews)
 									</ThemedText>
 								</View>
 							</View>
-							<View
-								className="mt-8 pb-8"
-								style={{ borderColor: hexToRgba(colors.text, 0.1) }}
-							>
-								<ThemedText style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
+							<View className="mt-8 pb-8">
+								<ThemedText
+									style={{ fontFamily: Fonts.bold, fontSize: 17, letterSpacing: -0.3 }}
+								>
 									Description
 								</ThemedText>
 								<TruncatedText
-									className="mt-4"
+									className="mt-3"
 									text={hosting?.description ?? ""}
 									style={{
 										fontSize: 14,
