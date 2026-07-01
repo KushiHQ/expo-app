@@ -1,11 +1,11 @@
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
-import { SURFACE } from '@/lib/constants/surface';
 import * as Haptics from 'expo-haptics';
 import React from 'react';
 import {
   ActivityIndicator,
   GestureResponderEvent,
+  Platform,
   Pressable,
   PressableProps,
   StyleProp,
@@ -74,31 +74,36 @@ const Button: React.FC<Props> = ({
   // Soft-filled spinner adopts the accent colour; solid uses the content colour.
   const spinnerColor = isSolid ? color : typeColor;
 
+  // Resolve the container fill up-front as a plain style object (classic RN
+  // props only — no boxShadow string) so the background always paints.
+  const containerStyle: ViewStyle =
+    variant === 'outline'
+      ? // Borderless soft/outline variants — a translucent wash of the type
+        // colour, no hard outline (soft/cloudy rule). `soft` reads stronger.
+        { backgroundColor: hexToRgba(typeColor, 0.1) }
+      : variant === 'soft'
+        ? { backgroundColor: hexToRgba(typeColor, 0.16) }
+        : variant === 'text'
+          ? {
+              backgroundColor: 'transparent',
+              paddingVertical: 0,
+              paddingHorizontal: 0,
+              alignItems: 'flex-start',
+            }
+          : type
+            ? { backgroundColor: typeColor }
+            : {};
+
   return (
     <Pressable
       style={({ pressed }) => [
         styles.button,
-        // Borderless soft/outline variants — a translucent wash of the type
-        // colour, no hard outline (soft/cloudy rule). `soft` reads a touch
-        // stronger than `outline`.
-        variant === 'outline'
-          ? { backgroundColor: hexToRgba(typeColor, 0.09) }
-          : variant === 'soft'
-            ? { backgroundColor: hexToRgba(typeColor, 0.14) }
-            : variant === 'text'
-              ? {
-                  backgroundColor: undefined,
-                  paddingVertical: 0,
-                  paddingHorizontal: 0,
-                  alignItems: 'flex-start',
-                }
-              : type && { backgroundColor: typeColor },
-        isPrimary && { boxShadow: SURFACE.ctaGlow },
-        isError && { boxShadow: SURFACE.dangerGlow },
+        containerStyle,
+        isPrimary && styles.primaryShadow,
+        isError && styles.errorShadow,
         style,
         isDisabled && styles.disabled,
-        pressed && !isDisabled && variant !== 'text' && styles.pressed,
-        pressed && !isDisabled && variant === 'text' && styles.pressedText,
+        pressed && !isDisabled && (variant === 'text' ? styles.pressedText : styles.pressed),
       ]}
       onPress={handlePress}
       disabled={isDisabled}
@@ -119,6 +124,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     // Full-pill CTA per the soft/cloudy spec (radii: CTAs = full pills).
     borderRadius: 999,
+  },
+  // Warm glow on the primary CTA — Platform.select (proven to paint on both
+  // platforms) rather than a boxShadow string.
+  primaryShadow: {
+    ...Platform.select({
+      ios: {
+        shadowColor: '#F59E0B',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 14,
+      },
+      android: {
+        elevation: 8,
+        shadowColor: '#F59E0B',
+      },
+    }),
+  },
+  errorShadow: {
+    ...Platform.select({
+      ios: {
+        shadowColor: '#EF4444',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.32,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 6,
+        shadowColor: '#EF4444',
+      },
+    }),
   },
   disabled: {
     opacity: 0.5,
