@@ -2,20 +2,26 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import React from 'react';
 import { Pressable, View, Platform } from 'react-native';
-import Logo from '../icons/i-logo';
 import ThemedText from '../atoms/a-themed-text';
 import { Fonts } from '@/lib/constants/theme';
+import { SURFACE } from '@/lib/constants/surface';
 import Button from '../atoms/a-button';
 import {
   NotificationsQuery,
-  NotificationSubject,
-  NotificationIntent,
-  NotificationType,
   useMarkNotificationAsReadMutation,
 } from '@/lib/services/graphql/generated';
 import { useRouter } from '@/lib/hooks/use-router';
 import moment from 'moment';
 import notifee from '@notifee/react-native';
+import {
+  ArrowRight,
+  Bell,
+  CalendarCheck,
+  ClipboardList,
+  Home,
+  LucideIcon,
+  MessageCircle,
+} from 'lucide-react-native';
 
 type Props = {
   notification: NotificationsQuery['notifications'][number];
@@ -41,23 +47,27 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
     return raw;
   }, [notification.data]);
 
-  const getRoute = (): string | null => {
-    const subject = data.subject;
-    const id = data.id;
-    const intent = data.intent;
+  // Normalise the subject to bare letters so it matches regardless of how the
+  // enum is serialised — the GraphQL value is e.g. "BOOKING_APPLICATION", so a
+  // naive lowercase leaves an underscore that never matched "bookingapplication".
+  const subjectKey = String(data.subject ?? '')
+    .toLowerCase()
+    .replace(/[^a-z]/g, '');
+  const intentKey = String(data.intent ?? '')
+    .toLowerCase()
+    .replace(/[^a-z]/g, '');
 
+  const getRoute = (): string | null => {
+    const id = data.id;
     if (!id) return null;
 
-    // Subject-based routing — compare case-insensitively for robustness
-    const s = String(subject).toLowerCase();
-    if (s === 'booking') return `/bookings/${id}`;
-    if (s === 'bookingapplication') return `/users/booking-applications/${id}`;
-    if (s === 'hosting') return `/hostings/${id}`;
-    if (s === 'chat') return `/chats/${id}/`;
+    if (subjectKey === 'booking') return `/bookings/${id}`;
+    if (subjectKey === 'bookingapplication') return `/users/booking-applications/${id}`;
+    if (subjectKey === 'hosting') return `/hostings/${id}`;
+    if (subjectKey === 'chat') return `/chats/${id}/`;
 
     // Intent fallback
-    const i = String(intent).toLowerCase();
-    if (i === 'notification') return `/chats/${id}/`;
+    if (intentKey === 'notification') return `/chats/${id}/`;
 
     return null;
   };
@@ -88,50 +98,47 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
   const isUnread = !notification.isRead;
 
   const getActionLabel = () => {
-    const subject = data.subject;
-    const intent = data.intent;
-    const s = String(subject).toLowerCase();
-    const i = String(intent).toLowerCase();
-    if (s === 'booking') return 'View Booking';
-    if (s === 'bookingapplication') return 'View Application';
-    if (s === 'hosting') return 'View Listing';
-    if (s === 'chat') return 'Open Chat';
-    if (i === 'notification') return 'Open Chat';
+    if (subjectKey === 'booking') return 'View Booking';
+    if (subjectKey === 'bookingapplication') return 'View Application';
+    if (subjectKey === 'hosting') return 'View Listing';
+    if (subjectKey === 'chat') return 'Open Chat';
+    if (intentKey === 'notification') return 'Open Chat';
     return 'View';
   };
+
+  // A subject-specific icon reads better than the generic logo.
+  const SubjectIcon: LucideIcon =
+    subjectKey === 'bookingapplication'
+      ? ClipboardList
+      : subjectKey === 'booking'
+        ? CalendarCheck
+        : subjectKey === 'hosting'
+          ? Home
+          : subjectKey === 'chat' || intentKey === 'notification'
+            ? MessageCircle
+            : Bell;
 
   return (
     <Pressable
       onPress={handleCardPress}
-      className="overflow-hidden rounded-xl"
+      className="rounded-[20px]"
       style={{
-        backgroundColor: isUnread ? hexToRgba(colors.primary, 0.07) : hexToRgba(colors.text, 0.05),
+        backgroundColor: isUnread ? hexToRgba(colors.primary, 0.08) : hexToRgba(colors.text, 0.05),
+        boxShadow: SURFACE.shadow,
       }}
     >
-      <View className="flex-row items-start gap-3 p-4">
-        {/* Icon with unread dot */}
-        <View className="relative mt-0.5">
-          <View
-            className="items-center justify-center rounded-full"
-            style={{
-              backgroundColor: isUnread
-                ? hexToRgba(colors.primary, 0.15)
-                : hexToRgba(colors.text, 0.1),
-              width: 36,
-              height: 36,
-            }}
-          >
-            <Logo width={18} height={15} />
-          </View>
-          {isUnread && (
-            <View
-              className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2"
-              style={{
-                backgroundColor: colors.primary,
-                borderColor: colors.background,
-              }}
-            />
-          )}
+      <View className="flex-row items-start gap-3.5 p-4">
+        {/* Subject icon chip — unread gets a soft warm glow instead of a hard dot. */}
+        <View
+          className="h-10 w-10 items-center justify-center rounded-full"
+          style={{
+            backgroundColor: isUnread
+              ? hexToRgba(colors.primary, 0.15)
+              : hexToRgba(colors.text, 0.08),
+            boxShadow: isUnread ? SURFACE.glow : undefined,
+          }}
+        >
+          <SubjectIcon size={18} color={isUnread ? colors.primary : hexToRgba(colors.text, 0.7)} />
         </View>
 
         {/* Body */}
@@ -140,18 +147,19 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
             <ThemedText
               numberOfLines={1}
               style={{
-                fontFamily: Fonts.semibold,
-                fontSize: 13,
+                fontFamily: isUnread ? Fonts.bold : Fonts.semibold,
+                fontSize: 14,
                 flex: 1,
-                color: isUnread ? colors.text : hexToRgba(colors.text, 0.8),
+                color: isUnread ? colors.text : hexToRgba(colors.text, 0.85),
               }}
             >
               {notification.title}
             </ThemedText>
             <ThemedText
               style={{
-                fontSize: 10,
-                color: hexToRgba(colors.text, 0.4),
+                fontSize: 10.5,
+                fontFamily: isUnread ? Fonts.semibold : Fonts.regular,
+                color: isUnread ? colors.primary : hexToRgba(colors.text, 0.4),
                 flexShrink: 0,
               }}
             >
@@ -161,42 +169,29 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
 
           <ThemedText
             numberOfLines={2}
-            style={{ color: hexToRgba(colors.text, 0.6), fontSize: 12 }}
+            style={{ color: hexToRgba(colors.text, 0.6), fontSize: 12, lineHeight: 17 }}
           >
             {notification.message}
           </ThemedText>
 
-          {/* Action button — only shown when there's a route */}
+          {/* Action — a soft amber pill, only when the notification links somewhere */}
           {hasRoute && (
-            <View className="mt-2 self-start">
-              <Button
-                variant="outline"
-                type="shade"
-                className="px-3 py-1.5"
-                onPress={handleButtonPress}
+            <Button
+              variant="soft"
+              type="primary"
+              onPress={handleButtonPress}
+              className="mt-2 flex-row items-center gap-1.5 self-start px-3.5 py-2"
+            >
+              <ThemedText
+                style={{ fontSize: 12, color: colors.primary, fontFamily: Fonts.semibold }}
               >
-                <ThemedText
-                  style={{
-                    fontSize: 11,
-                    color: colors.primary,
-                    fontFamily: Fonts.medium,
-                  }}
-                >
-                  {getActionLabel()}
-                </ThemedText>
-              </Button>
-            </View>
+                {getActionLabel()}
+              </ThemedText>
+              <ArrowRight size={13} color={colors.primary} />
+            </Button>
           )}
         </View>
       </View>
-
-      {/* Unread accent bar on the left */}
-      {isUnread && (
-        <View
-          className="absolute bottom-0 left-0 top-0 w-1 rounded-l-xl"
-          style={{ backgroundColor: colors.primary }}
-        />
-      )}
     </Pressable>
   );
 };
