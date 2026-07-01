@@ -4,10 +4,16 @@
  * translucent FILL + soft SHADOW (+ optional glow) — never a hard 1px border.
  */
 export const SURFACE = {
-  /** Default soft ambient shadow for a raised surface — kept subtle. */
-  shadow: "0px 10px 28px -16px rgba(0,0,0,0.42)",
-  /** Slightly stronger shadow for more-elevated surfaces (sheets, hero cards). */
-  shadowHigh: "0px 16px 38px -20px rgba(0,0,0,0.52)",
+  /**
+   * Default soft elevation for a raised surface. On the near-black theme a
+   * plain dark shadow is invisible — the lift reads from a faint light rim on
+   * the top edge (light catching the surface) plus a soft grounding shadow.
+   */
+  shadow:
+    "0px 12px 30px -14px rgba(0,0,0,0.55), inset 0px 1px 0px rgba(255,255,255,0.06)",
+  /** Stronger elevation for sheets / hero cards. */
+  shadowHigh:
+    "0px 20px 44px -16px rgba(0,0,0,0.68), inset 0px 1px 0px rgba(255,255,255,0.08)",
   /** Warm glow for selected/active surfaces and primary CTAs. */
   glow: "0px 8px 22px -10px rgba(255,165,0,0.30)",
   /** Stronger warm glow for the primary CTA button. */
