@@ -7,6 +7,7 @@ import ThemedText from '../atoms/a-themed-text';
 import { Fonts } from '@/lib/constants/theme';
 import { hexToRgba } from '@/lib/utils/colors';
 import { MynauiStarSolid } from '../icons/i-star';
+import { MapPin } from 'lucide-react-native';
 import { HostAnalyticsQuery, HostingQuery } from '@/lib/services/graphql/generated';
 import { capitalize } from '@/lib/utils/text';
 import { SURFACE } from '@/lib/constants/surface';
@@ -19,18 +20,20 @@ type Props = {
 const TopListingCard: React.FC<Props> = ({ hosting, onPress }) => {
   const colors = useThemeColors();
 
+  const intervalLabel = hosting?.paymentInterval
+    ? capitalize(String(hosting.paymentInterval).toLowerCase())
+    : null;
+
   return (
     <Pressable
-      className="flex-row items-center gap-4 rounded-xl p-2"
+      className="flex-row items-center gap-3.5 rounded-[20px] p-2.5"
       style={{
         backgroundColor: hexToRgba(colors.text, 0.05),
         boxShadow: SURFACE.shadow,
       }}
       onPress={onPress}
     >
-      <View
-        className="h-[90px] w-[107px] overflow-hidden rounded-xl"
-      >
+      <View className="h-[88px] w-[104px] overflow-hidden rounded-2xl">
         <Image
           source={{
             uri: hosting?.coverImage?.asset.publicUrl,
@@ -44,47 +47,74 @@ const TopListingCard: React.FC<Props> = ({ hosting, onPress }) => {
           priority="high"
         />
       </View>
-      <View className="flex-1 justify-between gap-2">
+      <View className="flex-1 gap-1.5">
         <ThemedText
-          style={{ fontSize: 18, fontFamily: Fonts.bold }}
+          style={{ fontSize: 15, fontFamily: Fonts.semibold }}
           ellipsizeMode="tail"
-          numberOfLines={2}
+          numberOfLines={1}
         >
           {hosting?.title}
         </ThemedText>
-        <ThemedText style={{ fontSize: 14, color: hexToRgba(colors.text, 0.6) }}>
-          {hosting?.city}, {hosting?.state}
-        </ThemedText>
-        <View className="flex-row items-center justify-between">
-          <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14 }}>
-            ₦{Number(hosting?.price ?? '0').toLocaleString()}{' '}
-            {capitalize(hosting?.paymentInterval ?? '')}
+        <View className="flex-row items-center gap-1.5">
+          <MapPin size={12} color={hexToRgba(colors.text, 0.45)} />
+          <ThemedText
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            className="flex-1"
+            style={{
+              fontSize: 13,
+              color: hexToRgba(colors.text, 0.6),
+              fontFamily: Fonts.medium,
+            }}
+          >
+            {hosting?.city}, {hosting?.state}
           </ThemedText>
-          {hosting?.totalRatings && (
-            <View className="flex-row items-center gap-1">
-              <MynauiStarSolid color={colors.accent} size={16} />
-              <View className="flex-row items-center gap-1">
-                <ThemedText
-                  style={{
-                    fontFamily: Fonts.medium,
-                    fontSize: 14,
-                    color: hexToRgba(colors.text, 0.9),
-                  }}
-                >
-                  {hosting?.averageRating?.toFixed(2)}
-                </ThemedText>
-                <ThemedText
-                  style={{
-                    fontFamily: Fonts.light,
-                    fontSize: 14,
-                    color: hexToRgba(colors.text, 0.8),
-                  }}
-                >
-                  ({hosting?.totalRatings})
-                </ThemedText>
-              </View>
+        </View>
+        <View className="mt-0.5 flex-row items-center justify-between gap-2">
+          <View>
+            <ThemedText
+              style={{ fontFamily: Fonts.bold, fontSize: 15, color: colors.primary }}
+            >
+              ₦{Number(hosting?.price ?? '0').toLocaleString()}
+            </ThemedText>
+            {intervalLabel ? (
+              <ThemedText
+                style={{
+                  fontFamily: Fonts.medium,
+                  fontSize: 11,
+                  color: hexToRgba(colors.text, 0.4),
+                }}
+              >
+                {intervalLabel}
+              </ThemedText>
+            ) : null}
+          </View>
+          {hosting?.totalRatings ? (
+            <View
+              className="flex-row items-center gap-1 rounded-full px-2.5 py-1"
+              style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
+            >
+              <MynauiStarSolid color={colors.primary} size={12} />
+              <ThemedText
+                style={{
+                  fontFamily: Fonts.semibold,
+                  fontSize: 12,
+                  color: colors.text,
+                }}
+              >
+                {hosting?.averageRating?.toFixed(1)}
+              </ThemedText>
+              <ThemedText
+                style={{
+                  fontFamily: Fonts.regular,
+                  fontSize: 11,
+                  color: hexToRgba(colors.text, 0.45),
+                }}
+              >
+                ({hosting?.totalRatings})
+              </ThemedText>
             </View>
-          )}
+          ) : null}
         </View>
       </View>
     </Pressable>

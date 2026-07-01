@@ -99,9 +99,9 @@ const ProfileScreen = () => {
   return (
     <>
       <DetailsLayout title="Profile">
-        <View className="mt-4">
+        <View className="mt-4 gap-6">
           <View
-            className="flex-row flex-wrap items-center gap-4 rounded-xl p-6"
+            className="flex-row flex-wrap items-center gap-4 rounded-3xl p-6"
             style={{
               backgroundColor: hexToRgba(colors.text, 0.05),
               boxShadow: SURFACE.shadow,
@@ -109,8 +109,8 @@ const ProfileScreen = () => {
           >
             <UserProfileSummary />
             <View
-              style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
-              className="min-w-[40px] flex-[1.5] gap-5 rounded-xl p-4"
+              style={{ backgroundColor: hexToRgba(colors.text, 0.08) }}
+              className="min-w-[40px] flex-[1.5] gap-4 rounded-2xl p-4"
             >
               <View className="flex-row items-center gap-2">
                 <CuidaBuildingOutline color={colors.accent} size={16} />
@@ -120,52 +120,94 @@ const ProfileScreen = () => {
               </View>
               <Pressable
                 onPress={() => router.push(`/users/${id}/profile/edit`)}
-                className="flex-row items-center justify-center gap-2 rounded-lg p-1"
+                className="flex-row items-center justify-center gap-2 rounded-full py-2"
                 style={{ backgroundColor: colors.text }}
               >
-                <VaadinPaintbrush color={colors.background} size={16} />
-                <ThemedText style={{ color: colors.background }}>Edit Profile</ThemedText>
+                <VaadinPaintbrush color={colors.background} size={15} />
+                <ThemedText style={{ color: colors.background, fontFamily: Fonts.semibold, fontSize: 13 }}>
+                  Edit Profile
+                </ThemedText>
               </Pressable>
             </View>
           </View>
-          <View className="mt-8 gap-2">
+
+          <View
+            className="overflow-hidden rounded-3xl"
+            style={{
+              backgroundColor: hexToRgba(colors.text, 0.05),
+              boxShadow: SURFACE.shadow,
+            }}
+          >
             {NAVIGATION.map((nav, index) => {
               const Icon = nav.icon;
               return (
-                <Pressable
-                  onPress={() => router.push(nav.href)}
-                  key={index}
-                  className="flex-row items-center justify-between p-2 py-4"
-                >
-                  <View className="flex-row items-center gap-3">
-                    <Icon size={24} color={colors.primary} />
-                    <ThemedText style={{ fontFamily: Fonts.medium }}>{nav.label}</ThemedText>
-                  </View>
-                  <ChevronRight size={24} color={colors.text} />
-                </Pressable>
+                <React.Fragment key={index}>
+                  <Pressable
+                    onPress={() => router.push(nav.href)}
+                    className="flex-row items-center justify-between px-4 py-3.5"
+                  >
+                    <View className="flex-row items-center gap-3.5">
+                      <View
+                        className="h-10 w-10 items-center justify-center rounded-2xl"
+                        style={{ backgroundColor: hexToRgba(colors.primary, 0.1) }}
+                      >
+                        <Icon size={20} color={colors.primary} />
+                      </View>
+                      <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 15 }}>
+                        {nav.label}
+                      </ThemedText>
+                    </View>
+                    <ChevronRight size={20} color={hexToRgba(colors.text, 0.3)} />
+                  </Pressable>
+                  {index < NAVIGATION.length - 1 ? (
+                    <View
+                      style={{
+                        height: 1,
+                        marginLeft: 70,
+                        backgroundColor: hexToRgba(colors.text, 0.05),
+                      }}
+                    />
+                  ) : null}
+                </React.Fragment>
               );
             })}
-            <Pressable
-              onPress={() => setDeleteConfirm(true)}
-              className="flex-row items-center justify-between p-2 py-4"
-            >
-              <View className="flex-row items-center gap-3">
-                <FluentDelete24Regular size={24} color={colors.error} />
-                <ThemedText style={{ fontFamily: Fonts.medium, color: colors.error }}>
-                  Delete Account
-                </ThemedText>
-              </View>
-              <ChevronRight size={24} color={colors.error} />
-            </Pressable>
+          </View>
+
+          <View
+            className="overflow-hidden rounded-3xl"
+            style={{
+              backgroundColor: hexToRgba(colors.text, 0.05),
+              boxShadow: SURFACE.shadow,
+            }}
+          >
             <Pressable
               onPress={() => setLogoutConfirm(true)}
-              className="flex-row items-center justify-between p-2 py-4"
+              className="flex-row items-center gap-3.5 px-4 py-3.5"
             >
-              <View className="flex-row items-center gap-3">
-                <SolarLogout2Broken size={24} color={colors.error} />
-                <ThemedText style={{ fontFamily: Fonts.medium }}>Logout</ThemedText>
+              <View
+                className="h-10 w-10 items-center justify-center rounded-2xl"
+                style={{ backgroundColor: hexToRgba(colors.text, 0.08) }}
+              >
+                <SolarLogout2Broken size={20} color={colors.text} />
               </View>
-              <ChevronRight size={24} color={colors.text} />
+              <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 15 }}>Logout</ThemedText>
+            </Pressable>
+            <View
+              style={{ height: 1, marginLeft: 70, backgroundColor: hexToRgba(colors.text, 0.05) }}
+            />
+            <Pressable
+              onPress={() => setDeleteConfirm(true)}
+              className="flex-row items-center gap-3.5 px-4 py-3.5"
+            >
+              <View
+                className="h-10 w-10 items-center justify-center rounded-2xl"
+                style={{ backgroundColor: hexToRgba(colors.error, 0.12) }}
+              >
+                <FluentDelete24Regular size={20} color={colors.error} />
+              </View>
+              <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 15, color: colors.error }}>
+                Delete Account
+              </ThemedText>
             </Pressable>
           </View>
         </View>

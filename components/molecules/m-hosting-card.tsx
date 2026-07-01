@@ -5,9 +5,11 @@ import TierBadge from "../atoms/a-verification-tier-badge";
 import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
-import { formatDate } from "@/lib/utils/time";
+import { SURFACE } from "@/lib/constants/surface";
 import { MynauiStarSolid } from "../icons/i-star";
+import { MapPin } from "lucide-react-native";
 import Carousel from "../atoms/a-carousel";
+import ImageScrim from "../atoms/a-image-scrim";
 import { Image } from "expo-image";
 import Skeleton from "../atoms/a-skeleton";
 import { useRouter } from "@/lib/hooks/use-router";
@@ -61,161 +63,177 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 		router.push(`/hostings/${hosting.id}`);
 	};
 
+	const priceLabel = isMultiUnit
+		? hosting.priceFrom != null
+			? `from ₦${Number(hosting.priceFrom).toLocaleString()}`
+			: "—"
+		: `₦${Number(hosting.price)?.toLocaleString()}`;
+
+	const intervalLabel =
+		hosting.paymentInterval && hosting.paymentInterval !== PaymentInterval.OneTimePayment
+			? capitalize(hosting.paymentInterval)
+			: null;
+
 	return (
-		<Animated.View style={[animatedStyle, { gap: 12 }]}>
-			<View
-				style={{
-					height: 290,
-					backgroundColor: hexToRgba(colors.text, 0.07),
-				}}
-				className="relative overflow-hidden rounded-2xl"
-			>
-				<Carousel
-					autoplay
-					style={{ height: "100%", width: "100%" }}
-					interval={3000 + 1000 * (index ?? 1)}
-				>
-					{images.map((img) => (
-						<Image
-							source={{
-								uri: img.asset?.id
-									? getAssetResizeUrl(img.asset.id, 640, 480)
-									: img.asset?.publicUrl,
-							}}
-							style={{ height: "100%", width: "100%" }}
-							contentFit="cover"
-							transition={400}
-							placeholder={{ blurhash: PROPERTY_BLURHASH }}
-							placeholderContentFit="cover"
-							cachePolicy="memory-disk"
-							priority="high"
-							recyclingKey={img.id}
-							key={img.id}
-						/>
-					))}
-				</Carousel>
-				<HostingLikeButton
-					saved={hosting.saved}
-					id={hosting.id}
-					className="absolute right-4 top-4"
-				/>
-				{hosting.verification?.verificationTier ? (
-					<View className="absolute left-4 top-4">
-						<TierBadge tier={hosting.verification.verificationTier} size="sm" />
-					</View>
-				) : null}
-				<View className="absolute bottom-4 left-4 flex-row items-center gap-2">
-					<ListingTypeBadge
-						listingType={hosting.listingType}
-						variant="overlay"
-					/>
-					{isMultiUnit ? (
-						<View
-							style={{ backgroundColor: hexToRgba("#000000", 0.55) }}
-							className="rounded-full px-2.5 py-1"
-						>
-							<ThemedText
-								numberOfLines={1}
-								style={{
-									color: "#fff",
-									fontSize: 11,
-									fontFamily: Fonts.semibold,
-								}}
-							>
-								{hosting.childCount + " " + (hosting.childCount === 1 ? "unit" : "units")}
-							</ThemedText>
-						</View>
-					) : null}
-				</View>
-			</View>
+		<Animated.View style={animatedStyle}>
 			<Pressable
 				disabled={disabled}
 				onPress={handlePress}
 				onPressIn={handlePressIn}
 				onPressOut={handlePressOut}
+				style={{ gap: 14 }}
 			>
 				<View
 					style={{
-						backgroundColor: hexToRgba(colors.text, 0.03),
+						height: 300,
+						backgroundColor: hexToRgba(colors.text, 0.07),
+						boxShadow: SURFACE.shadow,
 					}}
-					className="gap-1 rounded-2xl p-4"
+					className="relative overflow-hidden rounded-3xl"
 				>
-					<View className="flex-row items-start justify-between">
+					<Carousel
+						autoplay
+						style={{ height: "100%", width: "100%" }}
+						interval={3000 + 1000 * (index ?? 1)}
+					>
+						{images.map((img) => (
+							<Image
+								source={{
+									uri: img.asset?.id
+										? getAssetResizeUrl(img.asset.id, 640, 480)
+										: img.asset?.publicUrl,
+								}}
+								style={{ height: "100%", width: "100%" }}
+								contentFit="cover"
+								transition={400}
+								placeholder={{ blurhash: PROPERTY_BLURHASH }}
+								placeholderContentFit="cover"
+								cachePolicy="memory-disk"
+								priority="high"
+								recyclingKey={img.id}
+								key={img.id}
+							/>
+						))}
+					</Carousel>
+					<ImageScrim from="bottom" intensity={0.5} />
+					<HostingLikeButton
+						saved={hosting.saved}
+						id={hosting.id}
+						className="absolute right-4 top-4"
+					/>
+					{hosting.verification?.verificationTier ? (
+						<View className="absolute left-4 top-4">
+							<TierBadge tier={hosting.verification.verificationTier} size="sm" />
+						</View>
+					) : null}
+					<View className="absolute bottom-4 left-4 right-4 flex-row items-center gap-2">
+						<ListingTypeBadge
+							listingType={hosting.listingType}
+							variant="overlay"
+						/>
+						{isMultiUnit ? (
+							<View
+								style={{ backgroundColor: hexToRgba("#000000", 0.5) }}
+								className="rounded-full px-3 py-1"
+							>
+								<ThemedText
+									numberOfLines={1}
+									style={{
+										color: "#fff",
+										fontSize: 11,
+										fontFamily: Fonts.semibold,
+									}}
+								>
+									{hosting.childCount + " " + (hosting.childCount === 1 ? "unit" : "units")}
+								</ThemedText>
+							</View>
+						) : null}
+					</View>
+				</View>
+
+				<View className="gap-2 px-0.5">
+					<View className="flex-row items-start justify-between gap-3">
 						<ThemedText
 							numberOfLines={1}
 							ellipsizeMode="tail"
-							style={{ fontFamily: Fonts.semibold, fontSize: 16 }}
-							className="max-w-[60%]"
+							style={{ fontFamily: Fonts.bold, fontSize: 17, flex: 1 }}
 						>
 							{hosting.title}
 						</ThemedText>
-						<ThemedText
-							style={{
-								fontFamily: Fonts.bold,
-								fontSize: 16,
-								color: colors.primary,
-							}}
-						>
-							{isMultiUnit
-								? hosting.priceFrom != null
-									? `from ₦${Number(hosting.priceFrom).toLocaleString()}`
-									: "—"
-								: `₦${Number(hosting.price)?.toLocaleString()}`}
-						</ThemedText>
+						<View className="items-end">
+							<ThemedText
+								style={{
+									fontFamily: Fonts.bold,
+									fontSize: 17,
+									color: colors.primary,
+								}}
+							>
+								{priceLabel}
+							</ThemedText>
+							{intervalLabel ? (
+								<ThemedText
+									style={{
+										fontFamily: Fonts.medium,
+										fontSize: 11,
+										color: hexToRgba(colors.text, 0.4),
+									}}
+								>
+									{intervalLabel}
+								</ThemedText>
+							) : null}
+						</View>
 					</View>
 
-					<ThemedText
-						style={{
-							fontSize: 13,
-							color: hexToRgba(colors.text, 0.6),
-							fontFamily: Fonts.medium,
-						}}
-					>
-						{hosting.paymentInterval === PaymentInterval.OneTimePayment
-							? `${hosting.state}, ${hosting.country}`
-							: `${hosting.state}, ${hosting.country} • ${capitalize(hosting.paymentInterval ?? "")}`}
-					</ThemedText>
-
-					<View className="mt-1 flex-row items-center justify-between">
-						<ThemedText
-							style={{ fontSize: 12, color: hexToRgba(colors.text, 0.4) }}
-						>
-							{formatDate(hosting.createdAt)}
-						</ThemedText>
+					<View className="flex-row items-center justify-between gap-3">
+						<View className="flex-1 flex-row items-center gap-1.5">
+							<MapPin size={13} color={hexToRgba(colors.text, 0.45)} />
+							<ThemedText
+								numberOfLines={1}
+								style={{
+									fontSize: 13,
+									color: hexToRgba(colors.text, 0.6),
+									fontFamily: Fonts.medium,
+									flex: 1,
+								}}
+							>
+								{`${hosting.state}, ${hosting.country}`}
+							</ThemedText>
+						</View>
 						{isMultiUnit ? (
 							<ThemedText
 								style={{
 									fontFamily: Fonts.semibold,
-									fontSize: 13,
+									fontSize: 12,
 									color: colors.primary,
 								}}
 							>
 								{hosting.childCount}{" "}
-								{hosting.childCount === 1 ? "unit" : "units"} available
+								{hosting.childCount === 1 ? "unit" : "units"}
 							</ThemedText>
 						) : (
-							<View className="flex-row items-center gap-1.5">
-								<MynauiStarSolid color={colors.primary} size={14} />
-								<View className="flex-row items-center gap-1">
-									<ThemedText
-										style={{
-											fontFamily: Fonts.semibold,
-											fontSize: 13,
-											color: colors.text,
-										}}
-									>
-										{Number(hosting.averageRating ?? "0").toFixed(1)}
-									</ThemedText>
-									<ThemedText
-										style={{
-											fontFamily: Fonts.regular,
-											fontSize: 12,
-											color: hexToRgba(colors.text, 0.5),
-										}}
-									>
-										({Number(hosting.totalRatings ?? "0").toFixed(1)})
-									</ThemedText>
-								</View>
+							<View
+								style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
+								className="flex-row items-center gap-1 rounded-full px-2.5 py-1"
+							>
+								<MynauiStarSolid color={colors.primary} size={12} />
+								<ThemedText
+									style={{
+										fontFamily: Fonts.semibold,
+										fontSize: 12,
+										color: colors.text,
+									}}
+								>
+									{Number(hosting.averageRating ?? "0").toFixed(1)}
+								</ThemedText>
+								<ThemedText
+									style={{
+										fontFamily: Fonts.regular,
+										fontSize: 11,
+										color: hexToRgba(colors.text, 0.45),
+									}}
+								>
+									({Number(hosting.totalRatings ?? "0")})
+								</ThemedText>
 							</View>
 						)}
 					</View>
@@ -229,9 +247,15 @@ export default HostingCard;
 
 export const HostingCardSkeleton = () => {
 	return (
-		<View className="gap-2">
-			<Skeleton style={{ height: 290, borderRadius: 12 }} />
-			<Skeleton style={{ height: 85, borderRadius: 12 }} />
+		<View className="gap-3.5">
+			<Skeleton style={{ height: 300, borderRadius: 24 }} />
+			<View className="gap-2 px-0.5">
+				<View className="flex-row items-center justify-between">
+					<Skeleton style={{ height: 18, width: "55%", borderRadius: 6 }} />
+					<Skeleton style={{ height: 18, width: "22%", borderRadius: 6 }} />
+				</View>
+				<Skeleton style={{ height: 14, width: "40%", borderRadius: 6 }} />
+			</View>
 		</View>
 	);
 };

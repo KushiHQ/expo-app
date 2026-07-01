@@ -10,6 +10,10 @@ export const SURFACE = {
   shadowHigh: "0px 16px 38px -20px rgba(0,0,0,0.52)",
   /** Warm glow for selected/active surfaces and primary CTAs. */
   glow: "0px 8px 22px -10px rgba(255,165,0,0.30)",
+  /** Stronger warm glow for the primary CTA button. */
+  ctaGlow: "0px 10px 26px -8px rgba(255,165,0,0.45)",
+  /** Red glow for destructive CTAs. */
+  dangerGlow: "0px 10px 24px -10px rgba(239,68,68,0.40)",
   /** Fill alphas, applied to the theme text colour so they adapt to light/dark. */
   fillRaised: 0.05,
   fillHigh: 0.075,

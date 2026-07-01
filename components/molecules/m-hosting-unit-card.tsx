@@ -50,14 +50,17 @@ const HostingUnitCard: React.FC<Props> = ({
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center overflow-hidden rounded-2xl"
+      className="flex-row items-center gap-3.5 rounded-[20px] p-2.5"
       style={{
         backgroundColor: hexToRgba(colors.text, 0.05),
         boxShadow: SURFACE.shadow,
       }}
     >
       {/* Cover */}
-      <View style={{ width: 88, height: 88, backgroundColor: hexToRgba(colors.text, 0.06) }}>
+      <View
+        className="h-[88px] w-[104px] overflow-hidden rounded-2xl"
+        style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
+      >
         {coverUrl ? (
           <Image
             source={{ uri: coverUrl }}
@@ -77,20 +80,32 @@ const HostingUnitCard: React.FC<Props> = ({
       </View>
 
       {/* Body */}
-      <View className="flex-1 gap-1 px-3 py-2">
-        <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 15 }} numberOfLines={1}>
+      <View className="flex-1 gap-1.5">
+        <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 15 }} numberOfLines={1}>
           {title || 'Untitled unit'}
         </ThemedText>
-        <ThemedText
-          style={{ fontSize: 13, color: hexToRgba(colors.text, 0.6) }}
-          numberOfLines={1}
-        >
-          {price ? `₦${Number(price).toLocaleString()}` : 'No price set'}
-          {paymentInterval ? ` · ${capitalize(String(paymentInterval).toLowerCase())}` : ''}
-        </ThemedText>
+        <View>
+          <ThemedText
+            style={{ fontFamily: Fonts.bold, fontSize: 15, color: colors.primary }}
+            numberOfLines={1}
+          >
+            {price ? `₦${Number(price).toLocaleString()}` : 'No price set'}
+          </ThemedText>
+          {paymentInterval ? (
+            <ThemedText
+              style={{
+                fontSize: 11,
+                fontFamily: Fonts.medium,
+                color: hexToRgba(colors.text, 0.4),
+              }}
+            >
+              {capitalize(String(paymentInterval).toLowerCase())}
+            </ThemedText>
+          ) : null}
+        </View>
         <View
           className="mt-0.5 flex-row items-center gap-1.5 self-start rounded-full px-2 py-0.5"
-          style={{ backgroundColor: hexToRgba(status.color, 0.14) }}
+          style={{ backgroundColor: hexToRgba(status.color, 0.16) }}
         >
           <View
             style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: status.color }}
@@ -104,7 +119,7 @@ const HostingUnitCard: React.FC<Props> = ({
       </View>
 
       {/* Delete + drill-in affordances */}
-      <View className="flex-row items-center pr-3" style={{ gap: 2 }}>
+      <View className="flex-row items-center" style={{ gap: 2 }}>
         {onDelete ? (
           <Pressable onPress={onDelete} hitSlop={8} style={{ padding: 6 }}>
             <Trash2 size={17} color={hexToRgba(colors.text, 0.4)} />

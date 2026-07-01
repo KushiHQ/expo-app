@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import React from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { MapPin } from 'lucide-react-native';
 import ThemedText from '../atoms/a-themed-text';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Fonts } from '@/lib/constants/theme';
@@ -33,6 +34,15 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
   // Derive the relevant hosting for cover image / title
   const effectiveHosting = hosting ?? booking?.hosting ?? null;
 
+  // Map a booking/transaction status string to a semantic accent colour for its pill.
+  const statusColorFor = (status?: string | null): string => {
+    const s = (status ?? '').toUpperCase();
+    if (['PAID', 'COMPLETED', 'SUCCESS', 'REFUNDED'].includes(s)) return colors.success;
+    if (['PENDING', 'PROCESSING'].includes(s)) return colors.warning;
+    if (['CANCELED', 'CANCELLED', 'FAILED', 'NEEDS_RECONCILIATION'].includes(s)) return colors.error;
+    return colors.primary;
+  };
+
   const handlePress = () => {
     if (itemType === SupportItemType.Hosting && hosting?.id) {
       router.push(`/hostings/${hosting.id}`);
@@ -46,10 +56,31 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
     (itemType === SupportItemType.Hosting && !!hosting?.id) ||
     (itemType === SupportItemType.Booking && !!booking?.id);
 
+  const StatusPill: React.FC<{ status?: string | null }> = ({ status }) => {
+    const statusColor = statusColorFor(status);
+    return (
+      <View
+        className="rounded-full px-3 py-1"
+        style={{ backgroundColor: hexToRgba(statusColor, 0.16) }}
+      >
+        <ThemedText style={{ fontSize: 12, fontFamily: Fonts.semibold, color: statusColor }}>
+          {capitalize(status ?? '')}
+        </ThemedText>
+      </View>
+    );
+  };
+
+  const ViewDetailsLink = () =>
+    canNavigate ? (
+      <ThemedText style={{ fontSize: 12, fontFamily: Fonts.semibold, color: colors.primary }}>
+        View Details
+      </ThemedText>
+    ) : null;
+
   const renderContent = () => {
     if (itemType === SupportItemType.Transaction && transaction) {
       return (
-        <View className="flex-1 justify-between py-1">
+        <View className="flex-1 justify-between py-0.5">
           <View className="gap-1">
             <ThemedText
               style={{
@@ -65,19 +96,12 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
             </ThemedText>
           </View>
           <View className="mt-2 flex-row items-center gap-2">
-            <View
-              className="rounded-lg px-2 py-1"
-              style={{ backgroundColor: hexToRgba(colors.primary, 0.1) }}
-            >
-              <ThemedText style={{ fontSize: 12, fontFamily: Fonts.medium, color: colors.primary }}>
-                {capitalize(transaction.status ?? '')}
-              </ThemedText>
-            </View>
+            <StatusPill status={transaction.status} />
             <ThemedText
               style={{
                 fontSize: 11,
-                color: hexToRgba(colors.text, 0.4),
-                fontFamily: Fonts.regular,
+                color: hexToRgba(colors.text, 0.45),
+                fontFamily: Fonts.medium,
               }}
             >
               {transaction.createdAt ? new Date(transaction.createdAt).toLocaleDateString() : ''}
@@ -89,8 +113,8 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
 
     if (itemType === SupportItemType.Booking && booking && effectiveHosting) {
       return (
-        <View className="flex-1 justify-between py-1">
-          <View className="gap-1">
+        <View className="flex-1 justify-between py-0.5">
+          <View className="gap-1.5">
             <ThemedText
               style={{
                 fontSize: 12,
@@ -107,31 +131,25 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
             >
               {effectiveHosting.title}
             </ThemedText>
-            <ThemedText
-              ellipsizeMode="tail"
-              numberOfLines={1}
-              style={{ color: hexToRgba(colors.text, 0.5), fontSize: 12 }}
-            >
-              {effectiveHosting.city}, {effectiveHosting.state}
-            </ThemedText>
-          </View>
-          <View className="mt-2 flex-row items-center gap-2">
-            <View
-              className="rounded-lg px-2 py-1"
-              style={{ backgroundColor: hexToRgba(colors.primary, 0.1) }}
-            >
-              <ThemedText style={{ fontSize: 12, fontFamily: Fonts.medium, color: colors.primary }}>
-                {capitalize(booking.status ?? '')}
+            <View className="flex-row items-center gap-1.5">
+              <MapPin size={12} color={hexToRgba(colors.text, 0.45)} />
+              <ThemedText
+                ellipsizeMode="tail"
+                numberOfLines={1}
+                className="flex-1"
+                style={{
+                  color: hexToRgba(colors.text, 0.6),
+                  fontSize: 13,
+                  fontFamily: Fonts.medium,
+                }}
+              >
+                {effectiveHosting.city}, {effectiveHosting.state}
               </ThemedText>
             </View>
-            {canNavigate && (
-              <ThemedText
-                style={{ fontSize: 11, fontFamily: Fonts.medium, color: colors.primary }}
-                className="underline"
-              >
-                View Details
-              </ThemedText>
-            )}
+          </View>
+          <View className="mt-2 flex-row items-center justify-between gap-2">
+            <StatusPill status={booking.status} />
+            <ViewDetailsLink />
           </View>
         </View>
       );
@@ -140,8 +158,8 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
     // Default: Hosting
     if (effectiveHosting) {
       return (
-        <View className="flex-1 justify-between py-1">
-          <View className="gap-1">
+        <View className="flex-1 justify-between py-0.5">
+          <View className="gap-1.5">
             <ThemedText
               ellipsizeMode="tail"
               numberOfLines={1}
@@ -149,37 +167,42 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
             >
               {effectiveHosting.title}
             </ThemedText>
-            <ThemedText
-              ellipsizeMode="tail"
-              numberOfLines={1}
-              style={{ color: hexToRgba(colors.text, 0.5), fontSize: 12 }}
-            >
-              {effectiveHosting.city}, {effectiveHosting.state}
-            </ThemedText>
+            <View className="flex-row items-center gap-1.5">
+              <MapPin size={12} color={hexToRgba(colors.text, 0.45)} />
+              <ThemedText
+                ellipsizeMode="tail"
+                numberOfLines={1}
+                className="flex-1"
+                style={{
+                  color: hexToRgba(colors.text, 0.6),
+                  fontSize: 13,
+                  fontFamily: Fonts.medium,
+                }}
+              >
+                {effectiveHosting.city}, {effectiveHosting.state}
+              </ThemedText>
+            </View>
           </View>
-          <View className="mt-2 flex-row items-center justify-between">
+          <View className="mt-2 flex-row items-center justify-between gap-2">
             <View
-              className="rounded-lg px-2 py-1"
-              style={{ backgroundColor: hexToRgba(colors.primary, 0.1) }}
+              className="rounded-full px-3 py-1"
+              style={{ backgroundColor: hexToRgba(colors.primary, 0.12) }}
             >
               <ThemedText style={{ fontSize: 14, fontFamily: Fonts.bold, color: colors.primary }}>
                 ₦{Number(effectiveHosting.price ?? '0').toLocaleString()}
                 <ThemedText
-                  style={{ fontSize: 10, fontFamily: Fonts.medium, color: colors.primary }}
+                  style={{
+                    fontSize: 10,
+                    fontFamily: Fonts.medium,
+                    color: hexToRgba(colors.primary, 0.75),
+                  }}
                 >
                   {' '}
                   / {capitalize(effectiveHosting.paymentInterval ?? '')}
                 </ThemedText>
               </ThemedText>
             </View>
-            {canNavigate && (
-              <ThemedText
-                style={{ fontSize: 11, fontFamily: Fonts.medium, color: colors.primary }}
-                className="underline"
-              >
-                View Details
-              </ThemedText>
-            )}
+            <ViewDetailsLink />
           </View>
         </View>
       );
@@ -192,10 +215,10 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
 
   return (
     <AnimatedPressable
-      onPressIn={() => (scale.value = withSpring(0.98))}
+      onPressIn={() => (scale.value = withSpring(0.98, { damping: 10, stiffness: 100 }))}
       onPressOut={() => (scale.value = withSpring(1))}
       onPress={canNavigate ? handlePress : undefined}
-      className="flex-row gap-4 rounded-2xl p-3"
+      className="flex-row gap-3.5 rounded-[20px] p-2.5"
       style={[
         {
           backgroundColor: hexToRgba(colors.text, 0.05),
@@ -205,7 +228,7 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
       ]}
     >
       {coverImageUrl && (
-        <View className="h-24 w-24 overflow-hidden rounded-xl">
+        <View className="h-[92px] w-[104px] overflow-hidden rounded-2xl">
           <Image
             source={{ uri: coverImageUrl }}
             style={{ height: '100%', width: '100%' }}

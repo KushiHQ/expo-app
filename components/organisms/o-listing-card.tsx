@@ -5,7 +5,8 @@ import React from 'react';
 import { useRouter } from '@/lib/hooks/use-router';
 import { PROPERTY_BLURHASH } from '@/lib/constants/images';
 import ThemedText from '../atoms/a-themed-text';
-import { EllipsisVertical } from 'lucide-react-native';
+import { EllipsisVertical, MapPin } from 'lucide-react-native';
+import ImageScrim from '../atoms/a-image-scrim';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { Fonts } from '@/lib/constants/theme';
 import { hexToRgba } from '@/lib/utils/colors';
@@ -56,43 +57,13 @@ const ListingCard: React.FC<Props> = ({ hosting, onDelete }) => {
           : colors.error;
 
   return (
-    <Animated.View style={[animatedStyle, { gap: 8 }]}>
+    <Animated.View style={animatedStyle}>
       <Pressable onPress={handlePress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
-        <View className="gap-4 rounded-2xl p-4" style={{ backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any}>
-          <View>
-            <View className="flex-row items-start justify-between">
-              <ThemedText
-                className="flex-1"
-                numberOfLines={2}
-                ellipsizeMode="tail"
-                style={{ fontSize: 15, fontFamily: Fonts.semibold }}
-              >
-                {hosting.title}
-              </ThemedText>
-              <Pressable
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setOptionsOpen(true);
-                }}
-                className="rounded-xl p-1.5"
-                style={{ backgroundColor: hexToRgba(colors.text, 0.05) }}
-              >
-                <EllipsisVertical color={colors.text} size={18} />
-              </Pressable>
-            </View>
-            <ThemedText
-              numberOfLines={1}
-              ellipsizeMode="tail"
-              style={{
-                fontSize: 13,
-                color: hexToRgba(colors.text, 0.6),
-                fontFamily: Fonts.medium,
-              }}
-            >
-              {hosting.city}, {hosting.state}
-            </ThemedText>
-          </View>
-          <View className="aspect-[140/80] w-full overflow-hidden rounded-xl">
+        <View
+          className="overflow-hidden rounded-3xl"
+          style={{ backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any}
+        >
+          <View className="relative aspect-[3/2] w-full">
             <Image
               source={{
                 uri: hosting.coverImage?.asset.publicUrl,
@@ -108,16 +79,16 @@ const ListingCard: React.FC<Props> = ({ hosting, onDelete }) => {
               cachePolicy="memory-disk"
               priority="high"
             />
-          </View>
-        </View>
-        <View className="mt-1 flex-row items-center justify-between px-2">
-          <View className="flex-row items-center gap-2">
-            <View className="flex-row items-center gap-1.5">
-              <IconParkOutlineDot color={statusColor} size={10} />
+            <ImageScrim from="top" intensity={0.45} height="42%" />
+            <View
+              className="absolute left-3 top-3 flex-row items-center gap-1.5 rounded-full px-2.5 py-1"
+              style={{ backgroundColor: hexToRgba('#000000', 0.5) }}
+            >
+              <IconParkOutlineDot color={statusColor} size={9} />
               <Text
                 style={{
                   fontSize: 11,
-                  color: statusColor,
+                  color: '#fff',
                   fontFamily: Fonts.semibold,
                   textTransform: 'capitalize',
                 }}
@@ -125,27 +96,67 @@ const ListingCard: React.FC<Props> = ({ hosting, onDelete }) => {
                 {hosting.publishStatus}
               </Text>
             </View>
-            {isParent ? (
-              <Text
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setOptionsOpen(true);
+              }}
+              className="absolute right-3 top-3 rounded-full p-1.5"
+              style={{ backgroundColor: hexToRgba('#000000', 0.5) }}
+            >
+              <EllipsisVertical color="#fff" size={18} />
+            </Pressable>
+          </View>
+          <View className="gap-2 p-3.5">
+            <View className="gap-1">
+              <ThemedText
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{ fontSize: 15, fontFamily: Fonts.semibold }}
+              >
+                {hosting.title}
+              </ThemedText>
+              <View className="flex-row items-center gap-1.5">
+                <MapPin size={12} color={hexToRgba(colors.text, 0.45)} />
+                <ThemedText
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  className="flex-1"
+                  style={{
+                    fontSize: 13,
+                    color: hexToRgba(colors.text, 0.6),
+                    fontFamily: Fonts.medium,
+                  }}
+                >
+                  {hosting.city}, {hosting.state}
+                </ThemedText>
+              </View>
+            </View>
+            <View className="flex-row items-center justify-between">
+              {isParent ? (
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: hexToRgba(colors.text, 0.55),
+                    fontFamily: Fonts.medium,
+                  }}
+                >
+                  {hosting.childCount} unit{hosting.childCount === 1 ? '' : 's'}
+                </Text>
+              ) : (
+                <View />
+              )}
+              <ThemedText
                 style={{
-                  fontSize: 11,
-                  color: hexToRgba(colors.text, 0.55),
-                  fontFamily: Fonts.medium,
+                  fontSize: 12,
+                  color: colors.primary,
+                  fontFamily: Fonts.semibold,
                 }}
               >
-                · {hosting.childCount} unit{hosting.childCount === 1 ? '' : 's'}
-              </Text>
-            ) : null}
+                Manage
+              </ThemedText>
+            </View>
           </View>
-          <ThemedText
-            style={{
-              fontSize: 11,
-              color: colors.primary,
-              fontFamily: Fonts.semibold,
-            }}
-          >
-            Manage
-          </ThemedText>
         </View>
       </Pressable>
       <ListingOptions

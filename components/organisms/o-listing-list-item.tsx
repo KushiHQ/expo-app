@@ -5,7 +5,7 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
 import { Fonts } from '@/lib/constants/theme';
-import { EllipsisVertical } from 'lucide-react-native';
+import { EllipsisVertical, MapPin } from 'lucide-react-native';
 import { hexToRgba } from '@/lib/utils/colors';
 import { IconParkOutlineDot } from '../icons/i-circle';
 import ListingOptions from '../molecules/m-listing-options';
@@ -61,10 +61,10 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete }) => {
         onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        className="flex-row items-center gap-4 rounded-2xl p-3"
+        className="flex-row items-center gap-3.5 rounded-[20px] p-2.5"
         style={{ backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any}
       >
-        <View className="h-[80px] w-[100px] overflow-hidden rounded-xl">
+        <View className="h-[88px] w-[104px] overflow-hidden rounded-2xl">
           <Image
             source={{
               uri: hosting.coverImage?.asset.publicUrl,
@@ -81,11 +81,11 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete }) => {
             priority="high"
           />
         </View>
-        <View className="flex-1 gap-1">
-          <View className="flex-row items-start justify-between">
+        <View className="flex-1 gap-1.5">
+          <View className="flex-row items-start justify-between gap-2">
             <ThemedText
               className="flex-1"
-              numberOfLines={2}
+              numberOfLines={1}
               ellipsizeMode="tail"
               style={{ fontSize: 15, fontFamily: Fonts.semibold }}
             >
@@ -96,27 +96,34 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete }) => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 setOptionsOpen(true);
               }}
-              className="rounded-lg p-1"
-              style={{ backgroundColor: hexToRgba(colors.text, 0.05) }}
+              className="rounded-full p-1"
+              style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
             >
               <EllipsisVertical color={colors.text} size={16} />
             </Pressable>
           </View>
-          <ThemedText
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={{
-              fontSize: 13,
-              color: hexToRgba(colors.text, 0.6),
-              fontFamily: Fonts.medium,
-            }}
-          >
-            {hosting.city}, {hosting.state}
-          </ThemedText>
-          <View className="mt-1 flex-row items-center justify-between">
+          <View className="flex-row items-center gap-1.5">
+            <MapPin size={12} color={hexToRgba(colors.text, 0.45)} />
+            <ThemedText
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              className="flex-1"
+              style={{
+                fontSize: 13,
+                color: hexToRgba(colors.text, 0.6),
+                fontFamily: Fonts.medium,
+              }}
+            >
+              {hosting.city}, {hosting.state}
+            </ThemedText>
+          </View>
+          <View className="mt-0.5 flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
-              <View className="flex-row items-center gap-1.5">
-                <IconParkOutlineDot color={statusColor} size={10} />
+              <View
+                className="flex-row items-center gap-1.5 rounded-full px-2 py-0.5"
+                style={{ backgroundColor: hexToRgba(statusColor, 0.16) }}
+              >
+                <IconParkOutlineDot color={statusColor} size={8} />
                 <Text
                   style={{
                     fontSize: 11,
@@ -136,13 +143,13 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete }) => {
                     fontFamily: Fonts.medium,
                   }}
                 >
-                  · {hosting.childCount} unit{hosting.childCount === 1 ? '' : 's'}
+                  {hosting.childCount} unit{hosting.childCount === 1 ? '' : 's'}
                 </Text>
               ) : null}
             </View>
             <ThemedText
               style={{
-                fontSize: 11,
+                fontSize: 12,
                 color: colors.primary,
                 fontFamily: Fonts.semibold,
               }}

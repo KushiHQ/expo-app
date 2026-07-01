@@ -8,6 +8,7 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useHostAnalyticsQuery, useNotificationsQuery } from '@/lib/services/graphql/generated';
 import { REVENUE_GROWTH } from '@/lib/services/graphql/requests/queries/users';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import { Link } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
 import { useQuery } from 'urql';
@@ -106,18 +107,15 @@ export default function HostAnalytics() {
         <Pressable
           aria-label="New Listing"
           onPress={() => router.push('/hostings/form')}
-          className="absolute bottom-4 right-4 items-center justify-center rounded-full shadow-lg"
+          className="absolute bottom-5 right-5 items-center justify-center rounded-full"
           style={{
             backgroundColor: colors.primary,
-            width: 56,
-            height: 56,
-            shadowColor: colors.primary,
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 5,
+            width: 58,
+            height: 58,
+            boxShadow: SURFACE.ctaGlow,
           }}
         >
-          <Plus color="white" size={32} />
+          <Plus color={colors['primary-content']} size={30} />
         </Pressable>
       }
     >
@@ -144,7 +142,7 @@ export default function HostAnalytics() {
               fontFamily: Fonts.medium,
             }}
           >
-            Here's your portfolio performance
+            Here’s your portfolio performance
           </ThemedText>
         </View>
 
@@ -192,8 +190,10 @@ export default function HostAnalytics() {
             <AreaChart data={chartData} title="Revenue Growth" color={colors.primary} />
           )}
         </View>
-        <View className="mt-6 gap-3 px-2">
-          <ThemedText style={{ fontFamily: Fonts.bold }}>Top Performing Listing</ThemedText>
+        <View className="mt-8 gap-3 px-1">
+          <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 17, letterSpacing: -0.3 }}>
+            Top Performing Listing
+          </ThemedText>
           {analyticsFetching ? (
             <Skeleton style={{ height: 100, width: '100%', borderRadius: 8 }} />
           ) : !analyticsData?.hostAnalytics.topListing ? (
@@ -209,11 +209,13 @@ export default function HostAnalytics() {
             />
           )}
         </View>
-        <View className="mt-8 gap-3 px-2">
+        <View className="mt-8 gap-3 px-1">
           <View className="flex-row items-center justify-between">
-            <ThemedText style={{ fontFamily: Fonts.bold }}>Recent Activity</ThemedText>
+            <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 17, letterSpacing: -0.3 }}>
+              Recent Activity
+            </ThemedText>
             <Link href="/users/notifications">
-              <ThemedText style={{ fontSize: 14, color: colors.primary }} className="underline">
+              <ThemedText style={{ fontSize: 13, color: colors.primary, fontFamily: Fonts.semibold }}>
                 View All
               </ThemedText>
             </Link>

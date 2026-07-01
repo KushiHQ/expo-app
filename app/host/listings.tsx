@@ -14,6 +14,8 @@ import { useUser } from '@/lib/hooks/user';
 import { useHostListingsQuery } from '@/lib/services/graphql/generated';
 import { useRouter } from '@/lib/hooks/use-router';
 import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
+import { SURFACE } from '@/lib/constants/surface';
+import { hexToRgba } from '@/lib/utils/colors';
 import React from 'react';
 import { FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { FlatGrid } from 'react-native-super-grid';
@@ -71,15 +73,21 @@ export default function HostListings() {
 
   const renderHeader = () => (
     <View className="mb-4 gap-4">
-      <View className="flex-row items-center justify-between px-1 pr-2">
-        <ThemedText style={{ fontFamily: Fonts.medium }}>My Listings</ThemedText>
-        <Pressable onPress={handleView}>
+      <View className="flex-row items-center justify-between px-1">
+        <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 17, letterSpacing: -0.3 }}>
+          My Listings
+        </ThemedText>
+        <Pressable
+          onPress={handleView}
+          className="h-9 w-9 items-center justify-center rounded-full"
+          style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
+        >
           {user.hostListingsView === 'list' ? (
-            <MultiList color={colors.text} size={20} />
+            <MultiList color={colors.text} size={18} />
           ) : user.hostListingsView === 'block' ? (
-            <CircumGrid2H color={colors.text} size={20} />
+            <CircumGrid2H color={colors.text} size={18} />
           ) : (
-            <CircumGrid41 color={colors.text} size={20} />
+            <CircumGrid41 color={colors.text} size={18} />
           )}
         </Pressable>
       </View>
@@ -131,18 +139,15 @@ export default function HostListings() {
         <Pressable
           aria-label="New Listing"
           onPress={() => router.push('/hostings/form')}
-          className="absolute bottom-4 right-4 items-center justify-center rounded-full shadow-lg"
+          className="absolute bottom-5 right-5 items-center justify-center rounded-full"
           style={{
             backgroundColor: colors.primary,
-            width: 56,
-            height: 56,
-            shadowColor: colors.primary,
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 5,
+            width: 58,
+            height: 58,
+            boxShadow: SURFACE.ctaGlow,
           }}
         >
-          <Plus color="white" size={32} />
+          <Plus color={colors['primary-content']} size={30} />
         </Pressable>
       }
     >

@@ -52,6 +52,8 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
     transform: [{ scale: pressScale.value }],
   }));
 
+  const unread = chat.unreadMessageCount > 0;
+
   return (
     <AnimatedPressable
       onPressIn={() => (pressScale.value = withSpring(0.97))}
@@ -59,42 +61,28 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
       onPress={() => router.push(`/chats/${chat.id}/`)}
       style={[
         {
-          backgroundColor: hexToRgba(colors.text, 0.05),
-          borderRadius: 16,
+          // Unread rows lift with a warm glow + a touch more fill (soft/cloudy
+          // "active = glow"), replacing the old hard accent strip.
+          backgroundColor: hexToRgba(colors.text, unread ? 0.08 : 0.05),
+          borderRadius: 20,
           marginBottom: 10,
           padding: 14,
           flexDirection: 'row',
-          gap: 12,
+          gap: 14,
           alignItems: 'center',
-          boxShadow: SURFACE.shadow,
-          overflow: 'hidden',
+          boxShadow: unread ? SURFACE.glow : SURFACE.shadow,
         },
         animatedStyle,
       ]}
     >
-      {/* Unread accent strip */}
-      {chat.unreadMessageCount > 0 && (
-        <View
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 10,
-            bottom: 10,
-            width: 3,
-            borderTopRightRadius: 3,
-            borderBottomRightRadius: 3,
-            backgroundColor: colors.primary,
-          }}
-        />
-      )}
-      <View style={{ position: 'relative', width: 52, height: 52 }}>
+      <View style={{ position: 'relative', width: 56, height: 56 }}>
         <Image
           source={{
             uri:
               chat.recipientUser.profile?.image?.publicUrl ??
               getDefaultProfileImageUrl(chat.recipientUser.profile.fullName ?? ''),
           }}
-          style={{ height: 52, width: 52, borderRadius: 26 }}
+          style={{ height: 56, width: 56, borderRadius: 28 }}
           contentFit="cover"
           transition={300}
           placeholder={{ blurhash: PROPERTY_BLURHASH }}
@@ -104,14 +92,14 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
           <View
             style={{
               position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: 13,
-              height: 13,
+              bottom: 1,
+              right: 1,
+              width: 14,
+              height: 14,
               borderRadius: 7,
               backgroundColor: colors.success,
-              borderWidth: 2,
-              borderColor: hexToRgba(colors.text, 0.05),
+              borderWidth: 2.5,
+              borderColor: colors.background,
             }}
           />
         )}
@@ -279,7 +267,7 @@ const ChatScreen: React.FC<Props> = ({ variant = 'guest' }) => {
         ListHeaderComponent={
           <View className="mb-4">
             <View
-              className="flex-row items-center gap-2 rounded-2xl p-4 py-3"
+              className="flex-row items-center gap-2.5 rounded-full px-4 py-3.5"
               style={{
                 backgroundColor: hexToRgba(colors.text, 0.06),
               }}

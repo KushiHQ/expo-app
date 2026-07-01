@@ -68,8 +68,8 @@ const SavedHostingFolderCard: React.FC<Props> = ({ folder, onDelete }) => {
     >
       <ThemedView
         style={{
-          gap: 16,
-          borderRadius: 20,
+          gap: 18,
+          borderRadius: 22,
           padding: 18,
           backgroundColor: hexToRgba(colors.text, 0.05),
           boxShadow: SURFACE.shadow,
@@ -78,15 +78,15 @@ const SavedHostingFolderCard: React.FC<Props> = ({ folder, onDelete }) => {
         <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
           <View
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: 14,
-              backgroundColor: hexToRgba(colors.primary, 0.1),
+              width: 48,
+              height: 48,
+              borderRadius: 16,
+              backgroundColor: hexToRgba(colors.primary, 0.12),
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <HugeiconsFolder03 color={colors.primary} size={22} />
+            <HugeiconsFolder03 color={colors.primary} size={24} />
           </View>
           <Pressable
             onPress={confirmDelete}
@@ -101,7 +101,7 @@ const SavedHostingFolderCard: React.FC<Props> = ({ folder, onDelete }) => {
           <ThemedText
             numberOfLines={1}
             ellipsizeMode="tail"
-            style={{ fontFamily: Fonts.semibold, fontSize: 16 }}
+            style={{ fontFamily: Fonts.bold, fontSize: 16 }}
           >
             {folder.folderName}
           </ThemedText>
@@ -116,9 +116,9 @@ const SavedHostingFolderCard: React.FC<Props> = ({ folder, onDelete }) => {
             <ThemedText
               numberOfLines={1}
               style={{
-                fontSize: 12,
-                fontFamily: Fonts.regular,
-                color: hexToRgba(colors.text, 0.45),
+                fontSize: 13,
+                fontFamily: Fonts.medium,
+                color: hexToRgba(colors.text, 0.6),
                 flexShrink: 0,
               }}
             >
@@ -129,7 +129,7 @@ const SavedHostingFolderCard: React.FC<Props> = ({ folder, onDelete }) => {
               style={{
                 fontSize: 12,
                 fontFamily: Fonts.regular,
-                color: hexToRgba(colors.text, 0.35),
+                color: hexToRgba(colors.text, 0.4),
                 flexShrink: 1,
                 textAlign: 'right',
               }}

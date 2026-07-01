@@ -1,11 +1,11 @@
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import * as Haptics from 'expo-haptics';
 import React from 'react';
 import {
   ActivityIndicator,
   GestureResponderEvent,
-  Platform,
   Pressable,
   PressableProps,
   StyleProp,
@@ -67,41 +67,44 @@ const Button: React.FC<Props> = ({
             ? colors.background
             : colors.text;
 
-  const isSolid = variant !== 'outline' && variant !== 'soft';
+  const isSolid = variant !== 'outline' && variant !== 'soft' && variant !== 'text';
   const isPrimary = type === 'primary' && isSolid;
   const isError = type === 'error' && isSolid;
+
+  // Soft-filled spinner adopts the accent colour; solid uses the content colour.
+  const spinnerColor = isSolid ? color : typeColor;
 
   return (
     <Pressable
       style={({ pressed }) => [
         styles.button,
+        // Borderless soft/outline variants — a translucent wash of the type
+        // colour, no hard outline (soft/cloudy rule). `soft` reads a touch
+        // stronger than `outline`.
         variant === 'outline'
-          ? { borderWidth: 1.5, borderColor: typeColor }
+          ? { backgroundColor: hexToRgba(typeColor, 0.09) }
           : variant === 'soft'
-            ? {
-                borderWidth: 1.5,
-                borderColor: hexToRgba(typeColor, 0.3),
-                backgroundColor: hexToRgba(typeColor, 0.08),
-              }
+            ? { backgroundColor: hexToRgba(typeColor, 0.14) }
             : variant === 'text'
               ? {
                   backgroundColor: undefined,
-                  padding: 0,
-                  paddingBlock: 0,
+                  paddingVertical: 0,
+                  paddingHorizontal: 0,
                   alignItems: 'flex-start',
                 }
               : type && { backgroundColor: typeColor },
-        isPrimary && variant !== 'text' && styles.primaryShadow,
-        isError && styles.errorShadow,
+        isPrimary && { boxShadow: SURFACE.ctaGlow },
+        isError && { boxShadow: SURFACE.dangerGlow },
         style,
         isDisabled && styles.disabled,
-        pressed && !isDisabled && styles.pressed,
+        pressed && !isDisabled && variant !== 'text' && styles.pressed,
+        pressed && !isDisabled && variant === 'text' && styles.pressedText,
       ]}
       onPress={handlePress}
       disabled={isDisabled}
       {...rest}
     >
-      {loading ? <ActivityIndicator size="small" color={color} /> : children}
+      {loading ? <ActivityIndicator size="small" color={spinnerColor} /> : children}
     </Pressable>
   );
 };
@@ -112,41 +115,19 @@ const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 13,
-    borderRadius: 14,
-  },
-  primaryShadow: {
-    ...Platform.select({
-      ios: {
-        shadowColor: '#F59E0B',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.35,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 8,
-        shadowColor: '#F59E0B',
-      },
-    }),
-  },
-  errorShadow: {
-    ...Platform.select({
-      ios: {
-        shadowColor: '#EF4444',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.28,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 6,
-        shadowColor: '#EF4444',
-      },
-    }),
+    paddingVertical: 15,
+    paddingHorizontal: 24,
+    // Full-pill CTA per the soft/cloudy spec (radii: CTAs = full pills).
+    borderRadius: 999,
   },
   disabled: {
-    opacity: 0.52,
+    opacity: 0.5,
   },
   pressed: {
-    opacity: 0.85,
+    opacity: 0.9,
+    transform: [{ scale: 0.97 }],
+  },
+  pressedText: {
+    opacity: 0.6,
   },
 });

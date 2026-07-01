@@ -36,12 +36,12 @@ const AnalyticsCard: React.FC<Props> = ({
   return (
     <View
       style={{
-        borderRadius: 14,
+        borderRadius: 22,
         backgroundColor: hexToRgba(colors.text, 0.05),
         boxShadow: SURFACE.shadow,
       }}
       className={twMerge(
-        "mb-2 flex-1 gap-4 p-5",
+        "mb-2 flex-1 gap-5 p-5",
         (index + 1) % 2 !== 0 && "mr-2",
       )}
     >
@@ -51,7 +51,7 @@ const AnalyticsCard: React.FC<Props> = ({
             numberOfLines={2}
             className="whitespace-nowrap"
             style={{
-              fontFamily: Fonts.semibold,
+              fontFamily: Fonts.medium,
               fontSize: 13,
               lineHeight: 18,
               color: hexToRgba(colors.text, 0.5),
@@ -68,9 +68,9 @@ const AnalyticsCard: React.FC<Props> = ({
         {Icon && (
           <View
             style={{
-              backgroundColor: hexToRgba(colors.primary, 0.1),
-              padding: 8,
-              borderRadius: 12,
+              backgroundColor: hexToRgba(colors.primary, 0.12),
+              padding: 9,
+              borderRadius: 14,
             }}
           >
             <Icon size={18} color={colors.primary} />
@@ -93,7 +93,7 @@ const AnalyticsCard: React.FC<Props> = ({
             minimumFontScale={0.6}
             style={{
               fontFamily: Fonts.black,
-              fontSize: 26,
+              fontSize: 27,
               lineHeight: 34,
               letterSpacing: -1,
               flex: 1,

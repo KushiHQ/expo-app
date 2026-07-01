@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import React from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { MapPin } from 'lucide-react-native';
 import ThemedText from '../atoms/a-themed-text';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Fonts } from '@/lib/constants/theme';
@@ -11,6 +12,7 @@ import { useRouter } from '@/lib/hooks/use-router';
 import { HostingChatQuery } from '@/lib/services/graphql/generated';
 import { capitalize } from '@/lib/utils/text';
 import { SURFACE } from '@/lib/constants/surface';
+
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 type Props = {
@@ -29,10 +31,10 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
 
   return (
     <AnimatedPressable
-      onPressIn={() => (messageScale.value = withSpring(0.98))}
+      onPressIn={() => (messageScale.value = withSpring(0.98, { damping: 10, stiffness: 100 }))}
       onPressOut={() => (messageScale.value = withSpring(1))}
       onPress={() => router.push(`/hostings/${hosting?.id}`)}
-      className="flex-row gap-4 rounded-2xl p-3"
+      className="flex-row gap-3.5 rounded-[20px] p-2.5"
       style={[
         {
           backgroundColor: hexToRgba(colors.text, 0.05),
@@ -41,7 +43,7 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
         animatedStyle,
       ]}
     >
-      <View className="h-24 w-24 overflow-hidden rounded-xl">
+      <View className="h-[92px] w-[104px] overflow-hidden rounded-2xl">
         <Image
           source={{
             uri: hosting?.coverImage?.asset.publicUrl,
@@ -55,8 +57,8 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
           priority="high"
         />
       </View>
-      <View className="flex-1 justify-between py-1">
-        <View className="gap-1">
+      <View className="flex-1 justify-between py-0.5">
+        <View className="gap-1.5">
           <ThemedText
             ellipsizeMode="tail"
             numberOfLines={1}
@@ -64,18 +66,26 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
           >
             {hosting?.title}
           </ThemedText>
-          <ThemedText
-            ellipsizeMode="tail"
-            numberOfLines={1}
-            style={{ color: hexToRgba(colors.text, 0.5), fontSize: 12 }}
-          >
-            {hosting?.city}, {hosting?.state}
-          </ThemedText>
+          <View className="flex-row items-center gap-1.5">
+            <MapPin size={12} color={hexToRgba(colors.text, 0.45)} />
+            <ThemedText
+              ellipsizeMode="tail"
+              numberOfLines={1}
+              className="flex-1"
+              style={{
+                color: hexToRgba(colors.text, 0.6),
+                fontSize: 13,
+                fontFamily: Fonts.medium,
+              }}
+            >
+              {hosting?.city}, {hosting?.state}
+            </ThemedText>
+          </View>
         </View>
-        <View className="mt-2 flex-row items-center justify-between">
+        <View className="mt-2 flex-row items-center justify-between gap-2">
           <View
-            className="rounded-lg px-2 py-1"
-            style={{ backgroundColor: hexToRgba(colors.primary, 0.1) }}
+            className="rounded-full px-3 py-1"
+            style={{ backgroundColor: hexToRgba(colors.primary, 0.12) }}
           >
             <ThemedText
               style={{
@@ -89,7 +99,7 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
                 style={{
                   fontSize: 10,
                   fontFamily: Fonts.medium,
-                  color: colors.primary,
+                  color: hexToRgba(colors.primary, 0.75),
                 }}
               >
                 {' '}
@@ -99,11 +109,10 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
           </View>
           <ThemedText
             style={{
-              fontSize: 11,
-              fontFamily: Fonts.medium,
+              fontSize: 12,
+              fontFamily: Fonts.semibold,
               color: colors.primary,
             }}
-            className="underline"
           >
             View Details
           </ThemedText>
