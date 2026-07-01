@@ -92,8 +92,9 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
   }
 
   function handleSelectPrediction(
-    predictionFilters: AiHostingSearchPredictionsQuery["aiHostingSearchPredictions"][number]["filters"],
+    prediction: AiHostingSearchPredictionsQuery["aiHostingSearchPredictions"][number],
   ) {
+    const predictionFilters = prediction.filters;
     updateFilter({
       city: predictionFilters.city,
       state: predictionFilters.state,
@@ -107,6 +108,12 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
         ? Number(predictionFilters.maxPrice)
         : undefined,
     });
+    // Reflect the choice in the search bar and CLOSE the dropdown/focus — the
+    // old version only dismissed the keyboard, so the suggestions overlay kept
+    // covering the (now-filtered) results and it looked like nothing happened.
+    setSearchInput(prediction.summary ?? "");
+    textInputRef.current?.blur();
+    setIsInputFocused(false);
     Keyboard.dismiss();
   }
 
@@ -301,7 +308,7 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
               {data?.aiHostingSearchPredictions?.map((prediction, idx) => (
                 <Pressable
                   key={idx}
-                  onPress={() => handleSelectPrediction(prediction.filters)}
+                  onPress={() => handleSelectPrediction(prediction)}
                   className="flex-row items-center gap-4 p-4"
                   style={{ borderBottomWidth: 1, borderBottomColor: hexToRgba(colors.text, 0.05) }}
                 >
