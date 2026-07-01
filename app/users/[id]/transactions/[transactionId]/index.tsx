@@ -8,6 +8,7 @@ import Skeleton from '@/components/atoms/a-skeleton';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Fonts } from '@/lib/constants/theme';
+import { SURFACE } from '@/lib/constants/surface';
 import { TablerCurrencyNaira } from '@/components/icons/i-currency';
 import { CheckCircle2, XCircle, Clock, ExternalLink } from 'lucide-react-native';
 import ThemedBarcode from '@/components/atoms/a-barcode';
@@ -99,8 +100,8 @@ export default function TransactionDetails() {
           </ThemedText>
           <Pressable
             onPress={() => router.back()}
-            className="mt-6 rounded-full border px-6 py-2"
-            style={{ borderColor: colors.primary }}
+            className="mt-6 rounded-full px-6 py-2"
+            style={{ backgroundColor: hexToRgba(colors.primary, 0.14) }}
           >
             <ThemedText style={{ color: colors.primary }}>Go Back</ThemedText>
           </Pressable>
@@ -128,10 +129,10 @@ export default function TransactionDetails() {
         <ScrollView className="flex-1 px-6 pb-10 pt-4">
           {/* Receipt Header */}
           <View
-            className="items-center rounded-3xl border p-8"
+            className="items-center rounded-3xl p-8"
             style={{
-              backgroundColor: hexToRgba(colors.text, 0.03),
-              borderColor: hexToRgba(colors.text, 0.05),
+              backgroundColor: hexToRgba(colors.text, 0.05),
+              boxShadow: SURFACE.shadow,
             }}
           >
             <View
@@ -177,11 +178,8 @@ export default function TransactionDetails() {
           </View>
 
           {/* Barcode Section */}
-          <View className="mt-6 border-b pb-4" style={{ borderColor: hexToRgba(colors.text, 0.1) }}>
-            <View
-              className="overflow-hidden rounded-[14px] border bg-white p-2"
-              style={{ borderColor: hexToRgba(colors.text, 0.1) }}
-            >
+          <View className="mt-6 pb-4">
+            <View className="overflow-hidden rounded-[14px] bg-white p-2">
               <ThemedBarcode
                 width={400}
                 height={80}
@@ -195,8 +193,8 @@ export default function TransactionDetails() {
           {transaction.booking?.hosting && (
             <Pressable
               onPress={() => router.push(`/hostings/${transaction.booking?.hosting?.id}`)}
-              className="mt-6 flex-row items-center justify-between rounded-2xl border p-4"
-              style={{ borderColor: hexToRgba(colors.text, 0.1) }}
+              className="mt-6 flex-row items-center justify-between rounded-2xl p-4"
+              style={{ backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow }}
             >
               <View className="mr-4 flex-1">
                 <ThemedText style={{ fontSize: 12, opacity: 0.6 }}>Payment for</ThemedText>

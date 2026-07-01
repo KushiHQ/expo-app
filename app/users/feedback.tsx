@@ -138,12 +138,11 @@ export default function FeedbackScreen() {
               style={{
                 paddingVertical: 10,
                 paddingHorizontal: 16,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor:
-                  selectedType === cat.value ? colors.primary : hexToRgba(colors.text, 0.15),
+                borderRadius: 999,
                 backgroundColor:
-                  selectedType === cat.value ? hexToRgba(colors.primary, 0.1) : 'transparent',
+                  selectedType === cat.value
+                    ? hexToRgba(colors.primary, 0.14)
+                    : hexToRgba(colors.text, 0.05),
               }}
             >
               <ThemedText
@@ -175,14 +174,12 @@ export default function FeedbackScreen() {
           value={title}
           onChangeText={setTitle}
           style={{
-            backgroundColor: colors['surface-01'],
-            borderRadius: 12,
+            backgroundColor: hexToRgba(colors.text, 0.06),
+            borderRadius: 14,
             padding: 14,
             fontSize: 14,
             fontFamily: Fonts.medium,
             color: colors.text,
-            borderWidth: 1,
-            borderColor: hexToRgba(colors.text, 0.08),
             marginBottom: 24,
           }}
         />
@@ -206,14 +203,12 @@ export default function FeedbackScreen() {
           numberOfLines={6}
           textAlignVertical="top"
           style={{
-            backgroundColor: colors['surface-01'],
-            borderRadius: 12,
+            backgroundColor: hexToRgba(colors.text, 0.06),
+            borderRadius: 14,
             padding: 14,
             fontSize: 14,
             fontFamily: Fonts.medium,
             color: colors.text,
-            borderWidth: 1,
-            borderColor: hexToRgba(colors.text, 0.08),
             minHeight: 140,
             marginBottom: 16,
           }}
@@ -236,10 +231,8 @@ export default function FeedbackScreen() {
             style={{
               width: 22,
               height: 22,
-              borderRadius: 6,
-              borderWidth: 2,
-              borderColor: contactConsent ? colors.primary : hexToRgba(colors.text, 0.3),
-              backgroundColor: contactConsent ? colors.primary : 'transparent',
+              borderRadius: 7,
+              backgroundColor: contactConsent ? colors.primary : hexToRgba(colors.text, 0.1),
               alignItems: 'center',
               justifyContent: 'center',
             }}
@@ -260,7 +253,7 @@ export default function FeedbackScreen() {
               flex: 1,
             }}
           >
-            It's okay to follow up with me about this feedback
+            It’s okay to follow up with me about this feedback
           </ThemedText>
         </Pressable>
 

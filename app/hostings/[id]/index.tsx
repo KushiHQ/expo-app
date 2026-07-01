@@ -113,7 +113,7 @@ export default function HostingDetails() {
 							paddingBottom: 32,
 							paddingTop: 12,
 							borderTopWidth: 1,
-							borderTopColor: hexToRgba(colors.text, 0.08),
+							borderTopColor: hexToRgba(colors.text, 0.045),
 						}}
 					>
 						<Button
@@ -133,7 +133,7 @@ export default function HostingDetails() {
 							paddingBottom: 32,
 							paddingTop: 12,
 							borderTopWidth: 1,
-							borderTopColor: hexToRgba(colors.text, 0.08),
+							borderTopColor: hexToRgba(colors.text, 0.045),
 						}}
 					>
 						<ThemedText
@@ -157,15 +157,13 @@ export default function HostingDetails() {
 							paddingTop: 12,
 							gap: 10,
 							borderTopWidth: 1,
-							borderTopColor: hexToRgba(colors.text, 0.08),
+							borderTopColor: hexToRgba(colors.text, 0.045),
 						}}
 					>
 						<View
 							style={{
-								backgroundColor: hexToRgba(colors.primary, 0.06),
-								borderWidth: 1,
-								borderColor: hexToRgba(colors.primary, 0.15),
-								borderRadius: 12,
+								backgroundColor: hexToRgba(colors.primary, 0.1),
+								borderRadius: 14,
 								padding: 14,
 								gap: 6,
 							}}
@@ -176,8 +174,8 @@ export default function HostingDetails() {
 							<ThemedText
 								style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55) }}
 							>
-								Online purchase processing for sale listings isn't available
-								yet. Contact the host directly to discuss and arrange the sale.
+								Online purchase processing for sale listings isn’t available
+								yet. Contact the host directly to arrange the sale.
 							</ThemedText>
 						</View>
 						<View className="mt-4 flex-row justify-between gap-8">
@@ -395,7 +393,7 @@ export default function HostingDetails() {
 								</View>
 							</View>
 							<View
-								className="mt-8 border-b pb-8"
+								className="mt-8 pb-8"
 								style={{ borderColor: hexToRgba(colors.text, 0.1) }}
 							>
 								<ThemedText style={{ fontFamily: Fonts.medium, fontSize: 18 }}>

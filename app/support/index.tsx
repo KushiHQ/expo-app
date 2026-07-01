@@ -6,6 +6,7 @@ import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useMySupportChatsQuery } from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import { useRouter } from '@/lib/hooks/use-router';
 import { useFocusEffect } from '@react-navigation/native';
 import moment from 'moment';
@@ -47,20 +48,14 @@ const SupportChatListItem = ({ chat, router, colors }: { chat: any; router: any;
       onPress={() => router.push(`/support/${chat.id}`)}
       style={[
         {
-          backgroundColor: colors['surface-01'],
-          borderRadius: 16,
+          backgroundColor: hexToRgba(colors.text, hasUnread ? 0.08 : 0.05),
+          borderRadius: 18,
           marginBottom: 10,
           padding: 14,
           flexDirection: 'row',
           gap: 12,
           alignItems: 'center',
-          borderWidth: 0.5,
-          borderColor: hasUnread ? hexToRgba(colors.primary, 0.3) : hexToRgba(colors.text, 0.07),
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.06,
-          shadowRadius: 8,
-          elevation: 2,
+          boxShadow: hasUnread ? SURFACE.glow : SURFACE.shadow,
           overflow: 'hidden',
         },
         animatedStyle,
