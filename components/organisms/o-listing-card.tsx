@@ -47,12 +47,15 @@ const ListingCard: React.FC<Props> = ({ hosting, onDelete }) => {
     router.push(`/hostings/form/onboarding?id=${hosting.id}`);
   };
 
+  // Fall back to Draft when a listing has no publish status (otherwise the
+  // pill renders as an empty red dot).
+  const status = hosting.publishStatus || PublishStatus.Draft;
   const statusColor =
-    hosting.publishStatus === PublishStatus.Live
+    status === PublishStatus.Live
       ? colors.success
-      : hosting.publishStatus === PublishStatus.Draft
+      : status === PublishStatus.Draft
         ? colors.primary
-        : hosting.publishStatus === PublishStatus.Inreview
+        : status === PublishStatus.Inreview
           ? colors.secondary
           : colors.error;
 
@@ -93,7 +96,7 @@ const ListingCard: React.FC<Props> = ({ hosting, onDelete }) => {
                   textTransform: 'capitalize',
                 }}
               >
-                {hosting.publishStatus}
+                {status}
               </Text>
             </View>
             <Pressable
