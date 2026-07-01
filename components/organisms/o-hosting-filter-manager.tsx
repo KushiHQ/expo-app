@@ -95,7 +95,11 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
     prediction: AiHostingSearchPredictionsQuery["aiHostingSearchPredictions"][number],
   ) {
     const predictionFilters = prediction.filters;
+    const rawQuery = searchInput.trim();
     updateFilter({
+      // Free-text query drives the search reliably even when the AI's
+      // structured values don't exactly match stored enums/locations.
+      search: rawQuery || undefined,
       city: predictionFilters.city,
       state: predictionFilters.state,
       country: predictionFilters.country,
