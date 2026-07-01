@@ -36,7 +36,7 @@ import { CameraLinear } from "../icons/i-camera";
 import { SURFACE } from "@/lib/constants/surface";
 import { Fonts } from "@/lib/constants/theme";
 
-const ROOM_ICONS: Partial<Record<keyof typeof Room, LucideIcon>> = {
+export const ROOM_ICONS: Partial<Record<keyof typeof Room, LucideIcon>> = {
   Exterior: MapPin,
   LivingRoom: Home,
   Bedroom: Bed,

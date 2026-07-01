@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { View, Pressable } from "react-native";
 import ThemedText from "../atoms/a-themed-text";
 import SectionHeader from "@/components/atoms/a-section-header";
 import { Images } from "lucide-react-native";
@@ -8,7 +8,6 @@ import { Link } from "expo-router";
 import { Image } from "expo-image";
 import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { hexToRgba } from "@/lib/utils/colors";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { HostingQuery } from "@/lib/services/graphql/generated";
 import ListImage from "../atoms/a-list-image";
 import VideoCard from "./m-video-card";
@@ -19,8 +18,6 @@ type Props = {
 };
 
 const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
-  const colors = useThemeColors();
-
   const { captions, images } = React.useMemo(
     () => extractHostingImages(hosting),
     [hosting],
@@ -74,33 +71,39 @@ const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
           </View>
         ))}
         {(images ?? []).length > 3 && (
-          <View className="relative flex-1">
-            <Image
-              source={{
-                uri: (images ?? []).at((images ?? []).length - 1),
-              }}
-              style={{
-                height: 80,
-                width: "100%",
-                borderRadius: 12,
-                maxWidth: 150,
-              }}
-              contentFit="cover"
-              transition={300}
-              placeholder={{ blurhash: PROPERTY_BLURHASH }}
-              placeholderContentFit="cover"
-              cachePolicy="memory-disk"
-              priority="high"
-            />
-            <View
-              className="absolute inset-0 flex-1 items-center justify-center rounded-xl"
-              style={{ backgroundColor: hexToRgba(colors.accent, 0.8) }}
-            >
-              <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14 }}>
-                More +
-              </ThemedText>
-            </View>
-          </View>
+          <Link href={`/hostings/${hosting?.id}/gallery/`} asChild>
+            <Pressable className="relative flex-1">
+              <Image
+                source={{
+                  uri: (images ?? []).at((images ?? []).length - 1),
+                }}
+                style={{
+                  height: 80,
+                  width: "100%",
+                  borderRadius: 12,
+                  maxWidth: 150,
+                }}
+                contentFit="cover"
+                transition={300}
+                placeholder={{ blurhash: PROPERTY_BLURHASH }}
+                placeholderContentFit="cover"
+                cachePolicy="memory-disk"
+                priority="high"
+              />
+              <View
+                className="absolute inset-0 items-center justify-center"
+                style={{
+                  borderRadius: 12,
+                  maxWidth: 150,
+                  backgroundColor: hexToRgba("#000000", 0.55),
+                }}
+              >
+                <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 14, color: "#fff" }}>
+                  +{(images ?? []).length - 3} more
+                </ThemedText>
+              </View>
+            </Pressable>
+          </Link>
         )}
       </View>
     </View>
