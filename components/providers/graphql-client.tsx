@@ -7,7 +7,8 @@ import {
 } from '@/lib/services/graphql/generated';
 import { REFRESH_TOKEN_MUTATION } from '@/lib/services/graphql/requests/mutations/auth';
 import { useUserStore } from '@/lib/stores/users';
-import { cacheExchange, Client, fetchExchange, Provider, subscriptionExchange } from 'urql';
+import { Client, fetchExchange, Provider, subscriptionExchange } from 'urql';
+import { graphcacheExchange } from '@/lib/services/graphql/cache';
 import { createClient as createWSClient } from 'graphql-ws';
 import { router } from 'expo-router';
 
@@ -47,7 +48,7 @@ const createClient = (ws: ReturnType<typeof createWSClientInstance>) => {
     url: process.env.EXPO_PUBLIC_GRAPHQL_URL ?? '',
     preferGetMethod: false,
     exchanges: [
-      cacheExchange,
+      graphcacheExchange,
       authExchange(async (utils) => {
         // Mutable reference so addAuthToOperation always uses the latest token
         // after a mid-session refresh — a const closure would keep the stale token.
