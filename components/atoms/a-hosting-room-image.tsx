@@ -53,13 +53,31 @@ const HostingRoomImage: React.FC<Props> = ({
         width: 88,
         height: 88,
         borderRadius: 12,
-        boxShadow: selected
-          ? '0px 0px 0px 2.5px rgba(245,158,11,0.95)'
-          : isCover
+        boxShadow:
+          !selected && isCover
             ? '0px 0px 0px 2px rgba(255,165,0,0.85), 0px 8px 22px -10px rgba(255,165,0,0.40)'
             : undefined,
       }}
     >
+      {/* Selection ring — an inset rounded border so it follows the photo's
+          corners and can't be clipped by the horizontal strip (a box-shadow
+          spread showed only its left/right edges as "bars"). */}
+      {selected && (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            borderRadius: 12,
+            borderWidth: 2.5,
+            borderColor: '#F59E0B',
+            zIndex: 2,
+          }}
+        />
+      )}
       <Pressable
         onPress={() =>
           selectMode
