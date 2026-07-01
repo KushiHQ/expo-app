@@ -74,16 +74,26 @@ export const HOSTING_QUERY = gql`
       }
       children {
         id
+        kind
+        parentId
+        childCount
         title
+        state
+        city
         price
         paymentInterval
         listingType
         publishStatus
         isBookable
+        bookingApplicationsCount
+        createdAt
+        lastUpdated
         coverImage {
+          id
           asset {
             id
             publicUrl
+            originalFilename
           }
         }
       }

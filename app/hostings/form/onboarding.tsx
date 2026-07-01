@@ -2,9 +2,9 @@ import ThemedText from '@/components/atoms/a-themed-text';
 import { FluentFormMultiple24Regular } from '@/components/icons/i-document';
 import DetailsLayout from '@/components/layouts/details';
 import HostingFormOnboardingAction from '@/components/molecules/m-hosting-form-onboarding-action';
-import HostingUnitCard from '@/components/molecules/m-hosting-unit-card';
+import ListingListItem from '@/components/organisms/o-listing-list-item';
 import TopListingCard from '@/components/molecules/m-top-listing-card';
-import { ONBOARDING_STEPS, getVisibleSteps } from '@/lib/constants/hosting/onboarding';
+import { getVisibleSteps } from '@/lib/constants/hosting/onboarding';
 import { Fonts } from '@/lib/constants/theme';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
@@ -12,18 +12,11 @@ import {
   HostingKind,
   PublishStatus,
   useBookingApplicationsCountQuery,
-  useDeleteHostingMutation,
 } from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Href, useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
-import { getAssetResizeUrl } from '@/lib/utils/urls';
-import ThemedModal from '@/components/molecules/m-modal';
-import Button from '@/components/atoms/a-button';
-import { toast } from '@/lib/hooks/use-toast';
-import { handleError } from '@/lib/utils/error';
-import { cast } from '@/lib/types/utils';
-import { CircleQuestionMark } from 'lucide-react-native';
+import { Building2, CircleQuestionMark, ListChecks, LucideIcon } from 'lucide-react-native';
 import React from 'react';
 import { RefreshControl, View } from 'react-native';
 
@@ -33,6 +26,41 @@ type Action = {
   link: Href;
   /** optional steps never gate the steps after them, even when not filled */
   optional?: boolean;
+};
+
+/** A consistent, premium section header: a soft primary icon chip + title,
+ *  with an optional count pill. */
+const SectionHeader: React.FC<{ icon: LucideIcon; title: string; count?: number }> = ({
+  icon: Icon,
+  title,
+  count,
+}) => {
+  const colors = useThemeColors();
+  return (
+    <View className="mb-3 flex-row items-center gap-2.5">
+      <View
+        className="h-7 w-7 items-center justify-center rounded-full"
+        style={{ backgroundColor: hexToRgba(colors.primary, 0.12) }}
+      >
+        <Icon size={14} color={colors.primary} />
+      </View>
+      <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 16, letterSpacing: -0.3 }}>
+        {title}
+      </ThemedText>
+      {count != null ? (
+        <View
+          className="rounded-full px-2 py-0.5"
+          style={{ backgroundColor: hexToRgba(colors.text, 0.08) }}
+        >
+          <ThemedText
+            style={{ fontSize: 12, fontFamily: Fonts.semibold, color: hexToRgba(colors.text, 0.7) }}
+          >
+            {count}
+          </ThemedText>
+        </View>
+      ) : null}
+    </View>
+  );
 };
 
 export default function HostingOnboarding() {
@@ -54,32 +82,12 @@ export default function HostingOnboarding() {
     if (!fetching) setRefreshing(false);
   }, [fetching]);
 
-  const [{ fetching: deletingUnit }, deleteUnit] = useDeleteHostingMutation();
-  const [unitToDelete, setUnitToDelete] = React.useState<{ id: string; title: string } | null>(
-    null,
-  );
-
   // A deleted unit must simply vanish from the host's view. The server archives
   // (rather than hard-deletes) a unit that has bookings, so we also hide archived
   // units and always speak of it as "deleted" — the host never sees "archived".
   const units = (hosting?.children ?? []).filter(
     (u) => u.publishStatus !== PublishStatus.Archived,
   );
-
-  const confirmDeleteUnit = () => {
-    if (!unitToDelete) return;
-    deleteUnit({ hostingId: unitToDelete.id }).then((res) => {
-      if (res.error) {
-        handleError(res.error);
-        return;
-      }
-      if (res.data?.deleteHosting) {
-        toast.show({ type: 'success', text1: 'Deleted', text2: 'The unit was deleted.' });
-        setUnitToDelete(null);
-        refetch();
-      }
-    });
-  };
 
   const { steps: visibleSteps, indexMap } = React.useMemo(
     () => getVisibleSteps(hosting?.listingType, hosting?.propertyType),
@@ -215,7 +223,6 @@ export default function HostingOnboarding() {
   }, [hosting, visibleSteps, indexMap]);
 
   return (
-    <>
     <DetailsLayout
       title="Hosting"
       refreshControl={
@@ -267,41 +274,26 @@ export default function HostingOnboarding() {
             manage one (drills into that unit's own onboarding). */}
         {hosting && hosting.kind === HostingKind.Parent ? (
           <View className="py-4">
-            <ThemedText style={{ fontFamily: Fonts.bold, marginBottom: 10 }}>
-              Units ({units.length})
-            </ThemedText>
+            <SectionHeader icon={Building2} title="Units" count={units.length} />
             {units.length === 0 ? (
               <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
                 No units yet. Add one with the + button and choose this property as its parent.
               </ThemedText>
             ) : (
+              // Units are just listings — render them with the same row as the
+              // host's listings (tap to manage, ⋯ menu to view/delete).
               <View className="gap-3">
                 {units.map((unit) => (
-                  <HostingUnitCard
-                    key={unit.id}
-                    title={unit.title}
-                    coverUrl={
-                      unit.coverImage?.asset?.id
-                        ? getAssetResizeUrl(unit.coverImage.asset.id, 240, 240, 80)
-                        : (unit.coverImage?.asset?.publicUrl ?? undefined)
-                    }
-                    price={unit.price}
-                    paymentInterval={unit.paymentInterval}
-                    publishStatus={unit.publishStatus}
-                    onPress={() =>
-                      router.push(`/hostings/form/onboarding?id=${unit.id}` as Href)
-                    }
-                    onDelete={() =>
-                      setUnitToDelete({ id: cast(unit.id), title: unit.title ?? 'this unit' })
-                    }
-                  />
+                  <ListingListItem key={unit.id} hosting={unit} onDelete={refetch} />
                 ))}
               </View>
             )}
           </View>
         ) : null}
 
-        <View className="mt-8 gap-4">
+        <View className="mt-8">
+          <SectionHeader icon={ListChecks} title="Complete your listing" />
+          <View className="gap-4">
           {visibleSteps.map((step, filteredIndex) => {
             return (
               <HostingFormOnboardingAction
@@ -329,32 +321,9 @@ export default function HostingOnboarding() {
               </HostingFormOnboardingAction>
             );
           })}
+          </View>
         </View>
       </View>
     </DetailsLayout>
-      <ThemedModal visible={!!unitToDelete} onClose={() => setUnitToDelete(null)}>
-        <View className="mt-8 items-center gap-2">
-          <ThemedText style={{ fontFamily: Fonts.medium }}>Delete this unit?</ThemedText>
-          <ThemedText
-            style={{ color: hexToRgba(colors.text, 0.6), fontSize: 14, textAlign: 'center' }}
-          >
-            {unitToDelete?.title} will be removed from this property. This cannot be undone.
-          </ThemedText>
-          <View className="mt-8 w-full flex-row gap-4">
-            <Button type="tinted" className="flex-1" onPress={() => setUnitToDelete(null)}>
-              <ThemedText content="tinted">Cancel</ThemedText>
-            </Button>
-            <Button
-              type="error"
-              className="flex-1"
-              loading={deletingUnit}
-              onPress={confirmDeleteUnit}
-            >
-              <ThemedText content="error">Delete</ThemedText>
-            </Button>
-          </View>
-        </View>
-      </ThemedModal>
-    </>
   );
 }

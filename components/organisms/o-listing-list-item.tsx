@@ -49,6 +49,9 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete }) => {
   // Fall back to Draft when a listing has no publish status (otherwise the
   // pill renders as an empty red dot).
   const status = hosting.publishStatus || PublishStatus.Draft;
+  // Units reuse this row but carry no city/state — hide the location line
+  // rather than render an empty ", ".
+  const location = [hosting.city, hosting.state].filter(Boolean).join(', ');
   const statusColor =
     status === PublishStatus.Live
       ? colors.success
@@ -105,21 +108,23 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete }) => {
               <EllipsisVertical color={colors.text} size={16} />
             </Pressable>
           </View>
-          <View className="flex-row items-center gap-1.5">
-            <MapPin size={12} color={hexToRgba(colors.text, 0.45)} />
-            <ThemedText
-              numberOfLines={1}
-              ellipsizeMode="tail"
-              className="flex-1"
-              style={{
-                fontSize: 13,
-                color: hexToRgba(colors.text, 0.6),
-                fontFamily: Fonts.medium,
-              }}
-            >
-              {hosting.city}, {hosting.state}
-            </ThemedText>
-          </View>
+          {location ? (
+            <View className="flex-row items-center gap-1.5">
+              <MapPin size={12} color={hexToRgba(colors.text, 0.45)} />
+              <ThemedText
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                className="flex-1"
+                style={{
+                  fontSize: 13,
+                  color: hexToRgba(colors.text, 0.6),
+                  fontFamily: Fonts.medium,
+                }}
+              >
+                {location}
+              </ThemedText>
+            </View>
+          ) : null}
           <View className="mt-0.5 flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
               <View
