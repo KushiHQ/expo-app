@@ -1080,7 +1080,10 @@ export type Hosting = {
   cautionFee?: Maybe<Scalars['Decimal']['output']>;
   /** Number of shops under this plaza. */
   childCount: Scalars['Int']['output'];
-  /** Child listings (shops) under this hosting, newest first. */
+  /**
+   * Child listings (shops) under this hosting, newest first. Pass
+   * `onSale: true` to return only units available to book (Live, not booked).
+   */
   children: Array<Hosting>;
   city?: Maybe<Scalars['String']['output']>;
   contact?: Maybe<Scalars['String']['output']>;
@@ -1139,6 +1142,11 @@ export type Hosting = {
    */
   video?: Maybe<VideoWalkthrough>;
   webUrl: Scalars['String']['output'];
+};
+
+
+export type HostingChildrenArgs = {
+  onSale?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -6832,7 +6840,7 @@ export const HostingDocument = gql`
       id
       title
     }
-    children {
+    children(onSale: true) {
       id
       kind
       parentId

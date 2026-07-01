@@ -86,7 +86,7 @@ export const HOSTING_QUERY = gql`
         id
         title
       }
-      children {
+      children(onSale: true) {
         id
         kind
         parentId
