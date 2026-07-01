@@ -8,10 +8,11 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { Play, X } from 'lucide-react-native';
+import { Play } from 'lucide-react-native';
 import VideoPlayerView from '@/components/molecules/m-video-player';
+import ImageScrim from '@/components/atoms/a-image-scrim';
 import ThemedText from '@/components/atoms/a-themed-text';
 import { Fonts } from '@/lib/constants/theme';
 import { hexToRgba } from '@/lib/utils/colors';
@@ -78,11 +79,12 @@ export default function VideoCard({ source, durationSeconds, title, style }: Pro
           />
         )}
 
-        <View style={[styles.scrim, { backgroundColor: hexToRgba('#000000', 0.18) }]} pointerEvents="none" />
+        <View style={[styles.scrim, { backgroundColor: hexToRgba('#000000', 0.15) }]} pointerEvents="none" />
+        <ImageScrim from="bottom" intensity={0.5} height="55%" />
 
         <View style={styles.center} pointerEvents="none">
           <View style={[styles.playBtn, { backgroundColor: hexToRgba('#000000', 0.5) }]}>
-            <Play color="#fff" size={22} fill="#fff" style={{ marginLeft: 3 }} />
+            <Play color="#fff" size={26} fill="#fff" style={{ marginLeft: 3 }} />
           </View>
         </View>
 
@@ -109,19 +111,21 @@ export default function VideoCard({ source, durationSeconds, title, style }: Pro
       </View>
 
       <Modal visible={open} animationType="fade" onRequestClose={closeFull} statusBarTranslucent>
-        <View style={styles.fullRoot}>
-          <StatusBar style="light" />
-          <VideoPlayerView player={player} contentFit="contain" style={StyleSheet.absoluteFill} />
-          <SafeAreaView style={styles.closeWrap} pointerEvents="box-none">
-            <Pressable
-              onPress={closeFull}
-              style={[styles.closeBtn, { backgroundColor: hexToRgba('#000000', 0.45) }]}
-              hitSlop={12}
-            >
-              <X color="#fff" size={22} />
-            </Pressable>
-          </SafeAreaView>
-        </View>
+        {/* A SafeAreaProvider nested INSIDE the Modal is required — the root
+            provider's insets are wrong for a translucent full-screen modal, so
+            the close button used to land under the notch on some phones. */}
+        <SafeAreaProvider>
+          <View style={styles.fullRoot}>
+            <StatusBar style="light" />
+            <VideoPlayerView
+              player={player}
+              contentFit="contain"
+              style={StyleSheet.absoluteFill}
+              title={title}
+              onClose={closeFull}
+            />
+          </View>
+        </SafeAreaProvider>
       </Modal>
     </>
   );
@@ -132,9 +136,9 @@ const styles = StyleSheet.create({
   scrim: { ...StyleSheet.absoluteFillObject },
   center: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
   playBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -162,12 +166,4 @@ const styles = StyleSheet.create({
   },
   badgeText: { color: '#fff', fontSize: 11, fontFamily: Fonts.semibold },
   fullRoot: { flex: 1, backgroundColor: '#000' },
-  closeWrap: { position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'flex-end', padding: 12 },
-  closeBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 });

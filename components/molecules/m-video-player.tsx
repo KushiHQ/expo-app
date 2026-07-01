@@ -10,16 +10,18 @@ import {
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEvent, useEventListener } from 'expo';
 import { VideoView, type VideoPlayer, type VideoContentFit } from 'expo-video';
-import { Play, Pause, RotateCcw } from 'lucide-react-native';
+import { Play, Pause, RotateCcw, X } from 'lucide-react-native';
 import ThemedText from '@/components/atoms/a-themed-text';
+import ImageScrim from '@/components/atoms/a-image-scrim';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Fonts } from '@/lib/constants/theme';
 
-const TRACK_HEIGHT = 4;
-const THUMB_SIZE = 14;
+const TRACK_HEIGHT = 5;
+const THUMB_SIZE = 15;
 const HIDE_DELAY = 2800;
 
 const fmt = (s: number) => {
@@ -32,15 +34,28 @@ type Props = {
   /** Container shape — pass aspectRatio / width / height here. */
   style?: StyleProp<ViewStyle>;
   contentFit?: VideoContentFit;
+  /** Fullscreen chrome: when `onClose` is set, a safe-area top bar with the
+   *  title and a close button is rendered over the video. */
+  title?: string;
+  onClose?: () => void;
 };
 
 /**
  * Kushi-themed video player. Renders expo-video with `nativeControls={false}`
- * and a custom overlay (center play/pause, tap-to-toggle, amber scrubber) so the
- * controls look and behave identically on Android and iOS.
+ * and a custom, soft/cloudy overlay: gradient scrims, a frosted center
+ * play/pause, an amber scrubber, and (in fullscreen) a safe-area top bar with
+ * the title + close button — identical on Android and iOS.
  */
-export default function VideoPlayerView({ player, style, contentFit = 'contain' }: Props) {
+export default function VideoPlayerView({
+  player,
+  style,
+  contentFit = 'contain',
+  title,
+  onClose,
+}: Props) {
   const colors = useThemeColors();
+  const insets = useSafeAreaInsets();
+  const fullscreen = !!onClose;
 
   const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
   const { status } = useEvent(player, 'statusChange', { status: player.status });
@@ -62,11 +77,7 @@ export default function VideoPlayerView({ player, style, contentFit = 'contain' 
 
   const duration = player.duration || 0;
   const loading = status === 'loading';
-  const frac = scrubbing
-    ? scrubFrac
-    : duration > 0
-      ? Math.min(currentTime / duration, 1)
-      : 0;
+  const frac = scrubbing ? scrubFrac : duration > 0 ? Math.min(currentTime / duration, 1) : 0;
 
   useEffect(() => {
     player.timeUpdateEventInterval = 0.25;
@@ -152,10 +163,7 @@ export default function VideoPlayerView({ player, style, contentFit = 'contain' 
     .onUpdate((e) => runOnJS(moveScrub)(e.x))
     .onFinalize((e) => runOnJS(endScrub)(e.x));
 
-  const thumbLeft = Math.max(
-    0,
-    Math.min(frac * trackWidth - THUMB_SIZE / 2, trackWidth - THUMB_SIZE),
-  );
+  const thumbLeft = Math.max(0, Math.min(frac * trackWidth - THUMB_SIZE / 2, trackWidth - THUMB_SIZE));
 
   return (
     <View style={[styles.container, style]}>
@@ -169,61 +177,99 @@ export default function VideoPlayerView({ player, style, contentFit = 'contain' 
       {/* Tap layer toggles control visibility (WhatsApp-style). */}
       <Pressable style={StyleSheet.absoluteFill} onPress={onTapVideo} />
 
+      {/* Top chrome (fullscreen only) — title + close, over a soft scrim. */}
+      {fullscreen && controlsVisible && (
+        <>
+          <ImageScrim from="top" intensity={0.55} height={insets.top + 120} />
+          <View
+            style={[styles.topBar, { paddingTop: insets.top + 8 }]}
+            pointerEvents="box-none"
+          >
+            {title ? (
+              <ThemedText numberOfLines={1} style={styles.topTitle}>
+                {title}
+              </ThemedText>
+            ) : (
+              <View style={{ flex: 1 }} />
+            )}
+            <Pressable
+              onPress={onClose}
+              style={[styles.iconBtn, { backgroundColor: hexToRgba('#000000', 0.5) }]}
+              hitSlop={12}
+            >
+              <X color="#fff" size={20} />
+            </Pressable>
+          </View>
+        </>
+      )}
+
       {/* Center play / pause / replay */}
       {loading ? (
         <View style={styles.center} pointerEvents="none">
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color="#fff" size="large" />
         </View>
       ) : (
         controlsVisible && (
           <View style={styles.center} pointerEvents="box-none">
             <Pressable
               onPress={togglePlay}
-              style={[styles.playBtn, { backgroundColor: hexToRgba('#000000', 0.45) }]}
+              style={[styles.playBtn, { backgroundColor: hexToRgba('#000000', 0.5) }]}
               hitSlop={12}
             >
               {ended ? (
-                <RotateCcw color="#fff" size={26} />
+                <RotateCcw color="#fff" size={30} />
               ) : isPlaying ? (
-                <Pause color="#fff" size={26} fill="#fff" />
+                <Pause color="#fff" size={30} fill="#fff" />
               ) : (
-                <Play color="#fff" size={26} fill="#fff" style={{ marginLeft: 3 }} />
+                <Play color="#fff" size={30} fill="#fff" style={{ marginLeft: 3 }} />
               )}
             </Pressable>
           </View>
         )
       )}
 
-      {/* Bottom control bar */}
+      {/* Bottom control bar over a soft scrim. */}
       {controlsVisible && (
-        <View style={styles.bottomBar} pointerEvents="box-none">
-          <ThemedText style={styles.time}>{fmt(scrubbing ? frac * duration : currentTime)}</ThemedText>
+        <>
+          <ImageScrim from="bottom" intensity={0.6} height={160} />
+          <View
+            style={[
+              styles.bottomBar,
+              { paddingBottom: (fullscreen ? insets.bottom : 0) + 14 },
+            ]}
+            pointerEvents="box-none"
+          >
+            <ThemedText style={styles.time}>
+              {fmt(scrubbing ? frac * duration : currentTime)}
+            </ThemedText>
 
-          <GestureDetector gesture={pan}>
-            <View style={styles.trackHit} onLayout={onTrackLayout} onTouchStart={showControls}>
-              <View style={[styles.track, { backgroundColor: hexToRgba('#ffffff', 0.3) }]} />
-              <View
-                style={[
-                  styles.track,
-                  styles.fill,
-                  { width: frac * trackWidth, backgroundColor: colors.primary },
-                ]}
-              />
-              <View
-                style={[
-                  styles.thumb,
-                  {
-                    left: thumbLeft,
-                    backgroundColor: colors.primary,
-                    transform: [{ scale: scrubbing ? 1.25 : 1 }],
-                  },
-                ]}
-              />
-            </View>
-          </GestureDetector>
+            <GestureDetector gesture={pan}>
+              <View style={styles.trackHit} onLayout={onTrackLayout} onTouchStart={showControls}>
+                <View style={[styles.track, { backgroundColor: hexToRgba('#ffffff', 0.28) }]} />
+                <View
+                  style={[
+                    styles.track,
+                    styles.fill,
+                    { width: frac * trackWidth, backgroundColor: colors.primary },
+                  ]}
+                />
+                <View
+                  style={[
+                    styles.thumb,
+                    {
+                      left: thumbLeft,
+                      backgroundColor: colors.primary,
+                      boxShadow: '0px 0px 10px 0px rgba(245,158,11,0.7)',
+                      transform: [{ scale: scrubbing ? 1.3 : 1 }],
+                    },
+                  ]}
+                />
+              </View>
+            </GestureDetector>
 
-          <ThemedText style={styles.time}>{fmt(duration)}</ThemedText>
-        </View>
+            <ThemedText style={styles.time}>{fmt(duration)}</ThemedText>
+          </View>
+        </>
       )}
     </View>
   );
@@ -237,9 +283,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   playBtn: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+  topTitle: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 15,
+    fontFamily: Fonts.semibold,
+  },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -250,20 +320,20 @@ const styles = StyleSheet.create({
     bottom: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingTop: 12,
   },
   time: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: Fonts.semibold,
-    width: 34,
+    width: 38,
     textAlign: 'center',
   },
   trackHit: {
     flex: 1,
-    height: THUMB_SIZE + 12,
+    height: THUMB_SIZE + 14,
     justifyContent: 'center',
   },
   track: {
