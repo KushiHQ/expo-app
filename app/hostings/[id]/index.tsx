@@ -19,8 +19,9 @@ import { capitalize, slugify } from "@/lib/utils/text";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { useRouter } from "@/lib/hooks/use-router";
-import { MapPin, MessageSquare } from "lucide-react-native";
+import { AlignLeft, MapPin, MessageSquare } from "lucide-react-native";
 import { SURFACE } from "@/lib/constants/surface";
+import SectionHeader from "@/components/atoms/a-section-header";
 import React from "react";
 import { Pressable, Share, View } from "react-native";
 import { useBreakpoint } from "@/lib/hooks/use-breakpoint";
@@ -403,13 +404,8 @@ export default function HostingDetails() {
 								) : null}
 							</View>
 							<View className="mt-8 pb-8">
-								<ThemedText
-									style={{ fontFamily: Fonts.bold, fontSize: 17, letterSpacing: -0.3 }}
-								>
-									Description
-								</ThemedText>
+								<SectionHeader icon={AlignLeft} title="Description" />
 								<TruncatedText
-									className="mt-3"
 									text={hosting?.description ?? ""}
 									style={{
 										fontSize: 14,

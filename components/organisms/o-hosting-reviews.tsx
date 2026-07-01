@@ -3,6 +3,8 @@ import { hexToRgba } from '@/lib/utils/colors';
 import React from 'react';
 import { View } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
+import SectionHeader from '@/components/atoms/a-section-header';
+import { Star } from 'lucide-react-native';
 import { Fonts } from '@/lib/constants/theme';
 import { MynauiStarSolid } from '../icons/i-star';
 import ReviewItem from '../molecules/m-review-item';
@@ -29,7 +31,7 @@ const HostingReviews: React.FC<Props> = ({ hosting }) => {
 
   return (
     <View className="mb-4 mt-8">
-      <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 18 }}>Reviews</ThemedText>
+      <SectionHeader icon={Star} title="Reviews" />
       <View>
         {(hosting?.reviews ?? []).length === 0 ? (
           <View

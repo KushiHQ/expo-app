@@ -5,6 +5,8 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import ThemedText from '../atoms/a-themed-text';
+import SectionHeader from '@/components/atoms/a-section-header';
+import { UserRound } from 'lucide-react-native';
 import { TablerMessage2 } from '../icons/i-message';
 import { SolarPhoneOutline } from '../icons/i-phone';
 import { Fonts } from '@/lib/constants/theme';
@@ -69,12 +71,9 @@ const HostingHost: React.FC<Props> = ({ hosting, isHost = false }) => {
       <View
         className="gap-4 pb-8"
       >
-        <ThemedText
-          className="mt-4"
-          style={{ fontFamily: Fonts.bold, fontSize: 17, letterSpacing: -0.3 }}
-        >
-          Host
-        </ThemedText>
+        <View className="mt-4">
+          <SectionHeader icon={UserRound} title="Host" />
+        </View>
         <View
           className="gap-4 overflow-hidden rounded-3xl p-5"
           style={{

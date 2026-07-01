@@ -1,7 +1,8 @@
 import React from 'react';
 import { View } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
-import { Fonts } from '@/lib/constants/theme';
+import SectionHeader from '@/components/atoms/a-section-header';
+import { Sparkles } from 'lucide-react-native';
 import { SimpleGrid } from 'react-native-super-grid';
 import { FACILITY_ICONS, FALLBACK_FACILITY_ICON } from '@/lib/types/enums/hosting-icons';
 import { cast } from '@/lib/types/utils';
@@ -18,9 +19,7 @@ const HostingFacilities: React.FC<Props> = ({ hosting }) => {
 
   return (
     <View className="mt-8">
-      <ThemedText className="mb-2" style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
-        Facilities
-      </ThemedText>
+      <SectionHeader icon={Sparkles} title="Facilities" />
       <SimpleGrid
         listKey={undefined}
         itemDimension={80}

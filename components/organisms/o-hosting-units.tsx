@@ -1,8 +1,9 @@
 import React from "react";
 import { View, Pressable } from "react-native";
 import { Image } from "expo-image";
-import { ChevronRight } from "lucide-react-native";
+import { Building2, ChevronRight } from "lucide-react-native";
 import ThemedText from "../atoms/a-themed-text";
+import SectionHeader from "@/components/atoms/a-section-header";
 import { Fonts } from "@/lib/constants/theme";
 import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { hexToRgba } from "@/lib/utils/colors";
@@ -38,9 +39,21 @@ const HostingUnits: React.FC<Props> = ({ hosting, isHost }) => {
 
   return (
     <View className="mt-8">
-      <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
-        Available units ({units.length})
-      </ThemedText>
+      <SectionHeader
+        icon={Building2}
+        title="Available units"
+        action={
+          <ThemedText
+            style={{
+              fontSize: 13,
+              color: hexToRgba(colors.text, 0.5),
+              fontFamily: Fonts.semibold,
+            }}
+          >
+            {units.length}
+          </ThemedText>
+        }
+      />
       {units.length === 0 ? (
         <ThemedText
           style={{

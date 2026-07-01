@@ -1,5 +1,7 @@
 import { View } from "react-native";
 import ThemedText from "../atoms/a-themed-text";
+import SectionHeader from "@/components/atoms/a-section-header";
+import { Images } from "lucide-react-native";
 import { Fonts } from "@/lib/constants/theme";
 import React from "react";
 import { Link } from "expo-router";
@@ -26,20 +28,21 @@ const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
 
   return (
     <View className="mt-8">
-      <View className="flex-row items-center justify-between">
-        <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
-          Gallery
-        </ThemedText>
-        <Link href={`/hostings/${hosting?.id}/gallery/`}>
-          <ThemedText
-            className="underline"
-            content="tinted"
-            style={{ fontSize: 12 }}
-          >
-            See All
-          </ThemedText>
-        </Link>
-      </View>
+      <SectionHeader
+        icon={Images}
+        title="Gallery"
+        action={
+          <Link href={`/hostings/${hosting?.id}/gallery/`}>
+            <ThemedText
+              className="underline"
+              content="tinted"
+              style={{ fontSize: 12 }}
+            >
+              See All
+            </ThemedText>
+          </Link>
+        }
+      />
       {hosting?.video?.asset?.publicUrl && (
         <View className="mt-4">
           <VideoCard
