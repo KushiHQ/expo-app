@@ -107,6 +107,7 @@ export const HOSTING_QUERY = gql`
           asset {
             id
             publicUrl
+            lastUpdated
             originalFilename
           }
         }
@@ -148,6 +149,7 @@ export const HOSTING_QUERY = gql`
           asset {
             id
             publicUrl
+            lastUpdated
           }
         }
       }
@@ -168,12 +170,14 @@ export const HOSTING_QUERY = gql`
             id
             image {
               publicUrl
+              lastUpdated
             }
           }
         }
         signature {
           id
           publicUrl
+          lastUpdated
         }
         createdAt
       }
@@ -184,6 +188,7 @@ export const HOSTING_QUERY = gql`
         asset {
           id
           publicUrl
+          lastUpdated
         }
       }
       video {
@@ -193,6 +198,7 @@ export const HOSTING_QUERY = gql`
         asset {
           id
           publicUrl
+          lastUpdated
         }
       }
       images(limit: 4) {
@@ -200,6 +206,7 @@ export const HOSTING_QUERY = gql`
         asset {
           id
           publicUrl
+          lastUpdated
           originalFilename
         }
       }
@@ -233,6 +240,7 @@ export const HOSTING_QUERY = gql`
             gender
             image {
               publicUrl
+              lastUpdated
             }
           }
         }
@@ -327,6 +335,7 @@ export const HOSTINGS_QUERY = gql`
       coverImage {
         asset {
           publicUrl
+          lastUpdated
         }
       }
       images(limit: 4) {
@@ -334,6 +343,7 @@ export const HOSTINGS_QUERY = gql`
         asset {
           id
           publicUrl
+          lastUpdated
           originalFilename
         }
       }
@@ -362,6 +372,7 @@ export const SAVED_HOSTINGS_QUERY = gql`
         id
         asset {
           publicUrl
+          lastUpdated
           id
         }
       }
@@ -377,6 +388,7 @@ export const SAVED_HOSTINGS_QUERY = gql`
           asset {
             id
             publicUrl
+            lastUpdated
             originalFilename
           }
         }
@@ -409,6 +421,7 @@ export const HOST_LISTINGS_QUERY = gql`
         asset {
           id
           publicUrl
+          lastUpdated
           originalFilename
         }
       }

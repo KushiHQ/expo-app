@@ -97,7 +97,7 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
               <Image
                 source={{
                   uri: img.asset?.id
-                    ? getAssetResizeUrl(img.asset.id, 640, 480)
+                    ? getAssetResizeUrl(img.asset.id, 640, 480, 85, img.asset.lastUpdated)
                     : img.asset?.publicUrl,
                 }}
                 style={{ height: '100%', width: '100%' }}

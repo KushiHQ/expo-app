@@ -260,7 +260,7 @@ export default function HostingDetails() {
 											<Image
 												source={{
 													uri: img.asset?.id
-														? getAssetResizeUrl(img.asset.id, 1280, 960)
+														? getAssetResizeUrl(img.asset.id, 1280, 960, 85, img.asset.lastUpdated)
 														: img.asset?.publicUrl,
 												}}
 												style={{ height: "100%", width: "100%" }}

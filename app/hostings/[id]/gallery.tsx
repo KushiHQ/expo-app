@@ -125,7 +125,7 @@ export default function HostingGallery() {
                     openable
                     src={
                       item.asset.id
-                        ? getAssetResizeUrl(item.asset.id, 240, 240, 80)
+                        ? getAssetResizeUrl(item.asset.id, 240, 240, 80, item.asset.lastUpdated)
                         : item.asset.publicUrl
                     }
                     index={getIndex(galleryImageUri(item.asset))}
