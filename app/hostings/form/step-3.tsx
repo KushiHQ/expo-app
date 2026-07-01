@@ -114,9 +114,9 @@ export default function NewHostingStep3() {
                 zoom={18}
               />
             )}
-            {!input.state ? (
+            {locationFetching ? (
               <Skeleton style={{ height: 48, borderRadius: 10 }} />
-            ) : (
+            ) : input.longitude && input.latitude ? (
               <View
                 style={{
                   paddingHorizontal: 14,
@@ -125,9 +125,11 @@ export default function NewHostingStep3() {
                   backgroundColor: hexToRgba(colors.primary, 0.06),
                 }}
               >
-                <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55) }}>
-                  {input?.street}, {input?.city} {input?.postalCode}
-                </ThemedText>
+                {[input?.street, input?.city, input?.postalCode].filter(Boolean).length > 0 && (
+                  <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55) }}>
+                    {[input?.street, input?.city, input?.postalCode].filter(Boolean).join(', ')}
+                  </ThemedText>
+                )}
                 <ThemedText
                   style={{
                     fontSize: 14,
@@ -135,10 +137,11 @@ export default function NewHostingStep3() {
                     marginTop: 2,
                   }}
                 >
-                  {input?.state}, {input?.country}
+                  {[input?.state, input?.country].filter(Boolean).join(', ') ||
+                    'Location pinned — address details unavailable for this area'}
                 </ThemedText>
               </View>
-            )}
+            ) : null}
           </SectionCard>
 
           <SectionCard

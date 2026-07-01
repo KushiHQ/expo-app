@@ -144,14 +144,16 @@ export default function HostingOnboarding() {
       // Step 3: Location
       const iLocation = idx(3);
       if (iLocation >= 0) {
+        // The GPS pin (coords) is the real signal; a postal code is unrealistic
+        // for most Nigerian addresses and a state/city can be missing in remote
+        // areas — so require the coords + contact + at least one locality label,
+        // not every field.
         actions[iLocation].filled = !!(
           hosting.longitude &&
           hosting.latitude &&
-          hosting.state &&
           hosting.country &&
-          hosting.city &&
-          hosting.postalCode &&
-          hosting.contact
+          hosting.contact &&
+          (hosting.state || hosting.city)
         );
       }
 

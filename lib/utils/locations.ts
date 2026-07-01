@@ -50,26 +50,45 @@ export const getAddressFromCoords = async (latitude: number, longitude: number) 
 
     const result = data.results[0];
 
-    const addressComponents = result.address_components.reduce(
-      (acc: Record<string, string>, component: any) => {
-        const type = component.types[0];
-        acc[type] = component.long_name;
-        if (type === 'country') {
-          acc['isoCountryCode'] = component.short_name;
+    // Google returns several results ordered most-specific → least. A remote pin's
+    // first result is often a Plus Code missing the state/city, while a later,
+    // coarser result carries it. Merge components across all results, keeping the
+    // first (most specific) value seen for each type.
+    const addressComponents = data.results.reduce(
+      (acc: Record<string, string>, res: any) => {
+        for (const component of res.address_components) {
+          const type = component.types[0];
+          if (!acc[type]) acc[type] = component.long_name;
+          if (type === 'country' && !acc['isoCountryCode']) {
+            acc['isoCountryCode'] = component.short_name;
+          }
         }
         return acc;
       },
-      {},
+      {} as Record<string, string>,
     );
 
     const parsedAddress = {
       name: result.formatted_address,
       street: addressComponents.route || '',
       streetNumber: addressComponents.street_number || '',
-      city: addressComponents.locality || addressComponents.administrative_area_level_3 || '',
+      // Remote/less-mapped areas often lack `locality`; fall back through
+      // finer- and coarser-grained components (down to the LGA) so a city is
+      // still resolved instead of coming back empty.
+      city:
+        addressComponents.locality ||
+        addressComponents.administrative_area_level_3 ||
+        addressComponents.sublocality ||
+        addressComponents.neighborhood ||
+        addressComponents.administrative_area_level_2 ||
+        '',
       district: addressComponents.neighborhood || addressComponents.sublocality || '',
       subregion: addressComponents.administrative_area_level_2 || '',
-      region: addressComponents.administrative_area_level_1 || '',
+      // Fall back to the LGA (level 2) when the state (level 1) is missing.
+      region:
+        addressComponents.administrative_area_level_1 ||
+        addressComponents.administrative_area_level_2 ||
+        '',
       postalCode: addressComponents.postal_code || '',
       country: addressComponents.country || '',
       isoCountryCode: addressComponents.isoCountryCode || '',
