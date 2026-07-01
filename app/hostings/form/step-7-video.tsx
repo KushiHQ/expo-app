@@ -2,14 +2,13 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, Pressable, Text, Alert, Modal, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import * as Location from 'expo-location';
+import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import { Fonts } from '@/lib/constants/theme';
-import { useHostingForm } from '@/lib/hooks/hosting-form';
 import {
   HostingVerificationTier,
   useRequestHostingVerificationTierMutation,
@@ -17,18 +16,14 @@ import {
 import { handleError } from '@/lib/utils/error';
 import { toast } from '@/lib/hooks/use-toast';
 import { useRouter } from '@/lib/hooks/use-router';
-import GeofenceOverlay from '@/components/atoms/a-geofence-overlay';
 import Checkbox from '@/components/atoms/a-checkbox';
 import Button from '@/components/atoms/a-button';
 import LoadingModal from '@/components/atoms/a-loading-modal';
-import { Video, VideoOff, X, Check, RotateCcw, MapPin } from 'lucide-react-native';
+import { Video, VideoOff, X, Check, RotateCcw, Upload } from 'lucide-react-native';
 
-type Phase = 'gps-check' | 'ready' | 'recording' | 'preview' | 'uploading';
+type Phase = 'ready' | 'recording' | 'preview' | 'uploading';
 
 const MAX_DURATION = 120;
-const GPS_SAMPLE_COUNT = 3;
-const GPS_SAMPLE_INTERVAL = 1500;
-const GPS_MID_SAMPLE_INTERVAL = 5000;
 
 export default function VideoWalkthroughScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -37,105 +32,31 @@ export default function VideoWalkthroughScreen() {
   const cameraRef = useRef<CameraView>(null);
 
   const [permission, requestPermission] = useCameraPermissions();
-  const { hosting } = useHostingForm(id);
   const [, requestHostingVerificationTier] = useRequestHostingVerificationTierMutation();
 
-  const [phase, setPhase] = useState<Phase>('gps-check');
-  const [gpsSamples, setGpsSamples] = useState<Location.LocationObject[]>([]);
+  const [phase, setPhase] = useState<Phase>('ready');
   const [recordedUri, setRecordedUri] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  // File metadata for the video being submitted — defaults suit a recording;
+  // an uploaded clip fills this in from the picked asset.
+  const [videoInfo, setVideoInfo] = useState<{ name: string; type: string }>({
+    name: 'walkthrough.mp4',
+    type: 'video/mp4',
+  });
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [consentRecording, setConsentRecording] = useState(false);
   const [consentThirdParty, setConsentThirdParty] = useState(false);
-  const [gpsError, setGpsError] = useState<string | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const midGpsRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const recordingLocationsRef = useRef<Location.LocationObject[]>([]);
-
-  const hostingLat = hosting?.latitude ?? '';
-  const hostingLng = hosting?.longitude ?? '';
-
-  useEffect(() => {
-    if (phase !== 'gps-check') return;
-
-    let mounted = true;
-    let sampleCount = 0;
-
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        if (mounted) {
-          setGpsError('Location permission is required to record a walkthrough.');
-          setPhase('ready');
-        }
-        return;
-      }
-
-      const samples: Location.LocationObject[] = [];
-
-      const takeSample = async () => {
-        try {
-          const loc = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.BestForNavigation,
-          });
-          samples.push(loc);
-          sampleCount++;
-          if (mounted) setGpsSamples([...samples]);
-
-          if (sampleCount < GPS_SAMPLE_COUNT) {
-            setTimeout(takeSample, GPS_SAMPLE_INTERVAL);
-          } else if (mounted) {
-            setPhase('ready');
-          }
-        } catch {
-          if (mounted) {
-            setGpsError(
-              'Could not acquire GPS signal. You can still record, but GPS metadata will be limited.',
-            );
-            setPhase('ready');
-          }
-        }
-      };
-
-      takeSample();
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, [phase]);
-
-  const startMidRecordingGps = useCallback(() => {
-    recordingLocationsRef.current = [];
-    midGpsRef.current = setInterval(async () => {
-      try {
-        const loc = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.BestForNavigation,
-        });
-        recordingLocationsRef.current.push(loc);
-      } catch {
-        // silent — mid-recording GPS is best-effort
-      }
-    }, GPS_MID_SAMPLE_INTERVAL);
-  }, []);
-
-  const stopMidRecordingGps = useCallback(() => {
-    if (midGpsRef.current) {
-      clearInterval(midGpsRef.current);
-      midGpsRef.current = null;
-    }
-  }, []);
 
   const stopRecording = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    stopMidRecordingGps();
     cameraRef.current?.stopRecording();
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  }, [stopMidRecordingGps]);
+  }, []);
 
   const confirmStartRecording = useCallback(async () => {
     setShowConsentModal(false);
@@ -148,6 +69,7 @@ export default function VideoWalkthroughScreen() {
 
       if (video?.uri) {
         setRecordedUri(video.uri);
+        setVideoInfo({ name: 'walkthrough.mp4', type: 'video/mp4' });
         setPhase('preview');
       }
     } catch (error) {
@@ -155,14 +77,11 @@ export default function VideoWalkthroughScreen() {
       Alert.alert('Error', 'Failed to record video. Please try again.');
       setPhase('ready');
     }
-
-    stopMidRecordingGps();
-  }, [stopMidRecordingGps]);
+  }, []);
 
   const handleStartRecording = useCallback(() => {
     setPhase('recording');
     setElapsed(0);
-    startMidRecordingGps();
 
     timerRef.current = setInterval(() => {
       setElapsed((prev) => {
@@ -175,7 +94,38 @@ export default function VideoWalkthroughScreen() {
     }, 1000);
 
     confirmStartRecording();
-  }, [startMidRecordingGps, confirmStartRecording, stopRecording]);
+  }, [confirmStartRecording, stopRecording]);
+
+  // Upload an existing walkthrough (e.g. a professionally-shot video) instead of
+  // recording on-site. Geofencing isn't enforced for walkthroughs — the video is
+  // a showcase/verification-review asset, not proof-of-presence.
+  const handlePickVideo = useCallback(async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      toast.show({
+        type: 'error',
+        text1: 'Permission needed',
+        text2: 'Allow photo library access to upload a video.',
+      });
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['videos'],
+      quality: 1,
+    });
+
+    if (result.canceled || !result.assets?.length) return;
+
+    const asset = result.assets[0];
+    setRecordedUri(asset.uri);
+    setElapsed(asset.duration ? Math.round(asset.duration / 1000) : 0);
+    setVideoInfo({
+      name: asset.fileName ?? asset.uri.split('/').pop() ?? 'walkthrough.mp4',
+      type: asset.mimeType ?? 'video/mp4',
+    });
+    setPhase('preview');
+  }, []);
 
   const handleRetake = useCallback(() => {
     setRecordedUri(null);
@@ -190,8 +140,8 @@ export default function VideoWalkthroughScreen() {
     try {
       const videoBlob = {
         uri: recordedUri,
-        type: 'video/mp4',
-        name: 'walkthrough.mp4',
+        type: videoInfo.type,
+        name: videoInfo.name,
       } as unknown as File;
 
       const result = await requestHostingVerificationTier({
@@ -226,12 +176,11 @@ export default function VideoWalkthroughScreen() {
       });
       setPhase('preview');
     }
-  }, [recordedUri, id, router, requestHostingVerificationTier]);
+  }, [recordedUri, id, router, requestHostingVerificationTier, videoInfo]);
 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
-      if (midGpsRef.current) clearInterval(midGpsRef.current);
     };
   }, []);
 
@@ -269,36 +218,8 @@ export default function VideoWalkthroughScreen() {
       <View style={styles.container}>
         <CameraView ref={cameraRef} style={styles.camera} mode="video" />
 
-        {phase === 'gps-check' && (
-          <View style={styles.overlayCenter}>
-            <View style={styles.gpsCheckCard}>
-              <View style={styles.gpsSpinner} />
-              <Text style={styles.gpsCheckTitle}>Checking GPS...</Text>
-              <Text style={styles.gpsCheckSubtitle}>
-                Taking {GPS_SAMPLE_COUNT} location samples to verify you are at the property
-              </Text>
-              <View style={styles.gpsProgressDots}>
-                {Array.from({ length: GPS_SAMPLE_COUNT }).map((_, i) => (
-                  <View
-                    key={i}
-                    style={[styles.gpsDot, i < gpsSamples.length && styles.gpsDotActive]}
-                  />
-                ))}
-              </View>
-            </View>
-          </View>
-        )}
-
         {phase === 'ready' && (
           <>
-            {hostingLat && hostingLng && (
-              <GeofenceOverlay
-                hostingLatitude={hostingLat}
-                hostingLongitude={hostingLng}
-                visible={true}
-              />
-            )}
-
             <View style={styles.topBar}>
               <Pressable onPress={() => router.back()} style={styles.closeButton}>
                 <X size={20} color="white" />
@@ -310,33 +231,28 @@ export default function VideoWalkthroughScreen() {
               <View style={{ width: 36 }} />
             </View>
 
-            {gpsError && (
-              <View style={styles.warningBanner}>
-                <MapPin size={12} color="#FBBF24" />
-                <Text style={styles.warningText}>{gpsError}</Text>
-              </View>
-            )}
-
             <View style={styles.readyBottom}>
-              <Text style={styles.readyHint}>Tap to record a walkthrough of the property</Text>
-              <Text style={styles.readySubHint}>Max 2 minutes · 720p · GPS-tagged</Text>
+              <Text style={styles.readyHint}>Record a walkthrough, or upload an existing video</Text>
+              <Text style={styles.readySubHint}>
+                A steady walkthrough helps guests picture the space
+              </Text>
               <Pressable onPress={handleStartRecording} style={styles.recordButtonOuter}>
                 <View style={styles.recordButtonInner} />
               </Pressable>
+              <Button type="tinted" onPress={handlePickVideo} style={{ marginTop: 18 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Upload size={16} color={colors.primary} />
+                  <Text style={{ color: colors.primary, fontFamily: Fonts.semibold }}>
+                    Upload a video
+                  </Text>
+                </View>
+              </Button>
             </View>
           </>
         )}
 
         {phase === 'recording' && (
           <>
-            {hostingLat && hostingLng && (
-              <GeofenceOverlay
-                hostingLatitude={hostingLat}
-                hostingLongitude={hostingLng}
-                visible={true}
-              />
-            )}
-
             <View style={styles.recordingTopBar}>
               <View style={styles.recordingIndicator}>
                 <View style={styles.recordingDot} />
