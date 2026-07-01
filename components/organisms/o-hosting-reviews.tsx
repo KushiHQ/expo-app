@@ -38,16 +38,32 @@ const HostingReviews: React.FC<Props> = ({ hosting }) => {
       <SectionHeader icon={Star} title="Reviews" />
       <View>
         {(hosting?.reviews ?? []).length === 0 ? (
-          <View
-            className="items-center gap-2 rounded-xl p-4"
-            style={{ backgroundColor: hexToRgba(colors.text, 0.08) }}
-          >
-            <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
-              No Reviews Yet
-            </ThemedText>
-            <View className="flex-row">
+          <View className="items-center gap-3 py-4">
+            <View
+              className="h-14 w-14 items-center justify-center rounded-full"
+              style={{ backgroundColor: hexToRgba(colors.primary, 0.1) }}
+            >
+              <Star size={24} color={colors.primary} />
+            </View>
+            <View className="items-center gap-1">
+              <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 15 }}>
+                No reviews yet
+              </ThemedText>
+              <ThemedText
+                style={{
+                  fontSize: 12.5,
+                  color: hexToRgba(colors.text, 0.55),
+                  textAlign: 'center',
+                  lineHeight: 18,
+                  maxWidth: 250,
+                }}
+              >
+                Guest reviews show up here once someone completes a stay at this property.
+              </ThemedText>
+            </View>
+            <View className="mt-1 flex-row gap-1">
               {Array.from({ length: 5 }).map((_, index) => (
-                <MynauiStarSolid size={16} color={hexToRgba(colors.text, 0.4)} key={index} />
+                <MynauiStarSolid size={14} color={hexToRgba(colors.text, 0.2)} key={index} />
               ))}
             </View>
           </View>
