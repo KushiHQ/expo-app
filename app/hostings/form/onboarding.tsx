@@ -284,7 +284,7 @@ export default function HostingOnboarding() {
               // host's listings (tap to manage, ⋯ menu to view/delete).
               <View className="gap-3">
                 {units.map((unit) => (
-                  <ListingListItem key={unit.id} hosting={unit} onDelete={refetch} />
+                  <ListingListItem key={unit.id} hosting={unit} onDelete={refetch} onDuplicate={refetch} />
                 ))}
               </View>
             )}

@@ -11,6 +11,8 @@ import Button from '../atoms/a-button';
 import { useRouter } from '@/lib/hooks/use-router';
 import ThemedModal from './m-modal';
 import { useDeleteHostingMutation, HostListingsQuery } from '@/lib/services/graphql/generated';
+import { DUPLICATE_HOSTING } from '@/lib/services/graphql/requests/mutations/hostings';
+import { useMutation } from 'urql';
 import LoadingModal from '../atoms/a-loading-modal';
 import { toast } from '@/lib/hooks/use-toast';
 import { handleError } from '@/lib/utils/error';
@@ -23,13 +25,37 @@ type Props = {
    *  mutation returns only `{ message }`, so the urql document cache can't
    *  auto-invalidate the listings query. */
   onDelete?: () => void;
+  /** Called after a successful duplicate so the list can refresh — the new draft
+   *  listing isn't in the cached listings query, so urql can't auto-add it. */
+  onDuplicate?: () => void;
 };
 
-const ListingOptions: React.FC<Props> = ({ open, onClose, hosting, onDelete }) => {
+const ListingOptions: React.FC<Props> = ({ open, onClose, hosting, onDelete, onDuplicate }) => {
   const router = useRouter();
   const colors = useThemeColors();
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [{ fetching: deleting }, deleteHosting] = useDeleteHostingMutation();
+  // Raw urql (not the generated hook) so this ships before the server deploy that
+  // adds duplicateHosting is picked up by codegen.
+  const [{ fetching: duplicating }, duplicateHosting] = useMutation(DUPLICATE_HOSTING);
+
+  const handleDuplicate = () => {
+    duplicateHosting({ sourceHostingId: hosting.id }).then((res) => {
+      if (res.error) {
+        handleError(res.error);
+        return;
+      }
+      if (res.data?.duplicateHosting?.data) {
+        toast.show({
+          type: 'success',
+          text1: 'Duplicated',
+          text2: 'A draft copy was added to your listings.',
+        });
+        onClose();
+        onDuplicate?.();
+      }
+    });
+  };
 
   const handleDelete = () => {
     deleteHosting({ hostingId: hosting.id }).then((res) => {
@@ -96,6 +122,9 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting, onDelete }) =
             >
               <ThemedText content="primary">View Listing</ThemedText>
             </Button>
+            <Button type="tinted" onPress={handleDuplicate}>
+              <ThemedText content="tinted">Duplicate Listing</ThemedText>
+            </Button>
             <Button
               style={{ backgroundColor: hexToRgba(colors.error, 0.15) }}
               onPress={() => setDeleteOpen(true)}
@@ -123,7 +152,7 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting, onDelete }) =
           </View>
         </View>
       </ThemedModal>
-      <LoadingModal visible={deleting} />
+      <LoadingModal visible={deleting || duplicating} />
     </>
   );
 };

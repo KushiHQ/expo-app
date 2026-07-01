@@ -385,3 +385,14 @@ export const DELETE_HOSTING = gql`
     }
   }
 `;
+
+export const DUPLICATE_HOSTING = gql`
+  mutation duplicateHosting($sourceHostingId: String!) {
+    duplicateHosting(sourceHostingId: $sourceHostingId) {
+      message
+      data {
+        id
+      }
+    }
+  }
+`;

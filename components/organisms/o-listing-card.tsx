@@ -19,9 +19,10 @@ import { SURFACE } from '@/lib/constants/surface';
 type Props = {
   hosting: HostListingsQuery['hostings'][number];
   onDelete?: () => void;
+  onDuplicate?: () => void;
 };
 
-const ListingCard: React.FC<Props> = ({ hosting, onDelete }) => {
+const ListingCard: React.FC<Props> = ({ hosting, onDelete, onDuplicate }) => {
   const router = useRouter();
   const colors = useThemeColors();
   const [optionsOpen, setOptionsOpen] = React.useState(false);
@@ -167,6 +168,7 @@ const ListingCard: React.FC<Props> = ({ hosting, onDelete }) => {
         onClose={() => setOptionsOpen(false)}
         hosting={hosting}
         onDelete={onDelete}
+        onDuplicate={onDuplicate}
       />
     </Animated.View>
   );

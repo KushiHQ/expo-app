@@ -18,9 +18,10 @@ import { SURFACE } from '@/lib/constants/surface';
 type Props = {
   hosting: HostListingsQuery['hostings'][number];
   onDelete?: () => void;
+  onDuplicate?: () => void;
 };
 
-const ListingListItem: React.FC<Props> = ({ hosting, onDelete }) => {
+const ListingListItem: React.FC<Props> = ({ hosting, onDelete, onDuplicate }) => {
   const router = useRouter();
   const colors = useThemeColors();
   const [optionsOpen, setOptionsOpen] = React.useState(false);
@@ -51,7 +52,7 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete }) => {
   const status = hosting.publishStatus || PublishStatus.Draft;
   // Units reuse this row but carry no city/state — hide the location line
   // rather than render an empty ", ".
-  const location = [hosting.city, hosting.state].filter(Boolean).join(', ');
+  const location = hosting.state ? [hosting.city, hosting.state].filter(Boolean).join(', ') : "_";
   const statusColor =
     status === PublishStatus.Live
       ? colors.success
@@ -108,23 +109,21 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete }) => {
               <EllipsisVertical color={colors.text} size={16} />
             </Pressable>
           </View>
-          {location ? (
-            <View className="flex-row items-center gap-1.5">
-              <MapPin size={12} color={hexToRgba(colors.text, 0.45)} />
-              <ThemedText
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                className="flex-1"
-                style={{
-                  fontSize: 13,
-                  color: hexToRgba(colors.text, 0.6),
-                  fontFamily: Fonts.medium,
-                }}
-              >
-                {location}
-              </ThemedText>
-            </View>
-          ) : null}
+          <View className="flex-row items-center gap-1.5">
+            <MapPin size={12} color={hexToRgba(colors.text, 0.45)} />
+            <ThemedText
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              className="flex-1"
+              style={{
+                fontSize: 13,
+                color: hexToRgba(colors.text, 0.6),
+                fontFamily: Fonts.medium,
+              }}
+            >
+              {location}
+            </ThemedText>
+          </View>
           <View className="mt-0.5 flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
               <View
@@ -172,6 +171,7 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete }) => {
         onClose={() => setOptionsOpen(false)}
         hosting={hosting}
         onDelete={onDelete}
+        onDuplicate={onDuplicate}
       />
     </Animated.View>
   );

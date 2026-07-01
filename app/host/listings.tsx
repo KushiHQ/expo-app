@@ -165,7 +165,7 @@ export default function HostListings() {
             keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => (
               <View className="mb-4">
-                <ListingListItem hosting={item} onDelete={refresh} />
+                <ListingListItem hosting={item} onDelete={refresh} onDuplicate={refresh} />
               </View>
             )}
             onEndReached={() => hasNextPage && loadMore()}
@@ -180,7 +180,7 @@ export default function HostListings() {
             data={hostings}
             renderItem={({ item }) => (
               <View className="mb-2 mr-2">
-                <ListingCard hosting={item} onDelete={refresh} />
+                <ListingCard hosting={item} onDelete={refresh} onDuplicate={refresh} />
               </View>
             )}
             ListHeaderComponent={renderHeader}
