@@ -3,7 +3,6 @@ import BottomSheet from '@/components/atoms/a-bottom-sheet';
 import Button from '@/components/atoms/a-button';
 import ThemedText from '@/components/atoms/a-themed-text';
 import { VaadinPaintbrush } from '@/components/icons/i-brush';
-import { CuidaBuildingOutline } from '@/components/icons/i-home';
 import { SolarLogout2Broken } from '@/components/icons/i-logout';
 import { IonNotificationsOutline } from '@/components/icons/i-notifications';
 import { SolarCardLinear, SolarWalletMoneyOutline } from '@/components/icons/i-payments';
@@ -101,34 +100,34 @@ const ProfileScreen = () => {
       <DetailsLayout title="Profile">
         <View className="mt-4 gap-6">
           <View
-            className="flex-row flex-wrap items-center gap-4 rounded-3xl p-6"
+            className="items-center gap-5 rounded-3xl p-6"
             style={{
               backgroundColor: hexToRgba(colors.text, 0.05),
               boxShadow: SURFACE.shadow,
             }}
           >
             <UserProfileSummary />
-            <View
-              style={{ backgroundColor: hexToRgba(colors.text, 0.08) }}
-              className="min-w-[40px] flex-[1.5] gap-4 rounded-2xl p-4"
-            >
-              <View className="flex-row items-center gap-2">
-                <CuidaBuildingOutline color={colors.accent} size={16} />
-                <ThemedText style={{ fontSize: 12 }}>
-                  {moment(user.user.user?.createdAt).fromNow()}
-                </ThemedText>
-              </View>
-              <Pressable
-                onPress={() => router.push(`/users/${id}/profile/edit`)}
-                className="flex-row items-center justify-center gap-2 rounded-full py-2"
-                style={{ backgroundColor: colors.text }}
+            {user.user.user?.createdAt ? (
+              <ThemedText
+                style={{
+                  fontSize: 12,
+                  color: hexToRgba(colors.text, 0.45),
+                  fontFamily: Fonts.medium,
+                }}
               >
-                <VaadinPaintbrush color={colors.background} size={15} />
-                <ThemedText style={{ color: colors.background, fontFamily: Fonts.semibold, fontSize: 13 }}>
-                  Edit Profile
-                </ThemedText>
-              </Pressable>
-            </View>
+                Member since {moment(user.user.user.createdAt).format('MMMM YYYY')}
+              </ThemedText>
+            ) : null}
+            <Pressable
+              onPress={() => router.push(`/users/${id}/profile/edit`)}
+              className="w-full flex-row items-center justify-center gap-2 rounded-full py-3.5"
+              style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+            >
+              <VaadinPaintbrush color={colors.text} size={15} />
+              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 14 }}>
+                Edit Profile
+              </ThemedText>
+            </Pressable>
           </View>
 
           <View
