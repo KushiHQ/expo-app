@@ -9,7 +9,7 @@ import TextSelectButton from '@/components/molecules/m-text-select-button';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { showAmenitiesStep } from '@/lib/constants/hosting/step-rules';
-import { FACILITIES_BY_VARIANT } from '@/lib/types/enums/hostings';
+import { usePropertyTypeConfig } from '@/lib/hooks/use-property-type-config';
 import { cast } from '@/lib/types/utils';
 import { hexToRgba } from '@/lib/utils/colors';
 import { handleError } from '@/lib/utils/error';
@@ -34,6 +34,7 @@ export default function NewHostingStep4() {
     fetching: fetchingHosting,
     hosting,
   } = useHostingForm(id);
+  const { facilitiesFor } = usePropertyTypeConfig();
 
   React.useEffect(() => {
     if (hosting && !showAmenitiesStep(hosting.propertyType)) {
@@ -43,12 +44,10 @@ export default function NewHostingStep4() {
 
   const facilities = React.useMemo(() => {
     const selected = input.facilities ?? [];
-    const defaultFacilities = FACILITIES_BY_VARIANT.filter((v) =>
-      v.hostingVariants.includes(cast(input.propertyType ?? '')),
-    ).map((v) => v.facility);
+    const defaultFacilities = facilitiesFor(input.propertyType);
     const other = selected.filter((v) => !defaultFacilities.includes(cast(v)));
     return [...defaultFacilities, ...other];
-  }, [input.facilities, input.propertyType]);
+  }, [input.facilities, input.propertyType, facilitiesFor]);
 
   const toggleFacilitySelect = (facility: string) => {
     const list = [...(input.facilities ?? [])];

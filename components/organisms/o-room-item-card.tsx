@@ -1,5 +1,6 @@
 import React, { memo } from "react";
-import { Room, roomsForPropertyType } from "@/lib/types/enums/hostings";
+import { Room } from "@/lib/types/enums/hostings";
+import { usePropertyTypeConfig } from "@/lib/hooks/use-property-type-config";
 import { RoomData } from "@/lib/stores/hostings";
 import { cast } from "@/lib/types/utils";
 import { Pressable, ScrollView, View } from "react-native";
@@ -151,11 +152,17 @@ const RoomItemCard = memo(
       onDeleteImages?.(index, selected);
       exitSelect();
     }, [onDeleteImages, index, selected, exitSelect]);
-    // Spaces relevant to this property type; duplicates ARE allowed now — each
-    // pick creates a separate room instance (WS-6/WS-7).
+    // Spaces relevant to this property type (from the server's admin-editable
+    // config, with a bundled fallback); duplicates ARE allowed — each pick
+    // creates a separate room instance (WS-6/WS-7).
+    const { roomsFor } = usePropertyTypeConfig();
     const spaceOptions = React.useMemo(
-      () => roomsForPropertyType(propertyType).map((v) => ({ label: Room[v], value: v })),
-      [propertyType],
+      () =>
+        roomsFor(propertyType).map((v) => ({
+          label: Room[v as keyof typeof Room] ?? v,
+          value: v,
+        })),
+      [roomsFor, propertyType],
     );
 
     const onSelectRoom = React.useCallback(
