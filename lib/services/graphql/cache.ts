@@ -49,10 +49,15 @@ const NON_KEYED = [
 	'AdminPropertyTypeResponse',
 ];
 
-const keys = Object.fromEntries(NON_KEYED.map((t) => [t, () => null])) as Record<
-	string,
-	() => null
->;
+// Owned value objects with no standalone identity — always embed them under
+// their parent entity (they're 1:1 and never queried on their own). Some are
+// also selected without `id` in places, which otherwise makes graphcache warn
+// ("no key could be generated…"). Embedding is the correct, consistent choice.
+const EMBEDDED = ['Profile', 'Kyc', 'KycStatus', 'HostingReviewAverage', 'Bank'];
+
+const keys = Object.fromEntries(
+	[...NON_KEYED, ...EMBEDDED].map((t) => [t, () => null]),
+) as Record<string, () => null>;
 
 /**
  * Force-refetch specific `Query` fields. Used for mutations that change nested
