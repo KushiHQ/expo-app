@@ -10,9 +10,11 @@ import { Fonts } from '@/lib/constants/theme';
 import Button from '../atoms/a-button';
 import { useRouter } from '@/lib/hooks/use-router';
 import ThemedModal from './m-modal';
-import { useDeleteHostingMutation, HostListingsQuery } from '@/lib/services/graphql/generated';
-import { DUPLICATE_HOSTING } from '@/lib/services/graphql/requests/mutations/hostings';
-import { useMutation } from 'urql';
+import {
+  useDeleteHostingMutation,
+  useDuplicateHostingMutation,
+  HostListingsQuery,
+} from '@/lib/services/graphql/generated';
 import LoadingModal from '../atoms/a-loading-modal';
 import { toast } from '@/lib/hooks/use-toast';
 import { handleError } from '@/lib/utils/error';
@@ -35,9 +37,7 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting, onDelete, onD
   const colors = useThemeColors();
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [{ fetching: deleting }, deleteHosting] = useDeleteHostingMutation();
-  // Raw urql (not the generated hook) so this ships before the server deploy that
-  // adds duplicateHosting is picked up by codegen.
-  const [{ fetching: duplicating }, duplicateHosting] = useMutation(DUPLICATE_HOSTING);
+  const [{ fetching: duplicating }, duplicateHosting] = useDuplicateHostingMutation();
 
   const handleDuplicate = () => {
     duplicateHosting({ sourceHostingId: hosting.id }).then((res) => {

@@ -245,6 +245,45 @@ export type AdminPhoneNumber = {
   phoneNumber: Scalars['String']['output'];
 };
 
+/** Full admin view of a property type (includes id / sequence / active). */
+export type AdminPropertyType = {
+  __typename?: 'AdminPropertyType';
+  category?: Maybe<Scalars['String']['output']>;
+  facilities: Array<Scalars['String']['output']>;
+  icon?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  isActive: Scalars['Boolean']['output'];
+  label: Scalars['String']['output'];
+  rooms: Array<Scalars['String']['output']>;
+  searchTerms: Array<Scalars['String']['output']>;
+  sequence: Scalars['Int']['output'];
+  value: Scalars['String']['output'];
+};
+
+/**
+ * Admin create/update for a property type (+ its potential rooms/facilities).
+ * See sprints/app-constants-plan.md.
+ */
+export type AdminPropertyTypeInput = {
+  category?: InputMaybe<Scalars['String']['input']>;
+  facilities: Array<Scalars['String']['input']>;
+  icon?: InputMaybe<Scalars['String']['input']>;
+  /** Present = update (the `value` is immutable); absent = create. */
+  id?: InputMaybe<Scalars['String']['input']>;
+  isActive?: InputMaybe<Scalars['Boolean']['input']>;
+  label: Scalars['String']['input'];
+  rooms: Array<Scalars['String']['input']>;
+  searchTerms: Array<Scalars['String']['input']>;
+  sequence?: InputMaybe<Scalars['Int']['input']>;
+  value: Scalars['String']['input'];
+};
+
+export type AdminPropertyTypeResponse = {
+  __typename?: 'AdminPropertyTypeResponse';
+  data?: Maybe<AdminPropertyType>;
+  message: Scalars['String']['output'];
+};
+
 export type AdminRecordInteractionResponseInput = {
   /** One of `favourable` | `medium` | `bad`, if a suggestion was tapped. */
   aiSuggestionUsed?: InputMaybe<Scalars['String']['input']>;
@@ -1603,6 +1642,7 @@ export type Mutations = {
   adminCreateFieldScript: FieldScriptResponse;
   /** Append or insert a step into a script. */
   adminCreateFieldScriptStep: FieldScriptStepResponse;
+  adminCreateOrUpdatePropertyType: AdminPropertyTypeResponse;
   /** Create a new role with permissions */
   adminCreateRole: Role;
   /** Deactivate a staff member */
@@ -1613,6 +1653,7 @@ export type Mutations = {
    */
   adminDeleteFieldScriptStep: BoolResponse;
   adminDeleteHosting: Scalars['Boolean']['output'];
+  adminDeletePropertyType: MessageResponse;
   /** Delete a role (only if not assigned to any staff) */
   adminDeleteRole: Scalars['Boolean']['output'];
   /**
@@ -1637,6 +1678,7 @@ export type Mutations = {
   adminReleaseCautionClaim: CautionClaimResponse;
   /** Reorder a script's steps by array position, in one transaction. */
   adminReorderFieldScriptSteps: FieldScriptResponse;
+  adminReorderPropertyTypes: MessageResponse;
   /** Approve or decline a disputed caution claim after mediation. */
   adminResolveCautionClaim: CautionClaimResponse;
   adminReviewHostingVerificationRequest: HostingVerificationRequestResponse;
@@ -1709,6 +1751,13 @@ export type Mutations = {
   deleteHostingRoomImage: MessageResponse;
   deleteSavedHosting: MessageResponse;
   deleteSavedHostingFolder: MessageResponse;
+  /**
+   * Duplicate a listing the host owns — deep-cloning its rooms, photos, and
+   * (for a plaza) all of its units — to speed up capturing near-identical
+   * buildings. The copy lands as a Draft with fresh (Unverified) verification;
+   * the geofenced video walkthrough is not copied.
+   */
+  duplicateHosting: HostingResponse;
   finalizeBooking: Booking;
   googleLogin: AuthTokenResponse;
   googleSignUp: AuthTokenResponse;
@@ -1850,6 +1899,11 @@ export type MutationsAdminCreateFieldScriptStepArgs = {
 };
 
 
+export type MutationsAdminCreateOrUpdatePropertyTypeArgs = {
+  input: AdminPropertyTypeInput;
+};
+
+
 export type MutationsAdminCreateRoleArgs = {
   input: AdminCreateRoleInput;
 };
@@ -1867,6 +1921,11 @@ export type MutationsAdminDeleteFieldScriptStepArgs = {
 
 export type MutationsAdminDeleteHostingArgs = {
   hostingId: Scalars['String']['input'];
+};
+
+
+export type MutationsAdminDeletePropertyTypeArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -1912,6 +1971,11 @@ export type MutationsAdminReleaseCautionClaimArgs = {
 
 export type MutationsAdminReorderFieldScriptStepsArgs = {
   input: AdminReorderFieldScriptStepsInput;
+};
+
+
+export type MutationsAdminReorderPropertyTypesArgs = {
+  orderedIds: Array<Scalars['String']['input']>;
 };
 
 
@@ -2108,6 +2172,11 @@ export type MutationsDeleteSavedHostingArgs = {
 
 export type MutationsDeleteSavedHostingFolderArgs = {
   folderId: Scalars['String']['input'];
+};
+
+
+export type MutationsDuplicateHostingArgs = {
+  sourceHostingId: Scalars['String']['input'];
 };
 
 
@@ -2631,6 +2700,8 @@ export type Query = {
   adminPendingDisbursements: Array<Transaction>;
   /** Get all available permissions as enum values */
   adminPermissions: Array<Scalars['String']['output']>;
+  /** Every property type (including inactive) for the admin editor. */
+  adminPropertyTypes: Array<AdminPropertyType>;
   /** Get a single role by ID with its permissions */
   adminRole: Role;
   adminRoles: Array<Role>;
@@ -3988,6 +4059,13 @@ export type DeleteHostingMutationVariables = Exact<{
 
 
 export type DeleteHostingMutation = { __typename?: 'Mutations', deleteHosting: { __typename?: 'MessageResponse', message: string } };
+
+export type DuplicateHostingMutationVariables = Exact<{
+  sourceHostingId: Scalars['String']['input'];
+}>;
+
+
+export type DuplicateHostingMutation = { __typename?: 'Mutations', duplicateHosting: { __typename?: 'HostingResponse', message: string, data?: { __typename?: 'Hosting', id: string } | null } };
 
 export type MarkNotificationAsReadMutationVariables = Exact<{
   notificationId: Scalars['String']['input'];
@@ -5746,6 +5824,20 @@ export const DeleteHostingDocument = gql`
 
 export function useDeleteHostingMutation() {
   return Urql.useMutation<DeleteHostingMutation, DeleteHostingMutationVariables>(DeleteHostingDocument);
+};
+export const DuplicateHostingDocument = gql`
+    mutation duplicateHosting($sourceHostingId: String!) {
+  duplicateHosting(sourceHostingId: $sourceHostingId) {
+    message
+    data {
+      id
+    }
+  }
+}
+    `;
+
+export function useDuplicateHostingMutation() {
+  return Urql.useMutation<DuplicateHostingMutation, DuplicateHostingMutationVariables>(DuplicateHostingDocument);
 };
 export const MarkNotificationAsReadDocument = gql`
     mutation MarkNotificationAsRead($notificationId: String!) {
