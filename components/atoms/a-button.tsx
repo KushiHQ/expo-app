@@ -28,6 +28,8 @@ const Button: React.FC<Props> = ({
   variant,
   type,
   onPress,
+  onPressIn,
+  onPressOut,
   disabled,
   ...rest
 }) => {
@@ -35,10 +37,25 @@ const Button: React.FC<Props> = ({
   // A disabled OR loading button must not register taps (and must not buzz).
   const isDisabled = !!disabled || !!loading;
 
+  // Track press with state so `style` can stay a plain ARRAY, not a function.
+  // NativeWind's interop drops the styles returned by a `style` function on a
+  // Pressable, which left this button with no fill — an array applies cleanly.
+  const [pressed, setPressed] = React.useState(false);
+
   const handlePress = (event: GestureResponderEvent) => {
     if (isDisabled) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onPress?.(event);
+  };
+
+  const handlePressIn = (event: GestureResponderEvent) => {
+    setPressed(true);
+    onPressIn?.(event);
+  };
+
+  const handlePressOut = (event: GestureResponderEvent) => {
+    setPressed(false);
+    onPressOut?.(event);
   };
 
   const typeColor =
@@ -96,7 +113,7 @@ const Button: React.FC<Props> = ({
 
   return (
     <Pressable
-      style={({ pressed }) => [
+      style={[
         styles.button,
         containerStyle,
         isPrimary && styles.primaryShadow,
@@ -106,6 +123,8 @@ const Button: React.FC<Props> = ({
         pressed && !isDisabled && (variant === 'text' ? styles.pressedText : styles.pressed),
       ]}
       onPress={handlePress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       disabled={isDisabled}
       {...rest}
     >
