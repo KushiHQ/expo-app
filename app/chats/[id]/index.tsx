@@ -23,6 +23,7 @@ import { CREATE_UPDATE_MESSAGE } from '@/lib/services/graphql/requests/mutations
 import { formMutation } from '@/lib/services/graphql/utils/fetch';
 import { cast } from '@/lib/types/utils';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import * as Sentry from '@sentry/react-native';
 import { handleError } from '@/lib/utils/error';
 import { generateRNFile } from '@/lib/utils/file';
@@ -279,8 +280,7 @@ export default function ChatDetails() {
                   height: 72,
                   borderRadius: 36,
                   overflow: 'hidden',
-                  borderWidth: 2,
-                  borderColor: hexToRgba(colors.primary, 0.35),
+                  boxShadow: SURFACE.glow,
                 }}
               >
                 <Image

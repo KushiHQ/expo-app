@@ -117,7 +117,7 @@ export default function PhoneVerification() {
           className="border-t p-4"
           style={{
             backgroundColor: colors.background,
-            borderColor: hexToRgba(colors.text, 0.2),
+            borderColor: hexToRgba(colors.text, 0.045),
           }}
         >
           <Button
@@ -147,8 +147,7 @@ export default function PhoneVerification() {
           <ThemedText style={{ fontSize: 14, opacity: 0.8 }}>Phone Number</ThemedText>
           <View
             style={{
-              borderWidth: 1,
-              borderColor: hexToRgba(colors.text, 0.1),
+              backgroundColor: hexToRgba(colors.text, 0.06),
               borderRadius: 12,
               overflow: 'hidden',
             }}

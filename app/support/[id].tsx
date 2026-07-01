@@ -19,6 +19,7 @@ import {
 } from '@/lib/services/graphql/generated';
 import { useUser } from '@/lib/hooks/user';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import { Fonts } from '@/lib/constants/theme';
 import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
 import { Image } from 'expo-image';
@@ -253,8 +254,7 @@ export default function SupportChatScreen() {
                   height: 72,
                   borderRadius: 36,
                   overflow: 'hidden',
-                  borderWidth: 2,
-                  borderColor: hexToRgba(colors.primary, 0.35),
+                  boxShadow: SURFACE.glow,
                 }}
               >
                 <Image

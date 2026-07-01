@@ -234,12 +234,10 @@ export default function BookingApplicationDetails() {
                   </ThemedText>
                   <View
                     style={{
-                      backgroundColor: hexToRgba(statusColor, 0.15),
-                      borderRadius: 20,
+                      backgroundColor: hexToRgba(statusColor, 0.16),
+                      borderRadius: 999,
                       paddingHorizontal: 10,
                       paddingVertical: 3,
-                      borderWidth: 1,
-                      borderColor: hexToRgba(statusColor, 0.3),
                     }}
                   >
                     <ThemedText

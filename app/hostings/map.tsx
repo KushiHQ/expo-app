@@ -115,8 +115,6 @@ export default function HostingDiscoveryMap() {
             shadowOpacity: 0.15,
             shadowRadius: 4,
             elevation: 4,
-            borderWidth: 1,
-            borderColor: hexToRgba(colors.text, 0.1),
           }}
         >
           <ArrowLeft size={20} color={colors.text} />

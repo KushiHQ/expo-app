@@ -14,6 +14,7 @@ import {
 } from '@/lib/services/graphql/generated';
 import { handleError } from '@/lib/utils/error';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import { formatTierLabel, nextTier, TIER_TAGLINES } from '@/lib/utils/verification/tier';
 import { ArrowRight, Award, ShieldCheck, Sparkles } from 'lucide-react-native';
 import { useLocalSearchParams } from 'expo-router';
@@ -91,8 +92,7 @@ export default function VerificationOverview() {
             className="rounded-2xl p-4"
             style={{
               backgroundColor: hexToRgba(colors.surface, 0.5),
-              borderWidth: 1,
-              borderColor: hexToRgba(colors.text, 0.06),
+              boxShadow: SURFACE.shadow,
             }}
           >
             <View className="mb-3 flex-row items-center gap-2">
@@ -251,9 +251,7 @@ const CurrentTierHero: React.FC<HeroProps> = ({
     <View
       className="gap-3 rounded-3xl p-5"
       style={{
-        backgroundColor: hexToRgba(colors.primary, 0.06),
-        borderWidth: 1,
-        borderColor: hexToRgba(colors.primary, 0.2),
+        backgroundColor: hexToRgba(colors.primary, 0.1),
       }}
     >
       <View className="flex-row items-center gap-3">
@@ -302,8 +300,6 @@ const CurrentTierHero: React.FC<HeroProps> = ({
           className="mt-1 flex-row items-center justify-between gap-3 rounded-2xl p-3.5"
           style={{
             backgroundColor: hexToRgba(colors.primary, 0.1),
-            borderWidth: 1,
-            borderColor: hexToRgba(colors.primary, 0.25),
           }}
         >
           <View className="flex-1 flex-row items-center gap-3">
@@ -386,7 +382,7 @@ const EmptyHistory = () => {
           maxWidth: 280,
         }}
       >
-        When you submit your first request, you'll see it tracked here with status updates, admin
+        When you submit your first request, you’ll see it tracked here with status updates, admin
         feedback, and the documents you uploaded.
       </ThemedText>
     </View>
