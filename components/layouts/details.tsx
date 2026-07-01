@@ -61,6 +61,10 @@ type Props = {
   withVideo?: boolean;
   scrollable?: boolean;
   onShare?: () => void;
+  /** Faint warm/cool ambient light behind the content (soft/cloudy depth).
+   *  On by default for solid (dark) screens; pass `false` to suppress it on
+   *  screens with their own full-bleed imagery or a light background. */
+  ambientGlow?: boolean;
 };
 
 const DetailsLayout = React.forwardRef<ScrollView, Props>(
@@ -84,6 +88,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
       withVideo,
       scrollable = true,
       onShare,
+      ambientGlow = true,
     },
     ref,
   ) => {
@@ -187,9 +192,10 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
 
     return (
       <Wrapper className="flex-1" style={backgroundStyles}>
-        {/* Ambient soft/cloudy glow — only on the hosting-form flow so it doesn't
-            bleed into chats/bookings/etc. */}
-        {isFormStep || path.includes('/hostings/form') ? <AmbientGlow /> : null}
+        {/* Ambient soft/cloudy glow — atmospheric depth behind the content.
+            On by default for solid (dark) screens; screens with their own
+            full-bleed imagery or a light background pass `ambientGlow={false}`. */}
+        {ambientGlow && background === 'solid' ? <AmbientGlow /> : null}
         <SafeAreaView edges={isTablet ? ['top', 'bottom', 'right'] : undefined} className="flex-1">
           <View
             style={{

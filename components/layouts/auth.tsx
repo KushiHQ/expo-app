@@ -12,6 +12,7 @@ import { Fonts } from '@/lib/constants/theme';
 import BackButton from '../atoms/a-backbutton';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useRouter } from 'expo-router';
+import AmbientGlow from '../atoms/a-ambient-glow';
 
 type Props = {
   title?: string;
@@ -26,6 +27,8 @@ const AuthLayout: React.FC<Props> = ({ title, description, children }) => {
 
   return (
     <ThemedView className="flex-1">
+      {/* Atmospheric soft/cloudy glow behind the auth flow. */}
+      <AmbientGlow />
       <SafeAreaView className="flex-1">
         <View
           style={{

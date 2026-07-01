@@ -16,6 +16,7 @@ import { useUser } from '@/lib/hooks/user';
 import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
 import { useNotificationsQuery } from '@/lib/services/graphql/generated';
 import * as Haptics from 'expo-haptics';
+import AmbientGlow from '../atoms/a-ambient-glow';
 
 import { Fonts } from '@/lib/constants/theme';
 
@@ -65,6 +66,8 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
 
   return (
     <ThemedView className="flex-1">
+      {/* Atmospheric soft/cloudy glow behind the discovery feed. */}
+      <AmbientGlow />
       <SafeAreaView edges={isTablet ? ['top', 'bottom', 'right'] : undefined} className="flex-1">
         <View
           style={{
