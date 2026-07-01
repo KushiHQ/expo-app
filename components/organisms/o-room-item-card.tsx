@@ -216,7 +216,7 @@ const RoomItemCard = memo(
             >
               <CameraLinear color={hexToRgba(colors.text, 0.28)} size={14} />
               <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.32) }}>
-                Tap "Add Photos" to showcase this space
+                Tap Add Photos to showcase this space
               </ThemedText>
             </View>
           ) : (

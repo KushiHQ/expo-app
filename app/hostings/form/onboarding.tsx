@@ -338,7 +338,7 @@ export default function HostingOnboarding() {
           <ThemedText
             style={{ color: hexToRgba(colors.text, 0.6), fontSize: 14, textAlign: 'center' }}
           >
-            "{unitToDelete?.title}" will be removed from this property. This can't be undone.
+            {unitToDelete?.title} will be removed from this property. This cannot be undone.
           </ThemedText>
           <View className="mt-8 w-full flex-row gap-4">
             <Button type="tinted" className="flex-1" onPress={() => setUnitToDelete(null)}>

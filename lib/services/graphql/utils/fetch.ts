@@ -1,11 +1,11 @@
 import { getMimeTypeFromExtension } from '@/lib/utils/file';
 import { CombinedError } from 'urql';
-
-/** Hard ceiling so a half-open connection can never hang an upload forever. */
-const DEFAULT_TIMEOUT_MS = 75_000;
 import { DocumentNode } from 'graphql';
 import { print } from 'graphql/language/printer';
 import { getAuthTokens } from '@/lib/utils/auth';
+
+/** Hard ceiling so a half-open connection can never hang an upload forever. */
+const DEFAULT_TIMEOUT_MS = 75_000;
 
 export function generateRNFile(uri: string) {
   return {

@@ -191,8 +191,8 @@ export default function NewHostingStep1() {
                   color: hexToRgba(colors.text, 0.5),
                 }}
               >
-                This unit inherits the property's location, mandate, tenancy
-                terms and payout — you can edit them as you go.
+                This unit inherits the parent property location, mandate,
+                tenancy terms and payout — you can edit them as you go.
               </ThemedText>
             </View>
           ) : null}
