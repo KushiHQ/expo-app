@@ -31,12 +31,20 @@ export default function GuestHome() {
     refresh,
     showInitialSkeleton,
     showEmpty,
+    setVariables,
   } = useInfiniteQuery(useHostingsQuery, {
     queryKey: 'hostings',
     initialVariables: {
       filters: { ...filter, publishStatus: PublishStatus.Live, onSale: true },
     },
   });
+
+  // Re-run the feed query whenever the shared filter changes (search / AI
+  // predictions / category / bottom-sheet). Driving this explicitly guarantees
+  // the list reacts even if the initialVariables identity is memoised.
+  React.useEffect(() => {
+    setVariables({ filters: { ...filter, publishStatus: PublishStatus.Live, onSale: true } });
+  }, [filter, setVariables]);
 
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -57,6 +65,7 @@ export default function GuestHome() {
       <FlatList
         key={numColumns}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         data={hostings}
         keyExtractor={(item) => item.id}
         numColumns={numColumns}
