@@ -36,13 +36,6 @@ const HostingFormOnboardingAction: React.FC<Props> = ({
   const colors = useThemeColors();
 
   const Icon = icon;
-  const leadingBorderColor =
-    color === 'primary'
-      ? hexToRgba(colors.primary, 0.2)
-      : color === 'accent'
-        ? hexToRgba(colors.accent, 0.2)
-        : hexToRgba(colors.text, 0.1);
-
   return (
     <Pressable
       onPress={onPress}
@@ -63,8 +56,7 @@ const HostingFormOnboardingAction: React.FC<Props> = ({
     >
       {image ? (
         <View
-          className="h-12 w-12 overflow-hidden rounded-2xl border"
-          style={{ borderColor: leadingBorderColor }}
+          className="h-12 w-12 overflow-hidden rounded-2xl"
         >
           <Image
             source={{ uri: image }}
@@ -78,10 +70,9 @@ const HostingFormOnboardingAction: React.FC<Props> = ({
         </View>
       ) : (
         <View
-          className="h-12 w-12 items-center justify-center rounded-full border"
+          className="h-12 w-12 items-center justify-center rounded-full"
           style={{
-            backgroundColor: hexToRgba(colors.primary, 0.1),
-            borderColor: leadingBorderColor,
+            backgroundColor: hexToRgba(colors.primary, 0.12),
           }}
         >
           <Icon size={20} color={colors.text} />

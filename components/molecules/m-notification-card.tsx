@@ -106,8 +106,6 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
       className="overflow-hidden rounded-xl"
       style={{
         backgroundColor: isUnread ? hexToRgba(colors.primary, 0.07) : hexToRgba(colors.text, 0.05),
-        borderWidth: 1,
-        borderColor: isUnread ? hexToRgba(colors.primary, 0.18) : hexToRgba(colors.text, 0.08),
       }}
     >
       <View className="flex-row items-start gap-3 p-4">

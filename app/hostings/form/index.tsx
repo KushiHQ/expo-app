@@ -7,6 +7,7 @@ import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useUser } from '@/lib/hooks/user';
 import { useActiveFormHosingStore, useHostingRoomsStore } from '@/lib/stores/hostings';
+import { SURFACE } from '@/lib/constants/surface';
 import { hexToRgba } from '@/lib/utils/colors';
 import { useKycStatusQuery } from '@/lib/services/graphql/generated';
 import { ImageBackground } from 'expo-image';
@@ -105,14 +106,16 @@ export default function NewHosting() {
             return (
               <View
                 key={index}
-                className="flex-row items-center gap-4 rounded-3xl border p-[14px]"
-                style={{ borderColor: hexToRgba(colors.text, 0.15) }}
+                className="flex-row items-center gap-4 rounded-3xl p-[14px]"
+                style={{
+                  backgroundColor: hexToRgba(colors.text, 0.05),
+                  boxShadow: SURFACE.shadow,
+                }}
               >
                 <View
-                  className="h-12 w-12 items-center justify-center rounded-full border"
+                  className="h-12 w-12 items-center justify-center rounded-full"
                   style={{
                     backgroundColor: hexToRgba(colors.primary, 0.1),
-                    borderColor: hexToRgba(colors.text, 0.1),
                   }}
                 >
                   <Icon size={20} color={colors.text} />

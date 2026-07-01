@@ -216,7 +216,6 @@ const CallScreen: React.FC<Props> = ({ callData }) => {
                 styles.controlPill,
                 {
                   backgroundColor: hexToRgba('#0c1526', 0.88),
-                  borderColor: hexToRgba('#ffffff', 0.09),
                 },
               ]}
             >
@@ -379,7 +378,6 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     paddingHorizontal: 30,
     borderRadius: 30,
-    borderWidth: 1,
   },
   pillBtn: {
     width: 56,

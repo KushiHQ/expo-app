@@ -3,9 +3,11 @@ import Checkbox from '@/components/atoms/a-checkbox';
 import ThemedText from '@/components/atoms/a-themed-text';
 import { BusinessDealHandshake } from '@/components/icons/i-business-deal-handshake';
 import { CashPaymentBag } from '@/components/icons/i-payments';
+import { SURFACE } from '@/lib/constants/surface';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useUser } from '@/lib/hooks/user';
 import { UserType } from '@/lib/types/users';
+import { hexToRgba } from '@/lib/utils/colors';
 import React from 'react';
 import { View } from 'react-native';
 
@@ -24,7 +26,13 @@ const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
         <ThemedText>Select your purpose to get a tailored experience</ThemedText>
       </View>
       <View className="mt-16 gap-4">
-        <View style={{ borderColor: colors['primary'] }} className="gap-4 rounded-xl border p-5">
+        <View
+          className="gap-4 rounded-xl p-5"
+          style={{
+            backgroundColor: hexToRgba(colors.text, 0.05),
+            boxShadow: SURFACE.shadow,
+          }}
+        >
           <CashPaymentBag color={colors['primary']} size={36} />
           <View className="flex-row items-center justify-between">
             <ThemedText>I&apos;m looking for a house</ThemedText>
@@ -42,7 +50,13 @@ const GettingStartedStep1: React.FC<Props> = ({ onNext }) => {
             />
           </View>
         </View>
-        <View style={{ borderColor: colors['primary'] }} className="gap-4 rounded-xl border p-5">
+        <View
+          className="gap-4 rounded-xl p-5"
+          style={{
+            backgroundColor: hexToRgba(colors.text, 0.05),
+            boxShadow: SURFACE.shadow,
+          }}
+        >
           <BusinessDealHandshake color={colors['primary']} size={48} />
           <View className="flex-row items-center justify-between">
             <ThemedText>I want to rent out my house</ThemedText>

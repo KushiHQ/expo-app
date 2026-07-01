@@ -2,6 +2,7 @@ import ThemedText from '@/components/atoms/a-themed-text';
 import { LineiconsSearch1 } from '@/components/icons/i-search';
 import DetailsLayout from '@/components/layouts/details';
 import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { SURFACE } from '@/lib/constants/surface';
 import { Fonts } from '@/lib/constants/theme';
 import { useDebounce } from '@/lib/hooks/use-debounce';
 import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
@@ -58,23 +59,14 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
       onPress={() => router.push(`/chats/${chat.id}/`)}
       style={[
         {
-          backgroundColor: colors['surface-01'],
+          backgroundColor: hexToRgba(colors.text, 0.05),
           borderRadius: 16,
           marginBottom: 10,
           padding: 14,
           flexDirection: 'row',
           gap: 12,
           alignItems: 'center',
-          borderWidth: 0.5,
-          borderColor:
-            chat.unreadMessageCount > 0
-              ? hexToRgba(colors.primary, 0.3)
-              : hexToRgba(colors.text, 0.07),
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.06,
-          shadowRadius: 8,
-          elevation: 2,
+          boxShadow: SURFACE.shadow,
           overflow: 'hidden',
         },
         animatedStyle,
@@ -119,7 +111,7 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
               borderRadius: 7,
               backgroundColor: colors.success,
               borderWidth: 2,
-              borderColor: colors['surface-01'],
+              borderColor: hexToRgba(colors.text, 0.05),
             }}
           />
         )}
@@ -287,10 +279,9 @@ const ChatScreen: React.FC<Props> = ({ variant = 'guest' }) => {
         ListHeaderComponent={
           <View className="mb-4">
             <View
-              className="flex-row items-center gap-2 rounded-2xl border p-4 py-3"
+              className="flex-row items-center gap-2 rounded-2xl p-4 py-3"
               style={{
-                backgroundColor: colors['surface-01'],
-                borderColor: hexToRgba(colors.text, 0.08),
+                backgroundColor: hexToRgba(colors.text, 0.06),
               }}
             >
               <LineiconsSearch1 color={hexToRgba(colors['text'], 0.4)} size={20} />

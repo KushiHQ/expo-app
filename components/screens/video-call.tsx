@@ -141,7 +141,6 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
               styles.cameraOffBadge,
               {
                 backgroundColor: hexToRgba('#020617', 0.7),
-                borderColor: hexToRgba('#ffffff', 0.12),
               },
             ]}
           >
@@ -176,7 +175,6 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
               styles.incomingCard,
               {
                 backgroundColor: hexToRgba('#020617', 0.72),
-                borderColor: hexToRgba('#ffffff', 0.1),
               },
             ]}
           >
@@ -207,7 +205,6 @@ const ChatVideoCallScreen: React.FC<Props> = ({ callData }) => {
             {
               top: insets.top + 60,
               backgroundColor: hexToRgba('#020617', 0.75),
-              borderColor: hexToRgba('#ffffff', 0.13),
             },
           ]}
         >
@@ -450,7 +447,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
-    borderWidth: 1,
   },
   cameraOffBadgeText: {
     fontSize: 12,
@@ -472,7 +468,6 @@ const styles = StyleSheet.create({
     paddingVertical: 28,
     paddingHorizontal: 36,
     borderRadius: 24,
-    borderWidth: 1,
   },
   incomingRing: {
     width: 110,
@@ -506,7 +501,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 5,
     borderRadius: 12,
-    borderWidth: 1,
     zIndex: 10,
   },
   mutedText: {

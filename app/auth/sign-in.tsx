@@ -254,10 +254,9 @@ export default function Login() {
               aria-label="Sign In with Google"
               onPress={signInWithGoogle}
               style={{
-                backgroundColor: hexToRgba(colors['text'], 0.1),
-                borderColor: hexToRgba(colors['text'], 0.2),
+                backgroundColor: hexToRgba(colors['text'], 0.08),
               }}
-              className="h-12 w-full max-w-[144px] flex-row items-center justify-center gap-3 rounded-full border"
+              className="h-12 w-full max-w-[144px] flex-row items-center justify-center gap-3 rounded-full"
             >
               <LogosGoogle />
               <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>Google</ThemedText>
@@ -266,10 +265,9 @@ export default function Login() {
               aria-label="Sign In with Apple"
               onPress={signInWithApple}
               style={{
-                backgroundColor: hexToRgba(colors['text'], 0.1),
-                borderColor: hexToRgba(colors['text'], 0.2),
+                backgroundColor: hexToRgba(colors['text'], 0.08),
               }}
-              className="h-12 w-full max-w-[144px] flex-row items-center justify-center gap-3 rounded-full border"
+              className="h-12 w-full max-w-[144px] flex-row items-center justify-center gap-3 rounded-full"
             >
               <LogosApple />
               <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>Apple</ThemedText>

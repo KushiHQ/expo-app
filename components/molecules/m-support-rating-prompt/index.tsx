@@ -109,13 +109,8 @@ const SupportRatingPrompt: React.FC<SupportRatingPromptProps> = ({
               justifyContent: 'center',
               backgroundColor:
                 selectedRating !== null && selectedRating >= rating
-                  ? colors.primary
-                  : hexToRgba(colors.text, 0.06),
-              borderWidth: 1,
-              borderColor:
-                selectedRating !== null && selectedRating >= rating
-                  ? colors.primary
-                  : hexToRgba(colors.text, 0.08),
+                  ? hexToRgba(colors.primary, 0.14)
+                  : hexToRgba(colors.text, 0.05),
             }}
           >
             <ThemedText style={{ fontSize: 20 }}>

@@ -2,6 +2,7 @@ import { FluentSlideTextEdit28Regular } from '@/components/icons/i-edit';
 import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import React from 'react';
 import { Pressable, View } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
@@ -20,7 +21,8 @@ const ReviewSection: React.FC<Props> = ({ icon, borderless, title, onEdit, child
     <View
       style={{
         borderRadius: 16,
-        backgroundColor: colors['surface-01'],
+        backgroundColor: hexToRgba(colors.text, 0.05),
+        boxShadow: SURFACE.shadow,
         overflow: 'hidden',
       }}
     >

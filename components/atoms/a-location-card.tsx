@@ -33,7 +33,7 @@ const LocationCard: React.FC<Props> = ({
 
   return (
     <View
-      className="relative overflow-hidden rounded-xl border"
+      className="relative overflow-hidden rounded-xl"
       style={{ height: 250 }}
     >
       <ExpoMap

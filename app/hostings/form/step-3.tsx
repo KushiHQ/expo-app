@@ -123,8 +123,6 @@ export default function NewHostingStep3() {
                   paddingVertical: 10,
                   borderRadius: 10,
                   backgroundColor: hexToRgba(colors.primary, 0.06),
-                  borderWidth: 1,
-                  borderColor: hexToRgba(colors.primary, 0.1),
                 }}
               >
                 <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55) }}>
@@ -150,10 +148,9 @@ export default function NewHostingStep3() {
           >
             <View
               style={{
-                borderWidth: 1,
-                borderColor: hexToRgba(colors.text, 0.1),
                 borderRadius: 12,
                 overflow: 'hidden',
+                backgroundColor: hexToRgba(colors.text, 0.06),
               }}
             >
               <PhoneNumberSelectInput

@@ -49,17 +49,11 @@ const TierPicker: React.FC<Props> = ({ selected, onSelect, currentTier }) => {
             accessibilityState={{ selected: isSelected, disabled: isCurrent }}
             className="rounded-2xl p-4"
             style={{
-              borderWidth: 1.5,
-              borderColor: isSelected
-                ? colors.primary
-                : isCurrent
-                  ? hexToRgba(colors.success, 0.4)
-                  : hexToRgba(colors.text, 0.1),
               backgroundColor: isSelected
-                ? hexToRgba(colors.primary, 0.08)
+                ? hexToRgba(colors.primary, 0.14)
                 : isCurrent
-                  ? hexToRgba(colors.success, 0.06)
-                  : hexToRgba(colors.text, 0.03),
+                  ? hexToRgba(colors.success, 0.08)
+                  : hexToRgba(colors.text, 0.05),
               opacity: isCurrent ? 0.65 : 1,
             }}
           >

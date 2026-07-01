@@ -66,7 +66,7 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 			<View
 				style={{
 					height: 290,
-					backgroundColor: colors["surface-01"],
+					backgroundColor: hexToRgba(colors.text, 0.07),
 				}}
 				className="relative overflow-hidden rounded-2xl"
 			>
@@ -237,8 +237,6 @@ export const HostingCardSkeleton = () => {
 };
 
 export const HostingDetailsSkeleton = () => {
-	const colors = useThemeColors();
-
 	return (
 		<View className="gap-8">
 			{/* Carousel Area */}
@@ -262,8 +260,8 @@ export const HostingDetailsSkeleton = () => {
 
 				{/* Description Section */}
 				<View
-					className="mt-8 border-b pb-8"
-					style={{ borderColor: hexToRgba(colors.text, 0.1) }}
+					className="mt-8 pb-8"
+					style={{ borderBottomWidth: 0 }}
 				>
 					<Skeleton
 						style={{

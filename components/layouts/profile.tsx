@@ -83,7 +83,7 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
                   }}
                   aria-label="Go Back"
                   className="h-11 w-11 items-center justify-center rounded-2xl"
-                  style={{ backgroundColor: colors['surface-01'] }}
+                  style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
                 >
                   <ChevronLeft size={22} color={colors['text']} />
                 </Pressable>
@@ -110,17 +110,16 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
                   router.push('/users/notifications');
                 }}
                 className="h-11 w-11 items-center justify-center rounded-2xl"
-                style={{ backgroundColor: colors['surface-01'] }}
+                style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
               >
                 <IonNotificationsOutline size={20} color={hexToRgba(colors['text'], 0.8)} />
                 {unreadCount > 0 && (
                   <View
-                    className="absolute right-2.5 top-2.5 items-center justify-center rounded-full border-2"
+                    className="absolute right-2.5 top-2.5 items-center justify-center rounded-full"
                     style={{
                       width: 10,
                       height: 10,
                       backgroundColor: colors.primary,
-                      borderColor: colors['surface-01'],
                     }}
                   />
                 )}
@@ -130,10 +129,7 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   router.push('/guest/profile');
                 }}
-                className="h-11 w-11 overflow-hidden rounded-2xl border-2"
-                style={{
-                  borderColor: hexToRgba(colors['text'], 0.1),
-                }}
+                className="h-11 w-11 overflow-hidden rounded-2xl"
               >
                 <Image
                   style={{

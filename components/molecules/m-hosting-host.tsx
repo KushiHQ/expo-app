@@ -67,10 +67,7 @@ const HostingHost: React.FC<Props> = ({ hosting, isHost = false }) => {
   return (
     <>
       <View
-        className="gap-4 border-b pb-8"
-        style={{
-          borderColor: hexToRgba(colors.text, 0.1),
-        }}
+        className="gap-4 pb-8"
       >
         <ThemedText className="mt-4" style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
           Host
@@ -78,17 +75,13 @@ const HostingHost: React.FC<Props> = ({ hosting, isHost = false }) => {
         <View
           className="gap-4 overflow-hidden rounded-xl p-6"
           style={{
-            backgroundColor: hexToRgba(colors.text, 0.1),
+            backgroundColor: hexToRgba(colors.text, 0.05),
           }}
         >
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
               <View
-                className="h-8 w-8 overflow-hidden rounded-full border"
-                style={{
-                  borderColor: hexToRgba(colors['text'], 0.6),
-                  borderWidth: 2,
-                }}
+                className="h-8 w-8 overflow-hidden rounded-full"
               >
                 <Image
                   style={{
@@ -146,11 +139,10 @@ const HostingHost: React.FC<Props> = ({ hosting, isHost = false }) => {
                   handleInitiateCall();
                 }}
                 accessibilityLabel="Initiate call with host"
-                className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border py-4"
+                className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl py-4"
                 style={[
                   {
-                    borderColor: hexToRgba(colors.text, 0.15),
-                    backgroundColor: colors['surface-01'],
+                    backgroundColor: hexToRgba(colors.text, 0.05),
                   },
                   callAnimatedStyle,
                 ]}

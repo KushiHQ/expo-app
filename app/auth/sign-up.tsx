@@ -247,10 +247,9 @@ export default function SignUp() {
             <Pressable
               onPress={signUpWithGoogle}
               style={{
-                backgroundColor: hexToRgba(colors['text'], 0.1),
-                borderColor: hexToRgba(colors['text'], 0.2),
+                backgroundColor: hexToRgba(colors['text'], 0.08),
               }}
-              className="h-12 w-full max-w-[144px] flex-row items-center justify-center gap-3 rounded-full border"
+              className="h-12 w-full max-w-[144px] flex-row items-center justify-center gap-3 rounded-full"
             >
               <LogosGoogle />
               <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>Google</ThemedText>
@@ -259,10 +258,9 @@ export default function SignUp() {
               aria-label="Sign Up with Apple"
               onPress={signUpWithApple}
               style={{
-                backgroundColor: hexToRgba(colors['text'], 0.1),
-                borderColor: hexToRgba(colors['text'], 0.2),
+                backgroundColor: hexToRgba(colors['text'], 0.08),
               }}
-              className="h-12 w-full max-w-[144px] flex-row items-center justify-center gap-3 rounded-full border"
+              className="h-12 w-full max-w-[144px] flex-row items-center justify-center gap-3 rounded-full"
             >
               <LogosApple />
               <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>Apple</ThemedText>

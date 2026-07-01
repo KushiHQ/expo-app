@@ -61,9 +61,7 @@ const BookingFeedbackPrompt: React.FC<BookingFeedbackPromptProps> = ({
     maxWidth: 400,
     padding: 28,
     borderRadius: 26,
-    backgroundColor: colors['surface-01'],
-    borderWidth: 1,
-    borderColor: hexToRgba(colors.primary, 0.18),
+    backgroundColor: hexToRgba(colors.text, 0.05),
   };
 
   if (submitted) {
@@ -76,9 +74,7 @@ const BookingFeedbackPrompt: React.FC<BookingFeedbackPromptProps> = ({
             borderRadius: 32,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: hexToRgba(colors.primary, 0.12),
-            borderWidth: 1,
-            borderColor: hexToRgba(colors.primary, 0.3),
+            backgroundColor: hexToRgba(colors.primary, 0.14),
           }}
         >
           <BadgeCheck size={32} color={colors.primary} strokeWidth={2} />
@@ -151,11 +147,7 @@ const BookingFeedbackPrompt: React.FC<BookingFeedbackPromptProps> = ({
                   justifyContent: 'center',
                   backgroundColor: active
                     ? hexToRgba(colors.primary, 0.14)
-                    : hexToRgba(colors.text, 0.04),
-                  borderWidth: 1,
-                  borderColor: active
-                    ? hexToRgba(colors.primary, 0.4)
-                    : hexToRgba(colors.text, 0.08),
+                    : hexToRgba(colors.text, 0.05),
                 }}
               >
                 <Star
@@ -190,9 +182,7 @@ const BookingFeedbackPrompt: React.FC<BookingFeedbackPromptProps> = ({
         style={{
           minHeight: 88,
           borderRadius: 16,
-          borderWidth: 1,
-          borderColor: hexToRgba(colors.text, 0.1),
-          backgroundColor: hexToRgba(colors.text, 0.03),
+          backgroundColor: hexToRgba(colors.text, 0.05),
           paddingHorizontal: 14,
           paddingVertical: 12,
           color: colors.text,

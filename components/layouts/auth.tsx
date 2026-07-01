@@ -4,6 +4,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
 import Logo from '../icons/i-logo';
+import { SURFACE } from '@/lib/constants/surface';
 import { hexToRgba } from '@/lib/utils/colors';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import ThemedText from '../atoms/a-themed-text';
@@ -43,9 +44,10 @@ const AuthLayout: React.FC<Props> = ({ title, description, children }) => {
               {router.canGoBack() && <BackButton onPress={() => router.back()} className="top-5" />}
               <View className="mt-28 gap-9">
                 <View
-                  className="items-center justify-center rounded-xl border"
+                  className="items-center justify-center rounded-xl"
                   style={{
-                    borderColor: hexToRgba(colors['text'], 0.15),
+                    backgroundColor: hexToRgba(colors.text, 0.06),
+                    boxShadow: SURFACE.shadow,
                     width: 48,
                     height: 48,
                   }}

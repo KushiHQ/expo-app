@@ -126,8 +126,6 @@ export default function CheckoutSummary() {
           className="flex-row gap-3 rounded-2xl p-4"
           style={{
             backgroundColor: hexToRgba(colors.secondary, 0.1),
-            borderWidth: 1,
-            borderColor: hexToRgba(colors.secondary, 0.25),
           }}
         >
           <Info size={18} color={colors.secondary} style={{ marginTop: 2 }} />

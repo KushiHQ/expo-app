@@ -108,10 +108,7 @@ const Collapsible: React.FC<CollapsibleProps> = ({
         styles.container,
         {
           backgroundColor: outline
-            ? hexToRgba(getTintColor(), tint !== 'default' ? 0.1 : 0.02)
-            : 'transparent',
-          borderColor: outline
-            ? hexToRgba(getTintColor(), tint !== 'default' ? 0.1 : 0.02)
+            ? hexToRgba(getTintColor(), tint !== 'default' ? 0.1 : 0.05)
             : 'transparent',
         },
       ]}
@@ -172,8 +169,7 @@ export default Collapsible;
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    borderRadius: 12,
-    borderWidth: 1,
+    borderRadius: 14,
     overflow: 'hidden',
     marginBottom: 10,
   },

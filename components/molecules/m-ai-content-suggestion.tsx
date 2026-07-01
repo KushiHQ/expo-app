@@ -43,11 +43,9 @@ const AiContentSuggestion: React.FC<Props> = ({ hostingId, onApply }) => {
     <View
       style={{
         gap: 12,
-        borderRadius: 12,
+        borderRadius: 14,
         padding: 14,
-        backgroundColor: hexToRgba(colors.primary, 0.06),
-        borderWidth: 1,
-        borderColor: hexToRgba(colors.primary, 0.16),
+        backgroundColor: hexToRgba(colors.primary, 0.10),
       }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>

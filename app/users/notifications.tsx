@@ -139,8 +139,8 @@ export default function UserNotifications() {
       {showEmpty && (
         <View className="flex-1 items-center justify-center">
           <View
-            className="items-center justify-center gap-4 rounded-xl border p-10"
-            style={{ borderColor: hexToRgba(colors.text, 0.2) }}
+            className="items-center justify-center gap-4 rounded-xl p-10"
+            style={{ backgroundColor: hexToRgba(colors.text, 0.05) }}
           >
             <NotificationBell />
             <ThemedText style={{ color: hexToRgba(colors.text, 0.5) }}>

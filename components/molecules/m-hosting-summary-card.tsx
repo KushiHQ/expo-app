@@ -1,11 +1,12 @@
 import { PROPERTY_BLURHASH } from '@/lib/constants/images';
 import { Image } from 'expo-image';
 import React from 'react';
-import { View, Platform } from 'react-native';
+import { View } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { Fonts } from '@/lib/constants/theme';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import { MynauiStarSolid } from '../icons/i-star';
 import { BookingQuery, HostingQuery } from '@/lib/services/graphql/generated';
 
@@ -19,30 +20,17 @@ const HostingSummaryCard: React.FC<Props> = ({ hosting }) => {
   return (
     <>
       <View
-        className="flex-row gap-4 rounded-2xl border px-8 py-4"
+        className="flex-row gap-4 rounded-2xl px-8 py-4"
         style={{
-          backgroundColor: colors.background,
-          borderColor: hexToRgba(colors.primary, 0.1),
-          ...Platform.select({
-            ios: {
-              shadowColor: colors.primary,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.15,
-              shadowRadius: 20,
-            },
-            android: {
-              elevation: 20,
-              shadowColor: colors.primary,
-            },
-          }),
+          backgroundColor: hexToRgba(colors.text, 0.05),
+          boxShadow: SURFACE.shadow,
         }}
       >
         <View
-          className="overflow-hidden rounded-2xl border"
+          className="overflow-hidden rounded-2xl"
           style={{
             width: 110,
             height: 90,
-            borderColor: colors.text,
           }}
         >
           <Image

@@ -5,7 +5,6 @@ import { HugeiconsStar } from '../icons/i-star';
 import { View } from 'react-native';
 import ThemedModal from '../molecules/m-modal';
 import React from 'react';
-import { hexToRgba } from '@/lib/utils/colors';
 import RatingInput from '../atoms/a-rating-input';
 import ReviewMetricsInfoButton from '../molecules/m-review-metrics-info-button';
 import FloatingLabelInput from '../atoms/a-floating-label-input';
@@ -96,7 +95,7 @@ const LeaveAReviewButton: React.FC<Props> = ({ hostingId, review, edit }) => {
       </Button>
       <ThemedModal visible={modalOpen} onClose={() => setModalOpen(false)}>
         <View className="gap-4">
-          <View className="border-b pb-4" style={{ borderColor: hexToRgba(colors.text, 0.15) }}>
+          <View className="pb-4">
             <ThemedText type="semibold">Leave A Review</ThemedText>
           </View>
           <View className="gap-4">

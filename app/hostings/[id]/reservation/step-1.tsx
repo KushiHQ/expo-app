@@ -139,10 +139,9 @@ export default function BookingApplicationStep1() {
           </ThemedText>
           <View className="mt-8 min-h-[500px] gap-4">
             <View
-              className="flex-row items-center justify-between rounded-2xl border p-3 px-6"
+              className="flex-row items-center justify-between rounded-2xl p-3 px-6"
               style={{
                 backgroundColor: hexToRgba(colors.text, 0.06),
-                borderColor: hexToRgba(colors.text, 0.2),
               }}
             >
               <ThemedText style={{ fontSize: 18 }}>{duration}</ThemedText>
@@ -212,7 +211,6 @@ export default function BookingApplicationStep1() {
               numberOfLines={5}
               containerStyle={{
                 minHeight: 80,
-                borderColor: hexToRgba(colors.text, 0.1),
                 backgroundColor: hexToRgba(colors.text, 0.05),
               }}
               label="Correspondence Address"

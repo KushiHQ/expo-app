@@ -111,16 +111,16 @@ const NPSPrompt: React.FC<NPSPromptProps> = ({ context, onDismiss, onSubmit }) =
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor:
-                selectedScore === score ? colors.primary : hexToRgba(colors.text, 0.06),
-              borderWidth: 1,
-              borderColor: selectedScore === score ? colors.primary : hexToRgba(colors.text, 0.08),
+                selectedScore === score
+                  ? hexToRgba(colors.primary, 0.14)
+                  : hexToRgba(colors.text, 0.05),
             }}
           >
             <ThemedText
               style={{
                 fontFamily: Fonts.semibold,
                 fontSize: 14,
-                color: selectedScore === score ? colors.background : colors.text,
+                color: selectedScore === score ? colors.primary : colors.text,
               }}
             >
               {score}

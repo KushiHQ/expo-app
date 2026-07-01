@@ -15,12 +15,13 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useUser } from '@/lib/hooks/user';
 import { CustomSvgProps } from '@/lib/types/svgType';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import { Image } from 'expo-image';
 import { Href } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
 import { ChevronRight } from 'lucide-react-native';
 import React from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { toast } from '@/lib/hooks/use-toast';
 import { FluentDelete24Regular } from '../icons/i-delete';
 import { Support } from '../icons/i-support';
@@ -100,22 +101,10 @@ const ProfileScreen = () => {
       <DetailsLayout title="Profile">
         <View className="mt-4">
           <View
-            className="flex-row flex-wrap items-center gap-4 rounded-xl border p-6"
+            className="flex-row flex-wrap items-center gap-4 rounded-xl p-6"
             style={{
-              borderColor: hexToRgba(colors.primary, 0.2),
-              backgroundColor: colors.background,
-              ...Platform.select({
-                ios: {
-                  shadowColor: colors.primary,
-                  shadowOffset: { width: 0, height: -2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 8,
-                },
-                android: {
-                  elevation: 10,
-                  shadowColor: hexToRgba(colors.text, 0.5),
-                },
-              }),
+              backgroundColor: hexToRgba(colors.text, 0.05),
+              boxShadow: SURFACE.shadow,
             }}
           >
             <UserProfileSummary />
