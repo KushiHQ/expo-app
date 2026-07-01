@@ -8,7 +8,9 @@ import { Link } from "expo-router";
 import { Image } from "expo-image";
 import { PROPERTY_BLURHASH } from "@/lib/constants/images";
 import { hexToRgba } from "@/lib/utils/colors";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import { HostingQuery } from "@/lib/services/graphql/generated";
+import { SURFACE } from "@/lib/constants/surface";
 import ListImage from "../atoms/a-list-image";
 import VideoCard from "./m-video-card";
 import { extractHostingImages } from "@/lib/utils/hosting/images";
@@ -18,13 +20,17 @@ type Props = {
 };
 
 const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
+  const colors = useThemeColors();
   const { captions, images } = React.useMemo(
     () => extractHostingImages(hosting),
     [hosting],
   );
 
   return (
-    <View className="mt-8">
+    <View
+      className="mt-8 rounded-3xl p-4"
+      style={{ backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow }}
+    >
       <SectionHeader
         icon={Images}
         title="Gallery"

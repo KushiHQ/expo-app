@@ -9,6 +9,7 @@ import { cast } from '@/lib/types/utils';
 import { hexToRgba } from '@/lib/utils/colors';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { HostingQuery } from '@/lib/services/graphql/generated';
+import { SURFACE } from '@/lib/constants/surface';
 
 type Props = {
   hosting?: HostingQuery['hosting'];
@@ -18,7 +19,10 @@ const HostingFacilities: React.FC<Props> = ({ hosting }) => {
   const colors = useThemeColors();
 
   return (
-    <View className="mt-8">
+    <View
+      className="mt-8 gap-4 rounded-3xl p-5"
+      style={{ backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow }}
+    >
       <SectionHeader icon={Sparkles} title="Facilities" />
       <SimpleGrid
         listKey={undefined}

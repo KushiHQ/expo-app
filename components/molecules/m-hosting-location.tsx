@@ -7,6 +7,7 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import LocationCard from '../atoms/a-location-card';
 import { HostingQuery } from '@/lib/services/graphql/generated';
+import { SURFACE } from '@/lib/constants/surface';
 
 type Props = {
   hosting?: HostingQuery['hosting'];
@@ -16,7 +17,10 @@ const HostingLocation: React.FC<Props> = ({ hosting }) => {
   const colors = useThemeColors();
 
   return (
-    <View className="mt-8 gap-6">
+    <View
+      className="mt-8 gap-5 rounded-3xl p-5"
+      style={{ backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow }}
+    >
       <View className="gap-1">
         <SectionHeader icon={MapPin} title="Pin the Location" />
         <ThemedText style={{ color: hexToRgba(colors.text, 0.6), fontSize: 16 }}>

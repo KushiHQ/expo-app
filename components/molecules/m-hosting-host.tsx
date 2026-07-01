@@ -69,19 +69,14 @@ const HostingHost: React.FC<Props> = ({ hosting, isHost = false }) => {
   return (
     <>
       <View
-        className="gap-4 pb-8"
+        className="gap-4 overflow-hidden rounded-3xl p-5 pb-8"
+        style={{
+          backgroundColor: hexToRgba(colors.text, 0.05),
+          boxShadow: SURFACE.shadow,
+        }}
       >
-        <View className="mt-4">
-          <SectionHeader icon={UserRound} title="Host" />
-        </View>
-        <View
-          className="gap-4 overflow-hidden rounded-3xl p-5"
-          style={{
-            backgroundColor: hexToRgba(colors.text, 0.05),
-            boxShadow: SURFACE.shadow,
-          }}
-        >
-          <View className="flex-row items-center gap-3">
+        <SectionHeader icon={UserRound} title="Host" />
+        <View className="flex-row items-center gap-3">
             <View className="h-11 w-11 overflow-hidden rounded-full">
               <Image
                 style={{
@@ -152,7 +147,7 @@ const HostingHost: React.FC<Props> = ({ hosting, isHost = false }) => {
                 className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl py-4"
                 style={[
                   {
-                    backgroundColor: hexToRgba(colors.text, 0.05),
+                    backgroundColor: hexToRgba(colors.text, 0.09),
                   },
                   callAnimatedStyle,
                 ]}
@@ -170,7 +165,6 @@ const HostingHost: React.FC<Props> = ({ hosting, isHost = false }) => {
               </AnimatedPressable>
             </View>
           )}
-        </View>
       </View>
       <LoadingModal visible={chatInitiating} />
     </>

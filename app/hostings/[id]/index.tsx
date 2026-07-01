@@ -403,7 +403,13 @@ export default function HostingDetails() {
 									</Pressable>
 								) : null}
 							</View>
-							<View className="mt-8 pb-8">
+							<View
+								className="mt-8 rounded-3xl p-5"
+								style={{
+									backgroundColor: hexToRgba(colors.text, 0.05),
+									boxShadow: SURFACE.shadow,
+								}}
+							>
 								<SectionHeader icon={AlignLeft} title="Description" />
 								<TruncatedText
 									text={hosting?.description ?? ""}

@@ -12,6 +12,7 @@ import { REVIEW_METRICS } from '@/lib/constants/reviews';
 import Carousel from '../atoms/a-carousel';
 import HostingReviewCard from '../molecules/m-hosting-review-card';
 import { HostingQuery } from '@/lib/services/graphql/generated';
+import { SURFACE } from '@/lib/constants/surface';
 
 type Props = {
   hosting?: HostingQuery['hosting'];
@@ -30,13 +31,16 @@ const HostingReviews: React.FC<Props> = ({ hosting }) => {
   };
 
   return (
-    <View className="mb-4 mt-8">
+    <View
+      className="mb-4 mt-8 gap-4 rounded-3xl p-5"
+      style={{ backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow }}
+    >
       <SectionHeader icon={Star} title="Reviews" />
       <View>
         {(hosting?.reviews ?? []).length === 0 ? (
           <View
-            className="mt-4 items-center gap-2 rounded-xl p-4"
-            style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+            className="items-center gap-2 rounded-xl p-4"
+            style={{ backgroundColor: hexToRgba(colors.text, 0.08) }}
           >
             <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 18 }}>
               No Reviews Yet
@@ -50,8 +54,8 @@ const HostingReviews: React.FC<Props> = ({ hosting }) => {
         ) : (
           <View>
             <View
-              className="mt-4 gap-3 rounded-xl p-4"
-              style={{ backgroundColor: hexToRgba(colors.text, 0.1) }}
+              className="gap-3 rounded-xl p-4"
+              style={{ backgroundColor: hexToRgba(colors.text, 0.08) }}
             >
               <ReviewItem
                 value={metrics[REVIEW_METRICS.cleanliness.label]}

@@ -38,7 +38,10 @@ const HostingUnits: React.FC<Props> = ({ hosting, isHost }) => {
   );
 
   return (
-    <View className="mt-8">
+    <View
+      className="mt-8 gap-4 rounded-3xl p-5"
+      style={{ backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow }}
+    >
       <SectionHeader
         icon={Building2}
         title="Available units"
@@ -65,14 +68,16 @@ const HostingUnits: React.FC<Props> = ({ hosting, isHost }) => {
           No units are available yet.
         </ThemedText>
       ) : (
-        <View className="mt-4 gap-3">
-          {units.map((unit) => (
-            <Pressable
-              key={unit.id}
-              onPress={() => router.push(`/hostings/${unit.id}`)}
-              className="flex-row items-center gap-3 rounded-2xl p-3"
-              style={{ backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any}
-            >
+        <View>
+          {units.map((unit, index) => (
+            <React.Fragment key={unit.id}>
+              {index > 0 ? (
+                <View style={{ height: 1, backgroundColor: hexToRgba(colors.text, 0.06) }} />
+              ) : null}
+              <Pressable
+                onPress={() => router.push(`/hostings/${unit.id}`)}
+                className="flex-row items-center gap-3 py-3"
+              >
               <Image
                 source={{ uri: unit.coverImage?.asset?.publicUrl }}
                 style={{
@@ -115,7 +120,8 @@ const HostingUnits: React.FC<Props> = ({ hosting, isHost }) => {
                 ) : null}
               </View>
               <ChevronRight size={18} color={hexToRgba(colors.text, 0.4)} />
-            </Pressable>
+              </Pressable>
+            </React.Fragment>
           ))}
         </View>
       )}
