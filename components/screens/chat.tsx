@@ -61,28 +61,35 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
       onPress={() => router.push(`/chats/${chat.id}/`)}
       style={[
         {
-          // Unread rows lift with a warm glow + a touch more fill (soft/cloudy
-          // "active = glow"), replacing the old hard accent strip.
-          backgroundColor: hexToRgba(colors.text, unread ? 0.08 : 0.05),
-          borderRadius: 20,
-          marginBottom: 10,
-          padding: 14,
+          backgroundColor: hexToRgba(colors.text, 0.05),
+          borderRadius: 22,
+          marginBottom: 12,
+          padding: 16,
           flexDirection: 'row',
           gap: 14,
           alignItems: 'center',
-          boxShadow: unread ? SURFACE.glow : SURFACE.shadow,
+          boxShadow: SURFACE.shadow,
         },
         animatedStyle,
       ]}
     >
-      <View style={{ position: 'relative', width: 56, height: 56 }}>
+      {/* Avatar — an unread thread gets a warm glow ring instead of tinting
+          the whole card, a cleaner brand-led cue. */}
+      <View
+        style={{
+          width: 58,
+          height: 58,
+          borderRadius: 29,
+          boxShadow: unread ? SURFACE.glow : undefined,
+        }}
+      >
         <Image
           source={{
             uri:
               chat.recipientUser.profile?.image?.publicUrl ??
               getDefaultProfileImageUrl(chat.recipientUser.profile.fullName ?? ''),
           }}
-          style={{ height: 56, width: 56, borderRadius: 28 }}
+          style={{ height: 58, width: 58, borderRadius: 29 }}
           contentFit="cover"
           transition={300}
           placeholder={{ blurhash: PROPERTY_BLURHASH }}
@@ -99,26 +106,27 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
               borderRadius: 7,
               backgroundColor: colors.success,
               borderWidth: 2.5,
-              borderColor: colors.background,
+              borderColor: colors.surface,
             }}
           />
         )}
       </View>
-      <View style={{ flex: 1, gap: 4 }}>
+      <View style={{ flex: 1, gap: 5 }}>
         <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
+            gap: 8,
           }}
         >
           <ThemedText
             numberOfLines={1}
             style={{
-              fontFamily: chat.unreadMessageCount > 0 ? Fonts.semibold : Fonts.medium,
-              fontSize: 15,
+              fontFamily: unread ? Fonts.bold : Fonts.semibold,
+              fontSize: 15.5,
               flex: 1,
-              marginRight: 8,
+              color: unread ? colors.text : hexToRgba(colors.text, 0.92),
             }}
           >
             {chat.recipientUser.profile.fullName}
@@ -126,14 +134,14 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
           <ThemedText
             style={{
               fontSize: 11,
-              fontFamily: Fonts.regular,
-              color: hexToRgba(colors.text, chat.unreadMessageCount > 0 ? 0.55 : 0.38),
+              fontFamily: unread ? Fonts.semibold : Fonts.regular,
+              color: unread ? colors.primary : hexToRgba(colors.text, 0.38),
             }}
           >
             {moment(chat.lastUpdated).fromNow()}
           </ThemedText>
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           {(() => {
             const lastMessage = chat.lastMessage;
             if (!lastMessage) return <View style={{ flex: 1 }} />;
@@ -152,16 +160,18 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
                   flex: 1,
                   flexDirection: 'row',
                   alignItems: 'center',
-                  gap: 4,
+                  gap: 5,
                 }}
               >
-                {isAudioOnly && <Mic size={13} color={hexToRgba(colors.text, 0.45)} />}
+                {isAudioOnly && (
+                  <Mic size={13} color={unread ? colors.primary : hexToRgba(colors.text, 0.45)} />
+                )}
                 <ThemedText
                   numberOfLines={1}
                   style={{
                     fontSize: 13,
-                    color: hexToRgba(colors.text, chat.unreadMessageCount > 0 ? 0.65 : 0.45),
-                    fontFamily: chat.unreadMessageCount > 0 ? Fonts.medium : Fonts.regular,
+                    color: hexToRgba(colors.text, unread ? 0.78 : 0.45),
+                    fontFamily: unread ? Fonts.medium : Fonts.regular,
                     flex: 1,
                   }}
                 >
@@ -170,16 +180,17 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
               </View>
             );
           })()}
-          {chat.unreadMessageCount > 0 && (
+          {unread && (
             <View
               style={{
                 backgroundColor: colors.primary,
-                minWidth: 20,
-                height: 20,
-                borderRadius: 10,
+                minWidth: 22,
+                height: 22,
+                borderRadius: 11,
                 justifyContent: 'center',
                 alignItems: 'center',
-                paddingHorizontal: 6,
+                paddingHorizontal: 7,
+                boxShadow: SURFACE.glow,
               }}
             >
               <ThemedText
@@ -187,7 +198,7 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
                   fontSize: 11,
                   fontFamily: Fonts.bold,
                   color: colors['primary-content'],
-                  lineHeight: 14,
+                  lineHeight: 15,
                 }}
               >
                 {chat.unreadMessageCount > 99 ? '99+' : chat.unreadMessageCount}
