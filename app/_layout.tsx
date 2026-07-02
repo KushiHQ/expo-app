@@ -15,6 +15,7 @@ import {
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, useLocalSearchParams, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { setAudioModeAsync } from 'expo-audio';
 import { StatusBar } from 'expo-status-bar';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import ToastContainer from '@/components/atoms/a-toast-container';
@@ -66,6 +67,18 @@ function RootLayout() {
   const params = useLocalSearchParams();
 
   useLockScreen();
+
+  // Configure a baseline playback audio session on launch. Without this, every
+  // expo-audio play() (message-send sound, notification sound, call ringtone,
+  // voice-message playback) fires on an UNCONFIGURED iOS AVAudioSession — and if
+  // the voice recorder has left the session in a record category, play() throws
+  // an NSException on a background queue. RN's New-Architecture
+  // convertNSExceptionToJSError then touches Hermes off the JS thread and hard-
+  // crashes (SIGSEGV) instead of surfacing a catchable JS error. `playsInSilentMode`
+  // also lets these UI sounds play when the ringer switch is silenced.
+  React.useEffect(() => {
+    setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
+  }, []);
 
   React.useEffect(() => {
     if (Platform.OS === 'web') {

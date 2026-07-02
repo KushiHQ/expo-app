@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Trash2, Send } from 'lucide-react-native';
-import { useAudioRecorder, useAudioRecorderState, RecordingPresets, AudioModule } from 'expo-audio';
+import {
+  useAudioRecorder,
+  useAudioRecorderState,
+  RecordingPresets,
+  AudioModule,
+  setAudioModeAsync,
+} from 'expo-audio';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { Fonts } from '@/lib/constants/theme';
 
@@ -25,6 +31,12 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onSend, onCancel }
   const state = useAudioRecorderState(audioRecorder, 100);
   const [levels, setLevels] = useState<number[]>(Array(30).fill(0.05));
 
+  // Return the shared iOS audio session to a playback-only category once
+  // recording ends, so the message-send sound (and other play() calls) don't
+  // fire on a record session and throw a native exception.
+  const resetAudioMode = () =>
+    setAudioModeAsync({ playsInSilentMode: true, allowsRecording: false }).catch(() => {});
+
   useEffect(() => {
     const startRecording = async () => {
       try {
@@ -33,10 +45,16 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onSend, onCancel }
           onCancel();
           return;
         }
+        // iOS requires the session in a recording-capable category BEFORE
+        // preparing/recording. It's reset back to playback in resetAudioMode()
+        // so the send sound (and any later play()) don't throw on a record
+        // session.
+        await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: true });
         await audioRecorder.prepareToRecordAsync();
         audioRecorder.record();
       } catch (err) {
         console.error('Failed to start recording:', err);
+        await resetAudioMode();
         onCancel();
       }
     };
@@ -61,6 +79,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onSend, onCancel }
     } catch (e) {
       console.error(e);
     } finally {
+      await resetAudioMode();
       if (state.url) {
         onSend(state.url);
       }
@@ -75,6 +94,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onSend, onCancel }
     } catch (e) {
       console.error(e);
     } finally {
+      await resetAudioMode();
       onCancel();
     }
   };
