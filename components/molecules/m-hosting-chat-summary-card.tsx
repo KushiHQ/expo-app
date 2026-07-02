@@ -11,7 +11,7 @@ import { joinLocation } from '@/lib/utils/locations';
 import { Fonts } from '@/lib/constants/theme';
 import { useRouter } from '@/lib/hooks/use-router';
 import { HostingChatQuery } from '@/lib/services/graphql/generated';
-import { capitalize } from '@/lib/utils/text';
+import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import { SURFACE } from '@/lib/constants/surface';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -96,16 +96,18 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
               }}
             >
               ₦{Number(hosting?.price ?? '0').toLocaleString()}
-              <ThemedText
-                style={{
-                  fontSize: 10,
-                  fontFamily: Fonts.medium,
-                  color: hexToRgba(colors.primary, 0.75),
-                }}
-              >
-                {' '}
-                / {capitalize(hosting?.paymentInterval ?? '')}
-              </ThemedText>
+              {formatPaymentInterval(hosting?.paymentInterval) ? (
+                <ThemedText
+                  style={{
+                    fontSize: 10,
+                    fontFamily: Fonts.medium,
+                    color: hexToRgba(colors.primary, 0.75),
+                  }}
+                >
+                  {' '}
+                  / {formatPaymentInterval(hosting?.paymentInterval)}
+                </ThemedText>
+              ) : null}
             </ThemedText>
           </View>
           <ThemedText

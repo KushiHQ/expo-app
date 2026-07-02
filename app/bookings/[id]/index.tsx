@@ -35,6 +35,7 @@ import { handleError } from '@/lib/utils/error';
 import { openLocalFile } from '@/lib/utils/file';
 import { calculateBookingDuration } from '@/lib/utils/time';
 import { toTitleCase } from '@/lib/utils/text';
+import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import { toast } from '@/lib/hooks/use-toast';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -453,9 +454,12 @@ export default function UserBooking() {
                     value={calculateBookingDuration(booking.commencementDate, booking.expiryDate)}
                   />
                 )}
-                {booking.hosting?.paymentInterval && (
-                  <DataRow label="Interval" value={toTitleCase(booking.hosting.paymentInterval)} />
-                )}
+                {formatPaymentInterval(booking.hosting?.paymentInterval) ? (
+                  <DataRow
+                    label="Interval"
+                    value={formatPaymentInterval(booking.hosting?.paymentInterval)}
+                  />
+                ) : null}
                 {booking.bookingApplication?.intervalMultiplier != null && (
                   <DataRow
                     label="Periods"

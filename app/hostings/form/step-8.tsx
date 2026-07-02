@@ -28,7 +28,6 @@ import { formatPaymentInterval } from "@/lib/utils/hosting/interval";
 import HostingCard from "@/components/molecules/m-hosting-card";
 import {
   HostingVerificationTier,
-  PaymentInterval,
   PublishStatus,
 } from "@/lib/services/graphql/generated";
 import LoadingModal from "@/components/atoms/a-loading-modal";
@@ -194,10 +193,12 @@ export default function NewHostingStep8() {
           >
             <DataRow label="Title" value={input.title ?? ""} />
             <DataRow label="Property Type" value={input.propertyType ?? ""} />
-            <DataRow
-              label="Payment Interval"
-              value={capitalize(input.paymentInterval ?? "")}
-            />
+            {formatPaymentInterval(input.paymentInterval) ? (
+              <DataRow
+                label="Payment Interval"
+                value={formatPaymentInterval(input.paymentInterval)}
+              />
+            ) : null}
             {input.description ? (
               <StackedRow label="Description" value={input.description} />
             ) : null}

@@ -10,7 +10,7 @@ import { joinLocation } from '@/lib/utils/locations';
 import { MynauiStarSolid } from '../icons/i-star';
 import { MapPin } from 'lucide-react-native';
 import { HostAnalyticsQuery, HostingQuery } from '@/lib/services/graphql/generated';
-import { capitalize } from '@/lib/utils/text';
+import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import { SURFACE } from '@/lib/constants/surface';
 
 type Props = {
@@ -21,9 +21,7 @@ type Props = {
 const TopListingCard: React.FC<Props> = ({ hosting, onPress }) => {
   const colors = useThemeColors();
 
-  const intervalLabel = hosting?.paymentInterval
-    ? capitalize(String(hosting.paymentInterval).toLowerCase())
-    : null;
+  const intervalLabel = formatPaymentInterval(hosting?.paymentInterval) || null;
 
   return (
     <Pressable

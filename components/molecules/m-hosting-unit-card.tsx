@@ -4,7 +4,7 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { PublishStatus } from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
 import { SURFACE } from '@/lib/constants/surface';
-import { capitalize } from '@/lib/utils/text';
+import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import { Image } from 'expo-image';
 import { ChevronRight, Image as ImageIcon, Trash2 } from 'lucide-react-native';
 import React from 'react';
@@ -91,7 +91,7 @@ const HostingUnitCard: React.FC<Props> = ({
           >
             {price ? `₦${Number(price).toLocaleString()}` : 'No price set'}
           </ThemedText>
-          {paymentInterval ? (
+          {formatPaymentInterval(paymentInterval) ? (
             <ThemedText
               style={{
                 fontSize: 11,
@@ -99,7 +99,7 @@ const HostingUnitCard: React.FC<Props> = ({
                 color: hexToRgba(colors.text, 0.4),
               }}
             >
-              {capitalize(String(paymentInterval).toLowerCase())}
+              {formatPaymentInterval(paymentInterval)}
             </ThemedText>
           ) : null}
         </View>

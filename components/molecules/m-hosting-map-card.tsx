@@ -8,6 +8,7 @@ import ThemedText from '../atoms/a-themed-text';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import { formatNaira } from '@/lib/utils/currency';
+import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import { Hosting } from '@/lib/services/graphql/generated';
 
 type Props = {
@@ -81,9 +82,11 @@ const HostingMapCard: React.FC<Props> = ({ hosting, onClose }) => {
             <View>
               <ThemedText type="semibold" style={{ color: colors.primary }}>
                 {formatNaira(Number(price)).formated}
-                <ThemedText style={{ fontSize: 10, color: hexToRgba(colors.text, 0.5) }}>
-                  /{paymentInterval?.toLowerCase()}
-                </ThemedText>
+                {formatPaymentInterval(paymentInterval) ? (
+                  <ThemedText style={{ fontSize: 10, color: hexToRgba(colors.text, 0.5) }}>
+                    /{formatPaymentInterval(paymentInterval)}
+                  </ThemedText>
+                ) : null}
               </ThemedText>
               <View className="flex-row items-center gap-1">
                 <Star size={12} color="#FFB800" fill="#FFB800" />

@@ -7,7 +7,6 @@ import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import {
 	HostingKind,
 	ListingType,
-	PaymentInterval,
 	useHostingQuery,
 	useInitiateHostingChatMutation,
 } from "@/lib/services/graphql/generated";
@@ -15,7 +14,8 @@ import HostingUnits from "@/components/organisms/o-hosting-units";
 import { cast } from "@/lib/types/utils";
 import { hexToRgba } from "@/lib/utils/colors";
 import { handleError } from "@/lib/utils/error";
-import { capitalize, slugify } from "@/lib/utils/text";
+import { slugify } from "@/lib/utils/text";
+import { formatPaymentInterval } from "@/lib/utils/hosting/interval";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { useRouter } from "@/lib/hooks/use-router";
@@ -185,9 +185,7 @@ export default function HostingDetails() {
 										₦{Number(hosting?.price).toLocaleString()}
 									</ThemedText>
 									<ThemedText style={{ color: hexToRgba(colors.text, 0.5) }}>
-										{hosting?.paymentInterval === PaymentInterval.OneTimePayment
-											? ""
-											: capitalize(hosting?.paymentInterval ?? "")}
+										{formatPaymentInterval(hosting?.paymentInterval)}
 									</ThemedText>
 								</View>
 							</View>
@@ -221,9 +219,7 @@ export default function HostingDetails() {
 									₦{Number(hosting?.price).toLocaleString()}
 								</ThemedText>
 								<ThemedText style={{ color: hexToRgba(colors.text, 0.5) }}>
-									{hosting?.paymentInterval === PaymentInterval.OneTimePayment
-										? ""
-										: capitalize(hosting?.paymentInterval ?? "")}
+									{formatPaymentInterval(hosting?.paymentInterval)}
 								</ThemedText>
 							</View>
 						</View>

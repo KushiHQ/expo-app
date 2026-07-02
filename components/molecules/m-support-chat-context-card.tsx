@@ -12,6 +12,7 @@ import { Fonts } from '@/lib/constants/theme';
 import { useRouter } from '@/lib/hooks/use-router';
 import { SupportChatQuery, SupportItemType } from '@/lib/services/graphql/generated';
 import { capitalize } from '@/lib/utils/text';
+import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import { SURFACE } from '@/lib/constants/surface';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -192,16 +193,18 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
             >
               <ThemedText style={{ fontSize: 14, fontFamily: Fonts.bold, color: colors.primary }}>
                 ₦{Number(effectiveHosting.price ?? '0').toLocaleString()}
-                <ThemedText
-                  style={{
-                    fontSize: 10,
-                    fontFamily: Fonts.medium,
-                    color: hexToRgba(colors.primary, 0.75),
-                  }}
-                >
-                  {' '}
-                  / {capitalize(effectiveHosting.paymentInterval ?? '')}
-                </ThemedText>
+                {formatPaymentInterval(effectiveHosting.paymentInterval) ? (
+                  <ThemedText
+                    style={{
+                      fontSize: 10,
+                      fontFamily: Fonts.medium,
+                      color: hexToRgba(colors.primary, 0.75),
+                    }}
+                  >
+                    {' '}
+                    / {formatPaymentInterval(effectiveHosting.paymentInterval)}
+                  </ThemedText>
+                ) : null}
               </ThemedText>
             </View>
             <ViewDetailsLink />

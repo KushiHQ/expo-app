@@ -12,6 +12,7 @@ import { IconParkOutlineDot } from '../icons/i-circle';
 import BookingDetailsSheet from './m-booking-details';
 import { BookingsQuery } from '@/lib/services/graphql/generated';
 import { capitalize } from '@/lib/utils/text';
+import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import { getBookingStatus } from '@/lib/utils/bookings';
 import { useRouter } from '@/lib/hooks/use-router';
 import { SURFACE } from '@/lib/constants/surface';
@@ -83,10 +84,12 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
             <View className="mt-0.5 flex-row items-center justify-between gap-2">
               <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 14 }}>
                 ₦{Number(booking.amount ?? '0').toLocaleString()}
-                <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 12, color: hexToRgba(colors.text, 0.5) }}>
-                  {' '}
-                  {capitalize(booking.hosting.paymentInterval ?? '')}
-                </ThemedText>
+                {formatPaymentInterval(booking.hosting.paymentInterval) ? (
+                  <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 12, color: hexToRgba(colors.text, 0.5) }}>
+                    {' '}
+                    {formatPaymentInterval(booking.hosting.paymentInterval)}
+                  </ThemedText>
+                ) : null}
               </ThemedText>
               <View
                 className="flex-row items-center gap-1.5 rounded-full px-2 py-0.5"
