@@ -128,7 +128,12 @@ const RangeSlider: FC<RangeSliderProps> = ({
 
       {withInput && (
         <View style={styles.inputsContainer}>
-          <View style={[styles.inputWrapper, { backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any]}>
+          <View
+            style={[
+              styles.inputWrapper,
+              { backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any,
+            ]}
+          >
             <Text style={{ color: hexToRgba(colors.text, 0.6) }}>Min</Text>
             <View style={styles.inputInner}>
               <Text style={{ color: colors.text }}>{currencySymbol}</Text>
@@ -144,7 +149,12 @@ const RangeSlider: FC<RangeSliderProps> = ({
 
           <View style={[styles.dash, { backgroundColor: hexToRgba(colors.text, 0.5) }]} />
 
-          <View style={[styles.inputWrapper, { backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any]}>
+          <View
+            style={[
+              styles.inputWrapper,
+              { backgroundColor: hexToRgba(colors.text, 0.05), boxShadow: SURFACE.shadow } as any,
+            ]}
+          >
             <Text style={{ color: hexToRgba(colors.text, 0.6) }}>Max</Text>
             <View style={styles.inputInner}>
               <Text style={{ color: colors.text }}>{currencySymbol}</Text>

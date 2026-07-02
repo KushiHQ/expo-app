@@ -58,8 +58,7 @@ export const usePropertyTypeConfig = () => {
   }, [data]);
 
   const roomsFor = React.useCallback(
-    (type?: string | null): string[] =>
-      propertyTypes.find((p) => p.value === type)?.rooms ?? [],
+    (type?: string | null): string[] => propertyTypes.find((p) => p.value === type)?.rooms ?? [],
     [propertyTypes],
   );
 

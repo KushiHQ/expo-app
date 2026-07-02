@@ -161,7 +161,9 @@ const FeesSection: React.FC<SubProps> = ({ booking, printing }) => {
         <View key={item.key} style={{ gap: 8 }}>
           <View className="flex-row items-center justify-between">
             <PrintableLabel printing={printing}>{item.label}</PrintableLabel>
-            <PrintableText printing={printing}>₦{Number(item.amount).toLocaleString()}</PrintableText>
+            <PrintableText printing={printing}>
+              ₦{Number(item.amount).toLocaleString()}
+            </PrintableText>
           </View>
           {!printing && <SoftDivider />}
         </View>

@@ -1,12 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  Pressable,
-  Modal,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
+import { View, StyleSheet, Pressable, Modal, type StyleProp, type ViewStyle } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useVideoPlayer, VideoView } from 'expo-video';
@@ -79,7 +72,10 @@ export default function VideoCard({ source, durationSeconds, title, style }: Pro
           />
         )}
 
-        <View style={[styles.scrim, { backgroundColor: hexToRgba('#000000', 0.15) }]} pointerEvents="none" />
+        <View
+          style={[styles.scrim, { backgroundColor: hexToRgba('#000000', 0.15) }]}
+          pointerEvents="none"
+        />
         <ImageScrim from="bottom" intensity={0.5} height="55%" />
 
         <View style={styles.center} pointerEvents="none">

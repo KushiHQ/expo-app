@@ -45,7 +45,7 @@ const AiContentSuggestion: React.FC<Props> = ({ hostingId, onApply }) => {
         gap: 12,
         borderRadius: 14,
         padding: 14,
-        backgroundColor: hexToRgba(colors.primary, 0.10),
+        backgroundColor: hexToRgba(colors.primary, 0.1),
       }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -57,9 +57,7 @@ const AiContentSuggestion: React.FC<Props> = ({ hostingId, onApply }) => {
 
       {!open && (
         <>
-          <ThemedText
-            style={{ fontSize: 13, lineHeight: 19, color: hexToRgba(colors.text, 0.6) }}
-          >
+          <ThemedText style={{ fontSize: 13, lineHeight: 19, color: hexToRgba(colors.text, 0.6) }}>
             Let AI draft a title and description from your property details. You can edit anything
             before saving.
           </ThemedText>
@@ -133,12 +131,7 @@ const AiContentSuggestion: React.FC<Props> = ({ hostingId, onApply }) => {
       )}
 
       {open && !fetching && !suggestion && (
-        <Button
-          type="shade"
-          onPress={request}
-          className="py-2.5"
-          style={{ borderRadius: 10 }}
-        >
+        <Button type="shade" onPress={request} className="py-2.5" style={{ borderRadius: 10 }}>
           <ThemedText content="shade">Try again</ThemedText>
         </Button>
       )}

@@ -55,9 +55,7 @@ const HostingFormOnboardingAction: React.FC<Props> = ({
       }}
     >
       {image ? (
-        <View
-          className="h-12 w-12 overflow-hidden rounded-2xl"
-        >
+        <View className="h-12 w-12 overflow-hidden rounded-2xl">
           <Image
             source={{ uri: image }}
             style={{ height: '100%', width: '100%' }}

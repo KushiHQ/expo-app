@@ -1,13 +1,13 @@
-import React, { memo } from "react";
-import { Room } from "@/lib/types/enums/hostings";
-import { usePropertyTypeConfig } from "@/lib/hooks/use-property-type-config";
-import { RoomData } from "@/lib/stores/hostings";
-import { cast } from "@/lib/types/utils";
-import { Pressable, ScrollView, View } from "react-native";
-import SelectInput, { SelectOption } from "../molecules/m-select-input";
-import Button from "../atoms/a-button";
-import BottomSheet from "../atoms/a-bottom-sheet";
-import { hexToRgba } from "@/lib/utils/colors";
+import React, { memo } from 'react';
+import { Room } from '@/lib/types/enums/hostings';
+import { usePropertyTypeConfig } from '@/lib/hooks/use-property-type-config';
+import { RoomData } from '@/lib/stores/hostings';
+import { cast } from '@/lib/types/utils';
+import { Pressable, ScrollView, View } from 'react-native';
+import SelectInput, { SelectOption } from '../molecules/m-select-input';
+import Button from '../atoms/a-button';
+import BottomSheet from '../atoms/a-bottom-sheet';
+import { hexToRgba } from '@/lib/utils/colors';
 import {
   Bed,
   Briefcase,
@@ -33,12 +33,12 @@ import {
   Utensils,
   Wind,
   Wrench,
-} from "lucide-react-native";
-import ThemedText from "../atoms/a-themed-text";
-import HostingRoomImage from "../atoms/a-hosting-room-image";
-import { CameraLinear } from "../icons/i-camera";
-import { SURFACE } from "@/lib/constants/surface";
-import { Fonts } from "@/lib/constants/theme";
+} from 'lucide-react-native';
+import ThemedText from '../atoms/a-themed-text';
+import HostingRoomImage from '../atoms/a-hosting-room-image';
+import { CameraLinear } from '../icons/i-camera';
+import { SURFACE } from '@/lib/constants/surface';
+import { Fonts } from '@/lib/constants/theme';
 
 export const ROOM_ICONS: Partial<Record<keyof typeof Room, LucideIcon>> = {
   Exterior: MapPin,
@@ -194,11 +194,11 @@ const RoomItemCard = memo(
           className="overflow-hidden"
           style={{
             borderWidth: 1,
-            borderStyle: "dashed",
+            borderStyle: 'dashed',
             borderColor: hexToRgba(colors.text, 0.18),
             minHeight: 61,
             borderRadius: 16,
-            overflow: "hidden",
+            overflow: 'hidden',
           }}
         >
           <SelectInput
@@ -224,14 +224,14 @@ const RoomItemCard = memo(
           backgroundColor: hexToRgba(colors.text, 0.05),
           borderRadius: 20,
           boxShadow: SURFACE.shadow,
-          overflow: "hidden",
+          overflow: 'hidden',
         }}
       >
         {/* Header: icon + instance label */}
         <View
           style={{
-            flexDirection: "row",
-            alignItems: "center",
+            flexDirection: 'row',
+            alignItems: 'center',
             gap: 10,
             paddingHorizontal: 14,
             paddingTop: 14,
@@ -244,8 +244,8 @@ const RoomItemCard = memo(
               height: 36,
               borderRadius: 10,
               backgroundColor: hexToRgba(colors.text, 0.08),
-              alignItems: "center",
-              justifyContent: "center",
+              alignItems: 'center',
+              justifyContent: 'center',
               flexShrink: 0,
             }}
           >
@@ -259,10 +259,8 @@ const RoomItemCard = memo(
           </ThemedText>
           {canSelect ? (
             <Pressable onPress={() => (selecting ? exitSelect() : setSelecting(true))} hitSlop={8}>
-              <ThemedText
-                style={{ fontSize: 12, fontFamily: Fonts.semibold, color: colors.text }}
-              >
-                {selecting ? "Cancel" : "Select"}
+              <ThemedText style={{ fontSize: 12, fontFamily: Fonts.semibold, color: colors.text }}>
+                {selecting ? 'Cancel' : 'Select'}
               </ThemedText>
             </Pressable>
           ) : null}
@@ -276,9 +274,9 @@ const RoomItemCard = memo(
                 height: 80,
                 borderRadius: 12,
                 backgroundColor: hexToRgba(colors.text, 0.04),
-                alignItems: "center",
-                justifyContent: "center",
-                flexDirection: "row",
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'row',
                 gap: 7,
               }}
             >
@@ -302,7 +300,7 @@ const RoomItemCard = memo(
                   roomIndex={index}
                   onDeleteRoomImage={handleDeleteImage}
                   isCover={!!coverImageUrl && img === coverImageUrl}
-                  canSetCover={!img.startsWith("file")}
+                  canSetCover={!img.startsWith('file')}
                   onSetCover={handleSetCoverImage}
                   onPress={onOpenImage}
                   selectMode={selecting}
@@ -318,8 +316,8 @@ const RoomItemCard = memo(
         {selecting ? (
           <View
             style={{
-              flexDirection: "row",
-              alignItems: "center",
+              flexDirection: 'row',
+              alignItems: 'center',
               gap: 8,
               paddingHorizontal: 12,
               paddingBottom: 12,
@@ -337,7 +335,7 @@ const RoomItemCard = memo(
               className="flex-row items-center gap-1.5 px-3 py-2"
             >
               <Trash2 color="#F87171" size={13} />
-              <ThemedText style={{ fontSize: 12, color: "#F87171", fontFamily: Fonts.semibold }}>
+              <ThemedText style={{ fontSize: 12, color: '#F87171', fontFamily: Fonts.semibold }}>
                 Delete
               </ThemedText>
             </Button>
@@ -347,7 +345,7 @@ const RoomItemCard = memo(
               onPress={() => setMoveSheetOpen(true)}
               className="flex-row items-center gap-1.5 px-3 py-2"
             >
-              <FolderInput color={colors.background ?? "#0A0A0A"} size={13} />
+              <FolderInput color={colors.background ?? '#0A0A0A'} size={13} />
               <ThemedText content="primary" style={{ fontSize: 12 }}>
                 Move
               </ThemedText>
@@ -356,9 +354,9 @@ const RoomItemCard = memo(
         ) : (
           <View
             style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "flex-end",
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
               gap: 8,
               paddingHorizontal: 12,
               paddingBottom: 12,
@@ -392,7 +390,7 @@ const RoomItemCard = memo(
           <BottomSheet isVisible={moveSheetOpen} onClose={() => setMoveSheetOpen(false)}>
             <View style={{ gap: 2, paddingBottom: 4 }}>
               <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 16 }}>
-                Move {selected.length} photo{selected.length === 1 ? "" : "s"} to…
+                Move {selected.length} photo{selected.length === 1 ? '' : 's'} to…
               </ThemedText>
               <ThemedText
                 style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55), marginBottom: 10 }}
@@ -405,7 +403,12 @@ const RoomItemCard = memo(
                   <Pressable
                     key={t.id}
                     onPress={() => confirmMove(t.id)}
-                    style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12 }}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 12,
+                      paddingVertical: 12,
+                    }}
                   >
                     <View
                       style={{
@@ -413,8 +416,8 @@ const RoomItemCard = memo(
                         height: 34,
                         borderRadius: 11,
                         backgroundColor: hexToRgba(colors.text, 0.08),
-                        alignItems: "center",
-                        justifyContent: "center",
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
                       <TargetIcon color={colors.text} size={15} />
@@ -433,6 +436,6 @@ const RoomItemCard = memo(
   },
 );
 
-RoomItemCard.displayName = "RoomItemCard";
+RoomItemCard.displayName = 'RoomItemCard';
 
 export default RoomItemCard;

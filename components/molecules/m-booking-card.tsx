@@ -75,7 +75,11 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
                 <ThemedText
                   numberOfLines={1}
                   className="flex-1"
-                  style={{ fontSize: 13, color: hexToRgba(colors.text, 0.6), fontFamily: Fonts.medium }}
+                  style={{
+                    fontSize: 13,
+                    color: hexToRgba(colors.text, 0.6),
+                    fontFamily: Fonts.medium,
+                  }}
                 >
                   {location}
                 </ThemedText>
@@ -85,7 +89,13 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
               <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 14 }}>
                 ₦{Number(booking.amount ?? '0').toLocaleString()}
                 {formatPaymentInterval(booking.hosting.paymentInterval) ? (
-                  <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 12, color: hexToRgba(colors.text, 0.5) }}>
+                  <ThemedText
+                    style={{
+                      fontFamily: Fonts.medium,
+                      fontSize: 12,
+                      color: hexToRgba(colors.text, 0.5),
+                    }}
+                  >
                     {' '}
                     {formatPaymentInterval(booking.hosting.paymentInterval)}
                   </ThemedText>

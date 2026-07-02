@@ -147,10 +147,7 @@ export default function UserBookings() {
     <DetailsLayout title="My Bookings" scrollable={false}>
       <View style={{ flex: 1, marginTop: 16 }}>
         {/* Tab bar */}
-        <View
-          onLayout={onTabBarLayout}
-          className="relative flex-row items-center"
-        >
+        <View onLayout={onTabBarLayout} className="relative flex-row items-center">
           {MAIN_TABS.map((tab, index) => (
             <TouchableOpacity
               key={tab}

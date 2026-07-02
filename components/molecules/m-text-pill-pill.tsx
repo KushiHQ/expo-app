@@ -22,9 +22,7 @@ const TextPill: React.FC<Props> = ({ icon, children, selected, onSelect }) => {
     <Pressable
       className="flex-row items-center gap-2.5 rounded-full px-5 py-2.5"
       style={{
-        backgroundColor: selected
-          ? hexToRgba(colors.primary, 0.14)
-          : hexToRgba(colors.text, 0.05),
+        backgroundColor: selected ? hexToRgba(colors.primary, 0.14) : hexToRgba(colors.text, 0.05),
       }}
       onPress={() => onSelect?.(children)}
     >

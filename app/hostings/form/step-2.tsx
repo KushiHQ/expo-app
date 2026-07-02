@@ -1,30 +1,27 @@
-import Button from "@/components/atoms/a-button";
-import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
-import HostingRoomImage from "@/components/atoms/a-hosting-room-image";
-import LoadingModal from "@/components/atoms/a-loading-modal";
-import ThemedText from "@/components/atoms/a-themed-text";
-import DetailsLayout from "@/components/layouts/details";
-import HostingStepper from "@/components/molecules/m-hosting-stepper";
-import ThemedModal from "@/components/molecules/m-modal";
-import SectionCard from "@/components/molecules/m-section-card";
-import RoomItemCard from "@/components/organisms/o-room-item-card";
-import {
-  DraggableItem,
-  useReorderController,
-} from "@/components/molecules/m-draggable-reorder";
-import { PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { Fonts } from "@/lib/constants/theme";
-import { useHostingFormRoomUtils } from "@/lib/hooks/forms/use-hosting-form-room-utils";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
-import { Image } from "expo-image";
-import { useLocalSearchParams } from "expo-router";
-import { useRouter } from "@/lib/hooks/use-router";
-import { Room } from "@/lib/types/enums/hostings";
-import { Layers, Plus } from "lucide-react-native";
-import React, { useRef } from "react";
-import { Pressable, RefreshControl, ScrollView, TextInput, View } from "react-native";
-import { CameraLinear } from "@/components/icons/i-camera";
+import Button from '@/components/atoms/a-button';
+import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
+import HostingRoomImage from '@/components/atoms/a-hosting-room-image';
+import LoadingModal from '@/components/atoms/a-loading-modal';
+import ThemedText from '@/components/atoms/a-themed-text';
+import DetailsLayout from '@/components/layouts/details';
+import HostingStepper from '@/components/molecules/m-hosting-stepper';
+import ThemedModal from '@/components/molecules/m-modal';
+import SectionCard from '@/components/molecules/m-section-card';
+import RoomItemCard from '@/components/organisms/o-room-item-card';
+import { DraggableItem, useReorderController } from '@/components/molecules/m-draggable-reorder';
+import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { Fonts } from '@/lib/constants/theme';
+import { useHostingFormRoomUtils } from '@/lib/hooks/forms/use-hosting-form-room-utils';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
+import { Image } from 'expo-image';
+import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
+import { Room } from '@/lib/types/enums/hostings';
+import { Layers, Plus } from 'lucide-react-native';
+import React, { useRef } from 'react';
+import { Pressable, RefreshControl, ScrollView, TextInput, View } from 'react-native';
+import { CameraLinear } from '@/components/icons/i-camera';
 
 export default function NewHostingStep2() {
   const router = useRouter();
@@ -94,18 +91,12 @@ export default function NewHostingStep2() {
   // Photos within a space can be drag-reordered (in the details modal). Rooms are
   // grouped by type now, so room-level manual reorder is retired for the moment.
   const imageReorder = useReorderController({
-    axis: "x",
-    count:
-      activeModalIndex !== undefined
-        ? (rooms[activeModalIndex]?.images.length ?? 0)
-        : 0,
+    axis: 'x',
+    count: activeModalIndex !== undefined ? (rooms[activeModalIndex]?.images.length ?? 0) : 0,
     estimatedSize: 96,
-    enabled:
-      activeModalIndex !== undefined &&
-      (rooms[activeModalIndex]?.images.length ?? 0) > 1,
+    enabled: activeModalIndex !== undefined && (rooms[activeModalIndex]?.images.length ?? 0) > 1,
     onReorder: (from, to) => {
-      if (activeModalIndex !== undefined)
-        handleReorderRoomImages(activeModalIndex, from, to);
+      if (activeModalIndex !== undefined) handleReorderRoomImages(activeModalIndex, from, to);
     },
   });
 
@@ -114,10 +105,7 @@ export default function NewHostingStep2() {
   // Quality floor: require at least 5 photos across all spaces before the host
   // can continue, and surface progress so the requirement is clear.
   const MIN_PHOTOS = 5;
-  const totalPhotos = rooms.reduce(
-    (sum, room) => sum + (room.images?.length ?? 0),
-    0,
-  );
+  const totalPhotos = rooms.reduce((sum, room) => sum + (room.images?.length ?? 0), 0);
   const hasEnoughPhotos = totalPhotos >= MIN_PHOTOS;
 
   const [refreshing, setRefreshing] = React.useState(false);
@@ -159,8 +147,8 @@ export default function NewHostingStep2() {
               <View key={group.name} style={{ marginBottom: 18 }}>
                 <View
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
+                    flexDirection: 'row',
+                    alignItems: 'center',
                     gap: 8,
                     marginBottom: 10,
                   }}
@@ -203,9 +191,7 @@ export default function NewHostingStep2() {
                       resolveThumb={resolveThumb}
                       propertyType={propertyType}
                       instanceLabel={
-                        group.items.length > 1
-                          ? `${Room[group.name]} ${i + 1}`
-                          : Room[group.name]
+                        group.items.length > 1 ? `${Room[group.name]} ${i + 1}` : Room[group.name]
                       }
                       moveTargets={roomTargets.filter((t) => t.id !== room.id)}
                       onMoveImages={handleMoveImages}
@@ -222,9 +208,9 @@ export default function NewHostingStep2() {
                     }
                     disabled={hostingRoomSaving}
                     style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       gap: 6,
                       paddingVertical: 10,
                       borderRadius: 12,
@@ -244,8 +230,8 @@ export default function NewHostingStep2() {
             {rooms.length === 0 && (
               <View
                 style={{
-                  alignItems: "center",
-                  justifyContent: "center",
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   gap: 10,
                   borderRadius: 12,
                   paddingVertical: 32,
@@ -257,12 +243,11 @@ export default function NewHostingStep2() {
                   style={{
                     fontSize: 13,
                     color: hexToRgba(colors.text, 0.4),
-                    textAlign: "center",
+                    textAlign: 'center',
                     lineHeight: 20,
                   }}
                 >
-                  No spaces added yet.{"\n"}Pick a space type below to add your
-                  first one.
+                  No spaces added yet.{'\n'}Pick a space type below to add your first one.
                 </ThemedText>
               </View>
             )}
@@ -288,15 +273,12 @@ export default function NewHostingStep2() {
 
           <View
             style={{
-              flexDirection: "row",
-              alignItems: "center",
+              flexDirection: 'row',
+              alignItems: 'center',
               gap: 8,
               borderRadius: 12,
               padding: 12,
-              backgroundColor: hexToRgba(
-                hasEnoughPhotos ? colors.primary : colors.text,
-                0.06,
-              ),
+              backgroundColor: hexToRgba(hasEnoughPhotos ? colors.primary : colors.text, 0.06),
             }}
           >
             <ThemedText
@@ -333,12 +315,7 @@ export default function NewHostingStep2() {
                   contentContainerStyle={{ paddingVertical: 2 }}
                 >
                   {rooms[activeModalIndex].images.map((img, id) => (
-                    <DraggableItem
-                      key={img}
-                      controller={imageReorder}
-                      index={id}
-                      gap={8}
-                    >
+                    <DraggableItem key={img} controller={imageReorder} index={id} gap={8}>
                       <HostingRoomImage
                         src={img}
                         displayUri={resolveThumb(img)}
@@ -346,7 +323,7 @@ export default function NewHostingStep2() {
                         roomIndex={activeModalIndex}
                         onDeleteRoomImage={deleteRoomImage}
                         isCover={!!coverImageUrl && img === coverImageUrl}
-                        canSetCover={!img.startsWith("file")}
+                        canSetCover={!img.startsWith('file')}
                         onSetCover={handleSetCoverImage}
                       />
                     </DraggableItem>
@@ -375,9 +352,7 @@ export default function NewHostingStep2() {
                   placeholder="Brief description of this space"
                   containerStyle={{ minHeight: 80 }}
                   numberOfLines={4}
-                  onChangeText={(description) =>
-                    updateActiveRoom({ description })
-                  }
+                  onChangeText={(description) => updateActiveRoom({ description })}
                   returnKeyType="done"
                 />
               </View>
@@ -419,10 +394,7 @@ export default function NewHostingStep2() {
             <View className="gap-6">
               <ThemedText style={{ fontFamily: Fonts.medium }}>
                 Delete this space
-                {rooms[deleteModalIndex]?.images.length
-                  ? " and all its photos"
-                  : ""}
-                ?
+                {rooms[deleteModalIndex]?.images.length ? ' and all its photos' : ''}?
               </ThemedText>
               <View className="items-center gap-3">
                 <View className="h-28 w-32">
@@ -430,11 +402,11 @@ export default function NewHostingStep2() {
                     source={
                       rooms[deleteModalIndex]?.images.length
                         ? {
-                          uri: rooms[deleteModalIndex].images[0],
-                        }
-                        : require("@/assets/images/room-image.jpg")
+                            uri: rooms[deleteModalIndex].images[0],
+                          }
+                        : require('@/assets/images/room-image.jpg')
                     }
-                    style={{ height: "100%", width: "100%", borderRadius: 10 }}
+                    style={{ height: '100%', width: '100%', borderRadius: 10 }}
                     contentFit="cover"
                     transition={300}
                     placeholder={{ blurhash: PROPERTY_BLURHASH }}
@@ -443,12 +415,8 @@ export default function NewHostingStep2() {
                     priority="high"
                   />
                 </View>
-                <ThemedText
-                  style={{ fontFamily: Fonts.semibold, fontSize: 18 }}
-                >
-                  {rooms[deleteModalIndex]
-                    ? Room[rooms[deleteModalIndex].name]
-                    : ""}
+                <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
+                  {rooms[deleteModalIndex] ? Room[rooms[deleteModalIndex].name] : ''}
                 </ThemedText>
               </View>
               <View className="flex-row items-center gap-2">
@@ -459,11 +427,7 @@ export default function NewHostingStep2() {
                 >
                   <ThemedText content="shade">Cancel</ThemedText>
                 </Button>
-                <Button
-                  type="error"
-                  className="flex-1"
-                  onPress={handleDeleteActiveRoom}
-                >
+                <Button type="error" className="flex-1" onPress={handleDeleteActiveRoom}>
                   <ThemedText content="error">Delete</ThemedText>
                 </Button>
               </View>

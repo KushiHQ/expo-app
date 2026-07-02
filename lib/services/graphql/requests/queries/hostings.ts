@@ -1,4 +1,4 @@
-import { gql } from "urql";
+import { gql } from 'urql';
 
 export const PROPERTY_TYPES = gql`
   query PropertyTypes {

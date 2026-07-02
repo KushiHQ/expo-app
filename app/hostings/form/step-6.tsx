@@ -1,25 +1,23 @@
-import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
-import LoadingModal from "@/components/atoms/a-loading-modal";
-import ThemedText from "@/components/atoms/a-themed-text";
-import DetailsLayout from "@/components/layouts/details";
-import CheckboxInput from "@/components/molecules/m-checkbox-input";
-import HostingStepper from "@/components/molecules/m-hosting-stepper";
-import SectionCard from "@/components/molecules/m-section-card";
-import SelectInput, {
-  SelectOption,
-} from "@/components/molecules/m-select-input";
-import { HOSTING_VERIFICATION_OPTIONS } from "@/lib/constants/hosting/verification";
-import { showTenancySteps } from "@/lib/constants/hosting/step-rules";
-import { useHostingForm } from "@/lib/hooks/hosting-form";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { cast } from "@/lib/types/utils";
-import { handleError } from "@/lib/utils/error";
-import { useLocalSearchParams } from "expo-router";
-import { useRouter } from "@/lib/hooks/use-router";
-import { ShieldCheck, UserRound } from "lucide-react-native";
-import React, { useRef } from "react";
-import { TextInput, View } from "react-native";
-import { toast } from "@/lib/hooks/use-toast";
+import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
+import LoadingModal from '@/components/atoms/a-loading-modal';
+import ThemedText from '@/components/atoms/a-themed-text';
+import DetailsLayout from '@/components/layouts/details';
+import CheckboxInput from '@/components/molecules/m-checkbox-input';
+import HostingStepper from '@/components/molecules/m-hosting-stepper';
+import SectionCard from '@/components/molecules/m-section-card';
+import SelectInput, { SelectOption } from '@/components/molecules/m-select-input';
+import { HOSTING_VERIFICATION_OPTIONS } from '@/lib/constants/hosting/verification';
+import { showTenancySteps } from '@/lib/constants/hosting/step-rules';
+import { useHostingForm } from '@/lib/hooks/hosting-form';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { cast } from '@/lib/types/utils';
+import { handleError } from '@/lib/utils/error';
+import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
+import { ShieldCheck, UserRound } from 'lucide-react-native';
+import React, { useRef } from 'react';
+import { TextInput, View } from 'react-native';
+import { toast } from '@/lib/hooks/use-toast';
 
 export default function NewHostingStep6() {
   const router = useRouter();
@@ -36,10 +34,7 @@ export default function NewHostingStep6() {
   } = useHostingForm(id);
 
   React.useEffect(() => {
-    if (
-      hosting &&
-      !showTenancySteps(hosting.listingType, hosting.propertyType)
-    ) {
+    if (hosting && !showTenancySteps(hosting.listingType, hosting.propertyType)) {
       router.replace(`/hostings/form/step-8?id=${hosting.id}`);
     }
   }, [hosting]);
@@ -52,8 +47,8 @@ export default function NewHostingStep6() {
       if (res.data?.initiateHostingVerification) {
         router.push(`/hostings/form/step-7?id=${hosting?.id}`);
         toast.show({
-          type: "success",
-          text1: "Success",
+          type: 'success',
+          text1: 'Success',
           text2: res.data.initiateHostingVerification.message,
         });
       }
@@ -92,9 +87,7 @@ export default function NewHostingStep6() {
               label="Landlord Full Name"
               placeholder="Thomas Shelby"
               value={verificationInput.landlordFullName}
-              onChangeText={(v) =>
-                updateVerificationInput({ landlordFullName: v })
-              }
+              onChangeText={(v) => updateVerificationInput({ landlordFullName: v })}
               returnKeyType="next"
               onSubmitEditing={() => landlordAddressRef.current?.focus()}
               blurOnSubmit={false}
@@ -105,9 +98,7 @@ export default function NewHostingStep6() {
               label="Landlord Address"
               placeholder="Arley Hall & Gardens, Northwich, Cheshire"
               value={verificationInput.landlordAddress}
-              onChangeText={(v) =>
-                updateVerificationInput({ landlordAddress: v })
-              }
+              onChangeText={(v) => updateVerificationInput({ landlordAddress: v })}
               returnKeyType="next"
               onSubmitEditing={() => titleTypeRef.current?.focus()}
               blurOnSubmit={false}
@@ -120,14 +111,12 @@ export default function NewHostingStep6() {
               defaultValue={
                 verificationInput.propertyRelationship
                   ? {
-                    label: verificationInput.propertyRelationship,
-                    value: verificationInput.propertyRelationship,
-                  }
+                      label: verificationInput.propertyRelationship,
+                      value: verificationInput.propertyRelationship,
+                    }
                   : undefined
               }
-              onSelect={(v) =>
-                updateVerificationInput({ propertyRelationship: cast(v.value) })
-              }
+              onSelect={(v) => updateVerificationInput({ propertyRelationship: cast(v.value) })}
               options={HOSTING_VERIFICATION_OPTIONS}
               renderItem={SelectOption}
             />
@@ -140,39 +129,31 @@ export default function NewHostingStep6() {
           >
             <CheckboxInput
               checked={verificationInput.declOwnership}
-              onCheckChange={(v) =>
-                updateVerificationInput({ declOwnership: v })
-              }
+              onCheckChange={(v) => updateVerificationInput({ declOwnership: v })}
             >
               <ThemedText style={{ fontSize: 13, lineHeight: 20, flex: 1 }}>
-                I hereby declare that I am the legal owner of this property, or
-                I possess explicit, documented authorization (such as a mandate,
-                power of attorney, or landlord's consent to sublease) to rent
-                out this space.
+                I hereby declare that I am the legal owner of this property, or I possess explicit,
+                documented authorization (such as a mandate, power of attorney, or landlord's
+                consent to sublease) to rent out this space.
               </ThemedText>
             </CheckboxInput>
             <CheckboxInput
               checked={verificationInput.declLitigation}
-              onCheckChange={(v) =>
-                updateVerificationInput({ declLitigation: v })
-              }
+              onCheckChange={(v) => updateVerificationInput({ declLitigation: v })}
             >
               <ThemedText style={{ fontSize: 13, lineHeight: 20, flex: 1 }}>
-                I confirm that there are no ongoing court cases, legal disputes,
-                or foreclosures involving this property that would prevent a
-                tenant from living here peacefully.
+                I confirm that there are no ongoing court cases, legal disputes, or foreclosures
+                involving this property that would prevent a tenant from living here peacefully.
               </ThemedText>
             </CheckboxInput>
             <CheckboxInput
               checked={verificationInput.declIndemnity}
-              onCheckChange={(v) =>
-                updateVerificationInput({ declIndemnity: v })
-              }
+              onCheckChange={(v) => updateVerificationInput({ declIndemnity: v })}
             >
               <ThemedText style={{ fontSize: 13, lineHeight: 20, flex: 1 }}>
-                I agree to take full legal and financial responsibility,
-                protecting Kushi from any claims or lawsuits, if the ownership
-                or litigation information I have provided is false.
+                I agree to take full legal and financial responsibility, protecting Kushi from any
+                claims or lawsuits, if the ownership or litigation information I have provided is
+                false.
               </ThemedText>
             </CheckboxInput>
           </SectionCard>

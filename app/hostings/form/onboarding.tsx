@@ -1,29 +1,24 @@
-import ThemedText from "@/components/atoms/a-themed-text";
-import { FluentFormMultiple24Regular } from "@/components/icons/i-document";
-import DetailsLayout from "@/components/layouts/details";
-import HostingFormOnboardingAction from "@/components/molecules/m-hosting-form-onboarding-action";
-import ListingListItem from "@/components/organisms/o-listing-list-item";
-import TopListingCard from "@/components/molecules/m-top-listing-card";
-import { getVisibleSteps } from "@/lib/constants/hosting/onboarding";
-import { Fonts } from "@/lib/constants/theme";
-import { useHostingForm } from "@/lib/hooks/hosting-form";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
+import ThemedText from '@/components/atoms/a-themed-text';
+import { FluentFormMultiple24Regular } from '@/components/icons/i-document';
+import DetailsLayout from '@/components/layouts/details';
+import HostingFormOnboardingAction from '@/components/molecules/m-hosting-form-onboarding-action';
+import ListingListItem from '@/components/organisms/o-listing-list-item';
+import TopListingCard from '@/components/molecules/m-top-listing-card';
+import { getVisibleSteps } from '@/lib/constants/hosting/onboarding';
+import { Fonts } from '@/lib/constants/theme';
+import { useHostingForm } from '@/lib/hooks/hosting-form';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import {
   HostingKind,
   PublishStatus,
   useBookingApplicationsCountQuery,
-} from "@/lib/services/graphql/generated";
-import { hexToRgba } from "@/lib/utils/colors";
-import { Href, useLocalSearchParams } from "expo-router";
-import { useRouter } from "@/lib/hooks/use-router";
-import {
-  Building2,
-  CircleQuestionMark,
-  ListChecks,
-  LucideIcon,
-} from "lucide-react-native";
-import React from "react";
-import { RefreshControl, View } from "react-native";
+} from '@/lib/services/graphql/generated';
+import { hexToRgba } from '@/lib/utils/colors';
+import { Href, useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
+import { Building2, CircleQuestionMark, ListChecks, LucideIcon } from 'lucide-react-native';
+import React from 'react';
+import { RefreshControl, View } from 'react-native';
 
 type Action = {
   filled: boolean;
@@ -49,9 +44,7 @@ const SectionHeader: React.FC<{
       >
         <Icon size={14} color={colors.primary} />
       </View>
-      <ThemedText
-        style={{ fontFamily: Fonts.bold, fontSize: 16, letterSpacing: -0.3 }}
-      >
+      <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 16, letterSpacing: -0.3 }}>
         {title}
       </ThemedText>
       {count != null ? (
@@ -96,9 +89,7 @@ export default function HostingOnboarding() {
   // A deleted unit must simply vanish from the host's view. The server archives
   // (rather than hard-deletes) a unit that has bookings, so we also hide archived
   // units and always speak of it as "deleted" — the host never sees "archived".
-  const units = (hosting?.children ?? []).filter(
-    (u) => u.publishStatus !== PublishStatus.Archived,
-  );
+  const units = (hosting?.children ?? []).filter((u) => u.publishStatus !== PublishStatus.Archived);
 
   const { steps: visibleSteps, indexMap } = React.useMemo(
     () => getVisibleSteps(hosting?.listingType, hosting?.propertyType),
@@ -115,12 +106,13 @@ export default function HostingOnboarding() {
         disabled: true,
         link: isLast
           ? `/hostings/form/verification/overview?id=${hosting?.id}`
-          : `/hostings/form/${originalIndex === 2
-            ? "step-2-video"
-            : originalIndex < 2
-              ? `step-${originalIndex + 1}`
-              : `step-${originalIndex}`
-          }?id=${hosting?.id}`,
+          : `/hostings/form/${
+              originalIndex === 2
+                ? 'step-2-video'
+                : originalIndex < 2
+                  ? `step-${originalIndex + 1}`
+                  : `step-${originalIndex}`
+            }?id=${hosting?.id}`,
       };
     });
 
@@ -131,8 +123,7 @@ export default function HostingOnboarding() {
       // Step 0: Property Details
       const i0 = idx(0);
       if (i0 >= 0) {
-        actions[i0].filled =
-          !!hosting.title && !!hosting.propertyType && !!hosting.listingType;
+        actions[i0].filled = !!hosting.title && !!hosting.propertyType && !!hosting.listingType;
         actions[i0].disabled = false;
       }
 
@@ -219,8 +210,7 @@ export default function HostingOnboarding() {
       // Step 9: Get Verified
       const iVerified = idx(9);
       if (iVerified >= 0) {
-        actions[iVerified].filled =
-          hosting.publishStatus === PublishStatus.Live;
+        actions[iVerified].filled = hosting.publishStatus === PublishStatus.Live;
       }
     }
 
@@ -229,8 +219,7 @@ export default function HostingOnboarding() {
         const prev = actions[filteredIndex - 1];
         // An optional previous step (e.g. the video walkthrough) never blocks
         // the next step, even if it hasn't been filled.
-        actions[filteredIndex]["disabled"] =
-          prev.disabled || (!prev.filled && !prev.optional);
+        actions[filteredIndex]['disabled'] = prev.disabled || (!prev.filled && !prev.optional);
       }
     });
 
@@ -251,19 +240,13 @@ export default function HostingOnboarding() {
       }
     >
       <View>
-        <ThemedText
-          className="mb-4"
-          style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}
-        >
+        <ThemedText className="mb-4" style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
           <CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
-          {"  "}
-          Resume your setup, edit your property details, or preview your listing
-          before it reaches future tenants.
+          {'  '}
+          Resume your setup, edit your property details, or preview your listing before it reaches
+          future tenants.
         </ThemedText>
-        <TopListingCard
-          onPress={() => router.push(`/hostings/${hosting?.id}`)}
-          hosting={hosting}
-        />
+        <TopListingCard onPress={() => router.push(`/hostings/${hosting?.id}`)} hosting={hosting} />
         {/* A parent property isn't booked directly — applications belong to its
             units — so the booking-applications section is hidden for parents. */}
         {hosting?.kind !== HostingKind.Parent ? (
@@ -271,17 +254,12 @@ export default function HostingOnboarding() {
             <HostingFormOnboardingAction
               icon={FluentFormMultiple24Regular}
               color="accent"
-              onPress={() =>
-                router.push(`/hostings/${hosting?.id}/booking-applications/`)
-              }
+              onPress={() => router.push(`/hostings/${hosting?.id}/booking-applications/`)}
             >
               <View className="flex-1">
                 <ThemedText style={{ fontFamily: Fonts.bold }}>
                   Booking Applications (
-                  {Number(
-                    countData?.bookingApplicationsCount ?? "0",
-                  ).toLocaleString()}
-                  )
+                  {Number(countData?.bookingApplicationsCount ?? '0').toLocaleString()})
                 </ThemedText>
                 <ThemedText
                   style={{
@@ -289,8 +267,7 @@ export default function HostingOnboarding() {
                     color: hexToRgba(colors.text, 0.6),
                   }}
                 >
-                  Review and manage pending tenant applications for this
-                  property.
+                  Review and manage pending tenant applications for this property.
                 </ThemedText>
               </View>
             </HostingFormOnboardingAction>
@@ -301,17 +278,10 @@ export default function HostingOnboarding() {
             manage one (drills into that unit's own onboarding). */}
         {hosting && hosting.kind === HostingKind.Parent ? (
           <View className="py-4">
-            <SectionHeader
-              icon={Building2}
-              title="Units"
-              count={units.length}
-            />
+            <SectionHeader icon={Building2} title="Units" count={units.length} />
             {units.length === 0 ? (
-              <ThemedText
-                style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}
-              >
-                No units yet. Add one with the + button and choose this property
-                as its parent.
+              <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
+                No units yet. Add one with the + button and choose this property as its parent.
               </ThemedText>
             ) : (
               // Units are just listings — render them with the same row as the
@@ -342,17 +312,12 @@ export default function HostingOnboarding() {
                       router.push(actions[filteredIndex]!.link);
                     }
                   }}
-                  disabled={
-                    !actions[filteredIndex]?.link ||
-                    actions[filteredIndex]?.disabled
-                  }
-                  color={actions[filteredIndex]?.filled ? "primary" : "default"}
+                  disabled={!actions[filteredIndex]?.link || actions[filteredIndex]?.disabled}
+                  color={actions[filteredIndex]?.filled ? 'primary' : 'default'}
                   icon={step.icon}
                 >
                   <View className="flex-1">
-                    <ThemedText style={{ fontFamily: Fonts.bold }}>
-                      {step.title}
-                    </ThemedText>
+                    <ThemedText style={{ fontFamily: Fonts.bold }}>{step.title}</ThemedText>
                     <ThemedText
                       style={{
                         fontSize: 12,

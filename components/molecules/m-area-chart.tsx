@@ -81,8 +81,7 @@ const AreaChart: React.FC<Props> = ({ data = [], title, color }) => {
   const initialSpacing = 12;
   const [containerWidth, setContainerWidth] = React.useState(screenWidth - 100);
   const chartWidth = Math.max(containerWidth - yLabelWidth - 8, 120);
-  const spacing =
-    data.length > 1 ? (chartWidth - initialSpacing) / (data.length - 1) : chartWidth;
+  const spacing = data.length > 1 ? (chartWidth - initialSpacing) / (data.length - 1) : chartWidth;
 
   return (
     <View

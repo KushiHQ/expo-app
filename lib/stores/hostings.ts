@@ -1,12 +1,12 @@
-import { create } from "zustand";
-import { Room } from "../types/enums/hostings";
+import { create } from 'zustand';
+import { Room } from '../types/enums/hostings';
 import {
   HostingFilterInput,
   HostingInput,
   HostingQuery,
   HostingVerificationInput,
-} from "../services/graphql/generated";
-import { cleanupAgreementTemplateInput } from "../utils/hosting/tenancyAgreement";
+} from '../services/graphql/generated';
+import { cleanupAgreementTemplateInput } from '../utils/hosting/tenancyAgreement';
 
 export type RoomData = {
   id?: string;
@@ -81,9 +81,7 @@ export const useHostingRoomsStore = create<HostingRoomsStore>((set, get) => ({
     set((state) => {
       const rooms = [...state.rooms];
       const currentImages = rooms[roomIndex].images;
-      rooms[roomIndex].images = currentImages.filter(
-        (_, i) => i !== imageIndex,
-      );
+      rooms[roomIndex].images = currentImages.filter((_, i) => i !== imageIndex);
 
       return { rooms };
     });
@@ -169,92 +167,90 @@ export const useHostingFilterStore = create<HostingFilterStore>((set) => ({
 interface ActiveFormHostingStore {
   input: HostingInput;
   verificationInput: Partial<HostingVerificationInput>;
-  hosting?: HostingQuery["hosting"];
-  initiate: (hosting: HostingQuery["hosting"]) => void;
-  refreshHosting: (hosting: HostingQuery["hosting"]) => void;
+  hosting?: HostingQuery['hosting'];
+  initiate: (hosting: HostingQuery['hosting']) => void;
+  refreshHosting: (hosting: HostingQuery['hosting']) => void;
   updateInput: (data: Partial<HostingInput>) => void;
   updateVerificationInput: (data: Partial<HostingVerificationInput>) => void;
   clear: () => void;
 }
 
-export const useActiveFormHosingStore = create<ActiveFormHostingStore>(
-  (set, get) => ({
-    input: {} as HostingInput,
-    verificationInput: {} as HostingVerificationInput,
-    hosting: {} as HostingQuery["hosting"],
+export const useActiveFormHosingStore = create<ActiveFormHostingStore>((set, get) => ({
+  input: {} as HostingInput,
+  verificationInput: {} as HostingVerificationInput,
+  hosting: {} as HostingQuery['hosting'],
 
-    initiate: (hosting) => {
-      // No-op when the incoming hosting is unchanged — initiate() deep-spreads the
-      // whole hosting and runs on every refocus, so guarding it avoids needless
-      // state churn / re-renders (WS-12).
-      const prev = get().hosting;
-      if (prev && prev.id && prev.id === hosting.id && prev.lastUpdated === hosting.lastUpdated) {
-        return;
-      }
+  initiate: (hosting) => {
+    // No-op when the incoming hosting is unchanged — initiate() deep-spreads the
+    // whole hosting and runs on every refocus, so guarding it avoids needless
+    // state churn / re-renders (WS-12).
+    const prev = get().hosting;
+    if (prev && prev.id && prev.id === hosting.id && prev.lastUpdated === hosting.lastUpdated) {
+      return;
+    }
 
-      const {
-        host,
-        lastUpdated,
-        createdAt,
-        totalRatings,
-        coverImage,
-        paymentDetails,
-        rooms,
-        saved,
-        reviews,
-        reviewAverage,
-        parent,
-        childCount,
-        children,
-        isBookable,
-        priceFrom,
-        tenancyAgreementTemplate,
-        __typename,
-        verification,
-        images,
-        video,
-        bookingApplicationsCount,
-        ...rest
-      } = hosting;
+    const {
+      host,
+      lastUpdated,
+      createdAt,
+      totalRatings,
+      coverImage,
+      paymentDetails,
+      rooms,
+      saved,
+      reviews,
+      reviewAverage,
+      parent,
+      childCount,
+      children,
+      isBookable,
+      priceFrom,
+      tenancyAgreementTemplate,
+      __typename,
+      verification,
+      images,
+      video,
+      bookingApplicationsCount,
+      ...rest
+    } = hosting;
 
-      const {
-        __typename: __vTypeName,
-        verificationTier,
-        createdAt: createdAt2,
-        lastUpdated: lastUpdated2,
-        tierTooltip,
-        ...vRest
-      } = verification ?? {};
+    const {
+      __typename: __vTypeName,
+      verificationTier,
+      createdAt: createdAt2,
+      lastUpdated: lastUpdated2,
+      tierTooltip,
+      ...vRest
+    } = verification ?? {};
 
-      set(() => ({
-        input: {
-          ...rest,
-          tenancyAgreementTemplate: cleanupAgreementTemplateInput(
-            tenancyAgreementTemplate ?? { sections: [], totalSections: 0 },
-          ),
-          paymentDetailsId: paymentDetails?.id,
-        },
-        verificationInput: { hostingId: hosting.id, ...vRest },
-        hosting,
-      }));
-    },
-    refreshHosting: (hosting) => set(() => ({ hosting })),
-    updateInput: (data) =>
-      set((state) => ({
-        input: { ...state.input, ...data },
-      })),
-    updateVerificationInput: (data) =>
-      set((state) => ({
-        verificationInput: {
-          ...state.verificationInput,
-          ...data,
-        },
-      })),
-    clear: () =>
-      set({
-        input: {} as HostingInput,
-        verificationInput: {} as Partial<HostingVerificationInput>,
-        hosting: undefined,
-      }),
-  }),
-);
+    set(() => ({
+      input: {
+        ...rest,
+        tenancyAgreementTemplate: cleanupAgreementTemplateInput(
+          tenancyAgreementTemplate ?? { sections: [], totalSections: 0 },
+        ),
+        paymentDetailsId: paymentDetails?.id,
+      },
+      verificationInput: { hostingId: hosting.id, ...vRest },
+      hosting,
+    }));
+  },
+  refreshHosting: (hosting) => set(() => ({ hosting })),
+  updateInput: (data) =>
+    set((state) => ({
+      input: { ...state.input, ...data },
+    })),
+  updateVerificationInput: (data) =>
+    set((state) => ({
+      verificationInput: {
+        ...state.verificationInput,
+        ...data,
+      },
+    })),
+  clear: () =>
+    set({
+      input: {} as HostingInput,
+      verificationInput: {} as Partial<HostingVerificationInput>,
+      hosting: undefined,
+    }),
+}));

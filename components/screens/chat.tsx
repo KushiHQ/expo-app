@@ -63,9 +63,7 @@ const ChatListItem = React.memo(({ chat }: { chat: any }) => {
         {
           // Unread rows get a real warm FILL tint (renders regardless of
           // shadow support); read rows stay neutral. Glow is a bonus on top.
-          backgroundColor: unread
-            ? hexToRgba(colors.primary, 0.08)
-            : hexToRgba(colors.text, 0.05),
+          backgroundColor: unread ? hexToRgba(colors.primary, 0.08) : hexToRgba(colors.text, 0.05),
           borderRadius: 22,
           marginBottom: 12,
           padding: 16,

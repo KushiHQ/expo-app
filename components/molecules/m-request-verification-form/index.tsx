@@ -168,7 +168,7 @@ const RequestVerificationForm: React.FC<Props> = ({
           <View
             className="gap-1 rounded-2xl p-3.5"
             style={{
-              backgroundColor: hexToRgba(colors.primary, 0.10),
+              backgroundColor: hexToRgba(colors.primary, 0.1),
             }}
           >
             <View className="flex-row items-center gap-2">

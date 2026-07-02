@@ -77,94 +77,98 @@ const HostingHost: React.FC<Props> = ({ hosting, isHost = false }) => {
       >
         <SectionHeader icon={UserRound} title="Host" />
         <View className="flex-row items-center gap-3">
-            <View className="h-11 w-11 overflow-hidden rounded-full">
-              <Image
-                style={{
-                  height: '100%',
-                  width: '100%',
-                  objectFit: 'cover',
-                }}
-                source={{
-                  uri:
-                    hosting?.host.user.profile?.image?.publicUrl ??
-                    getDefaultProfileImageUrl(hosting?.host.user.profile.fullName ?? ''),
-                }}
-              />
-            </View>
-            <View className="gap-0.5">
-              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 15 }}>
-                {hosting?.host.user.profile.fullName}
-              </ThemedText>
+          <View className="h-11 w-11 overflow-hidden rounded-full">
+            <Image
+              style={{
+                height: '100%',
+                width: '100%',
+                objectFit: 'cover',
+              }}
+              source={{
+                uri:
+                  hosting?.host.user.profile?.image?.publicUrl ??
+                  getDefaultProfileImageUrl(hosting?.host.user.profile.fullName ?? ''),
+              }}
+            />
+          </View>
+          <View className="gap-0.5">
+            <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 15 }}>
+              {hosting?.host.user.profile.fullName}
+            </ThemedText>
+            <ThemedText
+              style={{
+                fontSize: 12,
+                color: hexToRgba(colors.text, 0.5),
+                fontFamily: Fonts.medium,
+              }}
+            >
+              Joined {moment(hosting?.host.createdAt).fromNow()}
+            </ThemedText>
+          </View>
+        </View>
+        {!isHost && (
+          <View className="mt-4 flex-row items-center gap-4">
+            <AnimatedPressable
+              onPressIn={() => (messageScale.value = withSpring(0.96))}
+              onPressOut={() => (messageScale.value = withSpring(1))}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                handleInitiateChat();
+              }}
+              accessibilityLabel="Initiate chat with host"
+              className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl py-4"
+              style={[
+                {
+                  backgroundColor: colors.primary,
+                  shadowColor: colors.primary,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 8,
+                  elevation: 4,
+                },
+                messageAnimatedStyle,
+              ]}
+            >
+              <TablerMessage2 size={22} color={colors['primary-content']} strokeWidth={2} />
               <ThemedText
                 style={{
-                  fontSize: 12,
-                  color: hexToRgba(colors.text, 0.5),
-                  fontFamily: Fonts.medium,
+                  color: colors['primary-content'],
+                  fontFamily: Fonts.semibold,
+                  fontSize: 16,
                 }}
               >
-                Joined {moment(hosting?.host.createdAt).fromNow()}
+                Message
               </ThemedText>
-            </View>
+            </AnimatedPressable>
+            <AnimatedPressable
+              onPressIn={() => (callScale.value = withSpring(0.96))}
+              onPressOut={() => (callScale.value = withSpring(1))}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                handleInitiateCall();
+              }}
+              accessibilityLabel="Initiate call with host"
+              className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl py-4"
+              style={[
+                {
+                  backgroundColor: hexToRgba(colors.text, 0.09),
+                },
+                callAnimatedStyle,
+              ]}
+            >
+              <SolarPhoneOutline size={22} color={colors.text} strokeWidth={2} />
+              <ThemedText
+                style={{
+                  color: colors.text,
+                  fontFamily: Fonts.semibold,
+                  fontSize: 16,
+                }}
+              >
+                Call
+              </ThemedText>
+            </AnimatedPressable>
           </View>
-          {!isHost && (
-            <View className="mt-4 flex-row items-center gap-4">
-              <AnimatedPressable
-                onPressIn={() => (messageScale.value = withSpring(0.96))}
-                onPressOut={() => (messageScale.value = withSpring(1))}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  handleInitiateChat();
-                }}
-                accessibilityLabel="Initiate chat with host"
-                className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl py-4"
-                style={[
-                  {
-                    backgroundColor: colors.primary,
-                    shadowColor: colors.primary,
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.2,
-                    shadowRadius: 8,
-                    elevation: 4,
-                  },
-                  messageAnimatedStyle,
-                ]}
-              >
-                <TablerMessage2 size={22} color={colors['primary-content']} strokeWidth={2} />
-                <ThemedText
-                  style={{ color: colors['primary-content'], fontFamily: Fonts.semibold, fontSize: 16 }}
-                >
-                  Message
-                </ThemedText>
-              </AnimatedPressable>
-              <AnimatedPressable
-                onPressIn={() => (callScale.value = withSpring(0.96))}
-                onPressOut={() => (callScale.value = withSpring(1))}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  handleInitiateCall();
-                }}
-                accessibilityLabel="Initiate call with host"
-                className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl py-4"
-                style={[
-                  {
-                    backgroundColor: hexToRgba(colors.text, 0.09),
-                  },
-                  callAnimatedStyle,
-                ]}
-              >
-                <SolarPhoneOutline size={22} color={colors.text} strokeWidth={2} />
-                <ThemedText
-                  style={{
-                    color: colors.text,
-                    fontFamily: Fonts.semibold,
-                    fontSize: 16,
-                  }}
-                >
-                  Call
-                </ThemedText>
-              </AnimatedPressable>
-            </View>
-          )}
+        )}
       </View>
       <LoadingModal visible={chatInitiating} />
     </>

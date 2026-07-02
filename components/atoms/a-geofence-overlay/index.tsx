@@ -131,7 +131,9 @@ const GeofenceOverlay: React.FC<Props> = ({ hostingLatitude, hostingLongitude, v
 
   return (
     <View style={styles.container}>
-      <View style={[styles.mapContainer, { boxShadow: '0px 10px 28px -16px rgba(0,0,0,0.42)' } as any]}>
+      <View
+        style={[styles.mapContainer, { boxShadow: '0px 10px 28px -16px rgba(0,0,0,0.42)' } as any]}
+      >
         <MapView
           ref={mapRef}
           style={styles.map}

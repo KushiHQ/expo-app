@@ -107,12 +107,8 @@ const HostingUnitCard: React.FC<Props> = ({
           className="mt-0.5 flex-row items-center gap-1.5 self-start rounded-full px-2 py-0.5"
           style={{ backgroundColor: hexToRgba(status.color, 0.16) }}
         >
-          <View
-            style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: status.color }}
-          />
-          <ThemedText
-            style={{ fontSize: 11, fontFamily: Fonts.semibold, color: status.color }}
-          >
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: status.color }} />
+          <ThemedText style={{ fontSize: 11, fontFamily: Fonts.semibold, color: status.color }}>
             {status.label}
           </ThemedText>
         </View>

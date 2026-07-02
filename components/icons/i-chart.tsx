@@ -1,5 +1,5 @@
-import { CustomSvgProps } from "@/lib/types/svgType";
-import Svg, { G, Path } from "react-native-svg";
+import { CustomSvgProps } from '@/lib/types/svgType';
+import Svg, { G, Path } from 'react-native-svg';
 
 export const SolarChartLinear: React.FC<CustomSvgProps> = (props) => {
   return (

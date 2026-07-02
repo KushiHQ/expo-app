@@ -215,7 +215,9 @@ export default function HostAnalytics() {
               Recent Activity
             </ThemedText>
             <Link href="/users/notifications">
-              <ThemedText style={{ fontSize: 13, color: colors.primary, fontFamily: Fonts.semibold }}>
+              <ThemedText
+                style={{ fontSize: 13, color: colors.primary, fontFamily: Fonts.semibold }}
+              >
                 View All
               </ThemedText>
             </Link>

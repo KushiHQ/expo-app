@@ -35,11 +35,11 @@ export const useRouter = () => {
    * keep `navigate()`'s dedupe so we don't stack duplicates.
    */
   const isParamful = (href: Href): boolean => {
-    if (typeof href === "string") return href.includes("?");
+    if (typeof href === 'string') return href.includes('?');
     return !!(
       href &&
-      typeof href === "object" &&
-      "params" in href &&
+      typeof href === 'object' &&
+      'params' in href &&
       (href as { params?: object }).params &&
       Object.keys((href as { params?: object }).params as object).length > 0
     );

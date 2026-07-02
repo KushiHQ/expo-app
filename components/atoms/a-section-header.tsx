@@ -28,9 +28,7 @@ const SectionHeader: React.FC<Props> = ({ icon: Icon, title, action }) => {
       >
         <Icon size={15} color={colors.primary} />
       </View>
-      <ThemedText
-        style={{ fontFamily: Fonts.bold, fontSize: 17, letterSpacing: -0.3, flex: 1 }}
-      >
+      <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 17, letterSpacing: -0.3, flex: 1 }}>
         {title}
       </ThemedText>
       {action}

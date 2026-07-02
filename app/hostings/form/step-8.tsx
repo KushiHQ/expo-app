@@ -1,16 +1,16 @@
-import React from "react";
-import { View } from "react-native";
-import ThemedText from "@/components/atoms/a-themed-text";
-import Chip from "@/components/atoms/a-chip";
-import DataRow from "@/components/atoms/a-data-row";
-import StackedRow from "@/components/atoms/a-stacked-row";
-import ReviewSection from "@/components/molecules/m-review-section";
-import DetailsLayout from "@/components/layouts/details";
-import HostingStepper from "@/components/molecules/m-hosting-stepper";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
-import { Href, Link, useLocalSearchParams } from "expo-router";
-import { useRouter } from "@/lib/hooks/use-router";
+import React from 'react';
+import { View } from 'react-native';
+import ThemedText from '@/components/atoms/a-themed-text';
+import Chip from '@/components/atoms/a-chip';
+import DataRow from '@/components/atoms/a-data-row';
+import StackedRow from '@/components/atoms/a-stacked-row';
+import ReviewSection from '@/components/molecules/m-review-section';
+import DetailsLayout from '@/components/layouts/details';
+import HostingStepper from '@/components/molecules/m-hosting-stepper';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
+import { Href, Link, useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import {
   BadgeDollarSign,
   Building2,
@@ -20,25 +20,22 @@ import {
   Sparkles,
   CheckCircle,
   FileText,
-} from "lucide-react-native";
-import { useHostingForm } from "@/lib/hooks/hosting-form";
-import { showTenancySteps } from "@/lib/constants/hosting/step-rules";
-import { capitalize } from "@/lib/utils/text";
-import { formatPaymentInterval } from "@/lib/utils/hosting/interval";
-import HostingCard from "@/components/molecules/m-hosting-card";
-import {
-  HostingVerificationTier,
-  PublishStatus,
-} from "@/lib/services/graphql/generated";
-import LoadingModal from "@/components/atoms/a-loading-modal";
-import { handleError } from "@/lib/utils/error";
-import { toast } from "@/lib/hooks/use-toast";
-import PublishListingSuccess from "@/components/molecules/m-publish-listing-success";
-import CheckboxInput from "@/components/molecules/m-checkbox-input";
-import { Room } from "@/lib/types/enums/hostings";
-import { removeTypenames } from "@/lib/utils/graphql/cleanup";
-import { Fonts } from "@/lib/constants/theme";
-import { useUploadStore } from "@/lib/stores/uploads";
+} from 'lucide-react-native';
+import { useHostingForm } from '@/lib/hooks/hosting-form';
+import { showTenancySteps } from '@/lib/constants/hosting/step-rules';
+import { capitalize } from '@/lib/utils/text';
+import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
+import HostingCard from '@/components/molecules/m-hosting-card';
+import { HostingVerificationTier, PublishStatus } from '@/lib/services/graphql/generated';
+import LoadingModal from '@/components/atoms/a-loading-modal';
+import { handleError } from '@/lib/utils/error';
+import { toast } from '@/lib/hooks/use-toast';
+import PublishListingSuccess from '@/components/molecules/m-publish-listing-success';
+import CheckboxInput from '@/components/molecules/m-checkbox-input';
+import { Room } from '@/lib/types/enums/hostings';
+import { removeTypenames } from '@/lib/utils/graphql/cleanup';
+import { Fonts } from '@/lib/constants/theme';
+import { useUploadStore } from '@/lib/stores/uploads';
 
 export default function NewHostingStep8() {
   const router = useRouter();
@@ -53,16 +50,14 @@ export default function NewHostingStep8() {
   const [success, setSuccess] = React.useState(false);
   const paymentInterval = React.useMemo(() => {
     const interval = formatPaymentInterval(input.paymentInterval);
-    return interval ? `- ${interval}` : "";
+    return interval ? `- ${interval}` : '';
   }, [input.paymentInterval]);
 
   const loading = mutating;
 
   const handleMutate = () => {
     const nextStatus =
-      hosting?.publishStatus === PublishStatus.Live
-        ? PublishStatus.Draft
-        : PublishStatus.Live;
+      hosting?.publishStatus === PublishStatus.Live ? PublishStatus.Draft : PublishStatus.Live;
     updateInput({ publishStatus: nextStatus });
     mutate({
       input: { ...removeTypenames(input), publishStatus: nextStatus },
@@ -71,12 +66,10 @@ export default function NewHostingStep8() {
         handleError(res.error);
       }
       if (res.data?.createOrUpdateHosting) {
-        router.push(
-          `/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`,
-        );
+        router.push(`/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`);
         toast.show({
-          type: "success",
-          text1: "Success",
+          type: 'success',
+          text1: 'Success',
           text2: res.data.createOrUpdateHosting.message,
         });
         setSuccess(true);
@@ -87,7 +80,7 @@ export default function NewHostingStep8() {
   const handleClose = () => {
     setSuccess(false);
     router.dismissAll();
-    router.replace("/host/analytics");
+    router.replace('/host/analytics');
   };
 
   function editStep(step: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 9): Href {
@@ -97,12 +90,8 @@ export default function NewHostingStep8() {
     return `/hostings/form/step-${step}?id=${hosting?.id}` as Href;
   }
 
-  const totalPhotos =
-    hosting?.rooms?.reduce((sum, r) => sum + r.images.length, 0) ?? 0;
-  const showTenancy = showTenancySteps(
-    hosting?.listingType,
-    hosting?.propertyType,
-  );
+  const totalPhotos = hosting?.rooms?.reduce((sum, r) => sum + r.images.length, 0) ?? 0;
+  const showTenancy = showTenancySteps(hosting?.listingType, hosting?.propertyType);
 
   const isLive = hosting?.publishStatus === PublishStatus.Live;
 
@@ -119,9 +108,7 @@ export default function NewHostingStep8() {
             onTogglePublish={handleMutate}
             published={isLive}
             loading={mutating}
-            disabled={
-              ((!accepted.tos || !accepted.truth) || uploadsInFlight) && !isLive
-            }
+            disabled={(!accepted.tos || !accepted.truth || uploadsInFlight) && !isLive}
             step={9}
           />
         }
@@ -135,12 +122,8 @@ export default function NewHostingStep8() {
               lineHeight: 18,
             }}
           >
-            Review every detail below before publishing. Tap the{" "}
-            <ThemedText
-              style={{ fontSize: 12, color: hexToRgba(colors.text, 0.5) }}
-            >
-              ✎
-            </ThemedText>{" "}
+            Review every detail below before publishing. Tap the{' '}
+            <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.5) }}>✎</ThemedText>{' '}
             icon on any section to make changes.
           </ThemedText>
 
@@ -153,17 +136,14 @@ export default function NewHostingStep8() {
                 backgroundColor: hexToRgba(colors.primary, 0.1),
               }}
             >
-              <ThemedText
-                style={{ fontSize: 13, fontFamily: Fonts.medium, color: colors.primary }}
-              >
+              <ThemedText style={{ fontSize: 13, fontFamily: Fonts.medium, color: colors.primary }}>
                 Photos are still uploading
               </ThemedText>
               <ThemedText
                 style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6), marginTop: 2 }}
               >
-                Publishing is enabled once all your photos finish uploading (see the
-                progress bar up top). This keeps your listing from going live with
-                missing images.
+                Publishing is enabled once all your photos finish uploading (see the progress bar up
+                top). This keeps your listing from going live with missing images.
               </ThemedText>
             </View>
           ) : null}
@@ -191,8 +171,8 @@ export default function NewHostingStep8() {
             title="Listing Details"
             onEdit={() => router.push(editStep(1))}
           >
-            <DataRow label="Title" value={input.title ?? ""} />
-            <DataRow label="Property Type" value={input.propertyType ?? ""} />
+            <DataRow label="Title" value={input.title ?? ''} />
+            <DataRow label="Property Type" value={input.propertyType ?? ''} />
             {formatPaymentInterval(input.paymentInterval) ? (
               <DataRow
                 label="Payment Interval"
@@ -211,7 +191,7 @@ export default function NewHostingStep8() {
             onEdit={() => router.push(editStep(2))}
           >
             {hosting?.rooms && hosting.rooms.length > 0 ? (
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 {hosting.rooms.map((r) => (
                   <Chip
                     key={r.id}
@@ -221,23 +201,19 @@ export default function NewHostingStep8() {
                 ))}
               </View>
             ) : (
-              <ThemedText
-                style={{ fontSize: 13, color: hexToRgba(colors.text, 0.4) }}
-              >
+              <ThemedText style={{ fontSize: 13, color: hexToRgba(colors.text, 0.4) }}>
                 No rooms added
               </ThemedText>
             )}
             <View
               style={{
-                flexDirection: "row",
-                alignItems: "center",
+                flexDirection: 'row',
+                alignItems: 'center',
                 gap: 6,
                 paddingTop: 2,
               }}
             >
-              <ThemedText
-                style={{ fontSize: 12, color: hexToRgba(colors.text, 0.4) }}
-              >
+              <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.4) }}>
                 Total photos uploaded
               </ThemedText>
               <View
@@ -271,12 +247,10 @@ export default function NewHostingStep8() {
               label="Address"
               value={[input.street, input.city, input.postalCode, input.state]
                 .filter(Boolean)
-                .join(", ")}
+                .join(', ')}
             />
-            <DataRow label="Contact" value={input.contact ?? ""} />
-            {input.landmarks ? (
-              <DataRow label="Landmarks" value={input.landmarks} />
-            ) : null}
+            <DataRow label="Contact" value={input.contact ?? ''} />
+            {input.landmarks ? <DataRow label="Landmarks" value={input.landmarks} /> : null}
           </ReviewSection>
 
           {/* Section 4 — Amenities */}
@@ -286,7 +260,7 @@ export default function NewHostingStep8() {
               title="Amenities"
               onEdit={() => router.push(editStep(4))}
             >
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 {(input.facilities ?? []).map((f) => (
                   <Chip key={f} label={f} />
                 ))}
@@ -318,10 +292,7 @@ export default function NewHostingStep8() {
               />
             ) : null}
             {hosting?.maxOccupants ? (
-              <DataRow
-                label="Max Occupants"
-                value={String(hosting.maxOccupants)}
-              />
+              <DataRow label="Max Occupants" value={String(hosting.maxOccupants)} />
             ) : null}
             <View
               style={{
@@ -330,14 +301,8 @@ export default function NewHostingStep8() {
                 marginVertical: 2,
               }}
             />
-            <DataRow
-              label="Bank"
-              value={hosting?.paymentDetails?.bankDetails?.name ?? ""}
-            />
-            <DataRow
-              label="Account No."
-              value={hosting?.paymentDetails?.accountNumber ?? ""}
-            />
+            <DataRow label="Bank" value={hosting?.paymentDetails?.bankDetails?.name ?? ''} />
+            <DataRow label="Account No." value={hosting?.paymentDetails?.accountNumber ?? ''} />
           </ReviewSection>
 
           {/* Section 6 — Ownership */}
@@ -347,19 +312,14 @@ export default function NewHostingStep8() {
               title="Ownership"
               onEdit={() => router.push(editStep(6))}
             >
-              <DataRow
-                label="Landlord"
-                value={hosting?.verification?.landlordFullName ?? ""}
-              />
+              <DataRow label="Landlord" value={hosting?.verification?.landlordFullName ?? ''} />
               <StackedRow
                 label="Landlord Address"
-                value={hosting?.verification?.landlordAddress ?? ""}
+                value={hosting?.verification?.landlordAddress ?? ''}
               />
               <DataRow
                 label="Relationship"
-                value={capitalize(
-                  hosting?.verification?.propertyRelationship ?? "",
-                )}
+                value={capitalize(hosting?.verification?.propertyRelationship ?? '')}
               />
             </ReviewSection>
           )}
@@ -378,8 +338,8 @@ export default function NewHostingStep8() {
                   lineHeight: 20,
                 }}
               >
-                Your tenancy agreement template has been configured. Tap edit to
-                review or adjust the active clauses.
+                Your tenancy agreement template has been configured. Tap edit to review or adjust
+                the active clauses.
               </ThemedText>
             </ReviewSection>
           )}
@@ -393,8 +353,7 @@ export default function NewHostingStep8() {
               <DataRow
                 label="Verification Tier"
                 value={capitalize(
-                  hosting?.verification?.verificationTier ??
-                  HostingVerificationTier.Unverified,
+                  hosting?.verification?.verificationTier ?? HostingVerificationTier.Unverified,
                 )}
               />
               <ThemedText
@@ -404,9 +363,8 @@ export default function NewHostingStep8() {
                   lineHeight: 16,
                 }}
               >
-                Verification requests are managed separately. After publishing,
-                head to the “Get Verified” card on the onboarding hub to upload
-                documents and request a higher tier.
+                Verification requests are managed separately. After publishing, head to the “Get
+                Verified” card on the onboarding hub to upload documents and request a higher tier.
               </ThemedText>
             </View>
           </ReviewSection>
@@ -425,8 +383,8 @@ export default function NewHostingStep8() {
               onCheckChange={(v) => setAccepted((c) => ({ ...c, truth: v }))}
             >
               <ThemedText style={{ fontSize: 13, lineHeight: 20, flex: 1 }}>
-                I confirm that the information provided is true and accurate to
-                the best of my knowledge.
+                I confirm that the information provided is true and accurate to the best of my
+                knowledge.
               </ThemedText>
             </CheckboxInput>
             <CheckboxInput
@@ -434,12 +392,12 @@ export default function NewHostingStep8() {
               onCheckChange={(v) => setAccepted((c) => ({ ...c, tos: v }))}
             >
               <ThemedText style={{ fontSize: 13, lineHeight: 20, flex: 1 }}>
-                I agree to Kushi&apos;s hosting{" "}
+                I agree to Kushi&apos;s hosting{' '}
                 <Link
                   href="https://kushicorp.com/legal/terms-of-service"
                   style={{
                     color: colors.primary,
-                    textDecorationLine: "underline",
+                    textDecorationLine: 'underline',
                   }}
                 >
                   Terms of Service
@@ -452,11 +410,7 @@ export default function NewHostingStep8() {
       </DetailsLayout>
 
       <LoadingModal visible={loading} />
-      <PublishListingSuccess
-        show={success}
-        onClose={handleClose}
-        hostingId={hosting?.id}
-      />
+      <PublishListingSuccess show={success} onClose={handleClose} hostingId={hosting?.id} />
     </>
   );
 }

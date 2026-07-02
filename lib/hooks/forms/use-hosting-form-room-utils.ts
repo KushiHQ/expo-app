@@ -220,8 +220,7 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
   const resolveImageIds = (imageUrls: string[]): string[] =>
     imageUrls
       .map(
-        (url) =>
-          hosting?.rooms.flatMap((r) => r.images).find((i) => i.asset.publicUrl === url)?.id,
+        (url) => hosting?.rooms.flatMap((r) => r.images).find((i) => i.asset.publicUrl === url)?.id,
       )
       .filter((id): id is string => !!id);
 

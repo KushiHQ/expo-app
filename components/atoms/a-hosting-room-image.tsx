@@ -80,9 +80,7 @@ const HostingRoomImage: React.FC<Props> = ({
       )}
       <Pressable
         onPress={() =>
-          selectMode
-            ? onToggleSelect?.(roomIndex, imageIndex)
-            : onPress?.(roomIndex, imageIndex)
+          selectMode ? onToggleSelect?.(roomIndex, imageIndex) : onPress?.(roomIndex, imageIndex)
         }
         style={{ height: '100%', width: '100%' }}
       >

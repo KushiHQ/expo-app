@@ -163,7 +163,10 @@ export default function VideoPlayerView({
     .onUpdate((e) => runOnJS(moveScrub)(e.x))
     .onFinalize((e) => runOnJS(endScrub)(e.x));
 
-  const thumbLeft = Math.max(0, Math.min(frac * trackWidth - THUMB_SIZE / 2, trackWidth - THUMB_SIZE));
+  const thumbLeft = Math.max(
+    0,
+    Math.min(frac * trackWidth - THUMB_SIZE / 2, trackWidth - THUMB_SIZE),
+  );
 
   return (
     <View style={[styles.container, style]}>
@@ -181,10 +184,7 @@ export default function VideoPlayerView({
       {fullscreen && controlsVisible && (
         <>
           <ImageScrim from="top" intensity={0.55} height={insets.top + 120} />
-          <View
-            style={[styles.topBar, { paddingTop: insets.top + 8 }]}
-            pointerEvents="box-none"
-          >
+          <View style={[styles.topBar, { paddingTop: insets.top + 8 }]} pointerEvents="box-none">
             {title ? (
               <ThemedText numberOfLines={1} style={styles.topTitle}>
                 {title}
@@ -233,10 +233,7 @@ export default function VideoPlayerView({
         <>
           <ImageScrim from="bottom" intensity={0.6} height={160} />
           <View
-            style={[
-              styles.bottomBar,
-              { paddingBottom: (fullscreen ? insets.bottom : 0) + 14 },
-            ]}
+            style={[styles.bottomBar, { paddingBottom: (fullscreen ? insets.bottom : 0) + 14 }]}
             pointerEvents="box-none"
           >
             <ThemedText style={styles.time}>

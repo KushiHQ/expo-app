@@ -18,9 +18,7 @@ const RatingPill: React.FC<Props> = ({ children, selected, onSelect }) => {
       className="flex-row items-center gap-2 rounded-full p-1 px-3"
       onPress={() => onSelect?.(children)}
       style={{
-        backgroundColor: selected
-          ? hexToRgba(colors.primary, 0.14)
-          : hexToRgba(colors.text, 0.05),
+        backgroundColor: selected ? hexToRgba(colors.primary, 0.14) : hexToRgba(colors.text, 0.05),
       }}
     >
       <HugeiconsStar

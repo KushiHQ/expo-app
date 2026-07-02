@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { STACK_SCREEN_OPTIONS } from "@/lib/constants/navigation";
+import { STACK_SCREEN_OPTIONS } from '@/lib/constants/navigation';
 import React from 'react';
 import AuthGuard from '@/components/guards/auth-guard';
 

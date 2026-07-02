@@ -1,21 +1,21 @@
-import ListImage from "@/components/atoms/a-list-image";
-import ThemedText from "@/components/atoms/a-themed-text";
-import DetailsLayout from "@/components/layouts/details";
-import { ROOM_ICONS } from "@/components/organisms/o-room-item-card";
-import { Fonts } from "@/lib/constants/theme";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { useHostingQuery } from "@/lib/services/graphql/generated";
-import { Room } from "@/lib/types/enums/hostings";
-import { cast } from "@/lib/types/utils";
-import { hexToRgba } from "@/lib/utils/colors";
-import { SURFACE } from "@/lib/constants/surface";
-import { extractHostingImages, galleryImageUri } from "@/lib/utils/hosting/images";
-import { getAssetResizeUrl } from "@/lib/utils/urls";
-import { Home, Images } from "lucide-react-native";
-import { useLocalSearchParams } from "expo-router";
-import React from "react";
-import { View } from "react-native";
-import { SimpleGrid } from "react-native-super-grid";
+import ListImage from '@/components/atoms/a-list-image';
+import ThemedText from '@/components/atoms/a-themed-text';
+import DetailsLayout from '@/components/layouts/details';
+import { ROOM_ICONS } from '@/components/organisms/o-room-item-card';
+import { Fonts } from '@/lib/constants/theme';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { useHostingQuery } from '@/lib/services/graphql/generated';
+import { Room } from '@/lib/types/enums/hostings';
+import { cast } from '@/lib/types/utils';
+import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
+import { extractHostingImages, galleryImageUri } from '@/lib/utils/hosting/images';
+import { getAssetResizeUrl } from '@/lib/utils/urls';
+import { Home, Images } from 'lucide-react-native';
+import { useLocalSearchParams } from 'expo-router';
+import React from 'react';
+import { View } from 'react-native';
+import { SimpleGrid } from 'react-native-super-grid';
 
 export default function HostingGallery() {
   const { id } = useLocalSearchParams();
@@ -37,9 +37,11 @@ export default function HostingGallery() {
     <DetailsLayout title="Property Gallery">
       <View className="gap-5 pb-8">
         {/* Overview line */}
-        <ThemedText style={{ fontSize: 13, color: hexToRgba(colors.text, 0.5), fontFamily: Fonts.medium }}>
-          {images.length} {images.length === 1 ? "photo" : "photos"} across {rooms.length}{" "}
-          {rooms.length === 1 ? "space" : "spaces"}
+        <ThemedText
+          style={{ fontSize: 13, color: hexToRgba(colors.text, 0.5), fontFamily: Fonts.medium }}
+        >
+          {images.length} {images.length === 1 ? 'photo' : 'photos'} across {rooms.length}{' '}
+          {rooms.length === 1 ? 'space' : 'spaces'}
         </ThemedText>
 
         {rooms.map((room) => {
@@ -88,7 +90,13 @@ export default function HostingGallery() {
                   style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
                 >
                   <Images size={11} color={hexToRgba(colors.text, 0.5)} />
-                  <ThemedText style={{ fontSize: 11, color: hexToRgba(colors.text, 0.55), fontFamily: Fonts.semibold }}>
+                  <ThemedText
+                    style={{
+                      fontSize: 11,
+                      color: hexToRgba(colors.text, 0.55),
+                      fontFamily: Fonts.semibold,
+                    }}
+                  >
                     {photoCount}
                   </ThemedText>
                 </View>
@@ -119,7 +127,7 @@ export default function HostingGallery() {
                     key={item.id}
                     width="100%"
                     height={100}
-                    style={{ height: 100, width: "100%", borderRadius: 14 }}
+                    style={{ height: 100, width: '100%', borderRadius: 14 }}
                     images={images}
                     captions={captions}
                     openable

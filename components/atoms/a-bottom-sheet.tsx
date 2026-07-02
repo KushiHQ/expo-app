@@ -104,7 +104,12 @@ const BottomSheet: FC<BottomSheetProps> = ({ scrollable = true, isVisible, onClo
 
   const rBackdropStyle = useAnimatedStyle(() => {
     return {
-      opacity: interpolate(translateY.value, [0, sheetHeight.value], [0.55, 0], Extrapolation.CLAMP),
+      opacity: interpolate(
+        translateY.value,
+        [0, sheetHeight.value],
+        [0.55, 0],
+        Extrapolation.CLAMP,
+      ),
     };
   });
 

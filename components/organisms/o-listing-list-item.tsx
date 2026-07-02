@@ -52,7 +52,7 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete, onDuplicate }) =>
   const status = hosting.publishStatus || PublishStatus.Draft;
   // Units reuse this row but carry no city/state — hide the location line
   // rather than render an empty ", ".
-  const location = hosting.state ? [hosting.city, hosting.state].filter(Boolean).join(', ') : "_";
+  const location = hosting.state ? [hosting.city, hosting.state].filter(Boolean).join(', ') : '_';
   const statusColor =
     status === PublishStatus.Live
       ? colors.success

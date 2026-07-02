@@ -1,21 +1,21 @@
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as FileSystem from "expo-file-system/legacy";
-import { formMutation } from "@/lib/services/graphql/utils/fetch";
-import { CREATE_UPDATE_HOSTING_ROOM_IMAGE } from "@/lib/services/graphql/requests/mutations/hostings";
-import { generateRNFile } from "@/lib/utils/file";
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system/legacy';
+import { formMutation } from '@/lib/services/graphql/utils/fetch';
+import { CREATE_UPDATE_HOSTING_ROOM_IMAGE } from '@/lib/services/graphql/requests/mutations/hostings';
+import { generateRNFile } from '@/lib/utils/file';
 import type {
   CreateHostingRoomImageMutation,
   CreateHostingRoomImageMutationVariables,
-} from "@/lib/services/graphql/generated";
-import { useHostingRoomsStore } from "./hostings";
+} from '@/lib/services/graphql/generated';
+import { useHostingRoomsStore } from './hostings';
 
 const MAX_CONCURRENT = 3;
 const MAX_ATTEMPTS = 4;
 // Backoff (ms) before retrying attempt 2, 3, 4.
 const BACKOFF_MS = [1500, 4000, 9000];
-const UPLOAD_DIR = (FileSystem.documentDirectory ?? "") + "hosting-uploads/";
+const UPLOAD_DIR = (FileSystem.documentDirectory ?? '') + 'hosting-uploads/';
 // An in-flight upload older than this is force-aborted by the watchdog (belt &
 // suspenders on top of the per-request timeout in formMutation).
 const STUCK_MS = 120_000;
@@ -25,7 +25,7 @@ const WATCHDOG_MS = 30_000;
 
 // "error" = failed but user-retryable; "dead" = unrecoverable (file gone / too
 // old / cancelled) and never auto-resurrected.
-export type ImageUploadStatus = "queued" | "uploading" | "error" | "dead";
+export type ImageUploadStatus = 'queued' | 'uploading' | 'error' | 'dead';
 
 export type UploadTask = {
   /** Persistent local copy uri — also the url shown in the room until it uploads. */
@@ -106,9 +106,8 @@ export const useUploadStore = create<UploadState>()(
         });
 
       const activeCount = (tasks: Record<string, UploadTask>) =>
-        Object.values(tasks).filter(
-          (t) => t.status === "queued" || t.status === "uploading",
-        ).length;
+        Object.values(tasks).filter((t) => t.status === 'queued' || t.status === 'uploading')
+          .length;
 
       const stopWatchdogIfIdle = () => {
         if (watchdog && activeCount(get().tasks) === 0) {
@@ -123,7 +122,7 @@ export const useUploadStore = create<UploadState>()(
           const now = Date.now();
           // Abort any upload that's been in-flight too long → its catch retries/fails.
           Object.values(get().tasks).forEach((t) => {
-            if (t.status === "uploading" && t.startedAt && now - t.startedAt > STUCK_MS) {
+            if (t.status === 'uploading' && t.startedAt && now - t.startedAt > STUCK_MS) {
               controllers.get(t.uri)?.abort();
             }
           });
@@ -135,22 +134,22 @@ export const useUploadStore = create<UploadState>()(
       const pump = () => {
         const list = Object.values(get().tasks);
         if (activeCount(get().tasks) > 0) ensureWatchdog();
-        const inFlight = list.filter((t) => t.status === "uploading").length;
+        const inFlight = list.filter((t) => t.status === 'uploading').length;
         const slots = MAX_CONCURRENT - inFlight;
         if (slots <= 0) return;
         list
-          .filter((t) => t.status === "queued")
+          .filter((t) => t.status === 'queued')
           .slice(0, slots)
           .forEach((t) => void runOne(t.uri));
       };
 
       const runOne = async (uri: string) => {
         const task = get().tasks[uri];
-        if (!task || task.status === "uploading") return;
+        if (!task || task.status === 'uploading') return;
 
         const controller = new AbortController();
         controllers.set(uri, controller);
-        setStatus(uri, { status: "uploading", startedAt: Date.now() });
+        setStatus(uri, { status: 'uploading', startedAt: Date.now() });
 
         try {
           const res = await formMutation<
@@ -171,7 +170,7 @@ export const useUploadStore = create<UploadState>()(
           );
 
           const url = res.data?.createHostingRoomImage.data?.asset.publicUrl;
-          if (res.error || !url) throw res.error ?? new Error("Upload failed");
+          if (res.error || !url) throw res.error ?? new Error('Upload failed');
 
           useHostingRoomsStore.getState().replaceRoomImageUrl(task.roomId, uri, url);
           deleteCopy(uri);
@@ -193,11 +192,11 @@ export const useUploadStore = create<UploadState>()(
           controllers.delete(uri);
           const attempts = (get().tasks[uri]?.attempts ?? 0) + 1;
           if (attempts < MAX_ATTEMPTS) {
-            setStatus(uri, { status: "queued", attempts, startedAt: undefined });
+            setStatus(uri, { status: 'queued', attempts, startedAt: undefined });
             const delay = BACKOFF_MS[Math.min(attempts - 1, BACKOFF_MS.length - 1)];
             setTimeout(pump, delay);
           } else {
-            setStatus(uri, { status: "error", attempts, startedAt: undefined });
+            setStatus(uri, { status: 'error', attempts, startedAt: undefined });
           }
           // Reset counters if this failure leaves nothing active.
           set((s) => (activeCount(s.tasks) === 0 ? { done: 0, total: 0 } : s));
@@ -216,7 +215,7 @@ export const useUploadStore = create<UploadState>()(
           await ensureDir();
           for (const item of items) {
             const localUri = item.uri;
-            const ext = (localUri.split(".").pop() || "jpg").split("?")[0].slice(0, 5);
+            const ext = (localUri.split('.').pop() || 'jpg').split('?')[0].slice(0, 5);
             const dest = `${UPLOAD_DIR}${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
             let uri = localUri;
             try {
@@ -233,7 +232,7 @@ export const useUploadStore = create<UploadState>()(
                 [uri]: {
                   uri,
                   roomId,
-                  status: "queued",
+                  status: 'queued',
                   attempts: 0,
                   createdAt: Date.now(),
                   replaceImageId: item.replaceImageId,
@@ -247,15 +246,17 @@ export const useUploadStore = create<UploadState>()(
 
         retry: (uri) => {
           if (!get().tasks[uri]) return;
-          setStatus(uri, { status: "queued", attempts: 0, startedAt: undefined });
+          setStatus(uri, { status: 'queued', attempts: 0, startedAt: undefined });
           pump();
         },
 
         retryAll: () => {
           // Only "error" is retryable; "dead" tasks (file gone) can't be recovered.
           Object.values(get().tasks)
-            .filter((t) => t.status === "error")
-            .forEach((t) => setStatus(t.uri, { status: "queued", attempts: 0, startedAt: undefined }));
+            .filter((t) => t.status === 'error')
+            .forEach((t) =>
+              setStatus(t.uri, { status: 'queued', attempts: 0, startedAt: undefined }),
+            );
           pump();
         },
 
@@ -267,9 +268,7 @@ export const useUploadStore = create<UploadState>()(
             if (!s.tasks[uri]) return s;
             const next = { ...s.tasks };
             delete next[uri];
-            return activeCount(next) === 0
-              ? { tasks: next, done: 0, total: 0 }
-              : { tasks: next };
+            return activeCount(next) === 0 ? { tasks: next, done: 0, total: 0 } : { tasks: next };
           });
           pump();
           stopWatchdogIfIdle();
@@ -296,7 +295,7 @@ export const useUploadStore = create<UploadState>()(
               const createdAt = t.createdAt ?? now;
               // Reap tasks too old to trust.
               if (now - createdAt > MAX_TASK_AGE_MS) {
-                next[t.uri] = { ...t, createdAt, status: "dead", startedAt: undefined };
+                next[t.uri] = { ...t, createdAt, status: 'dead', startedAt: undefined };
                 continue;
               }
               // Verify the local copy still exists; if not, it's unrecoverable.
@@ -307,15 +306,15 @@ export const useUploadStore = create<UploadState>()(
                 exists = true; // can't tell → don't kill it
               }
               if (!exists) {
-                next[t.uri] = { ...t, createdAt, status: "dead", startedAt: undefined };
+                next[t.uri] = { ...t, createdAt, status: 'dead', startedAt: undefined };
                 continue;
               }
               // Re-queue only interrupted in-flight uploads; keep attempts so a
               // permanently-failing upload can't loop forever across sessions.
               // Leave "error"/"dead" alone (user retries/clears them).
               next[t.uri] =
-                t.status === "uploading"
-                  ? { ...t, createdAt, status: "queued", startedAt: undefined }
+                t.status === 'uploading'
+                  ? { ...t, createdAt, status: 'queued', startedAt: undefined }
                   : { ...t, createdAt };
             }
             set({ tasks: next });
@@ -330,7 +329,9 @@ export const useUploadStore = create<UploadState>()(
                 entries.map((name) =>
                   referenced.has(UPLOAD_DIR + name)
                     ? Promise.resolve()
-                    : FileSystem.deleteAsync(UPLOAD_DIR + name, { idempotent: true }).catch(() => {}),
+                    : FileSystem.deleteAsync(UPLOAD_DIR + name, { idempotent: true }).catch(
+                        () => {},
+                      ),
                 ),
               );
             } catch {
@@ -341,7 +342,7 @@ export const useUploadStore = create<UploadState>()(
       };
     },
     {
-      name: "hosting-uploads-store",
+      name: 'hosting-uploads-store',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (s) => ({ tasks: s.tasks, done: s.done, total: s.total }),
       onRehydrateStorage: () => (state) => {

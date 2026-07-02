@@ -1,30 +1,27 @@
-import { View, Pressable } from "react-native";
-import ThemedText from "../atoms/a-themed-text";
-import SectionHeader from "@/components/atoms/a-section-header";
-import { Images } from "lucide-react-native";
-import { Fonts } from "@/lib/constants/theme";
-import React from "react";
-import { Link } from "expo-router";
-import { Image } from "expo-image";
-import { PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { hexToRgba } from "@/lib/utils/colors";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { HostingQuery } from "@/lib/services/graphql/generated";
-import { SURFACE } from "@/lib/constants/surface";
-import ListImage from "../atoms/a-list-image";
-import VideoCard from "./m-video-card";
-import { extractHostingImages } from "@/lib/utils/hosting/images";
+import { View, Pressable } from 'react-native';
+import ThemedText from '../atoms/a-themed-text';
+import SectionHeader from '@/components/atoms/a-section-header';
+import { Images } from 'lucide-react-native';
+import { Fonts } from '@/lib/constants/theme';
+import React from 'react';
+import { Link } from 'expo-router';
+import { Image } from 'expo-image';
+import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { hexToRgba } from '@/lib/utils/colors';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { HostingQuery } from '@/lib/services/graphql/generated';
+import { SURFACE } from '@/lib/constants/surface';
+import ListImage from '../atoms/a-list-image';
+import VideoCard from './m-video-card';
+import { extractHostingImages } from '@/lib/utils/hosting/images';
 
 type Props = {
-  hosting?: HostingQuery["hosting"];
+  hosting?: HostingQuery['hosting'];
 };
 
 const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
   const colors = useThemeColors();
-  const { captions, images } = React.useMemo(
-    () => extractHostingImages(hosting),
-    [hosting],
-  );
+  const { captions, images } = React.useMemo(() => extractHostingImages(hosting), [hosting]);
 
   return (
     <View
@@ -36,11 +33,7 @@ const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
         title="Gallery"
         action={
           <Link href={`/hostings/${hosting?.id}/gallery/`}>
-            <ThemedText
-              className="underline"
-              content="tinted"
-              style={{ fontSize: 12 }}
-            >
+            <ThemedText className="underline" content="tinted" style={{ fontSize: 12 }}>
               See All
             </ThemedText>
           </Link>
@@ -52,7 +45,7 @@ const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
             source={hosting.video.asset.publicUrl}
             durationSeconds={hosting.video.durationSeconds ?? undefined}
             title="Property tour"
-            style={{ width: "100%", height: 200, borderRadius: 12 }}
+            style={{ width: '100%', height: 200, borderRadius: 12 }}
           />
         </View>
       )}
@@ -64,7 +57,7 @@ const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
               height={80}
               style={{
                 height: 80,
-                width: "100%",
+                width: '100%',
                 borderRadius: 12,
                 maxWidth: 150,
               }}
@@ -85,7 +78,7 @@ const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
                 }}
                 style={{
                   height: 80,
-                  width: "100%",
+                  width: '100%',
                   borderRadius: 12,
                   maxWidth: 150,
                 }}
@@ -101,10 +94,10 @@ const HostingGalleryComponent: React.FC<Props> = ({ hosting }) => {
                 style={{
                   borderRadius: 12,
                   maxWidth: 150,
-                  backgroundColor: hexToRgba("#000000", 0.55),
+                  backgroundColor: hexToRgba('#000000', 0.55),
                 }}
               >
-                <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 14, color: "#fff" }}>
+                <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 14, color: '#fff' }}>
                   +{(images ?? []).length - 3} more
                 </ThemedText>
               </View>

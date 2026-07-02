@@ -9,13 +9,13 @@
  */
 export const STACK_SCREEN_OPTIONS = {
   headerShown: false,
-  animation: "slide_from_right",
+  animation: 'slide_from_right',
   gestureEnabled: true,
 } as const;
 
 export const MODAL_SCREEN_OPTIONS = {
   headerShown: false,
-  presentation: "fullScreenModal",
-  animation: "slide_from_bottom",
+  presentation: 'fullScreenModal',
+  animation: 'slide_from_bottom',
   gestureEnabled: true,
 } as const;

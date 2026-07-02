@@ -114,8 +114,20 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
   style,
   children,
 }) => {
-  const { axis, activeIndex, targetIndex, translation, activeSize, sizes, count, released, estimatedSize, setSize, commit, enabled } =
-    controller;
+  const {
+    axis,
+    activeIndex,
+    targetIndex,
+    translation,
+    activeSize,
+    sizes,
+    count,
+    released,
+    estimatedSize,
+    setSize,
+    commit,
+    enabled,
+  } = controller;
 
   const pan = React.useMemo(
     () =>
@@ -171,14 +183,29 @@ export const DraggableItem: React.FC<DraggableItemProps> = ({
             translation.value = 0;
           }
         }),
-    [enabled, longPressMs, index, axis, activeIndex, targetIndex, translation, activeSize, sizes, count, released, estimatedSize, commit],
+    [
+      enabled,
+      longPressMs,
+      index,
+      axis,
+      activeIndex,
+      targetIndex,
+      translation,
+      activeSize,
+      sizes,
+      count,
+      released,
+      estimatedSize,
+      commit,
+    ],
   );
 
   const animatedStyle = useAnimatedStyle(() => {
     const active = activeIndex.value;
     if (active === -1) {
       return {
-        transform: axis === 'y' ? [{ translateY: 0 }, { scale: 1 }] : [{ translateX: 0 }, { scale: 1 }],
+        transform:
+          axis === 'y' ? [{ translateY: 0 }, { scale: 1 }] : [{ translateX: 0 }, { scale: 1 }],
         zIndex: 0,
       };
     }

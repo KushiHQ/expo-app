@@ -19,8 +19,7 @@ const EmptyList: React.FC<Props> = ({ message, buttonTitle, onButtonPress }) => 
 
   return (
     <View className="items-center justify-center gap-6 p-8 py-16">
-      <View
-      >
+      <View>
         <Image
           style={{
             width: 190,
