@@ -49,11 +49,25 @@ const NON_KEYED = [
 	'AdminPropertyTypeResponse',
 ];
 
-// Owned value objects with no standalone identity — always embed them under
-// their parent entity (they're 1:1 and never queried on their own). Some are
-// also selected without `id` in places, which otherwise makes graphcache warn
-// ("no key could be generated…"). Embedding is the correct, consistent choice.
-const EMBEDDED = ['Profile', 'Kyc', 'KycStatus', 'HostingReviewAverage', 'Bank'];
+// Types that graphcache should always EMBED under their parent (never normalize),
+// so the same object isn't normalized in one query and embedded in another —
+// that inconsistency serves stale/partial data after navigation. Two groups:
+//   1. Owned value objects with no standalone identity (Profile, Kyc, …).
+//   2. Content/config entities that ARE often selected without `id` across the
+//      app (Asset, HostingRoomImage, PropertyTypeConfig). We don't rely on their
+//      normalization — image edits/room changes reconcile via query refetch and
+//      the asset.lastUpdated cache-bust — so embedding them consistently is
+//      correct and silences the "no key could be generated" warnings.
+const EMBEDDED = [
+	'Profile',
+	'Kyc',
+	'KycStatus',
+	'HostingReviewAverage',
+	'Bank',
+	'Asset',
+	'HostingRoomImage',
+	'PropertyTypeConfig',
+];
 
 const keys = Object.fromEntries(
 	[...NON_KEYED, ...EMBEDDED].map((t) => [t, () => null]),
