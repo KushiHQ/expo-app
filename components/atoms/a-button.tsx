@@ -94,6 +94,14 @@ const Button: React.FC<Props> = ({
   // it falls through to the solid `typeColor` and reads as a shadow-less primary.
   const isTinted = type === 'tinted';
 
+  // An outline's border must stay visible on the near-black background. Vivid
+  // types (primary/error/accent) tint it to their own colour; neutral/surface
+  // types (shade, background, or no type) have colours that blend into the bg
+  // — e.g. `shade` (#0F172A) over (#020617) is invisible — so they fall back to
+  // a neutral wash of the text colour instead.
+  const isVividType = type === 'primary' || type === 'error' || type === 'accent';
+  const outlineColor = isVividType ? baseColor : colors.text;
+
   const isSolid = variant !== 'outline' && variant !== 'soft' && variant !== 'text';
   const isPrimary = type === 'primary' && isSolid;
   const isError = type === 'error' && isSolid;
@@ -112,9 +120,9 @@ const Button: React.FC<Props> = ({
         // 10% wash — effectively styleless on the near-black background, and any
         // caller-supplied `borderColor` was dead for want of a `borderWidth`.)
         {
-          backgroundColor: hexToRgba(baseColor, 0.06),
+          backgroundColor: hexToRgba(outlineColor, 0.05),
           borderWidth: 1.5,
-          borderColor: hexToRgba(baseColor, 0.55),
+          borderColor: hexToRgba(outlineColor, isVividType ? 0.55 : 0.28),
         }
       : variant === 'soft'
         ? { backgroundColor: hexToRgba(baseColor, 0.16) }

@@ -73,6 +73,11 @@ const EMBEDDED = [
   'TenancyTemplate',
   'SubClauseVariable',
   'SubClauseValue',
+  // Host-analytics value objects (hostAnalytics + its revenue/growth series):
+  // aggregates and time-series points with no `id`, always read nested.
+  'HostAnalytics',
+  'TimeSeriesData',
+  'AnalyticsDataPoint',
 ];
 
 const keys = Object.fromEntries([...NON_KEYED, ...EMBEDDED].map((t) => [t, () => null])) as Record<
