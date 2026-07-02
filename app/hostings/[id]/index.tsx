@@ -64,7 +64,7 @@ export default function HostingDetails() {
     // link in BOTH duplicates it. On iOS keep the URL only in `url` (nicer link
     // preview too); on Android `url` is ignored, so the link must live in the
     // message text.
-    const caption = `Check out this amazing property on Kushi: ${hosting?.title}`;
+    const caption = `Check out this property on Kushi: ${hosting?.title}`;
     try {
       await Share.share(
         Platform.OS === 'ios'
