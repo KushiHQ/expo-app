@@ -81,6 +81,32 @@ const EMBEDDED = [
   // AI-generated title/description suggestion — a transient value object with
   // no `id`, read once per aiHostingContentSuggestion call.
   'HostingContentSuggestion',
+  // ── Full sweep of remaining id-less object types ────────────────────────
+  // graphcache already embeds any keyless type by default; declaring keys=null
+  // just makes it intentional and silences the "no key could be generated"
+  // warning. None of these carry an `id`, so this is behaviourally a no-op —
+  // it only stops the warning whack-a-mole. To regenerate after a schema
+  // change: list object types in generated/index.ts that have a `__typename`
+  // but no `id`/`_id` field (see scratchpad sweep.mjs).
+  'AdminAuditLogConnection',
+  'AdminDashboardStats',
+  'AdminMonthlyGrowthPoint',
+  'AdminVerificationTierDocumentRequirement',
+  'AiSearchPrediction',
+  'AiSearchPredictionFilter',
+  'AuthToken',
+  'BookingAssistContext',
+  'BookingAssistHandler',
+  'FeeLineItem',
+  'GuestAnalytics',
+  'GuestFormData',
+  'HostingCounts',
+  'HostingFees',
+  'InteractionAnswerSuggestions',
+  'LandlordMandateConfig',
+  'TenantMandateConfig',
+  'VerificationLogEntry',
+  'VideoUploadTarget',
 ];
 
 const keys = Object.fromEntries([...NON_KEYED, ...EMBEDDED].map((t) => [t, () => null])) as Record<
