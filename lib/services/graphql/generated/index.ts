@@ -4216,7 +4216,7 @@ export type BookingApplicationsQueryVariables = Exact<{
 }>;
 
 
-export type BookingApplicationsQuery = { __typename?: 'Query', bookingApplications: Array<{ __typename?: 'BookingApplication', commencementDate?: string | null, fullName?: string | null, createdAt: string, status: BookingApplicationStatus, id: string, intervalMultiplier?: number | null, booking?: { __typename?: 'Booking', id: string } | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, guest: { __typename?: 'Guest', user: { __typename?: 'User', profile: { __typename?: 'Profile', fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } } } }> };
+export type BookingApplicationsQuery = { __typename?: 'Query', bookingApplications: Array<{ __typename?: 'BookingApplication', commencementDate?: string | null, fullName?: string | null, createdAt: string, status: BookingApplicationStatus, id: string, intervalMultiplier?: number | null, booking?: { __typename?: 'Booking', id: string } | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } } } }> };
 
 export type CalculateHostingFeesQueryVariables = Exact<{
   hostingId: Scalars['String']['input'];
@@ -4231,7 +4231,7 @@ export type BookingApplicationQueryVariables = Exact<{
 }>;
 
 
-export type BookingApplicationQuery = { __typename?: 'Query', bookingApplication: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, commencementDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, guest: { __typename?: 'Guest', user: { __typename?: 'User', profile: { __typename?: 'Profile', fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } } }, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes: GuestFormOccupancyType, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null, bookingAggrement?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, booking?: { __typename?: 'Booking', id: string } | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null } } };
+export type BookingApplicationQuery = { __typename?: 'Query', bookingApplication: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, commencementDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } } }, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes: GuestFormOccupancyType, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null, bookingAggrement?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, booking?: { __typename?: 'Booking', id: string } | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null } } };
 
 export type BookingsQueryVariables = Exact<{
   filter?: InputMaybe<BookingFilterInput>;
@@ -4246,7 +4246,7 @@ export type BookingQueryVariables = Exact<{
 }>;
 
 
-export type BookingQuery = { __typename?: 'Query', booking: { __typename?: 'Booking', id: string, bookingReference: string, expiresAt?: string | null, paymentStatus: PaymentStatus, createdAt: string, commencementDate?: string | null, expiryDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, fullName: string, email: string, paymentMethod?: string | null, status?: BookingStatus | null, cautionFee?: any | null, serviceCharge?: any | null, legalFee?: any | null, stampDuty?: any | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, propertyType?: string | null, street?: string | null, landmarks?: string | null, averageRating?: number | null, totalRatings?: number | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string, status: TransactionStatus, reference?: string | null } | null, tenancyAgreementAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null, guest: { __typename?: 'Guest', user: { __typename?: 'User', id: string } }, userReview?: { __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, checkIn?: number | null, accuracy?: number | null, cleanliness?: number | null, communication?: number | null, value?: number | null, location?: number | null, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } } | null, bookingApplication: { __typename?: 'BookingApplication', id: string, intervalMultiplier?: number | null, commencementDate?: string | null }, feeLineItems: Array<{ __typename?: 'FeeLineItem', key: string, label: string, description: string, amount: any }> } };
+export type BookingQuery = { __typename?: 'Query', booking: { __typename?: 'Booking', id: string, bookingReference: string, expiresAt?: string | null, paymentStatus: PaymentStatus, createdAt: string, commencementDate?: string | null, expiryDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, fullName: string, email: string, paymentMethod?: string | null, status?: BookingStatus | null, cautionFee?: any | null, serviceCharge?: any | null, legalFee?: any | null, stampDuty?: any | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, propertyType?: string | null, street?: string | null, landmarks?: string | null, averageRating?: number | null, totalRatings?: number | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string, status: TransactionStatus, reference?: string | null } | null, tenancyAgreementAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string } }, userReview?: { __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, checkIn?: number | null, accuracy?: number | null, cleanliness?: number | null, communication?: number | null, value?: number | null, location?: number | null, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } } | null, bookingApplication: { __typename?: 'BookingApplication', id: string, intervalMultiplier?: number | null, commencementDate?: string | null }, feeLineItems: Array<{ __typename?: 'FeeLineItem', key: string, label: string, description: string, amount: any }> } };
 
 export type GuestBookingTenancyAgreementPreviewQueryVariables = Exact<{
   bookingId: Scalars['String']['input'];
@@ -6203,7 +6203,9 @@ export const BookingApplicationsDocument = gql`
       }
     }
     guest {
+      id
       user {
+        id
         profile {
           fullName
           image {
@@ -6259,7 +6261,9 @@ export const BookingApplicationDocument = gql`
     createdAt
     lastUpdated
     guest {
+      id
       user {
+        id
         profile {
           fullName
           image {
@@ -6426,6 +6430,7 @@ export const BookingDocument = gql`
       publicUrl
     }
     guest {
+      id
       user {
         id
       }

@@ -33,7 +33,9 @@ export const BOOKING_APPLICATIONS = gql`
         }
       }
       guest {
+        id
         user {
+          id
           profile {
             fullName
             image {
@@ -83,7 +85,9 @@ export const BOOKING_APPLICATION = gql`
       createdAt
       lastUpdated
       guest {
+        id
         user {
+          id
           profile {
             fullName
             image {
@@ -244,6 +248,7 @@ export const BOOKING_QUERY = gql`
         publicUrl
       }
       guest {
+        id
         user {
           id
         }

@@ -78,6 +78,9 @@ const EMBEDDED = [
   'HostAnalytics',
   'TimeSeriesData',
   'AnalyticsDataPoint',
+  // AI-generated title/description suggestion — a transient value object with
+  // no `id`, read once per aiHostingContentSuggestion call.
+  'HostingContentSuggestion',
 ];
 
 const keys = Object.fromEntries([...NON_KEYED, ...EMBEDDED].map((t) => [t, () => null])) as Record<
