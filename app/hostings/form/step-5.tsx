@@ -1,18 +1,20 @@
-import Button from '@/components/atoms/a-button';
-import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
-import LoadingModal from '@/components/atoms/a-loading-modal';
-import ThemedText from '@/components/atoms/a-themed-text';
-import DetailsLayout from '@/components/layouts/details';
-import BankSelectOption from '@/components/molecules/m-bank-select-option';
-import HostingStepper from '@/components/molecules/m-hosting-stepper';
-import PaymentDetailsSelectOption from '@/components/molecules/m-payment-details-seclect-option';
-import SectionCard from '@/components/molecules/m-section-card';
-import SelectInput, { SelectOption } from '@/components/molecules/m-select-input';
-import SelectedPaymentDetails from '@/components/molecules/m-selected-payment-detail';
-import { Fonts } from '@/lib/constants/theme';
-import { showTenancySteps } from '@/lib/constants/hosting/step-rules';
-import { useHostingForm } from '@/lib/hooks/hosting-form';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import Button from "@/components/atoms/a-button";
+import FloatingLabelInput from "@/components/atoms/a-floating-label-input";
+import LoadingModal from "@/components/atoms/a-loading-modal";
+import ThemedText from "@/components/atoms/a-themed-text";
+import DetailsLayout from "@/components/layouts/details";
+import BankSelectOption from "@/components/molecules/m-bank-select-option";
+import HostingStepper from "@/components/molecules/m-hosting-stepper";
+import PaymentDetailsSelectOption from "@/components/molecules/m-payment-details-seclect-option";
+import SectionCard from "@/components/molecules/m-section-card";
+import SelectInput, {
+  SelectOption,
+} from "@/components/molecules/m-select-input";
+import SelectedPaymentDetails from "@/components/molecules/m-selected-payment-detail";
+import { Fonts } from "@/lib/constants/theme";
+import { showTenancySteps } from "@/lib/constants/hosting/step-rules";
+import { useHostingForm } from "@/lib/hooks/hosting-form";
+import { useThemeColors } from "@/lib/hooks/use-theme-color";
 import {
   Bank,
   ListingType,
@@ -22,15 +24,15 @@ import {
   useHostPaymentDetailsQuery,
   useResolveBankAccountQuery,
   VerifyAccountInput,
-} from '@/lib/services/graphql/generated';
-import { hexToRgba } from '@/lib/utils/colors';
-import { handleError } from '@/lib/utils/error';
-import { useLocalSearchParams } from 'expo-router';
-import { useRouter } from '@/lib/hooks/use-router';
-import { CircleDollarSign, Plus, Wallet } from 'lucide-react-native';
-import React, { useRef } from 'react';
-import { TextInput, View } from 'react-native';
-import { toast } from '@/lib/hooks/use-toast';
+} from "@/lib/services/graphql/generated";
+import { hexToRgba } from "@/lib/utils/colors";
+import { handleError } from "@/lib/utils/error";
+import { useLocalSearchParams } from "expo-router";
+import { useRouter } from "@/lib/hooks/use-router";
+import { CircleDollarSign, Plus, Wallet } from "lucide-react-native";
+import React, { useRef } from "react";
+import { TextInput, View } from "react-native";
+import { toast } from "@/lib/hooks/use-toast";
 
 export default function NewHostingStep5() {
   const router = useRouter();
@@ -39,23 +41,32 @@ export default function NewHostingStep5() {
   const cautionFeeRef = useRef<TextInput>(null);
   const maxOccupantsRef = useRef<TextInput>(null);
   const [{ data: banksData }] = useBanksQuery({
-    requestPolicy: 'cache-first',
+    requestPolicy: "cache-first",
   });
   const { id } = useLocalSearchParams();
   const { input, mutate, updateInput, hosting, mutating } = useHostingForm(id);
-  const [selectedAccount, setSelectedAcount] = React.useState(hosting?.paymentDetails);
-  const [newAccountInput, setNewAccountInput] = React.useState({} as VerifyAccountInput);
-  const [{ data: hostPaymentDetails }, refetchPaymentDetails] = useHostPaymentDetailsQuery({
-    requestPolicy: 'network-only',
-  });
-  const [{ fetching: resolving, data: resolveData, error: resolveError }, verifyAccount] =
-    useResolveBankAccountQuery({
-      variables: { input: newAccountInput },
-      pause: true,
+  const [selectedAccount, setSelectedAcount] = React.useState(
+    hosting?.paymentDetails,
+  );
+  const [newAccountInput, setNewAccountInput] = React.useState(
+    {} as VerifyAccountInput,
+  );
+  const [{ data: hostPaymentDetails }, refetchPaymentDetails] =
+    useHostPaymentDetailsQuery({
+      requestPolicy: "network-only",
     });
+  const [
+    { fetching: resolving, data: resolveData, error: resolveError },
+    verifyAccount,
+  ] = useResolveBankAccountQuery({
+    variables: { input: newAccountInput },
+    pause: true,
+  });
 
-  const [{ fetching: creatingPaymentDetail, error: savePaymentDetailsError }, savePaymentDetails] =
-    useCreateUpdateHostPaymentDetailsMutation();
+  const [
+    { fetching: creatingPaymentDetail, error: savePaymentDetailsError },
+    savePaymentDetails,
+  ] = useCreateUpdateHostPaymentDetailsMutation();
 
   const selectedAccountString = React.useMemo(() => {
     if (selectedAccount) {
@@ -86,8 +97,8 @@ export default function NewHostingStep5() {
         if (res.data?.createUpdateHostPaymentDetails.data) {
           const data = res.data.createUpdateHostPaymentDetails;
           toast.show({
-            type: 'success',
-            text1: 'Success',
+            type: "success",
+            text1: "Success",
             text2: data.message,
           });
           setSelectedAcount(res.data?.createUpdateHostPaymentDetails.data);
@@ -106,21 +117,23 @@ export default function NewHostingStep5() {
 
   const handleMutate = () => {
     updateInput({ paymentDetailsId: selectedAccount?.id });
-    mutate({ input: { ...input, paymentDetailsId: selectedAccount?.id } }).then((res) => {
-      if (res.error) handleError(res.error);
-      if (res.data?.createOrUpdateHosting) {
-        router.push(
-          showTenancySteps(hosting?.listingType, hosting?.propertyType)
-            ? `/hostings/form/step-6?id=${res.data?.createOrUpdateHosting.data?.id}`
-            : `/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`,
-        );
-        toast.show({
-          type: 'success',
-          text1: 'Success',
-          text2: res.data.createOrUpdateHosting.message,
-        });
-      }
-    });
+    mutate({ input: { ...input, paymentDetailsId: selectedAccount?.id } }).then(
+      (res) => {
+        if (res.error) handleError(res.error);
+        if (res.data?.createOrUpdateHosting) {
+          router.push(
+            showTenancySteps(hosting?.listingType, hosting?.propertyType)
+              ? `/hostings/form/step-6?id=${res.data?.createOrUpdateHosting.data?.id}`
+              : `/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`,
+          );
+          toast.show({
+            type: "success",
+            text1: "Success",
+            text2: res.data.createOrUpdateHosting.message,
+          });
+        }
+      },
+    );
   };
 
   const loading = creatingPaymentDetail || resolving || mutating;
@@ -136,7 +149,11 @@ export default function NewHostingStep5() {
           <HostingStepper
             onPress={handleMutate}
             loading={mutating}
-            disabled={!selectedAccount || !input.price || (!isSale && !input.paymentInterval)}
+            disabled={
+              !selectedAccount ||
+              !input.price ||
+              (!isSale && !input.paymentInterval)
+            }
             step={6}
           />
         }
@@ -146,7 +163,11 @@ export default function NewHostingStep5() {
           <SectionCard
             icon={<CircleDollarSign size={16} color={colors.primary} />}
             title="Pricing"
-            subtitle={isSale ? 'Set the sale price' : 'Set the rental price and optional fees'}
+            subtitle={
+              isSale
+                ? "Set the sale price"
+                : "Set the rental price and optional fees"
+            }
           >
             {isSale ? (
               <FloatingLabelInput
@@ -156,7 +177,7 @@ export default function NewHostingStep5() {
                 value={Number(input.price).toLocaleString()}
                 onChangeText={(v) =>
                   updateInput({
-                    price: v.replace('₦', '').replaceAll(',', ''),
+                    price: v.replace("₦", "").replaceAll(",", ""),
                   })
                 }
                 placeholder="₦ 0"
@@ -165,7 +186,7 @@ export default function NewHostingStep5() {
               />
             ) : (
               <>
-                <View style={{ flexDirection: 'row', gap: 12 }}>
+                <View style={{ flexDirection: "row", gap: 12 }}>
                   <View style={{ flex: 1 }}>
                     <SelectInput
                       focused
@@ -174,17 +195,22 @@ export default function NewHostingStep5() {
                       defaultValue={
                         input.paymentInterval
                           ? {
-                              label: input.paymentInterval,
-                              value: input.paymentInterval,
-                            }
+                            label: input.paymentInterval,
+                            value: input.paymentInterval,
+                          }
                           : undefined
                       }
-                      onSelect={(v) => updateInput({ paymentInterval: v.value })}
+                      onSelect={(v) =>
+                        updateInput({ paymentInterval: v.value })
+                      }
                       options={Object.keys(PaymentInterval).map((v) => ({
-                        label: PaymentInterval[v as keyof typeof PaymentInterval]
-                          .split('_')
-                          .join(' '),
-                        value: PaymentInterval[v as keyof typeof PaymentInterval],
+                        label: PaymentInterval[
+                          v as keyof typeof PaymentInterval
+                        ]
+                          .split("_")
+                          .join(" "),
+                        value:
+                          PaymentInterval[v as keyof typeof PaymentInterval],
                       }))}
                       renderItem={SelectOption}
                     />
@@ -197,7 +223,7 @@ export default function NewHostingStep5() {
                       value={Number(input.price).toLocaleString()}
                       onChangeText={(v) =>
                         updateInput({
-                          price: v.replace('₦', '').replaceAll(',', ''),
+                          price: v.replace("₦", "").replaceAll(",", ""),
                         })
                       }
                       placeholder="₦ 0"
@@ -208,7 +234,7 @@ export default function NewHostingStep5() {
                   </View>
                 </View>
 
-                <View style={{ flexDirection: 'row', gap: 12 }}>
+                <View style={{ flexDirection: "row", gap: 12 }}>
                   <View style={{ flex: 1 }}>
                     <FloatingLabelInput
                       ref={serviceChargeRef}
@@ -222,7 +248,7 @@ export default function NewHostingStep5() {
                       }
                       onChangeText={(v) =>
                         updateInput({
-                          serviceCharge: v.replace('₦', '').replaceAll(',', ''),
+                          serviceCharge: v.replace("₦", "").replaceAll(",", ""),
                         })
                       }
                       placeholder="Optional"
@@ -238,11 +264,13 @@ export default function NewHostingStep5() {
                       inputMode="numeric"
                       label="Caution Fee"
                       value={
-                        input.cautionFee ? Number(input.cautionFee).toLocaleString() : undefined
+                        input.cautionFee
+                          ? Number(input.cautionFee).toLocaleString()
+                          : undefined
                       }
                       onChangeText={(v) =>
                         updateInput({
-                          cautionFee: v.replace('₦', '').replaceAll(',', ''),
+                          cautionFee: v.replace("₦", "").replaceAll(",", ""),
                         })
                       }
                       placeholder="Optional"
@@ -265,8 +293,14 @@ export default function NewHostingStep5() {
             {selectedAccount ? (
               <View style={{ gap: 12 }}>
                 <SelectedPaymentDetails details={selectedAccount} />
-                <Button variant="outline" type="shade" onPress={() => setSelectedAcount(undefined)}>
-                  <ThemedText style={{ fontSize: 13, color: hexToRgba(colors.text, 0.6) }}>
+                <Button
+                  variant="outline"
+                  type="shade"
+                  onPress={() => setSelectedAcount(undefined)}
+                >
+                  <ThemedText
+                    style={{ fontSize: 13, color: hexToRgba(colors.text, 0.6) }}
+                  >
                     Change Account
                   </ThemedText>
                 </Button>
@@ -281,7 +315,7 @@ export default function NewHostingStep5() {
                         fontSize: 12,
                         fontFamily: Fonts.medium,
                         color: hexToRgba(colors.text, 0.5),
-                        textTransform: 'uppercase',
+                        textTransform: "uppercase",
                         letterSpacing: 0.8,
                       }}
                     >
@@ -306,8 +340,8 @@ export default function NewHostingStep5() {
                 {/* Divider */}
                 <View
                   style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
+                    flexDirection: "row",
+                    alignItems: "center",
                     gap: 12,
                   }}
                 >
@@ -326,8 +360,8 @@ export default function NewHostingStep5() {
                     }}
                   >
                     {(hostPaymentDetails?.hostPaymentDetails ?? []).length > 0
-                      ? 'OR ADD NEW'
-                      : 'ADD ACCOUNT'}
+                      ? "OR ADD NEW"
+                      : "ADD ACCOUNT"}
                   </ThemedText>
                   <View
                     style={{
@@ -345,7 +379,7 @@ export default function NewHostingStep5() {
                       fontSize: 12,
                       fontFamily: Fonts.medium,
                       color: hexToRgba(colors.text, 0.5),
-                      textTransform: 'uppercase',
+                      textTransform: "uppercase",
                       letterSpacing: 0.8,
                     }}
                   >
@@ -355,7 +389,9 @@ export default function NewHostingStep5() {
                     focused
                     inputMode="numeric"
                     label="Account Number"
-                    onChangeText={(v) => setNewAccountInput((c) => ({ ...c, accountNumber: v }))}
+                    onChangeText={(v) =>
+                      setNewAccountInput((c) => ({ ...c, accountNumber: v }))
+                    }
                     placeholder="10-digit account number"
                   />
                   <SelectInput
@@ -364,8 +400,10 @@ export default function NewHostingStep5() {
                     searchField="name"
                     label="Bank"
                     placeholder="Select your bank"
-                    onSelect={(v) => setNewAccountInput((c) => ({ ...c, bankCode: v.code }))}
-                    getLabelString={(v) => v?.name ?? ''}
+                    onSelect={(v) =>
+                      setNewAccountInput((c) => ({ ...c, bankCode: v.code }))
+                    }
+                    getLabelString={(v) => v?.name ?? ""}
                     renderItem={BankSelectOption}
                     getValueString={(v: Bank) => v?.name}
                     options={banksData?.banks ?? []}
@@ -374,20 +412,23 @@ export default function NewHostingStep5() {
                     type="primary"
                     onPress={() => {
                       setSelectedAcount(undefined);
-                      verifyAccount({ requestPolicy: 'network-only' });
+                      verifyAccount({ requestPolicy: "network-only" });
                     }}
                     disabled={!canSaveNewAccount}
                     loading={resolving}
                   >
                     <View
                       style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
+                        flexDirection: "row",
+                        alignItems: "center",
                         gap: 8,
                       }}
                     >
                       <Plus size={16} color="#fff" />
-                      <ThemedText content="primary" style={{ fontFamily: Fonts.medium }}>
+                      <ThemedText
+                        content="primary"
+                        style={{ fontFamily: Fonts.medium }}
+                      >
                         Verify & Save Account
                       </ThemedText>
                     </View>
