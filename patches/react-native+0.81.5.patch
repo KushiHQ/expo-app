@@ -1,0 +1,24 @@
+diff --git a/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTTurboModule.mm b/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTTurboModule.mm
+index 2a67797..91e1d66 100644
+--- a/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTTurboModule.mm
++++ b/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTTurboModule.mm
+@@ -435,7 +435,18 @@ void ObjCTurboModule::performVoidMethodInvocation(
+     @try {
+       [inv invokeWithTarget:strongModule];
+     } @catch (NSException *exception) {
+-      throw convertNSExceptionToJSError(runtime, exception, std::string{moduleName}, methodNameStr);
++      // convertNSExceptionToJSError touches the JS runtime, which is only safe
++      // on the JS thread — i.e. the sync path (invokeSync). Async void methods
++      // run this block on the module's background method queue, so building a
++      // jsi error here races the JS thread's Hermes GC and corrupts the heap
++      // (SIGSEGV). Async void calls are fire-and-forget, so log the exception
++      // instead of throwing into the runtime off-thread.
++      if (shouldVoidMethodsExecuteSync_) {
++        throw convertNSExceptionToJSError(runtime, exception, std::string{moduleName}, methodNameStr);
++      } else {
++        RCTLogError(
++            @"%s.%s raised an exception: %@", moduleName, methodNameStr.c_str(), exception.reason);
++      }
+     } @finally {
+       [retainedObjectsForInvocation removeAllObjects];
+     }
