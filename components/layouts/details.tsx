@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 import React, { useRef } from 'react';
 import {
   Pressable,
@@ -104,6 +105,9 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
     const insets = useSafeAreaInsets();
     const scrollViewRef = useRef<ScrollView>(null);
     const { isTablet } = useBreakpoint();
+    // Under a tab bar, the bar already reserves the bottom inset — don't add it
+    // again here (it would stop content an inset above the nav).
+    const inTabs = React.useContext(BottomTabBarHeightContext) != null;
     const path = usePathname();
     const { height: keyboardHeight } = useGradualKeyboardAnimation();
     const { id, transactionId } = useLocalSearchParams();
@@ -219,7 +223,10 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
             On by default for solid (dark) screens; screens with their own
             full-bleed imagery or a light background pass `ambientGlow={false}`. */}
         {ambientGlow && background === 'solid' ? <AmbientGlow /> : null}
-        <SafeAreaView edges={isTablet ? ['top', 'bottom', 'right'] : undefined} className="flex-1">
+        <SafeAreaView
+          edges={isTablet ? ['top', 'bottom', 'right'] : inTabs ? ['top'] : undefined}
+          className="flex-1"
+        >
           <View
             style={{
               flex: 1,

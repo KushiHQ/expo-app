@@ -1,4 +1,5 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 import ThemedView from '../atoms/a-themed-view';
 import React, { useRef, useEffect } from 'react';
 import { Pressable, RefreshControlProps, ScrollView, View } from 'react-native';
@@ -36,6 +37,10 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
   const path = usePathname();
   const { user } = useUser();
   const { isTablet } = useBreakpoint();
+  // Inside a tab navigator the tab bar already reserves the bottom safe-area
+  // inset — so the scene must NOT add it again, or content stops an inset above
+  // the bar (a visible gap above the nav).
+  const inTabs = React.useContext(BottomTabBarHeightContext) != null;
 
   const [{ data: notifData }] = useNotificationsQuery({
     variables: { pagination: { limit: 20 } },
@@ -68,7 +73,10 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
     <ThemedView className="flex-1">
       {/* Atmospheric soft/cloudy glow behind the discovery feed. */}
       <AmbientGlow />
-      <SafeAreaView edges={isTablet ? ['top', 'bottom', 'right'] : undefined} className="flex-1">
+      <SafeAreaView
+        edges={isTablet ? ['top', 'bottom', 'right'] : inTabs ? ['top'] : undefined}
+        className="flex-1"
+      >
         <View
           style={{
             flex: 1,
