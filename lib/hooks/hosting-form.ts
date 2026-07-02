@@ -64,7 +64,7 @@ export const useHostingForm = (id?: string | string[]) => {
       if (variables.input.listingType === ListingType.Sale) {
         variables.input.paymentInterval = PaymentInterval.OneTimePayment;
       }
-      mutate({
+      return mutate({
         ...variables,
         input: removeTypenames(variables.input) as typeof variables.input,
       });
