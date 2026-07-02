@@ -1,14 +1,15 @@
-import { PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { PROPERTY_BLURHASH, FALLBACK_IMAGE } from '@/lib/constants/images';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { Image } from 'expo-image';
 import React from 'react';
 import { Pressable, View } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
+import Hairline from '../atoms/a-hairline';
+import ImageScrim from '../atoms/a-image-scrim';
 import { Fonts } from '@/lib/constants/theme';
 import { hexToRgba } from '@/lib/utils/colors';
 import Button from '../atoms/a-button';
 import { ChevronDown, MapPin } from 'lucide-react-native';
-import { IconParkOutlineDot } from '../icons/i-circle';
 import BookingDetailsSheet from './m-booking-details';
 import { BookingsQuery } from '@/lib/services/graphql/generated';
 import { capitalize } from '@/lib/utils/text';
@@ -30,28 +31,30 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
   const statusColor =
     bookingStatus === 'pending'
       ? colors.accent
-      : bookingStatus === 'active'
+      : bookingStatus === 'active' || bookingStatus === 'paid'
         ? colors.success
         : colors.error;
 
   const location = [booking.hosting.city, booking.hosting.state].filter(Boolean).join(', ');
+  const interval = formatPaymentInterval(booking.hosting.paymentInterval);
+  const coverUrl = booking.hosting.coverImage?.asset.publicUrl;
 
   return (
     <>
       <View className="gap-3">
         <Pressable
           onPress={() => router.push(`/bookings/${booking.id}`)}
-          className="flex-row items-center gap-3.5 rounded-[20px] p-2.5"
           style={{
-            backgroundColor: hexToRgba(colors.text, 0.05),
+            borderRadius: SURFACE.radius,
+            backgroundColor: hexToRgba(colors.text, SURFACE.fillRaised),
+            overflow: 'hidden',
             boxShadow: SURFACE.shadow,
           }}
         >
-          <View className="h-[92px] w-[104px] overflow-hidden rounded-2xl">
+          {/* Cover */}
+          <View style={{ width: '100%', height: 132 }}>
             <Image
-              source={{
-                uri: booking.hosting.coverImage?.asset.publicUrl,
-              }}
+              source={coverUrl ? { uri: coverUrl } : FALLBACK_IMAGE}
               style={{ height: '100%', width: '100%' }}
               contentFit="cover"
               transition={300}
@@ -60,61 +63,72 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
               cachePolicy="memory-disk"
               priority="high"
             />
-          </View>
-          <View className="flex-1 gap-1.5">
-            <ThemedText
-              style={{ fontSize: 15, fontFamily: Fonts.semibold }}
-              ellipsizeMode="tail"
-              numberOfLines={1}
+            <ImageScrim from="top" intensity={0.45} height="65%" />
+            <View
+              style={{
+                position: 'absolute',
+                top: 12,
+                right: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                backgroundColor: hexToRgba(statusColor, 0.18),
+                borderRadius: 999,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+              }}
             >
-              {booking.hosting.title}
-            </ThemedText>
-            {location ? (
-              <View className="flex-row items-center gap-1.5">
-                <MapPin size={12} color={hexToRgba(colors.text, 0.45)} />
-                <ThemedText
-                  numberOfLines={1}
-                  className="flex-1"
-                  style={{
-                    fontSize: 13,
-                    color: hexToRgba(colors.text, 0.6),
-                    fontFamily: Fonts.medium,
-                  }}
-                >
-                  {location}
-                </ThemedText>
-              </View>
-            ) : null}
-            <View className="mt-0.5 flex-row items-center justify-between gap-2">
-              <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 14 }}>
+              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: statusColor }} />
+              <ThemedText style={{ fontSize: 11, color: statusColor, fontFamily: Fonts.bold }}>
+                {capitalize(bookingStatus)}
+              </ThemedText>
+            </View>
+          </View>
+
+          {/* Body */}
+          <View style={{ padding: 14, gap: 10 }}>
+            <View style={{ gap: 4 }}>
+              <ThemedText numberOfLines={1} style={{ fontSize: 16, fontFamily: Fonts.semibold }}>
+                {booking.hosting.title}
+              </ThemedText>
+              {location ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <MapPin size={12} color={hexToRgba(colors.text, 0.4)} />
+                  <ThemedText numberOfLines={1} style={{ fontSize: 12.5, color: hexToRgba(colors.text, 0.5) }}>
+                    {location}
+                  </ThemedText>
+                </View>
+              ) : null}
+            </View>
+
+            <Hairline />
+
+            {/* Meta footer */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 16, color: colors.primary }}>
                 ₦{Number(booking.amount ?? '0').toLocaleString()}
-                {formatPaymentInterval(booking.hosting.paymentInterval) ? (
+                {interval ? (
                   <ThemedText
-                    style={{
-                      fontFamily: Fonts.medium,
-                      fontSize: 12,
-                      color: hexToRgba(colors.text, 0.5),
-                    }}
+                    style={{ fontFamily: Fonts.medium, fontSize: 11, color: hexToRgba(colors.text, 0.5) }}
                   >
                     {' '}
-                    {formatPaymentInterval(booking.hosting.paymentInterval)}
+                    {interval}
                   </ThemedText>
                 ) : null}
               </ThemedText>
-              <View
-                className="flex-row items-center gap-1.5 rounded-full px-2 py-0.5"
-                style={{ backgroundColor: hexToRgba(statusColor, 0.16) }}
-              >
-                <IconParkOutlineDot color={statusColor} size={8} />
-                <ThemedText
-                  style={{ fontSize: 11, color: statusColor, fontFamily: Fonts.semibold }}
-                >
-                  {capitalize(bookingStatus)}
+              {booking.commencementDate ? (
+                <ThemedText style={{ fontSize: 11, color: hexToRgba(colors.text, 0.4) }}>
+                  {new Date(booking.commencementDate).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
                 </ThemedText>
-              </View>
+              ) : null}
             </View>
           </View>
         </Pressable>
+
         <Button onPress={() => setOpen(true)} type="tinted" style={{ paddingVertical: 10 }}>
           <View className="flex-row items-center gap-2">
             <ThemedText content="tinted">View Receipt</ThemedText>
