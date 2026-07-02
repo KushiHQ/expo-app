@@ -24,6 +24,7 @@ import {
 import { useHostingForm } from "@/lib/hooks/hosting-form";
 import { showTenancySteps } from "@/lib/constants/hosting/step-rules";
 import { capitalize } from "@/lib/utils/text";
+import { formatPaymentInterval } from "@/lib/utils/hosting/interval";
 import HostingCard from "@/components/molecules/m-hosting-card";
 import {
   HostingVerificationTier,
@@ -52,14 +53,9 @@ export default function NewHostingStep8() {
   });
   const [success, setSuccess] = React.useState(false);
   const paymentInterval = React.useMemo(() => {
-    const interval = capitalize(
-      input.paymentInterval?.split("_").join(" ") ?? "",
-    );
-    if (hosting?.paymentInterval === PaymentInterval.OneTimePayment) {
-      return `- ${interval}`;
-    }
-    return `- ${interval}`;
-  }, [hosting?.paymentInterval]);
+    const interval = formatPaymentInterval(input.paymentInterval);
+    return interval ? `- ${interval}` : "";
+  }, [input.paymentInterval]);
 
   const loading = mutating;
 
