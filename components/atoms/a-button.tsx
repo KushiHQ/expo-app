@@ -113,8 +113,8 @@ const Button: React.FC<Props> = ({
         // caller-supplied `borderColor` was dead for want of a `borderWidth`.)
         {
           backgroundColor: hexToRgba(baseColor, 0.06),
-          borderWidth: 1,
-          borderColor: hexToRgba(baseColor, 0.4),
+          borderWidth: 1.5,
+          borderColor: hexToRgba(baseColor, 0.55),
         }
       : variant === 'soft'
         ? { backgroundColor: hexToRgba(baseColor, 0.16) }
