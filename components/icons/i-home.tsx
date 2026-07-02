@@ -1,6 +1,6 @@
-import { CustomSvgProps } from '@/lib/types/svgType';
-import React from 'react';
-import Svg, { G, Path } from 'react-native-svg';
+import { CustomSvgProps } from "@/lib/types/svgType";
+import React from "react";
+import Svg, { G, Path } from "react-native-svg";
 
 export const SolarHome2Bold: React.FC<CustomSvgProps> = (props) => {
   return (
@@ -35,6 +35,7 @@ export const SolarHome2Linear: React.FC<CustomSvgProps> = (props) => {
     </Svg>
   );
 };
+
 export const CuidaBuildingOutline: React.FC<CustomSvgProps> = (props) => {
   return (
     <Svg
@@ -62,6 +63,38 @@ export const CuidaBuildingOutline: React.FC<CustomSvgProps> = (props) => {
           ></Path>
           <Path d="M12 6a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0zm0 5a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0zm-7 4a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0zm11-9a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0zm0 5a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0z"></Path>
         </G>
+      </G>
+    </Svg>
+  );
+};
+
+export const BiHouses: React.FC<CustomSvgProps> = (props) => {
+  return (
+    <Svg
+      width={props.width ?? props.size ?? 24}
+      height={props.height ?? props.size ?? 24}
+      viewBox="0 0 16 16"
+      {...props}
+    >
+      <Path
+        fill="currentColor"
+        d="M5.793 1a1 1 0 0 1 1.414 0l.647.646a.5.5 0 1 1-.708.708L6.5 1.707L2 6.207V12.5a.5.5 0 0 0 .5.5a.5.5 0 0 1 0 1A1.5 1.5 0 0 1 1 12.5V7.207l-.146.147a.5.5 0 0 1-.708-.708zm3 1a1 1 0 0 1 1.414 0L12 3.793V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v3.293l1.854 1.853a.5.5 0 0 1-.708.708L15 8.207V13.5a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 4 13.5V8.207l-.146.147a.5.5 0 1 1-.708-.708zm.707.707L5 7.207V13.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5V7.207z"
+      ></Path>
+    </Svg>
+  );
+};
+
+export const BiHousesFill: React.FC<CustomSvgProps> = (props) => {
+  return (
+    <Svg
+      width={props.width ?? props.size ?? 24}
+      height={props.height ?? props.size ?? 24}
+      viewBox="0 0 16 16"
+      {...props}
+    >
+      <G fill="currentColor">
+        <Path d="M7.207 1a1 1 0 0 0-1.414 0L.146 6.646a.5.5 0 0 0 .708.708L1 7.207V12.5A1.5 1.5 0 0 0 2.5 14h.55a2.5 2.5 0 0 1-.05-.5V9.415a1.5 1.5 0 0 1-.56-2.475l5.353-5.354z"></Path>
+        <Path d="M8.793 2a1 1 0 0 1 1.414 0L12 3.793V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v3.293l1.854 1.853a.5.5 0 0 1-.708.708L15 8.207V13.5a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 4 13.5V8.207l-.146.147a.5.5 0 1 1-.708-.708z"></Path>
       </G>
     </Svg>
   );

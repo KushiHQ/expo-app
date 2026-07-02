@@ -177,7 +177,11 @@ export default function HostingOnboarding() {
       // Step 5: Pricing
       const iPricing = idx(5);
       if (iPricing >= 0) {
-        actions[iPricing].filled = !!(hosting.price && hosting.paymentDetails);
+        actions[iPricing].filled = !!(
+          hosting.paymentInterval &&
+          hosting.price &&
+          hosting.paymentDetails
+        );
       }
 
       // Step 6: Mandate
