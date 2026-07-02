@@ -105,9 +105,17 @@ const Button: React.FC<Props> = ({
   // props only — no boxShadow string) so the background always paints.
   const containerStyle: ViewStyle =
     variant === 'outline'
-      ? // Borderless soft/outline variants — a translucent wash of the type
-        // colour, no hard outline (soft/cloudy rule). `soft` reads stronger.
-        { backgroundColor: hexToRgba(baseColor, 0.1) }
+      ? // A true outline: a soft tinted hairline border over a barely-there
+        // wash. Soft/cloudy forbids HARD borders on surfaces, but an "outline"
+        // button is border-defined by name — a low-alpha tinted border reads as
+        // soft, not hard. (Without any border it collapsed to a near-invisible
+        // 10% wash — effectively styleless on the near-black background, and any
+        // caller-supplied `borderColor` was dead for want of a `borderWidth`.)
+        {
+          backgroundColor: hexToRgba(baseColor, 0.06),
+          borderWidth: 1,
+          borderColor: hexToRgba(baseColor, 0.4),
+        }
       : variant === 'soft'
         ? { backgroundColor: hexToRgba(baseColor, 0.16) }
         : variant === 'text'
