@@ -80,8 +80,8 @@ export default function Layout() {
         tabBarStyle: isTablet
           ? { display: 'none' }
           : {
-              height: 62 + insets.bottom,
-              paddingTop: 6,
+              height: 74 + insets.bottom,
+              paddingTop: 14,
               backgroundColor: colors['background'],
               borderTopColor: hexToRgba(colors['text'], 0.06),
               borderTopWidth: 1,
