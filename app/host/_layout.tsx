@@ -1,11 +1,11 @@
 import { MajesticonsAnalytics, MajesticonsAnalyticsLine } from '@/components/icons/i-analytics';
 import { LinkIcon } from '@/components/icons/i-link';
 import { FluentAppsList24Filled, FluentAppsList24Regular } from '@/components/icons/i-list';
-import { TablerMessage2, TablerMessage2Filled } from '@/components/icons/i-message';
 import { MingcuteUser3Fill, MingcuteUser3Line } from '@/components/icons/i-user';
 import SidebarNav, { type SidebarNavItem } from '@/components/organisms/o-sidebar-nav';
-import TabBar from '@/components/organisms/o-tab-bar';
 import AuthGuard from '@/components/guards/auth-guard';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { hexToRgba } from '@/lib/utils/colors';
 import FeedbackHost from '@/components/organisms/o-feedback-host';
 import React from 'react';
 import { Fonts } from '@/lib/constants/theme';
@@ -16,6 +16,7 @@ import { UserType } from '@/lib/types/users';
 import { EventEmitter } from '@/lib/utils/event-emitter';
 import { Tabs, useRouter, useSegments } from 'expo-router';
 import { View } from 'react-native';
+import { MingCuteChatFill, MingCuteChatLine } from '@/components/icons/i-chat';
 
 // Anchor the tab group to analytics so a cold start / restored navigation state
 // can't strand the user on a tab root (e.g. profile) with no way back.
@@ -38,7 +39,7 @@ const SIDEBAR_ITEMS: SidebarNavItem[] = [
     name: 'chat',
     label: 'Chat',
     route: '/host/chat',
-    renderIcon: (color) => <TablerMessage2 color={color} size={22} />,
+    renderIcon: (color) => <MingCuteChatLine color={color} size={22} />,
   },
   {
     name: 'profile',
@@ -54,6 +55,7 @@ export default function Layout() {
   const segments = useSegments();
   const { updateUser } = useUser();
   const { isTablet } = useBreakpoint();
+  const insets = useSafeAreaInsets();
 
   const currentTab = segments[1];
 
@@ -71,10 +73,20 @@ export default function Layout() {
 
   const tabs = (
     <Tabs
-      tabBar={(props) => <TabBar {...props} centerRouteName="guest" />}
       screenOptions={{
         tabBarActiveTintColor: colors['primary'],
+        tabBarInactiveTintColor: hexToRgba(colors['text'], 0.45),
+        tabBarShowLabel: false,
         animation: 'fade',
+        tabBarStyle: isTablet
+          ? { display: 'none' }
+          : {
+              height: 62 + insets.bottom,
+              paddingTop: 6,
+              backgroundColor: colors['background'],
+              borderTopColor: hexToRgba(colors['text'], 0.06),
+              borderTopWidth: 1,
+            },
       }}
     >
       <Tabs.Screen
@@ -116,10 +128,14 @@ export default function Layout() {
         options={{
           headerShown: false,
           tabBarLabel: () => null,
-          tabBarLabelStyle: { fontFamily: Fonts.semibold, fontSize: 16, paddingTop: 8 },
+          tabBarLabelStyle: {
+            fontFamily: Fonts.semibold,
+            fontSize: 16,
+            paddingTop: 8,
+          },
           tabBarIcon: () => (
-            <View style={{ backgroundColor: colors['text'] }} className="mt-6 rounded-full p-[5px]">
-              <LinkIcon size={28} color={colors['background']} />
+            <View style={{ backgroundColor: colors['primary'] }} className="rounded-full p-[7px]">
+              <LinkIcon size={24} color={colors['primary-content']} />
             </View>
           ),
         }}
@@ -132,9 +148,9 @@ export default function Layout() {
           tabBarLabel: 'Chat',
           tabBarIcon: ({ color, size, focused }) =>
             focused ? (
-              <TablerMessage2Filled color={color} size={size} />
+              <MingCuteChatFill color={color} size={size} />
             ) : (
-              <TablerMessage2 color={color} size={size} />
+              <MingCuteChatLine color={color} size={size} />
             ),
         }}
       />
