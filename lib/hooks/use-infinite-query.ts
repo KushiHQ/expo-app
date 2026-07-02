@@ -45,14 +45,18 @@ export function useInfiniteQuery<
     pagination: { limit, offset: 0 },
   });
 
-  // Sync with initialVariables if they change from outside. Items are kept on
-  // purpose: the previous list stays visible until the new variables settle.
+  // Sync with initialVariables if they change from outside. Items are CLEARED:
+  // a variable change (e.g. a new filter) means the accumulated list belongs to
+  // the old query — keeping it lets mergePages later weld stale rows from the
+  // previous filter onto the new results (the "filter shows other types" bug).
+  // Pagination (loadMore) is the only path that keeps + merges items.
   const initialVarsJson = JSON.stringify(initialVariables);
   useEffect(() => {
     setState((prev) => {
       if (JSON.stringify(prev.variables) === initialVarsJson) return prev;
       return {
         ...prev,
+        items: [],
         hasNextPage: true,
         variables: initialVariables,
         pagination: { limit, offset: 0 },
@@ -75,6 +79,7 @@ export function useInfiniteQuery<
 
         return {
           ...prev,
+          items: [],
           hasNextPage: true,
           variables: nextVars,
           pagination: { limit, offset: 0 },
