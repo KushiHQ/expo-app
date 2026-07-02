@@ -228,7 +228,7 @@ export default function ChatDetails() {
 
     return (
       <ChatMessageBubble
-        senderName={item.sender.profile.fullName}
+        senderName={item.sender?.profile?.fullName}
         message={item}
         isFirstInGroup={isFirstInGroup}
         isLastInGroup={isLastInGroup}
