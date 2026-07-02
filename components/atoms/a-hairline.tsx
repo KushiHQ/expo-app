@@ -20,7 +20,11 @@ const Hairline: React.FC<Props> = ({ style, intensity = 0.08 }) => {
   const colors = useThemeColors();
   return (
     <LinearGradient
-      colors={[hexToRgba(colors.text, 0), hexToRgba(colors.text, intensity), hexToRgba(colors.text, 0)]}
+      colors={[
+        hexToRgba(colors.text, 0),
+        hexToRgba(colors.text, intensity),
+        hexToRgba(colors.text, 0),
+      ]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       pointerEvents="none"

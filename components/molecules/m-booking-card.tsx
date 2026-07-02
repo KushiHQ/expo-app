@@ -78,7 +78,9 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
                 paddingVertical: 4,
               }}
             >
-              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: statusColor }} />
+              <View
+                style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: statusColor }}
+              />
               <ThemedText style={{ fontSize: 11, color: statusColor, fontFamily: Fonts.bold }}>
                 {capitalize(bookingStatus)}
               </ThemedText>
@@ -94,7 +96,10 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
               {location ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <MapPin size={12} color={hexToRgba(colors.text, 0.4)} />
-                  <ThemedText numberOfLines={1} style={{ fontSize: 12.5, color: hexToRgba(colors.text, 0.5) }}>
+                  <ThemedText
+                    numberOfLines={1}
+                    style={{ fontSize: 12.5, color: hexToRgba(colors.text, 0.5) }}
+                  >
                     {location}
                   </ThemedText>
                 </View>
@@ -104,12 +109,22 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
             <Hairline />
 
             {/* Meta footer */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+              }}
+            >
               <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 16, color: colors.primary }}>
                 ₦{Number(booking.amount ?? '0').toLocaleString()}
                 {interval ? (
                   <ThemedText
-                    style={{ fontFamily: Fonts.medium, fontSize: 11, color: hexToRgba(colors.text, 0.5) }}
+                    style={{
+                      fontFamily: Fonts.medium,
+                      fontSize: 11,
+                      color: hexToRgba(colors.text, 0.5),
+                    }}
                   >
                     {' '}
                     {interval}

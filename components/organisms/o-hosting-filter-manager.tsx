@@ -6,47 +6,42 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native";
-import { SURFACE } from "@/lib/constants/surface";
-import { LineiconsSearch1 } from "../icons/i-search";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import { hexToRgba } from "@/lib/utils/colors";
-import { JamSettingsAlt } from "../icons/i-settings";
-import { MaterialSymbolsLightMapOutlineRounded } from "../icons/i-map";
-import BottomSheet from "../atoms/a-bottom-sheet";
-import ThemedText from "../atoms/a-themed-text";
-import React from "react";
-import { Fonts } from "@/lib/constants/theme";
-import { FACILITIES_BY_VARIANT } from "@/lib/types/enums/hostings";
-import TextPill from "../molecules/m-text-pill-pill";
-import RangeSlider from "../atoms/a-range-slider";
-import FloatingLabelInput from "../atoms/a-floating-label-input";
-import { LayoutList, MapPin, Sparkles } from "lucide-react-native";
-import LocationSelectInput, {
-  SelectedLocation,
-} from "../molecules/m-location-select-input";
-import RatingPill from "../molecules/m-rating-pill";
-import Button from "../atoms/a-button";
-import { HotingVariantFilter } from "../molecules/m-hosting-variant-filter";
-import {
-  FACILITY_ICONS,
-  FALLBACK_FACILITY_ICON,
-} from "@/lib/types/enums/hosting-icons";
-import { cast } from "@/lib/types/utils";
-import { useHostingFilterStore } from "@/lib/stores/hostings";
-import { useDebounce } from "@/lib/hooks/use-debounce";
+} from 'react-native';
+import { SURFACE } from '@/lib/constants/surface';
+import { LineiconsSearch1 } from '../icons/i-search';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { hexToRgba } from '@/lib/utils/colors';
+import { JamSettingsAlt } from '../icons/i-settings';
+import { MaterialSymbolsLightMapOutlineRounded } from '../icons/i-map';
+import BottomSheet from '../atoms/a-bottom-sheet';
+import ThemedText from '../atoms/a-themed-text';
+import React from 'react';
+import { Fonts } from '@/lib/constants/theme';
+import { FACILITIES_BY_VARIANT } from '@/lib/types/enums/hostings';
+import TextPill from '../molecules/m-text-pill-pill';
+import RangeSlider from '../atoms/a-range-slider';
+import FloatingLabelInput from '../atoms/a-floating-label-input';
+import { LayoutList, MapPin, Sparkles } from 'lucide-react-native';
+import LocationSelectInput, { SelectedLocation } from '../molecules/m-location-select-input';
+import RatingPill from '../molecules/m-rating-pill';
+import Button from '../atoms/a-button';
+import { HotingVariantFilter } from '../molecules/m-hosting-variant-filter';
+import { FACILITY_ICONS, FALLBACK_FACILITY_ICON } from '@/lib/types/enums/hosting-icons';
+import { cast } from '@/lib/types/utils';
+import { useHostingFilterStore } from '@/lib/stores/hostings';
+import { useDebounce } from '@/lib/hooks/use-debounce';
 
-import Animated, { LinearTransition } from "react-native-reanimated";
-import { twMerge } from "tailwind-merge";
+import Animated, { LinearTransition } from 'react-native-reanimated';
+import { twMerge } from 'tailwind-merge';
 import {
   AiHostingSearchPredictionsQuery,
   HostingVerificationTier,
   useAiHostingSearchPredictionsQuery,
-} from "@/lib/services/graphql/generated";
-import { formatTierLabel } from "@/lib/utils/verification/tier";
-import Skeleton from "../atoms/a-skeleton";
-import { useRouter } from "@/lib/hooks/use-router";
-import { Reset } from "../icons/i-delete";
+} from '@/lib/services/graphql/generated';
+import { formatTierLabel } from '@/lib/utils/verification/tier';
+import Skeleton from '../atoms/a-skeleton';
+import { useRouter } from '@/lib/hooks/use-router';
+import { Reset } from '../icons/i-delete';
 
 // Minimum verification tier the guest can filter by (the server matches this
 // tier OR higher). "Unverified" is intentionally omitted — it's not a filter.
@@ -62,14 +57,13 @@ type Props = {
 
 const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
   const router = useRouter();
-  const [variant, setVariant] = React.useState("All");
-  const [facilities, setFacilities] = React.useState(["All"]);
+  const [variant, setVariant] = React.useState('All');
+  const [facilities, setFacilities] = React.useState(['All']);
   const [filterOpen, setFilterOpen] = React.useState(false);
   const [locationInputOpen, setLocationInputOpen] = React.useState(false);
-  const [selectedLocation, setSelectedLocation] =
-    React.useState<SelectedLocation>();
+  const [selectedLocation, setSelectedLocation] = React.useState<SelectedLocation>();
 
-  const [searchInput, setSearchInput] = React.useState("");
+  const [searchInput, setSearchInput] = React.useState('');
   const debouncedSearchInput = useDebounce(searchInput, 500);
   const [{ fetching, data }] = useAiHostingSearchPredictionsQuery({
     variables: {
@@ -89,7 +83,7 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
   const { filter, updateFilter, resetFilter } = useHostingFilterStore();
 
   React.useEffect(() => {
-    const listener = Keyboard.addListener("keyboardDidHide", () => {
+    const listener = Keyboard.addListener('keyboardDidHide', () => {
       setIsInputFocused(false);
       // Dismissing the keyboard is a "never mind" — close the suggestions too.
       setPredictionsOpen(false);
@@ -103,13 +97,13 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
 
   function handleReset() {
     resetFilter();
-    setVariant("All");
-    setFacilities(["All"]);
+    setVariant('All');
+    setFacilities(['All']);
     setSelectedLocation(undefined);
   }
 
   function handleSelectPrediction(
-    prediction: AiHostingSearchPredictionsQuery["aiHostingSearchPredictions"][number],
+    prediction: AiHostingSearchPredictionsQuery['aiHostingSearchPredictions'][number],
   ) {
     const predictionFilters = prediction.filters;
     const rawQuery = searchInput.trim();
@@ -122,14 +116,10 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
       country: predictionFilters.country,
       propertyType: predictionFilters.propertyType ?? undefined,
       facilities: predictionFilters.facilities ?? undefined,
-      minPrice: predictionFilters.minPrice
-        ? Number(predictionFilters.minPrice)
-        : undefined,
-      maxPrice: predictionFilters.maxPrice
-        ? Number(predictionFilters.maxPrice)
-        : undefined,
+      minPrice: predictionFilters.minPrice ? Number(predictionFilters.minPrice) : undefined,
+      maxPrice: predictionFilters.maxPrice ? Number(predictionFilters.maxPrice) : undefined,
     });
-    setSearchInput(prediction.summary ?? "");
+    setSearchInput(prediction.summary ?? '');
     setPredictionsOpen(false);
     textInputRef.current?.blur();
     setIsInputFocused(false);
@@ -138,13 +128,13 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
 
   React.useEffect(() => {
     updateFilter({
-      facilities: facilities.includes("All") ? undefined : facilities,
+      facilities: facilities.includes('All') ? undefined : facilities,
     });
   }, [facilities, updateFilter]);
 
   const handleCategoryChange = React.useCallback(
     (v: string) => {
-      updateFilter({ propertyType: v === "All" ? undefined : v });
+      updateFilter({ propertyType: v === 'All' ? undefined : v });
     },
     [updateFilter],
   );
@@ -167,7 +157,7 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
     if (isMapView) {
       router.back();
     } else {
-      router.push("/hostings/map");
+      router.push('/hostings/map');
     }
   };
 
@@ -175,27 +165,24 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
     <View style={{ zIndex: 50 }}>
       <Animated.View
         layout={LinearTransition.springify().damping(25).stiffness(300)}
-        className={`flex-row gap-3 rounded-2xl px-4 ${isInputFocused
-            ? "min-h-[120px] items-start py-4"
-            : "min-h-[56px] items-center py-2.5"
-          }`}
+        className={`flex-row gap-3 rounded-2xl px-4 ${
+          isInputFocused ? 'min-h-[120px] items-start py-4' : 'min-h-[56px] items-center py-2.5'
+        }`}
         style={
           {
-            backgroundColor: isMapView
-              ? colors.background
-              : hexToRgba(colors.text, 0.05),
+            backgroundColor: isMapView ? colors.background : hexToRgba(colors.text, 0.05),
             boxShadow: SURFACE.shadow,
           } as any
         }
       >
         <View
           className="flex-1 flex-row gap-2"
-          style={{ alignItems: isInputFocused ? "flex-start" : "center" }}
+          style={{ alignItems: isInputFocused ? 'flex-start' : 'center' }}
         >
           {searchInput.length > 0 || JSON.stringify(filter).length > 5 ? (
             <Pressable
               onPress={() => {
-                setSearchInput("");
+                setSearchInput('');
                 setPredictionsOpen(false);
                 setIsInputFocused(false);
                 textInputRef.current?.blur();
@@ -206,24 +193,20 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
               hitSlop={10}
               style={{ marginTop: isInputFocused ? 2 : 0 }}
             >
-              <Reset
-                width={18}
-                height={18}
-                color={hexToRgba(colors.text, 0.9)}
-              />
+              <Reset width={18} height={18} color={hexToRgba(colors.text, 0.9)} />
             </Pressable>
           ) : (
             <View style={{ marginTop: isInputFocused ? 4 : 0 }}>
-              <LineiconsSearch1 color={hexToRgba(colors["text"], 0.5)} />
+              <LineiconsSearch1 color={hexToRgba(colors['text'], 0.5)} />
             </View>
           )}
 
-          <View style={{ flex: 1, justifyContent: "center" }}>
+          <View style={{ flex: 1, justifyContent: 'center' }}>
             <TextInput
               ref={textInputRef}
               value={searchInput}
               cursorColor={colors.primary}
-              className={twMerge("w-full", isInputFocused && "pt-1.5")}
+              className={twMerge('w-full', isInputFocused && 'pt-1.5')}
               // NOTE: `multiline` is intentionally constant. On iOS, toggling
               // multiline swaps the underlying native view (single- vs multi-line),
               // which remounts the input, drops focus, and dismisses the keyboard
@@ -232,20 +215,17 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
               style={{
                 // Collapsed, the multiline input can't show/ellipsize its value in
                 // the short 22px box, so hide it and show a single-line overlay.
-                color:
-                  !isInputFocused && searchInput.length > 0
-                    ? "transparent"
-                    : colors["text"],
+                color: !isInputFocused && searchInput.length > 0 ? 'transparent' : colors['text'],
                 fontSize: 14,
                 maxHeight: isInputFocused ? 96 : 22,
               }}
-              placeholderTextColor={hexToRgba(colors["text"], 0.5)}
+              placeholderTextColor={hexToRgba(colors['text'], 0.5)}
               // Collapsed: a multiline input can't ellipsize its own placeholder,
               // so we blank it and render a single-line overlay below instead.
               placeholder={
                 isInputFocused
-                  ? "Enter location, price, property type, property amenities and features etc."
-                  : ""
+                  ? 'Enter location, price, property type, property amenities and features etc.'
+                  : ''
               }
               onChangeText={(t) => {
                 setSearchInput(t);
@@ -258,18 +238,18 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
                 setPredictionsOpen(true);
               }}
               onBlur={() => setIsInputFocused(false)}
-              textAlignVertical={isInputFocused ? "top" : "center"}
+              textAlignVertical={isInputFocused ? 'top' : 'center'}
             />
             {!isInputFocused && (
               <View
                 pointerEvents="none"
                 style={{
-                  position: "absolute",
+                  position: 'absolute',
                   left: 0,
                   right: 0,
                   top: 0,
                   bottom: 0,
-                  justifyContent: "center",
+                  justifyContent: 'center',
                 }}
               >
                 <Text
@@ -277,31 +257,25 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
                   ellipsizeMode="tail"
                   style={{
                     fontSize: 14,
-                    color: hexToRgba(
-                      colors["text"],
-                      searchInput.length > 0 ? 0.9 : 0.5,
-                    ),
+                    color: hexToRgba(colors['text'], searchInput.length > 0 ? 0.9 : 0.5),
                   }}
                 >
                   {searchInput.length > 0
                     ? searchInput
-                    : "Enter location, price, property type, amenities…"}
+                    : 'Enter location, price, property type, amenities…'}
                 </Text>
               </View>
             )}
           </View>
         </View>
 
-        <View
-          className="flex-row items-center gap-2"
-          style={{ marginTop: isInputFocused ? 2 : 0 }}
-        >
+        <View className="flex-row items-center gap-2" style={{ marginTop: isInputFocused ? 2 : 0 }}>
           <Pressable
             onPress={() => {
               setFilterOpen((c) => !c);
             }}
           >
-            <JamSettingsAlt color={hexToRgba(colors["text"], 0.5)} />
+            <JamSettingsAlt color={hexToRgba(colors['text'], 0.5)} />
           </Pressable>
           <TouchableOpacity
             onPress={handleToggleView}
@@ -345,12 +319,10 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
                     borderBottomColor: hexToRgba(colors.text, 0.05),
                   }}
                 >
-                  <Skeleton
-                    style={{ width: 38, height: 38, borderRadius: 12 }}
-                  />
+                  <Skeleton style={{ width: 38, height: 38, borderRadius: 12 }} />
                   <View className="flex-1 gap-2">
-                    <Skeleton style={{ width: "70%", height: 20 }} />
-                    <Skeleton style={{ width: "90%", height: 15 }} />
+                    <Skeleton style={{ width: '70%', height: 20 }} />
+                    <Skeleton style={{ width: '90%', height: 15 }} />
                   </View>
                 </View>
               ))}
@@ -386,18 +358,10 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
                       className="mt-1 flex-row gap-2"
                     >
                       {prediction.filters.city && (
-                        <FilterTag
-                          label="City"
-                          value={prediction.filters.city}
-                          colors={colors}
-                        />
+                        <FilterTag label="City" value={prediction.filters.city} colors={colors} />
                       )}
                       {prediction.filters.state && (
-                        <FilterTag
-                          label="State"
-                          value={prediction.filters.state}
-                          colors={colors}
-                        />
+                        <FilterTag label="State" value={prediction.filters.state} colors={colors} />
                       )}
                       {prediction.filters.country && (
                         <FilterTag
@@ -438,8 +402,8 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
             setPredictionsOpen(false);
           }}
           style={{
-            position: "absolute",
-            top: "100%",
+            position: 'absolute',
+            top: '100%',
             left: 0,
             right: 0,
             bottom: 0,
@@ -463,12 +427,7 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
             </View>
             <View className="gap-3">
               <ThemedText style={{ fontSize: 14 }}>Price Range</ThemedText>
-              <RangeSlider
-                withInput
-                onChange={handlePriceChange}
-                min={0}
-                max={10000000}
-              />
+              <RangeSlider withInput onChange={handlePriceChange} min={0} max={10000000} />
             </View>
             <View>
               <FloatingLabelInput
@@ -480,10 +439,8 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
                   setLocationInputOpen(true);
                 }}
                 label="Location"
-                suffix={
-                  <MapPin color={hexToRgba(colors.text, 0.8)} size={16} />
-                }
-                placeholder={selectedLocation?.address ?? "Enter location"}
+                suffix={<MapPin color={hexToRgba(colors.text, 0.8)} size={16} />}
+                placeholder={selectedLocation?.address ?? 'Enter location'}
               />
               <LocationSelectInput
                 isVisible={locationInputOpen}
@@ -503,12 +460,10 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View className="my-1 flex-row gap-2">
                   {[
-                    "All",
+                    'All',
                     ...FACILITIES_BY_VARIANT.filter((v) => {
-                      if (variant !== "All") {
-                        const variants = v.hostingVariants.map((i) =>
-                          i.valueOf(),
-                        );
+                      if (variant !== 'All') {
+                        const variants = v.hostingVariants.map((i) => i.valueOf());
                         return variants.includes(variant);
                       }
                       return true;
@@ -523,15 +478,15 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
                         selected={facilities.includes(item)}
                         onSelect={(v) => {
                           setFacilities((c) => {
-                            if (v === "All") {
-                              return ["All"];
+                            if (v === 'All') {
+                              return ['All'];
                             }
                             if (!c.includes(v)) {
-                              return [...c, v].filter((n) => n !== "All");
+                              return [...c, v].filter((n) => n !== 'All');
                             } else {
                               const newVal = c.filter((i) => i !== v);
                               if (newVal.length === 0) {
-                                newVal.push("All");
+                                newVal.push('All');
                               }
                               return newVal;
                             }
@@ -613,20 +568,10 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
   );
 };
 
-const FilterTag = ({
-  label,
-  value,
-  colors,
-}: {
-  label: string;
-  value: string;
-  colors: any;
-}) => (
+const FilterTag = ({ label, value, colors }: { label: string; value: string; colors: any }) => (
   <View className="mr-3 flex-row items-center">
-    <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
-      {label}:{" "}
-    </ThemedText>
-    <ThemedText style={{ fontSize: 12, fontWeight: "500" }}>{value}</ThemedText>
+    <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>{label}: </ThemedText>
+    <ThemedText style={{ fontSize: 12, fontWeight: '500' }}>{value}</ThemedText>
   </View>
 );
 

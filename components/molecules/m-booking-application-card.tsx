@@ -40,7 +40,9 @@ const BookingApplicationCard: React.FC<Props> = ({ application, host }) => {
     <TouchableOpacity
       onPress={() => {
         if (host) {
-          router.push(`/hostings/${application.hosting?.id}/booking-applications/${application.id}`);
+          router.push(
+            `/hostings/${application.hosting?.id}/booking-applications/${application.id}`,
+          );
         } else {
           router.push(`/users/booking-applications/${application.id}`);
         }
@@ -135,7 +137,12 @@ const BookingApplicationCard: React.FC<Props> = ({ application, host }) => {
             />
             <ThemedText
               numberOfLines={1}
-              style={{ flex: 1, fontSize: 13, fontFamily: Fonts.semibold, color: hexToRgba(colors.text, 0.9) }}
+              style={{
+                flex: 1,
+                fontSize: 13,
+                fontFamily: Fonts.semibold,
+                color: hexToRgba(colors.text, 0.9),
+              }}
             >
               {application.guest?.user?.profile?.fullName ?? application.fullName}
             </ThemedText>
@@ -145,7 +152,9 @@ const BookingApplicationCard: React.FC<Props> = ({ application, host }) => {
         <Hairline />
 
         {/* Meta footer */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View
+          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+        >
           <ThemedText
             style={{
               fontSize: 11,

@@ -1,39 +1,32 @@
-import Skeleton from "@/components/atoms/a-skeleton";
-import ThemedText from "@/components/atoms/a-themed-text";
-import DataRow from "@/components/atoms/a-data-row";
-import StackedRow from "@/components/atoms/a-stacked-row";
-import ReviewSection from "@/components/molecules/m-review-section";
-import DetailsLayout from "@/components/layouts/details";
+import Skeleton from '@/components/atoms/a-skeleton';
+import ThemedText from '@/components/atoms/a-themed-text';
+import DataRow from '@/components/atoms/a-data-row';
+import StackedRow from '@/components/atoms/a-stacked-row';
+import ReviewSection from '@/components/molecules/m-review-section';
+import DetailsLayout from '@/components/layouts/details';
 import {
   BOOKING_APPLICATION_INCOME_RANGES,
   BOOKING_APPLICATION_STATUS_COLORS,
-} from "@/lib/constants/booking/application";
-import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from "@/lib/constants/images";
-import { Fonts } from "@/lib/constants/theme";
-import { useThemeColors } from "@/lib/hooks/use-theme-color";
-import Button from "@/components/atoms/a-button";
-import LoadingModal from "@/components/atoms/a-loading-modal";
-import ConfirmationSheet from "@/components/molecules/m-confirmation-sheet";
-import { toast } from "@/lib/hooks/use-toast";
+} from '@/lib/constants/booking/application';
+import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
+import { Fonts } from '@/lib/constants/theme';
+import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import Button from '@/components/atoms/a-button';
+import LoadingModal from '@/components/atoms/a-loading-modal';
+import ConfirmationSheet from '@/components/molecules/m-confirmation-sheet';
+import { toast } from '@/lib/hooks/use-toast';
 import {
   useBookingApplicationQuery,
   useCancelBookingApplicationMutation,
   BookingApplicationStatus,
-} from "@/lib/services/graphql/generated";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { hexToRgba } from "@/lib/utils/colors";
-import { toTitleCase } from "@/lib/utils/text";
-import {
-  Briefcase,
-  Building2,
-  CalendarDays,
-  MapPin,
-  ShieldCheck,
-  User,
-} from "lucide-react-native";
-import React from "react";
-import { Image } from "expo-image";
-import { View } from "react-native";
+} from '@/lib/services/graphql/generated';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { hexToRgba } from '@/lib/utils/colors';
+import { toTitleCase } from '@/lib/utils/text';
+import { Briefcase, Building2, CalendarDays, MapPin, ShieldCheck, User } from 'lucide-react-native';
+import React from 'react';
+import { Image } from 'expo-image';
+import { View } from 'react-native';
 
 export default function BookingApplicationDetails() {
   const router = useRouter();
@@ -44,8 +37,7 @@ export default function BookingApplicationDetails() {
     variables: { bookingApplicationId: String(id) },
   });
 
-  const [{ fetching: cancelling }, cancelApplication] =
-    useCancelBookingApplicationMutation();
+  const [{ fetching: cancelling }, cancelApplication] = useCancelBookingApplicationMutation();
 
   const app = data?.bookingApplication;
 
@@ -63,8 +55,8 @@ export default function BookingApplicationDetails() {
     cancelApplication({ applicationId: String(id) }).then((res) => {
       if (res.data?.cancelBookingApplication) {
         toast.show({
-          type: "success",
-          text1: "Success",
+          type: 'success',
+          text1: 'Success',
           text2: res.data.cancelBookingApplication.message,
         });
         setCancelOpen(false);
@@ -76,19 +68,14 @@ export default function BookingApplicationDetails() {
     ? BOOKING_APPLICATION_STATUS_COLORS[app.status]
     : hexToRgba(colors.text, 0.4);
   const coverUrl = app?.hosting?.coverImage?.asset?.publicUrl;
-  const location = [app?.hosting?.city, app?.hosting?.state]
-    .filter(Boolean)
-    .join(", ");
+  const location = [app?.hosting?.city, app?.hosting?.state].filter(Boolean).join(', ');
 
   return (
     <>
       <DetailsLayout
         title="Application Details"
         footer={
-          <View
-            className="flex-row gap-4 p-4 pb-8"
-            style={{ backgroundColor: colors.background }}
-          >
+          <View className="flex-row gap-4 p-4 pb-8" style={{ backgroundColor: colors.background }}>
             {app?.booking?.id && (
               <Button
                 type="primary"
@@ -134,19 +121,17 @@ export default function BookingApplicationDetails() {
                   source={coverUrl ? { uri: coverUrl } : FALLBACK_IMAGE}
                   placeholder={{ blurhash: PROPERTY_BLURHASH }}
                   contentFit="cover"
-                  style={{ width: "100%", height: 140, borderRadius: 10 }}
+                  style={{ width: '100%', height: 140, borderRadius: 10 }}
                 />
                 <View style={{ gap: 4 }}>
-                  <ThemedText
-                    style={{ fontSize: 14, fontFamily: Fonts.semibold }}
-                  >
-                    {app?.hosting?.title ?? "—"}
+                  <ThemedText style={{ fontSize: 14, fontFamily: Fonts.semibold }}>
+                    {app?.hosting?.title ?? '—'}
                   </ThemedText>
                   {location ? (
                     <View
                       style={{
-                        flexDirection: "row",
-                        alignItems: "center",
+                        flexDirection: 'row',
+                        alignItems: 'center',
                         gap: 5,
                       }}
                     >
@@ -171,9 +156,7 @@ export default function BookingApplicationDetails() {
               title="Application Status"
             >
               {app?.status && (
-                <View
-                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-                >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <ThemedText
                     style={{
                       fontSize: 12,
@@ -199,43 +182,37 @@ export default function BookingApplicationDetails() {
                         fontFamily: Fonts.semibold,
                       }}
                     >
-                      {toTitleCase(app.status.replaceAll("_", " "))}
+                      {toTitleCase(app.status.replaceAll('_', ' '))}
                     </ThemedText>
                   </View>
                 </View>
               )}
-              <DataRow
-                label="Details"
-                value={app?.statusDetails ?? "No additional details."}
-              />
+              <DataRow label="Details" value={app?.statusDetails ?? 'No additional details.'} />
               <DataRow
                 label="Submitted"
                 value={
                   app?.createdAt
-                    ? new Date(app.createdAt).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })
-                    : "—"
+                    ? new Date(app.createdAt).toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })
+                    : '—'
                 }
               />
               <DataRow
                 label="Last Updated"
                 value={
                   app?.lastUpdated
-                    ? new Date(app.lastUpdated).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })
-                    : "—"
+                    ? new Date(app.lastUpdated).toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })
+                    : '—'
                 }
               />
-              <DataRow
-                label="Ref #"
-                value={app?.id?.slice(-6).toUpperCase() ?? "—"}
-              />
+              <DataRow label="Ref #" value={app?.id?.slice(-6).toUpperCase() ?? '—'} />
             </ReviewSection>
 
             {/* Lease terms */}
@@ -246,21 +223,15 @@ export default function BookingApplicationDetails() {
               >
                 <DataRow
                   label="Commencement"
-                  value={new Date(app.commencementDate).toLocaleDateString(
-                    "en-GB",
-                    {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    },
-                  )}
+                  value={new Date(app.commencementDate).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
                   accent
                 />
                 {app.intervalMultiplier != null && (
-                  <DataRow
-                    label="Duration"
-                    value={`${app.intervalMultiplier} payment period(s)`}
-                  />
+                  <DataRow label="Duration" value={`${app.intervalMultiplier} payment period(s)`} />
                 )}
               </ReviewSection>
             )}
@@ -270,9 +241,9 @@ export default function BookingApplicationDetails() {
               icon={<User size={15} color={colors.primary} />}
               title="Personal Information"
             >
-              <DataRow label="Full Name" value={app?.fullName ?? ""} />
-              <DataRow label="Email" value={app?.email ?? ""} />
-              <DataRow label="Phone" value={app?.phoneNumber ?? ""} />
+              <DataRow label="Full Name" value={app?.fullName ?? ''} />
+              <DataRow label="Email" value={app?.email ?? ''} />
+              <DataRow label="Phone" value={app?.phoneNumber ?? ''} />
               {app?.correspondenceAddress && (
                 <StackedRow label="Address" value={app.correspondenceAddress} />
               )}
@@ -284,10 +255,7 @@ export default function BookingApplicationDetails() {
               title="Guest Profile"
             >
               {app?.guestFormData?.occupancyTypes && (
-                <DataRow
-                  label="Occupancy"
-                  value={toTitleCase(app.guestFormData.occupancyTypes)}
-                />
+                <DataRow label="Occupancy" value={toTitleCase(app.guestFormData.occupancyTypes)} />
               )}
               {app?.guestFormData?.employmentStatus && (
                 <DataRow
