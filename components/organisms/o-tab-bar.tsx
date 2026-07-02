@@ -2,34 +2,34 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { Pressable, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinkIcon } from '../icons/i-link';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useColorScheme } from '@/lib/hooks/use-color-scheme';
 import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
 import { hexToRgba } from '@/lib/utils/colors';
 import { SURFACE } from '@/lib/constants/surface';
 
 type Props = BottomTabBarProps & {
-  /** The route that swaps persona (guest↔host) — rendered as the raised centre button. */
+  /** The route that swaps persona (guest↔host) — rendered as the inline amber button. */
   centerRouteName: string;
 };
 
 /**
- * Soft/cloudy floating tab bar. A borderless, icon-only translucent surface that
- * FLOATS over the content (absolutely positioned + `box-none` so the empty sides
- * pass touches through), lifted off the base with a soft shadow, an amber wash +
- * glow behind the active tab, and a raised amber centre button for the
- * guest↔host swap. Presentational only — it emits the same `tabPress` the layouts
- * already listen for (scroll-to-top on re-press, preventDefault swap), so all
- * behaviour stays in the layouts. Returns null on tablet (sidebar nav there).
+ * Soft/cloudy floating tab bar. A borderless, icon-only OPAQUE surface that floats
+ * over the content (absolutely positioned + `box-none` so the empty sides pass
+ * touches through), lifted off the base with a soft shadow, an amber wash + glow
+ * behind the active tab, and an inline amber centre button for the guest↔host
+ * swap. Presentational only — emits the same `tabPress` the layouts already listen
+ * for (scroll-to-top on re-press, preventDefault swap), reuses each screen's
+ * tabBarIcon, and returns null on tablet (sidebar nav there).
+ *
+ * NB: uses an opaque surface, NOT expo-blur — the Android experimental BlurView
+ * glitched sibling view rendering after navigation.
  */
 const TabBar: React.FC<Props> = ({ state, descriptors, navigation, centerRouteName }) => {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const { isTablet } = useBreakpoint();
-  const isDark = useColorScheme() === 'dark';
 
   if (isTablet) return null;
 
@@ -53,54 +53,24 @@ const TabBar: React.FC<Props> = ({ state, descriptors, navigation, centerRouteNa
         paddingBottom: Math.max(insets.bottom, 14),
       }}
     >
-      {/* Shadow wrapper (BlurView clips its own shadow via overflow:hidden). */}
-      <View style={{ borderRadius: 30, boxShadow: SURFACE.shadowHigh }}>
-        <BlurView
-          intensity={60}
-          tint={isDark ? 'dark' : 'light'}
-          experimentalBlurMethod="dimezisBlurView"
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-around',
-            height: 64,
-            borderRadius: 30,
-            paddingHorizontal: 6,
-            overflow: 'hidden',
-            // Frosted tint over the blur so content behind is muted, not clear.
-            backgroundColor: hexToRgba(colors.background, 0.55),
-          }}
-        >
-          {state.routes.map((route, index) => {
-            const { options } = descriptors[route.key];
-            const focused = state.index === index;
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          height: 64,
+          borderRadius: 30,
+          paddingHorizontal: 6,
+          backgroundColor: colors.surface,
+          boxShadow: SURFACE.shadowHigh,
+        }}
+      >
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const focused = state.index === index;
 
-            // Centre slot: the persona-swap button — an inline amber circle, flush
-            // with the other icons (no protrusion).
-            if (route.name === centerRouteName) {
-              return (
-                <Pressable
-                  key={route.key}
-                  onPress={press(route.key, route.name, focused)}
-                  style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-                >
-                  <View
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 22,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: colors.primary,
-                      boxShadow: SURFACE.glow,
-                    }}
-                  >
-                    <LinkIcon size={22} color={colors['primary-content']} />
-                  </View>
-                </Pressable>
-              );
-            }
-
+          // Centre slot: the persona-swap button — an inline amber circle.
+          if (route.name === centerRouteName) {
             return (
               <Pressable
                 key={route.key}
@@ -109,23 +79,41 @@ const TabBar: React.FC<Props> = ({ state, descriptors, navigation, centerRouteNa
               >
                 <View
                   style={{
-                    paddingHorizontal: 18,
-                    paddingVertical: 11,
-                    borderRadius: 999,
-                    backgroundColor: focused ? hexToRgba(colors.primary, 0.15) : 'transparent',
-                    boxShadow: focused ? SURFACE.glow : undefined,
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: colors.primary,
+                    boxShadow: SURFACE.glow,
                   }}
                 >
-                  {options.tabBarIcon?.({
-                    focused,
-                    color: focused ? colors.primary : muted,
-                    size: 24,
-                  })}
+                  <LinkIcon size={22} color={colors['primary-content']} />
                 </View>
               </Pressable>
             );
-          })}
-        </BlurView>
+          }
+
+          return (
+            <Pressable
+              key={route.key}
+              onPress={press(route.key, route.name, focused)}
+              style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <View
+                style={{
+                  paddingHorizontal: 18,
+                  paddingVertical: 11,
+                  borderRadius: 999,
+                  backgroundColor: focused ? hexToRgba(colors.primary, 0.15) : 'transparent',
+                  boxShadow: focused ? SURFACE.glow : undefined,
+                }}
+              >
+                {options.tabBarIcon?.({ focused, color: focused ? colors.primary : muted, size: 24 })}
+              </View>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
