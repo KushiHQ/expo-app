@@ -23,7 +23,7 @@ import { AlignLeft, MapPin, MessageSquare } from 'lucide-react-native';
 import { SURFACE } from '@/lib/constants/surface';
 import SectionHeader from '@/components/atoms/a-section-header';
 import React from 'react';
-import { Pressable, Share, View } from 'react-native';
+import { Platform, Pressable, Share, View } from 'react-native';
 import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
 import { useUser } from '@/lib/hooks/user';
 import Skeleton from '@/components/atoms/a-skeleton';
@@ -60,12 +60,17 @@ export default function HostingDetails() {
     const slug = `${slugify(hosting?.title ?? '')}___${id}`;
     const base = process.env.EXPO_PUBLIC_SHARE_PROPERTY_URL || 'https://kushicorp.com/guest/<slug>';
     const shareUrl = base.replace('<slug>', slug);
+    // iOS treats `message` and `url` as separate share items, so putting the
+    // link in BOTH duplicates it. On iOS keep the URL only in `url` (nicer link
+    // preview too); on Android `url` is ignored, so the link must live in the
+    // message text.
+    const caption = `Check out this amazing property on Kushi: ${hosting?.title}`;
     try {
-      await Share.share({
-        title: hosting?.title ?? undefined,
-        message: `Check out this amazing property on Kushi: ${hosting?.title}\n\n${shareUrl}`,
-        url: shareUrl,
-      });
+      await Share.share(
+        Platform.OS === 'ios'
+          ? { title: hosting?.title ?? undefined, message: caption, url: shareUrl }
+          : { title: hosting?.title ?? undefined, message: `${caption}\n\n${shareUrl}` },
+      );
     } catch (error: any) {
       handleError(error);
     }
