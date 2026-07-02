@@ -67,6 +67,12 @@ const EMBEDDED = [
   'Asset',
   'HostingRoomImage',
   'PropertyTypeConfig',
+  // Tenancy-agreement template value objects: a template and its clause
+  // variables/values carry no `id` (SubClause itself is keyed and stays so).
+  // They're always read nested under a Hosting/SubClause, so embed them.
+  'TenancyTemplate',
+  'SubClauseVariable',
+  'SubClauseValue',
 ];
 
 const keys = Object.fromEntries([...NON_KEYED, ...EMBEDDED].map((t) => [t, () => null])) as Record<
