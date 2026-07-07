@@ -3,6 +3,7 @@ import { View, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { Building2, ChevronRight } from 'lucide-react-native';
 import ThemedText from '../atoms/a-themed-text';
+import { abbreviateNumber } from '@/lib/utils/number';
 import SectionHeader from '@/components/atoms/a-section-header';
 import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
@@ -105,7 +106,7 @@ const HostingUnits: React.FC<Props> = ({ hosting, isHost }) => {
                       fontFamily: Fonts.semibold,
                     }}
                   >
-                    ₦{Number(unit.price ?? 0).toLocaleString()}
+                    ₦{abbreviateNumber(Number(unit.price ?? 0))}
                     {unit.paymentInterval && unit.paymentInterval !== PaymentInterval.OneTimePayment
                       ? ` · ${capitalize(unit.paymentInterval)}`
                       : ''}

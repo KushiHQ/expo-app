@@ -5,6 +5,7 @@ import { PublishStatus } from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
 import { SURFACE } from '@/lib/constants/surface';
 import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
+import { abbreviateNumber } from '@/lib/utils/number';
 import { Image } from 'expo-image';
 import { ChevronRight, Image as ImageIcon, Trash2 } from 'lucide-react-native';
 import React from 'react';
@@ -89,7 +90,7 @@ const HostingUnitCard: React.FC<Props> = ({
             style={{ fontFamily: Fonts.bold, fontSize: 15, color: colors.primary }}
             numberOfLines={1}
           >
-            {price ? `₦${Number(price).toLocaleString()}` : 'No price set'}
+            {price ? `₦${abbreviateNumber(Number(price))}` : 'No price set'}
           </ThemedText>
           {formatPaymentInterval(paymentInterval) ? (
             <ThemedText

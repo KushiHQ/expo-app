@@ -11,6 +11,7 @@ import { MynauiStarSolid } from '../icons/i-star';
 import { MapPin } from 'lucide-react-native';
 import { HostAnalyticsQuery, HostingQuery } from '@/lib/services/graphql/generated';
 import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
+import { abbreviateNumber } from '@/lib/utils/number';
 import { SURFACE } from '@/lib/constants/surface';
 
 type Props = {
@@ -72,7 +73,7 @@ const TopListingCard: React.FC<Props> = ({ hosting, onPress }) => {
         <View className="mt-0.5 flex-row items-center justify-between gap-2">
           <View>
             <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 15, color: colors.primary }}>
-              ₦{Number(hosting?.price ?? '0').toLocaleString()}
+              ₦{abbreviateNumber(Number(hosting?.price ?? 0))}
             </ThemedText>
             {intervalLabel ? (
               <ThemedText

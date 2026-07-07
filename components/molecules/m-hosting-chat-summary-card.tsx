@@ -12,6 +12,7 @@ import { Fonts } from '@/lib/constants/theme';
 import { useRouter } from '@/lib/hooks/use-router';
 import { HostingChatQuery } from '@/lib/services/graphql/generated';
 import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
+import { abbreviateNumber } from '@/lib/utils/number';
 import { SURFACE } from '@/lib/constants/surface';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -95,7 +96,7 @@ const HostingChatSummaryCard: React.FC<Props> = ({ hosting }) => {
                 color: colors.primary,
               }}
             >
-              ₦{Number(hosting?.price ?? '0').toLocaleString()}
+              ₦{abbreviateNumber(Number(hosting?.price ?? 0))}
               {formatPaymentInterval(hosting?.paymentInterval) ? (
                 <ThemedText
                   style={{

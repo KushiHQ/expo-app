@@ -7,7 +7,7 @@ import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import ThemedText from '../atoms/a-themed-text';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
-import { formatNaira } from '@/lib/utils/currency';
+import { abbreviateNumber } from '@/lib/utils/number';
 import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import { Hosting } from '@/lib/services/graphql/generated';
 
@@ -81,7 +81,7 @@ const HostingMapCard: React.FC<Props> = ({ hosting, onClose }) => {
           <View className="mt-2 flex-row items-center justify-between">
             <View>
               <ThemedText type="semibold" style={{ color: colors.primary }}>
-                {formatNaira(Number(price)).formated}
+                {`₦${abbreviateNumber(Number(price))}`}
                 {formatPaymentInterval(paymentInterval) ? (
                   <ThemedText style={{ fontSize: 10, color: hexToRgba(colors.text, 0.5) }}>
                     /{formatPaymentInterval(paymentInterval)}

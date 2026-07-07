@@ -3,6 +3,7 @@ import { View, Pressable } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
 import TierBadge from '../atoms/a-verification-tier-badge';
 import { Fonts } from '@/lib/constants/theme';
+import { abbreviateNumber } from '@/lib/utils/number';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import { joinLocation } from '@/lib/utils/locations';
@@ -62,9 +63,9 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
 
   const priceLabel = isMultiUnit
     ? hosting.priceFrom != null
-      ? `from ₦${Number(hosting.priceFrom).toLocaleString()}`
+      ? `from ₦${abbreviateNumber(Number(hosting.priceFrom))}`
       : '—'
-    : `₦${Number(hosting.price)?.toLocaleString()}`;
+    : `₦${abbreviateNumber(Number(hosting.price))}`;
 
   const intervalLabel =
     hosting.paymentInterval && hosting.paymentInterval !== PaymentInterval.OneTimePayment

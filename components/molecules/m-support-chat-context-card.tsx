@@ -13,6 +13,7 @@ import { useRouter } from '@/lib/hooks/use-router';
 import { SupportChatQuery, SupportItemType } from '@/lib/services/graphql/generated';
 import { capitalize } from '@/lib/utils/text';
 import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
+import { abbreviateNumber } from '@/lib/utils/number';
 import { SURFACE } from '@/lib/constants/surface';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -192,7 +193,7 @@ const SupportChatContextCard: React.FC<Props> = ({ itemType, hosting, booking, t
               style={{ backgroundColor: hexToRgba(colors.primary, 0.12) }}
             >
               <ThemedText style={{ fontSize: 14, fontFamily: Fonts.bold, color: colors.primary }}>
-                ₦{Number(effectiveHosting.price ?? '0').toLocaleString()}
+                ₦{abbreviateNumber(Number(effectiveHosting.price ?? 0))}
                 {formatPaymentInterval(effectiveHosting.paymentInterval) ? (
                   <ThemedText
                     style={{
