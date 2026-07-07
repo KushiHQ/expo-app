@@ -289,6 +289,18 @@ export const DELETE_HOSTING_ROOM = gql`
   }
 `;
 
+export const COPY_HOSTING_ROOM = gql`
+  mutation CopyHostingRoom($hostingRoomId: String!, $targetHostingId: String!) {
+    copyHostingRoom(hostingRoomId: $hostingRoomId, targetHostingId: $targetHostingId) {
+      message
+      data {
+        id
+        name
+      }
+    }
+  }
+`;
+
 export const CREATE_UPDATE_SAVED_HOSTING = gql`
   mutation CreateUpdateSavedHosting($input: SavedHostingInput!) {
     createUpdateSavedHosting(input: $input) {

@@ -1819,6 +1819,12 @@ export type Mutations = {
   completePasswordChange: MessageResponse;
   completePhoneNumberVerification: PhoneNumberResponse;
   /**
+   * Copy a space (room + its photos, shared at the asset level) into another
+   * of the caller's listings — the estate workflow where sibling units share
+   * identical spaces and one unit's capture should serve the others.
+   */
+  copyHostingRoom: HostingRoomResponse;
+  /**
    * PUBLIC — no auth. Captures a landlord onboarding lead from the /hosts
    * landing page ("drop your details, we call you"). Input is validated and
    * length-capped in the db layer; the global rate limit throttles abuse.
@@ -2200,6 +2206,12 @@ export type MutationsCompletePasswordChangeArgs = {
 
 export type MutationsCompletePhoneNumberVerificationArgs = {
   input: PhoneNumberVerificationInput;
+};
+
+
+export type MutationsCopyHostingRoomArgs = {
+  hostingRoomId: Scalars['String']['input'];
+  targetHostingId: Scalars['String']['input'];
 };
 
 
@@ -4134,6 +4146,14 @@ export type DeleteHostingRoomMutationVariables = Exact<{
 
 export type DeleteHostingRoomMutation = { __typename?: 'Mutations', deleteHostingRoom: { __typename?: 'MessageResponse', message: string } };
 
+export type CopyHostingRoomMutationVariables = Exact<{
+  hostingRoomId: Scalars['String']['input'];
+  targetHostingId: Scalars['String']['input'];
+}>;
+
+
+export type CopyHostingRoomMutation = { __typename?: 'Mutations', copyHostingRoom: { __typename?: 'HostingRoomResponse', message: string, data?: { __typename?: 'HostingRoom', id: string, name: string } | null } };
+
 export type CreateUpdateSavedHostingMutationVariables = Exact<{
   input: SavedHostingInput;
 }>;
@@ -5830,6 +5850,24 @@ export const DeleteHostingRoomDocument = gql`
 
 export function useDeleteHostingRoomMutation() {
   return Urql.useMutation<DeleteHostingRoomMutation, DeleteHostingRoomMutationVariables>(DeleteHostingRoomDocument);
+};
+export const CopyHostingRoomDocument = gql`
+    mutation CopyHostingRoom($hostingRoomId: String!, $targetHostingId: String!) {
+  copyHostingRoom(
+    hostingRoomId: $hostingRoomId
+    targetHostingId: $targetHostingId
+  ) {
+    message
+    data {
+      id
+      name
+    }
+  }
+}
+    `;
+
+export function useCopyHostingRoomMutation() {
+  return Urql.useMutation<CopyHostingRoomMutation, CopyHostingRoomMutationVariables>(CopyHostingRoomDocument);
 };
 export const CreateUpdateSavedHostingDocument = gql`
     mutation CreateUpdateSavedHosting($input: SavedHostingInput!) {

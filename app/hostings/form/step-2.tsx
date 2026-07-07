@@ -2,6 +2,7 @@ import Button from '@/components/atoms/a-button';
 import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
 import HostingRoomImage from '@/components/atoms/a-hosting-room-image';
 import LoadingModal from '@/components/atoms/a-loading-modal';
+import CopySpaceSheet from '@/components/organisms/o-copy-space-sheet';
 import ThemedText from '@/components/atoms/a-themed-text';
 import DetailsLayout from '@/components/layouts/details';
 import HostingStepper from '@/components/molecules/m-hosting-stepper';
@@ -55,6 +56,11 @@ export default function NewHostingStep2() {
     handleMoveImages,
     handleDeleteImages,
   } = useHostingFormRoomUtils(String(id));
+
+  // "Copy this space to another listing" target-picker (estate/unit workflow).
+  const [copySpace, setCopySpace] = React.useState<{ roomId: string; roomName: string } | null>(
+    null,
+  );
 
   const propertyType = hosting?.propertyType ?? undefined;
 
@@ -357,6 +363,27 @@ export default function NewHostingStep2() {
                 />
               </View>
 
+              {rooms[activeIndex]?.id ? (
+                <Button
+                  type="tinted"
+                  disabled={hostingRoomSaving}
+                  onPress={() => {
+                    // Estate workflow: copy this space (photos included, by
+                    // reference) into a sibling unit that missed it. Close the
+                    // details modal before presenting the sheet (stacked native
+                    // modals deadlock touch handling on iOS).
+                    const room = rooms[activeIndex];
+                    setActiveModalIndex(undefined);
+                    setTimeout(
+                      () => setCopySpace({ roomId: room.id!, roomName: Room[room.name] }),
+                      350,
+                    );
+                  }}
+                >
+                  <ThemedText content="tinted">Copy to another listing</ThemedText>
+                </Button>
+              ) : null}
+
               <View className="flex-row gap-2">
                 <Button
                   className="flex-1"
@@ -442,6 +469,17 @@ export default function NewHostingStep2() {
           )}
         </View>
       </ThemedModal>
+
+      {copySpace ? (
+        <CopySpaceSheet
+          visible={!!copySpace}
+          onClose={() => setCopySpace(null)}
+          roomId={copySpace.roomId}
+          roomName={copySpace.roomName}
+          currentHostingId={String(id)}
+          currentParentId={hosting?.parentId}
+        />
+      ) : null}
 
       <LoadingModal visible={loading} />
     </>
