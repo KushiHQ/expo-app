@@ -1,7 +1,8 @@
 import DetailsLayout from '@/components/layouts/details';
 import { View, StyleSheet, Pressable, Image, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { CameraView, CameraType, FlashMode, useCameraPermissions } from 'expo-camera';
+import { Zap, ZapOff } from 'lucide-react-native';
 import React, { useState, useRef } from 'react';
 import ThemedText from '@/components/atoms/a-themed-text';
 import Button from '@/components/atoms/a-button';
@@ -18,6 +19,7 @@ export default function CameraPage() {
   const { images, multiple, redirect } = useLocalSearchParams();
   const cameraRef = useRef<CameraView>(null);
   const [facing, setFacing] = useState<CameraType>('back');
+  const [flash, setFlash] = useState<FlashMode>('off');
   const { redirect: galleryRedirect } = usePhotoGalleryScreen();
   const [permission, requestPermission] = useCameraPermissions();
   const { gallery, append, setGallery, setActiveIndex } = useGalleryStore();
@@ -77,12 +79,19 @@ export default function CameraPage() {
     setFacing((current) => (current === 'back' ? 'front' : 'back'));
   };
 
+  const toggleFlash = () => {
+    setFlash((current) => (current === 'off' ? 'on' : current === 'on' ? 'auto' : 'off'));
+  };
+
   const takePicture = async () => {
     if (cameraRef.current) {
       try {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         const photo = await cameraRef.current?.takePictureAsync({
-          quality: 1,
+          // JPEG encoding quality only — resolution and the EXIF/GPS block below
+          // are untouched. 1.0 produced 3-8MB captures that time out on 3G; 0.7
+          // is visually near-identical at 1-2MB.
+          quality: 0.7,
           exif: true,
           additionalExif: location
             ? {
@@ -128,9 +137,38 @@ export default function CameraPage() {
         backButton="solid"
       >
         <View style={styles.cameraWrapper}>
-          <CameraView ref={cameraRef} style={styles.camera} facing={facing} />
+          <CameraView ref={cameraRef} style={styles.camera} facing={facing} flash={flash} />
 
           <View style={styles.controlsOverlay} pointerEvents="box-none">
+            {facing === 'back' ? (
+              <Pressable
+                onPress={toggleFlash}
+                style={[styles.flipButton, { position: 'absolute', top: 60, right: 20 }]}
+                aria-label={`Flash ${flash}`}
+              >
+                {flash === 'off' ? (
+                  <ZapOff color="white" size={26} />
+                ) : (
+                  // Brand amber = active state; 'auto' shows an A badge.
+                  <>
+                    <Zap color="#FFA500" size={26} fill={flash === 'on' ? '#FFA500' : 'none'} />
+                    {flash === 'auto' ? (
+                      <ThemedText
+                        style={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 10,
+                          fontSize: 11,
+                          color: '#FFA500',
+                        }}
+                      >
+                        A
+                      </ThemedText>
+                    ) : null}
+                  </>
+                )}
+              </Pressable>
+            ) : null}
             <View style={styles.controls}>
               <Pressable style={styles.galleryPreview} onPress={openGallery}>
                 <Image

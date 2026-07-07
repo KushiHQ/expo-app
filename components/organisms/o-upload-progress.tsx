@@ -13,6 +13,7 @@ import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { CheckCircle, RotateCcw, X, AlertTriangle, ChevronRight } from 'lucide-react-native';
+import { useShallow } from 'zustand/react/shallow';
 import { Fonts } from '@/lib/constants/theme';
 import { useUploadStore, type ImageUploadStatus } from '@/lib/stores/uploads';
 
@@ -56,12 +57,77 @@ const ROW_META: Record<ImageUploadStatus, { label: string; color: string }> = {
  * per-photo state + retry/remove, and a way to clear a wedged batch (WS-2) — so a
  * stuck upload never again requires reinstalling the app.
  */
+/**
+ * The sheet's per-photo list. Split out so ONLY it holds the whole-tasks-map
+ * subscription — mounted while the sheet is open, so the always-visible toast
+ * above never re-renders on per-task identity ticks.
+ */
+function UploadTaskList({
+  retry,
+  removeTask,
+}: {
+  retry: (uri: string) => void;
+  removeTask: (uri: string) => void;
+}) {
+  const tasks = useUploadStore((s) => s.tasks);
+  const list = Object.values(tasks);
+
+  return (
+    <ScrollView style={{ maxHeight: 340 }} contentContainerStyle={{ paddingBottom: 8 }}>
+      {list.map((t) => {
+        const meta = ROW_META[t.status];
+        return (
+          <View key={t.uri} style={styles.row}>
+            <Image source={{ uri: t.uri }} style={styles.thumb} contentFit="cover" />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.rowLabel, { color: meta.color }]} numberOfLines={1}>
+                {meta.label}
+              </Text>
+              {t.status === 'error' && t.lastError ? (
+                <Text
+                  style={[styles.rowLabel, { color: 'rgba(148,163,184,0.7)', fontSize: 10 }]}
+                  numberOfLines={1}
+                >
+                  {t.lastError}
+                </Text>
+              ) : null}
+            </View>
+            {t.status === 'error' ? (
+              <TouchableOpacity onPress={() => retry(t.uri)} hitSlop={8} style={styles.rowAction}>
+                <RotateCcw color="#F59E0B" size={18} strokeWidth={2.2} />
+              </TouchableOpacity>
+            ) : null}
+            <TouchableOpacity
+              onPress={() => removeTask(t.uri)}
+              hitSlop={8}
+              style={styles.rowAction}
+            >
+              <X color="rgba(148,163,184,0.85)" size={18} strokeWidth={2.2} />
+            </TouchableOpacity>
+          </View>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
 export default function UploadProgress() {
   const insets = useSafeAreaInsets();
 
-  const tasks = useUploadStore((s) => s.tasks);
-  const done = useUploadStore((s) => s.done);
-  const total = useUploadStore((s) => s.total);
+  // Derived counts (useShallow): the toast re-renders only when a DISPLAYED
+  // number changes — the previous whole-map subscription re-rendered this
+  // app-wide floating component on every task-object identity tick.
+  const { pending, failed, done, total } = useUploadStore(
+    useShallow((s) => {
+      let pending = 0;
+      let failed = 0;
+      for (const t of Object.values(s.tasks)) {
+        if (t.status === 'queued' || t.status === 'uploading') pending += 1;
+        else failed += 1;
+      }
+      return { pending, failed, done: s.done, total: s.total };
+    }),
+  );
   const retry = useUploadStore((s) => s.retry);
   const retryAll = useUploadStore((s) => s.retryAll);
   const removeTask = useUploadStore((s) => s.removeTask);
@@ -69,15 +135,15 @@ export default function UploadProgress() {
 
   const [open, setOpen] = React.useState(false);
 
-  const list = Object.values(tasks);
-  const pending = list.filter((t) => t.status === 'queued' || t.status === 'uploading').length;
-  const failed = list.filter((t) => t.status === 'error' || t.status === 'dead').length;
-
-  // Briefly show "all uploaded" when the queue fully drains.
+  // Briefly show "all uploaded" when the queue fully drains. `justDrained` is
+  // derived DURING the drain render (the ref still holds the previous value —
+  // the effect below updates it post-paint), so the toast transitions in place
+  // instead of unmounting for one frame and remounting when showDone flips.
   const [showDone, setShowDone] = React.useState(false);
   const prevActive = React.useRef(0);
+  const active = pending + failed;
+  const justDrained = prevActive.current > 0 && active === 0;
   React.useEffect(() => {
-    const active = pending + failed;
     if (prevActive.current > 0 && active === 0) {
       setShowDone(true);
       const t = setTimeout(() => setShowDone(false), 2500);
@@ -85,14 +151,14 @@ export default function UploadProgress() {
       return () => clearTimeout(t);
     }
     prevActive.current = active;
-  }, [pending, failed]);
+  }, [active]);
 
   // Close the sheet automatically once there's nothing left to manage.
   React.useEffect(() => {
     if (open && pending === 0 && failed === 0) setOpen(false);
   }, [open, pending, failed]);
 
-  if (pending === 0 && failed === 0 && !showDone) return null;
+  if (pending === 0 && failed === 0 && !showDone && !justDrained) return null;
 
   const phase = pending > 0 ? 'uploading' : failed > 0 ? 'error' : 'done';
   const cfg = STATE[phase];
@@ -181,45 +247,7 @@ export default function UploadProgress() {
             </Text>
           </View>
 
-          <ScrollView style={{ maxHeight: 340 }} contentContainerStyle={{ paddingBottom: 8 }}>
-            {list.map((t) => {
-              const meta = ROW_META[t.status];
-              return (
-                <View key={t.uri} style={styles.row}>
-                  <Image source={{ uri: t.uri }} style={styles.thumb} contentFit="cover" />
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.rowLabel, { color: meta.color }]} numberOfLines={1}>
-                      {meta.label}
-                    </Text>
-                    {t.status === 'error' && t.lastError ? (
-                      <Text
-                        style={[styles.rowLabel, { color: 'rgba(148,163,184,0.7)', fontSize: 10 }]}
-                        numberOfLines={1}
-                      >
-                        {t.lastError}
-                      </Text>
-                    ) : null}
-                  </View>
-                  {t.status === 'error' ? (
-                    <TouchableOpacity
-                      onPress={() => retry(t.uri)}
-                      hitSlop={8}
-                      style={styles.rowAction}
-                    >
-                      <RotateCcw color="#F59E0B" size={18} strokeWidth={2.2} />
-                    </TouchableOpacity>
-                  ) : null}
-                  <TouchableOpacity
-                    onPress={() => removeTask(t.uri)}
-                    hitSlop={8}
-                    style={styles.rowAction}
-                  >
-                    <X color="rgba(148,163,184,0.85)" size={18} strokeWidth={2.2} />
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
-          </ScrollView>
+          {open ? <UploadTaskList retry={retry} removeTask={removeTask} /> : null}
 
           <View style={styles.sheetActions}>
             {failed > 0 ? (

@@ -201,6 +201,7 @@ export const CREATE_UPDATE_HOSTING_ROOM_IMAGE = gql`
         asset {
           id
           publicUrl
+          lastUpdated
         }
       }
     }

@@ -1,5 +1,8 @@
+import { InteractionManager } from 'react-native';
+import { useShallow } from 'zustand/react/shallow';
+
 import { RoomData, useHostingRoomsStore } from '@/lib/stores/hostings';
-import { useUploadStore } from '@/lib/stores/uploads';
+import { getUploadedAsset, useUploadStore } from '@/lib/stores/uploads';
 import { useHostingForm } from '../hosting-form';
 import {
   useCreateOrUpdateHostingRoomMutation,
@@ -30,6 +33,10 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
 
   const [activeModalIndex, setActiveModalIndex] = React.useState<number>();
   const [deleteModalIndex, setDeleteModalIndex] = React.useState<number>();
+  // useShallow: a selector-less subscription re-rendered the whole photo wizard
+  // on EVERY rooms-store write (one per completed upload — the freeze storm).
+  // Actions are stable refs, so shallow-compare only fails when rooms/activeIndex
+  // actually change.
   const {
     rooms,
     activeIndex,
@@ -42,7 +49,21 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
     deleteRoomImage,
     moveRoom,
     moveRoomImage,
-  } = useHostingRoomsStore();
+  } = useHostingRoomsStore(
+    useShallow((s) => ({
+      rooms: s.rooms,
+      activeIndex: s.activeIndex,
+      setRooms: s.setRooms,
+      saveRoom: s.saveRoom,
+      deleteRoom: s.deleteRoom,
+      setActiveIndex: s.setActiveIndex,
+      updateActiveRoom: s.updateActiveRoom,
+      updateRoom: s.updateRoom,
+      deleteRoomImage: s.deleteRoomImage,
+      moveRoom: s.moveRoom,
+      moveRoomImage: s.moveRoomImage,
+    })),
+  );
 
   const { hosting, refetch: refetchHosting, fetching: fetchingHosting } = useHostingForm(hostingId);
 
@@ -88,7 +109,16 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
   const resolveThumb = React.useCallback(
     (url: string) => {
       if (!url || url.startsWith('file')) return url;
-      const asset = imageAssets[url];
+      // Fall back to the upload queue's just-uploaded registry: a fresh upload's
+      // publicUrl isn't in imageAssets until the next refetch, and without the
+      // fallback each completed photo decoded its FULL-RESOLUTION original into
+      // an 88px thumb (the batch-completion memory/GC freeze), then reloaded
+      // again post-refetch. The registry uses the same asset id + lastUpdated
+      // version, so this proxy URL is identical to the post-refetch one.
+      // Registry first: an edited photo replaced in place keeps the SAME
+      // publicUrl, so the stale imageAssets entry (old cache-bust version)
+      // would show the pre-edit image until the next refetch.
+      const asset = getUploadedAsset(url) ?? imageAssets[url];
       return asset ? getAssetResizeUrl(asset.id, 240, 240, 80, asset.version) : url;
     },
     [imageAssets],
@@ -154,14 +184,57 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
   // delete / set-cover / reorder). We wait for a truly empty queue — not just the
   // end of in-flight uploads — so a failed thumbnail (and its retry control) isn't
   // wiped by the server re-sync before the host can retry it.
-  const pendingUploads = useUploadStore((s) => Object.keys(s.tasks).length);
-  const prevPendingUploads = React.useRef(0);
+  // Boolean selector: the previous count selector re-rendered this hook's whole
+  // screen on EVERY task tick; now only the empty↔non-empty transitions notify.
+  const queueEmpty = useUploadStore((s) => Object.keys(s.tasks).length === 0);
+  const prevQueueEmpty = React.useRef(true);
+  // The refetch is read through a ref and the drain is tracked with a pending
+  // flag: refetchHosting has a fresh identity every render, so making it an
+  // effect dep re-ran the effect on ANY re-render — the cleanup would cancel
+  // the scheduled refetch and the re-run couldn't reschedule it (the one-shot
+  // transition was already consumed), silently losing the post-upload id
+  // re-sync (delete/set-cover on new photos would then no-op).
+  const refetchHostingRef = React.useRef(refetchHosting);
+  refetchHostingRef.current = refetchHosting;
+  const drainRefetchPending = React.useRef(false);
   React.useEffect(() => {
-    if (prevPendingUploads.current > 0 && pendingUploads === 0) {
-      refetchHosting();
+    const wasEmpty = prevQueueEmpty.current;
+    prevQueueEmpty.current = queueEmpty;
+    if (!queueEmpty) {
+      // New batch started — its own drain will re-sync; drop any pending one.
+      drainRefetchPending.current = false;
+      return;
     }
-    prevPendingUploads.current = pendingUploads;
-  }, [pendingUploads, refetchHosting]);
+    if (!wasEmpty) drainRefetchPending.current = true;
+    if (!drainRefetchPending.current) return;
+
+    // Drained: defer the heavy network-only refetch (JSON parse + normalize +
+    // cross-screen re-render) OFF the completion burst's frames.
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const interaction = InteractionManager.runAfterInteractions(() => {
+      timer = setTimeout(() => {
+        drainRefetchPending.current = false;
+        refetchHostingRef.current();
+      }, 500);
+    });
+    return () => {
+      interaction.cancel();
+      if (timer) clearTimeout(timer);
+    };
+  }, [queueEmpty]);
+
+  // If the screen unmounts while a drain refetch is still pending, fire it
+  // immediately — other mounted wizard screens share the urql operation and
+  // must not be left holding rooms without their server ids.
+  React.useEffect(
+    () => () => {
+      if (drainRefetchPending.current) {
+        drainRefetchPending.current = false;
+        refetchHostingRef.current();
+      }
+    },
+    [],
+  );
 
   const handleDeleteImage = (roomIndex: number, imageIndex: number) => {
     const room = rooms[roomIndex];

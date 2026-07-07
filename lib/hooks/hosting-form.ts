@@ -7,6 +7,8 @@ import {
   useHostingQuery,
   useInitiateHostingVerificationMutation,
 } from '../services/graphql/generated';
+import { useShallow } from 'zustand/react/shallow';
+
 import { useActiveFormHosingStore } from '../stores/hostings';
 import { cast } from '../types/utils';
 import { removeTypenames } from '../utils/graphql/cleanup';
@@ -15,6 +17,10 @@ export const useHostingForm = (id?: string | string[]) => {
   const [{ fetching: mutating }, mutate] = useCreateOrUpdateHostingMutation();
   const [{ fetching: verificationMutating }, verificationMutate] =
     useInitiateHostingVerificationMutation();
+  // useShallow: this hook is mounted by every wizard screen kept alive in the
+  // router stack — a selector-less subscription made ONE store write re-render
+  // ALL of them (the upload-drain freeze amplifier). Actions are stable refs,
+  // so shallow-compare only fails when data fields actually change.
   const {
     input,
     verificationInput,
@@ -24,7 +30,18 @@ export const useHostingForm = (id?: string | string[]) => {
     updateInput,
     hosting,
     clear,
-  } = useActiveFormHosingStore();
+  } = useActiveFormHosingStore(
+    useShallow((s) => ({
+      input: s.input,
+      verificationInput: s.verificationInput,
+      initiate: s.initiate,
+      refreshHosting: s.refreshHosting,
+      updateVerificationInput: s.updateVerificationInput,
+      updateInput: s.updateInput,
+      hosting: s.hosting,
+      clear: s.clear,
+    })),
+  );
 
   const [{ data, fetching }, refetch] = useHostingQuery({
     pause: !id,
@@ -72,6 +89,13 @@ export const useHostingForm = (id?: string | string[]) => {
     [mutate],
   );
 
+  // Stable identity (urql's reexecute is memoized) so consumers can safely use
+  // it in effect deps without the effect re-running on every render.
+  const refetchNetwork = React.useCallback(
+    () => refetch({ requestPolicy: 'network-only' }),
+    [refetch],
+  );
+
   return {
     input,
     verificationInput,
@@ -84,6 +108,6 @@ export const useHostingForm = (id?: string | string[]) => {
     mutating,
     fetching,
     hosting,
-    refetch: () => refetch({ requestPolicy: 'network-only' }),
+    refetch: refetchNetwork,
   };
 };

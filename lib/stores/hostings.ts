@@ -103,15 +103,20 @@ export const useHostingRoomsStore = create<HostingRoomsStore>((set, get) => ({
   },
   replaceRoomImageUrl(roomId, fromUrl, toUrl) {
     set((state) => {
+      // No-op (same state object → zustand skips notify) when nothing matched,
+      // so upload completions for other hostings/rooms don't wake the whole
+      // photo wizard.
+      let changed = false;
       const rooms = state.rooms.map((room) => {
         if (room.id !== roomId) return room;
         const idx = room.images.indexOf(fromUrl);
         if (idx === -1) return room;
         const images = [...room.images];
         images[idx] = toUrl;
+        changed = true;
         return { ...room, images };
       });
-      return { rooms };
+      return changed ? { rooms } : state;
     });
   },
   moveRoom(from, to) {
@@ -235,7 +240,11 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>((set, get
       hosting,
     }));
   },
-  refreshHosting: (hosting) => set(() => ({ hosting })),
+  // Identity-guarded: all mounted useHostingForm instances share one urql
+  // operation, so their [data] effects pass the SAME object — skipping the
+  // write collapses M redundant sets (and the O(M²) cross-screen re-render
+  // burst at upload-drain refetch time) into one.
+  refreshHosting: (hosting) => set((state) => (state.hosting === hosting ? state : { hosting })),
   updateInput: (data) =>
     set((state) => ({
       input: { ...state.input, ...data },

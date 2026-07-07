@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as Network from 'expo-network';
 import { formMutation } from '@/lib/services/graphql/utils/fetch';
 import { CREATE_UPDATE_HOSTING_ROOM_IMAGE } from '@/lib/services/graphql/requests/mutations/hostings';
 import { generateRNFile } from '@/lib/utils/file';
@@ -13,8 +14,10 @@ import { useHostingRoomsStore } from './hostings';
 
 const MAX_CONCURRENT = 3;
 const MAX_ATTEMPTS = 4;
-// Backoff (ms) before retrying attempt 2, 3, 4.
-const BACKOFF_MS = [1500, 4000, 9000];
+// Backoff (ms) before retrying attempt 2, 3, 4 — long enough to span real
+// cell-handoff dead zones; ±30% jitter is applied so a whole batch doesn't
+// retry in lockstep against a recovering radio.
+const BACKOFF_MS = [5000, 15000, 45000];
 const UPLOAD_DIR = (FileSystem.documentDirectory ?? '') + 'hosting-uploads/';
 // An in-flight upload older than this is force-aborted by the watchdog (belt &
 // suspenders on top of the per-request timeout in formMutation).
@@ -43,10 +46,23 @@ export type UploadTask = {
   /** Why the last attempt failed — shown on the failed row so retries that keep
    *  failing are diagnosable instead of looking like a dead button. */
   lastError?: string;
+  /** Earliest time the next attempt may start (real backoff — pump() skips the
+   *  task until then). Additive + persist-compatible: absent = immediately
+   *  eligible. */
+  nextAttemptAt?: number;
 };
 
 /** A photo to upload. `replaceImageId` updates an existing server image in place. */
 export type UploadItem = { uri: string; replaceImageId?: string };
+
+// Just-uploaded publicUrl → asset registry (module-scope, NOT persisted). Lets
+// resolveThumb proxy fresh uploads through the resize CDN immediately: without
+// it, each completed photo decoded its full-resolution original into an 88px
+// thumbnail (the batch-completion memory/GC freeze), then reloaded again after
+// the drain refetch. The id + lastUpdated here produce the exact same proxy URL
+// the post-refetch imageAssets map yields, so the thumbnail loads once.
+const uploadedAssets = new Map<string, { id: string; version?: string | null }>();
+export const getUploadedAsset = (url: string) => uploadedAssets.get(url);
 
 interface UploadState {
   /** Active room-image uploads, keyed by uri. Successful ones are removed. */
@@ -134,14 +150,31 @@ export const useUploadStore = create<UploadState>()(
         }, WATCHDOG_MS);
       };
 
+      // Connectivity state for the queue (kept fresh by the listener registered
+      // below, after runOne). Nigerian networks drop and stall constantly — the
+      // queue pauses while offline and auto-resumes on reconnect.
+      let online = true;
+      let cellular = false;
+      const NETWORK_ERROR_RE = /network request failed|failed to fetch|timed out|abort/i;
+
       const pump = () => {
         const list = Object.values(get().tasks);
         if (activeCount(get().tasks) > 0) ensureWatchdog();
+        // Offline: pause instead of burning attempts. The connectivity listener
+        // (and the watchdog tick) pumps again when the radio returns.
+        if (!online) return;
         const inFlight = list.filter((t) => t.status === 'uploading').length;
-        const slots = MAX_CONCURRENT - inFlight;
+        // On cellular, 3 parallel multi-MB POSTs split a slow uplink three ways
+        // and push ALL of them past the request timeout — sequential uploads on
+        // the same link actually complete.
+        const limit = cellular ? 1 : MAX_CONCURRENT;
+        const slots = limit - inFlight;
         if (slots <= 0) return;
+        const now = Date.now();
         list
-          .filter((t) => t.status === 'queued')
+          .filter(
+            (t) => t.status === 'queued' && (!t.nextAttemptAt || t.nextAttemptAt <= now),
+          )
           .slice(0, slots)
           .forEach((t) => void runOne(t.uri));
       };
@@ -172,9 +205,15 @@ export const useUploadStore = create<UploadState>()(
             { signal: controller.signal },
           );
 
-          const url = res.data?.createHostingRoomImage.data?.asset.publicUrl;
+          const asset = res.data?.createHostingRoomImage.data?.asset;
+          const url = asset?.publicUrl;
           if (res.error || !url) throw res.error ?? new Error('Upload failed');
 
+          // Register BEFORE the thumbnail swap so the very render it triggers
+          // can already resolve the resize-proxy URL (no full-res decode).
+          if (asset.id) {
+            uploadedAssets.set(url, { id: asset.id, version: asset.lastUpdated });
+          }
           useHostingRoomsStore.getState().replaceRoomImageUrl(task.roomId, uri, url);
           deleteCopy(uri);
           controllers.delete(uri);
@@ -196,18 +235,37 @@ export const useUploadStore = create<UploadState>()(
           const message =
             e instanceof Error ? e.message : typeof e === 'string' ? e : 'Upload failed';
           console.warn(`[uploads] attempt failed for ${uri}:`, message);
-          const attempts = (get().tasks[uri]?.attempts ?? 0) + 1;
-          if (attempts < MAX_ATTEMPTS) {
-            setStatus(uri, { status: 'queued', attempts, startedAt: undefined });
-            const delay = BACKOFF_MS[Math.min(attempts - 1, BACKOFF_MS.length - 1)];
-            setTimeout(pump, delay);
+          if (!online) {
+            // Offline: park the task WITHOUT consuming an attempt — pump() is
+            // gated on connectivity, and the reconnect listener resumes the
+            // queue. Burning attempts while the radio is down permanently
+            // errored whole batches after ~15s of outage.
+            setStatus(uri, { status: 'queued', startedAt: undefined, lastError: message });
           } else {
-            setStatus(uri, {
-              status: 'error',
-              attempts,
-              startedAt: undefined,
-              lastError: message,
-            });
+            const attempts = (get().tasks[uri]?.attempts ?? 0) + 1;
+            if (attempts < MAX_ATTEMPTS) {
+              const base = BACKOFF_MS[Math.min(attempts - 1, BACKOFF_MS.length - 1)];
+              // ±30% jitter so a batch doesn't retry in lockstep.
+              const delay = Math.round(base * (0.7 + Math.random() * 0.6));
+              setStatus(uri, {
+                status: 'queued',
+                attempts,
+                startedAt: undefined,
+                lastError: message,
+                // Real backoff: pump() skips the task until this time, so the
+                // synchronous pump() below can no longer defeat the delay by
+                // re-running it instantly.
+                nextAttemptAt: Date.now() + delay,
+              });
+              setTimeout(pump, delay + 50);
+            } else {
+              setStatus(uri, {
+                status: 'error',
+                attempts,
+                startedAt: undefined,
+                lastError: message,
+              });
+            }
           }
           // Reset counters if this failure leaves nothing active.
           set((s) => (activeCount(s.tasks) === 0 ? { done: 0, total: 0 } : s));
@@ -215,6 +273,50 @@ export const useUploadStore = create<UploadState>()(
           stopWatchdogIfIdle();
         }
       };
+
+      // Module-lifetime connectivity tracking (same API the tanstack provider
+      // uses). On (re)connect, requeue network-failed tasks and restart the
+      // pump — previously an outage longer than the ~15s retry budget
+      // permanently errored the batch with no auto-resume until next launch.
+      const applyNetworkState = (state: {
+        isConnected?: boolean | null;
+        type?: Network.NetworkStateType | null;
+      }) => {
+        online = state.isConnected !== false;
+        cellular = state.type === Network.NetworkStateType.CELLULAR;
+      };
+      const requeueNetworkFailures = () => {
+        if (!online) return;
+        Object.values(get().tasks)
+          .filter(
+            (t) => t.status === 'error' && (!t.lastError || NETWORK_ERROR_RE.test(t.lastError)),
+          )
+          .forEach((t) =>
+            setStatus(t.uri, {
+              status: 'queued',
+              attempts: 0,
+              startedAt: undefined,
+              nextAttemptAt: undefined,
+            }),
+          );
+        pump();
+      };
+      // Seed the flags immediately: Android emits NO initial listener event, so
+      // an app opened offline would otherwise keep the optimistic online=true,
+      // burn every attempt, and never observe an offline→online transition.
+      Network.getNetworkStateAsync()
+        .then((state) => {
+          applyNetworkState(state);
+          if (online) pump();
+        })
+        .catch(() => {});
+      // Requeue on ANY event that reports us online (not just an observed
+      // offline→online flip) — network events are rare, and the filter keeps
+      // this bounded to genuinely network-failed tasks.
+      Network.addNetworkStateListener((state) => {
+        applyNetworkState(state);
+        requeueNetworkFailures();
+      });
 
       return {
         tasks: {},
@@ -224,6 +326,9 @@ export const useUploadStore = create<UploadState>()(
         enqueue: async (roomId, items) => {
           if (items.length === 0) return;
           await ensureDir();
+          // Accumulate all new tasks into ONE store write: per-item set()s meant
+          // a 20-photo pick did 20 persisted writes + 20 subscriber passes.
+          const newTasks: Record<string, UploadTask> = {};
           for (const item of items) {
             const localUri = item.uri;
             const ext = (localUri.split('.').pop() || 'jpg').split('?')[0].slice(0, 5);
@@ -237,21 +342,19 @@ export const useUploadStore = create<UploadState>()(
             } catch {
               // Copy failed — upload the original uri (won't survive a kill, but works now).
             }
-            set((s) => ({
-              tasks: {
-                ...s.tasks,
-                [uri]: {
-                  uri,
-                  roomId,
-                  status: 'queued',
-                  attempts: 0,
-                  createdAt: Date.now(),
-                  replaceImageId: item.replaceImageId,
-                },
-              },
-              total: s.total + 1,
-            }));
+            newTasks[uri] = {
+              uri,
+              roomId,
+              status: 'queued',
+              attempts: 0,
+              createdAt: Date.now(),
+              replaceImageId: item.replaceImageId,
+            };
           }
+          set((s) => ({
+            tasks: { ...s.tasks, ...newTasks },
+            total: s.total + Object.keys(newTasks).length,
+          }));
           pump();
         },
 
@@ -266,7 +369,7 @@ export const useUploadStore = create<UploadState>()(
               setStatus(uri, { status: 'dead', startedAt: undefined });
               return;
             }
-            setStatus(uri, { status: 'queued', attempts: 0, startedAt: undefined });
+            setStatus(uri, { status: 'queued', attempts: 0, startedAt: undefined, nextAttemptAt: undefined });
             pump();
           })();
         },
@@ -280,7 +383,7 @@ export const useUploadStore = create<UploadState>()(
               if (!info.exists) {
                 setStatus(t.uri, { status: 'dead', startedAt: undefined });
               } else {
-                setStatus(t.uri, { status: 'queued', attempts: 0, startedAt: undefined });
+                setStatus(t.uri, { status: 'queued', attempts: 0, startedAt: undefined, nextAttemptAt: undefined });
               }
             }
             pump();
@@ -304,6 +407,7 @@ export const useUploadStore = create<UploadState>()(
         clearAll: () => {
           controllers.forEach((c) => c.abort());
           controllers.clear();
+          uploadedAssets.clear();
           Object.values(get().tasks).forEach((t) => deleteCopy(t.uri));
           if (watchdog) {
             clearInterval(watchdog);
@@ -341,7 +445,13 @@ export const useUploadStore = create<UploadState>()(
               // Leave "error"/"dead" alone (user retries/clears them).
               next[t.uri] =
                 t.status === 'uploading'
-                  ? { ...t, createdAt, status: 'queued', startedAt: undefined }
+                  ? {
+                      ...t,
+                      createdAt,
+                      status: 'queued',
+                      startedAt: undefined,
+                      nextAttemptAt: undefined,
+                    }
                   : { ...t, createdAt };
             }
             set({ tasks: next });
