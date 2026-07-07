@@ -123,13 +123,17 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
     const animatedBottomInset = useSharedValue(0);
 
     React.useEffect(() => {
+      // Inside a tab navigator the tab bar already reserves the bottom inset —
+      // extending the footer into it (padding + negative margin below) would
+      // drag the footer (and any FAB anchored in it) underneath the tab bar.
+      if (inTabs) return;
       if (insets.bottom > 0 && !bottomInsetReady.current) {
         bottomInsetReady.current = true;
         // Animate from 0 to the real value so the footer shifts smoothly
         // rather than snapping.
         animatedBottomInset.value = withTiming(insets.bottom, { duration: 150 });
       }
-    }, [insets.bottom, animatedBottomInset]);
+    }, [insets.bottom, animatedBottomInset, inTabs]);
 
     React.useImperativeHandle(ref, () => scrollViewRef.current as ScrollView);
 
