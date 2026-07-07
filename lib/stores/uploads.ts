@@ -40,6 +40,9 @@ export type UploadTask = {
   /** When set, replace this existing server image in place (edited photo) rather
    *  than creating a new one. */
   replaceImageId?: string;
+  /** Why the last attempt failed — shown on the failed row so retries that keep
+   *  failing are diagnosable instead of looking like a dead button. */
+  lastError?: string;
 };
 
 /** A photo to upload. `replaceImageId` updates an existing server image in place. */
@@ -188,15 +191,23 @@ export const useUploadStore = create<UploadState>()(
           });
           pump();
           stopWatchdogIfIdle();
-        } catch {
+        } catch (e) {
           controllers.delete(uri);
+          const message =
+            e instanceof Error ? e.message : typeof e === 'string' ? e : 'Upload failed';
+          console.warn(`[uploads] attempt failed for ${uri}:`, message);
           const attempts = (get().tasks[uri]?.attempts ?? 0) + 1;
           if (attempts < MAX_ATTEMPTS) {
             setStatus(uri, { status: 'queued', attempts, startedAt: undefined });
             const delay = BACKOFF_MS[Math.min(attempts - 1, BACKOFF_MS.length - 1)];
             setTimeout(pump, delay);
           } else {
-            setStatus(uri, { status: 'error', attempts, startedAt: undefined });
+            setStatus(uri, {
+              status: 'error',
+              attempts,
+              startedAt: undefined,
+              lastError: message,
+            });
           }
           // Reset counters if this failure leaves nothing active.
           set((s) => (activeCount(s.tasks) === 0 ? { done: 0, total: 0 } : s));
@@ -246,18 +257,34 @@ export const useUploadStore = create<UploadState>()(
 
         retry: (uri) => {
           if (!get().tasks[uri]) return;
-          setStatus(uri, { status: 'queued', attempts: 0, startedAt: undefined });
-          pump();
+          void (async () => {
+            // If the source file has been purged (common for picker-cache uris
+            // when the copy step failed), retrying can never succeed — surface
+            // that instead of silently error-cycling forever.
+            const info = await FileSystem.getInfoAsync(uri).catch(() => ({ exists: false }));
+            if (!info.exists) {
+              setStatus(uri, { status: 'dead', startedAt: undefined });
+              return;
+            }
+            setStatus(uri, { status: 'queued', attempts: 0, startedAt: undefined });
+            pump();
+          })();
         },
 
         retryAll: () => {
           // Only "error" is retryable; "dead" tasks (file gone) can't be recovered.
-          Object.values(get().tasks)
-            .filter((t) => t.status === 'error')
-            .forEach((t) =>
-              setStatus(t.uri, { status: 'queued', attempts: 0, startedAt: undefined }),
-            );
-          pump();
+          void (async () => {
+            const failed = Object.values(get().tasks).filter((t) => t.status === 'error');
+            for (const t of failed) {
+              const info = await FileSystem.getInfoAsync(t.uri).catch(() => ({ exists: false }));
+              if (!info.exists) {
+                setStatus(t.uri, { status: 'dead', startedAt: undefined });
+              } else {
+                setStatus(t.uri, { status: 'queued', attempts: 0, startedAt: undefined });
+              }
+            }
+            pump();
+          })();
         },
 
         removeTask: (uri) => {

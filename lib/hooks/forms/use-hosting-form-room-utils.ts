@@ -293,25 +293,44 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
   };
 
   const handleDeleteActiveRoom = () => {
-    const roomId = rooms[activeIndex].id;
-    if (roomId) {
-      deleteRoomMutate({ hostingRoomId: roomId }).then((res) => {
-        if (res.error) {
-          handleError(res.error);
-        }
-        if (res.data?.deleteHostingRoom.message) {
-          show({
-            type: 'success',
-            text2: res.data.deleteHostingRoom.message,
-          });
-          setActiveModalIndex(undefined);
-          setDeleteModalIndex(undefined);
-          deleteRoom(activeIndex);
-          setActiveIndex(0);
-          refetchHosting();
-        }
-      });
+    const room = rooms[activeIndex];
+    if (!room) {
+      // Stale index — just dismiss so the UI can't wedge.
+      setDeleteModalIndex(undefined);
+      return;
     }
+
+    // A draft room that was never saved to the server has no id — there's
+    // nothing to delete remotely, so remove it locally. (Previously this case
+    // silently did NOTHING: no deletion, and the modal stayed open, which read
+    // as a freeze.)
+    if (!room.id) {
+      setActiveModalIndex(undefined);
+      setDeleteModalIndex(undefined);
+      deleteRoom(activeIndex);
+      setActiveIndex(0);
+      return;
+    }
+
+    deleteRoomMutate({ hostingRoomId: room.id }).then((res) => {
+      if (res.error) {
+        handleError(res.error);
+        // Dismiss the confirm modal so the screen stays usable after a failure.
+        setDeleteModalIndex(undefined);
+        return;
+      }
+      if (res.data?.deleteHostingRoom.message) {
+        show({
+          type: 'success',
+          text2: res.data.deleteHostingRoom.message,
+        });
+        setActiveModalIndex(undefined);
+        setDeleteModalIndex(undefined);
+        deleteRoom(activeIndex);
+        setActiveIndex(0);
+        refetchHosting();
+      }
+    });
   };
 
   const handleSaveHostingRoom = (index: number, { images, ...rest }: RoomData) => {

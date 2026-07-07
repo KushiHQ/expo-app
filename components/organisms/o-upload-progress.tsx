@@ -191,6 +191,14 @@ export default function UploadProgress() {
                     <Text style={[styles.rowLabel, { color: meta.color }]} numberOfLines={1}>
                       {meta.label}
                     </Text>
+                    {t.status === 'error' && t.lastError ? (
+                      <Text
+                        style={[styles.rowLabel, { color: 'rgba(148,163,184,0.7)', fontSize: 10 }]}
+                        numberOfLines={1}
+                      >
+                        {t.lastError}
+                      </Text>
+                    ) : null}
                   </View>
                   {t.status === 'error' ? (
                     <TouchableOpacity

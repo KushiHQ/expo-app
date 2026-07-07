@@ -362,7 +362,14 @@ export default function NewHostingStep2() {
                   className="flex-1"
                   type="error"
                   disabled={hostingRoomSaving}
-                  onPress={() => setDeleteModalIndex(activeIndex)}
+                  onPress={() => {
+                    // Close the details modal BEFORE presenting the confirm
+                    // modal — two stacked native Modals deadlock touch handling
+                    // on iOS (the "delete freezes the app" bug).
+                    const target = activeIndex;
+                    setActiveModalIndex(undefined);
+                    setTimeout(() => setDeleteModalIndex(target), 350);
+                  }}
                 >
                   <ThemedText content="error">Delete Space</ThemedText>
                 </Button>
