@@ -79,12 +79,14 @@ export const HOSTING_QUERY = gql`
       id
       kind
       parentId
+      unitStructure
       childCount
       priceFrom
       isBookable
       parent {
         id
         title
+        unitStructure
       }
       children(onSale: $childrenOnSale) {
         id

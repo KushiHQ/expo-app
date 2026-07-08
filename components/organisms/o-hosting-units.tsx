@@ -17,6 +17,7 @@ import {
   HostingQuery,
   PaymentInterval,
   PublishStatus,
+  UnitStructure,
 } from '@/lib/services/graphql/generated';
 
 type Props = {
@@ -34,6 +35,10 @@ const HostingUnits: React.FC<Props> = ({ hosting, isHost }) => {
 
   if (!hosting || hosting.kind !== HostingKind.Parent) return null;
 
+  // In a group sale the whole property transacts on the parent, so units are
+  // read-only showcase — no price, and the section is framed as "what's included".
+  const isGroup = hosting.unitStructure === UnitStructure.Group;
+
   const units = (hosting.children ?? []).filter(
     (u) => isHost || u.publishStatus === PublishStatus.Live,
   );
@@ -45,7 +50,7 @@ const HostingUnits: React.FC<Props> = ({ hosting, isHost }) => {
     >
       <SectionHeader
         icon={Building2}
-        title="Available units"
+        title={isGroup ? 'Units included' : 'Available units'}
         action={
           <ThemedText
             style={{
@@ -99,18 +104,30 @@ const HostingUnits: React.FC<Props> = ({ hosting, isHost }) => {
                   >
                     {unit.title ?? 'Untitled unit'}
                   </ThemedText>
-                  <ThemedText
-                    style={{
-                      fontSize: 13,
-                      color: colors.primary,
-                      fontFamily: Fonts.semibold,
-                    }}
-                  >
-                    ₦{abbreviateNumber(Number(unit.price ?? 0))}
-                    {unit.paymentInterval && unit.paymentInterval !== PaymentInterval.OneTimePayment
-                      ? ` · ${capitalize(unit.paymentInterval)}`
-                      : ''}
-                  </ThemedText>
+                  {isGroup ? (
+                    <ThemedText
+                      style={{
+                        fontSize: 12,
+                        color: hexToRgba(colors.text, 0.5),
+                      }}
+                    >
+                      Tap to view
+                    </ThemedText>
+                  ) : (
+                    <ThemedText
+                      style={{
+                        fontSize: 13,
+                        color: colors.primary,
+                        fontFamily: Fonts.semibold,
+                      }}
+                    >
+                      ₦{abbreviateNumber(Number(unit.price ?? 0))}
+                      {unit.paymentInterval &&
+                      unit.paymentInterval !== PaymentInterval.OneTimePayment
+                        ? ` · ${capitalize(unit.paymentInterval)}`
+                        : ''}
+                    </ThemedText>
+                  )}
                   {isHost && unit.publishStatus !== PublishStatus.Live ? (
                     <ThemedText style={{ fontSize: 11, color: hexToRgba(colors.text, 0.45) }}>
                       {capitalize(String(unit.publishStatus ?? 'draft'))}

@@ -7,6 +7,7 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import {
   HostingKind,
   ListingType,
+  UnitStructure,
   useHostingQuery,
   useInitiateHostingChatMutation,
 } from '@/lib/services/graphql/generated';
@@ -19,7 +20,7 @@ import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
-import { AlignLeft, MapPin, MessageSquare } from 'lucide-react-native';
+import { AlignLeft, Building2, MapPin, MessageSquare } from 'lucide-react-native';
 import { SURFACE } from '@/lib/constants/surface';
 import SectionHeader from '@/components/atoms/a-section-header';
 import React from 'react';
@@ -126,7 +127,8 @@ export default function HostingDetails() {
               <ThemedText content="primary">Edit Listing</ThemedText>
             </Button>
           </View>
-        ) : hosting?.kind === HostingKind.Parent ? (
+        ) : hosting?.kind === HostingKind.Parent &&
+          hosting?.unitStructure !== UnitStructure.Group ? (
           <View
             style={{
               backgroundColor: colors.background,
@@ -145,6 +147,40 @@ export default function HostingDetails() {
               {hosting.childCount} {hosting.childCount === 1 ? 'unit' : 'units'} available — choose
               one above to apply.
             </ThemedText>
+          </View>
+        ) : hosting?.kind === HostingKind.Child &&
+          hosting?.parent?.unitStructure === UnitStructure.Group ? (
+          <View
+            style={{
+              backgroundColor: colors.background,
+              paddingHorizontal: 16,
+              paddingBottom: 32,
+              paddingTop: 12,
+              gap: 10,
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: hexToRgba(colors.text, 0.05),
+                borderRadius: 14,
+                padding: 14,
+                gap: 4,
+              }}
+            >
+              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 13 }}>
+                Part of a property sold as a whole
+              </ThemedText>
+              <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55) }}>
+                This unit isn’t sold on its own. Everything is transacted on the full property
+                listing.
+              </ThemedText>
+            </View>
+            <Button
+              type="primary"
+              onPress={() => router.push(`/hostings/${hosting?.parentId}`)}
+            >
+              <ThemedText content="primary">View the full property</ThemedText>
+            </Button>
           </View>
         ) : hosting?.listingType === ListingType.Sale ? (
           <View
@@ -328,8 +364,29 @@ export default function HostingDetails() {
                     {[hosting?.city, hosting?.state].filter(Boolean).join(', ')}
                   </ThemedText>
                 </View>
-                <View className="mt-2 flex-row items-center justify-between gap-3">
-                  <ListingTypeBadge listingType={hosting?.listingType} />
+                <View className="mt-2 flex-row flex-wrap items-center justify-between gap-3">
+                  <View className="flex-row flex-wrap items-center gap-2">
+                    <ListingTypeBadge listingType={hosting?.listingType} />
+                    {hosting?.kind === HostingKind.Parent &&
+                    hosting?.unitStructure === UnitStructure.Group ? (
+                      <View
+                        className="flex-row items-center gap-1.5 rounded-full px-2.5 py-1"
+                        style={{ backgroundColor: hexToRgba(colors.primary, 0.12) }}
+                      >
+                        <Building2 size={12} color={colors.primary} />
+                        <ThemedText
+                          style={{
+                            fontSize: 12,
+                            fontFamily: Fonts.semibold,
+                            color: colors.primary,
+                          }}
+                        >
+                          Sold as a whole · {hosting.childCount}{' '}
+                          {hosting.childCount === 1 ? 'unit' : 'units'}
+                        </ThemedText>
+                      </View>
+                    ) : null}
+                  </View>
                   <View
                     className="flex-row items-center gap-1.5 rounded-full px-2.5 py-1"
                     style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
