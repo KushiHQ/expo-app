@@ -8,14 +8,13 @@ import ThemedText from '../atoms/a-themed-text';
 import { PROPERTY_BLURHASH } from '@/lib/constants/images';
 import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useUser } from '@/lib/hooks/user';
 import { toast } from '@/lib/hooks/use-toast';
 import { hexToRgba } from '@/lib/utils/colors';
 import { handleError } from '@/lib/utils/error';
 import { getAssetResizeUrl } from '@/lib/utils/urls';
 import {
   useCopyHostingRoomMutation,
-  useHostListingsQuery,
+  useHostingQuery,
 } from '@/lib/services/graphql/generated';
 
 type Props = {
@@ -24,16 +23,17 @@ type Props = {
   /** The saved space being copied. */
   roomId: string;
   roomName: string;
-  /** The hosting the space currently belongs to (excluded from targets;
-   *  same-property siblings sort first). */
+  /** The unit the space currently belongs to (excluded from targets). */
   currentHostingId: string;
+  /** The parent property — targets are its other units (siblings). */
   currentParentId?: string | null;
 };
 
 /**
- * Target picker for "copy this space to another listing" — the field-team
- * shortcut for estates whose sibling units share identical spaces. Photos are
- * copied by reference (no re-upload), so this works instantly offline-ish.
+ * Target picker for "copy this space to another unit" — the field-team shortcut
+ * for estates whose sibling units share identical spaces. Targets are the other
+ * units of the same parent property. Photos are copied by reference (no
+ * re-upload), so this is instant.
  */
 const CopySpaceSheet: React.FC<Props> = ({
   visible,
@@ -44,26 +44,20 @@ const CopySpaceSheet: React.FC<Props> = ({
   currentParentId,
 }) => {
   const colors = useThemeColors();
-  const { user } = useUser();
   const [copyingId, setCopyingId] = React.useState<string | null>(null);
   const [, copyRoom] = useCopyHostingRoomMutation();
 
-  const [{ data, fetching }] = useHostListingsQuery({
-    variables: { filters: { creatorId: user.user?.id } },
-    pause: !visible || !user.user?.id,
+  // The listings query excludes child units, so siblings must come from the
+  // parent's `children`. Fetch the parent and read its units.
+  const [{ data, fetching }] = useHostingQuery({
+    variables: { hostingId: currentParentId ?? '', childrenOnSale: false },
+    pause: !visible || !currentParentId,
   });
 
-  const targets = React.useMemo(() => {
-    const all = (data?.hostings ?? []).filter((h) => h.id !== currentHostingId);
-    const isSibling = (h: (typeof all)[number]) =>
-      (!!currentParentId && (h.parentId === currentParentId || h.id === currentParentId)) ||
-      h.parentId === currentHostingId;
-    return [...all].sort((a, b) => Number(isSibling(b)) - Number(isSibling(a)));
-  }, [data, currentHostingId, currentParentId]);
-
-  const siblingOf = (h: (typeof targets)[number]) =>
-    (!!currentParentId && (h.parentId === currentParentId || h.id === currentParentId)) ||
-    h.parentId === currentHostingId;
+  const targets = React.useMemo(
+    () => (data?.hosting?.children ?? []).filter((h) => h.id !== currentHostingId),
+    [data, currentHostingId],
+  );
 
   const handleCopy = async (target: (typeof targets)[number]) => {
     if (copyingId) return;
@@ -77,7 +71,7 @@ const CopySpaceSheet: React.FC<Props> = ({
     toast.show({
       type: 'success',
       text1: 'Space copied',
-      text2: `${roomName} added to ${target.title ?? 'the listing'}`,
+      text2: `${roomName} added to ${target.title ?? 'the unit'}`,
     });
     onClose();
   };
@@ -87,7 +81,7 @@ const CopySpaceSheet: React.FC<Props> = ({
       <View className="gap-4 pb-2">
         <View className="gap-1">
           <ThemedText style={{ fontSize: 16, fontFamily: Fonts.semibold }}>
-            Copy “{roomName}” to…
+            Copy “{roomName}” to another unit
           </ThemedText>
           <ThemedText style={{ fontSize: 12.5, color: hexToRgba(colors.text, 0.5) }}>
             The space and its photos are copied — the original stays untouched.
@@ -103,7 +97,7 @@ const CopySpaceSheet: React.FC<Props> = ({
             className="py-6 text-center"
             style={{ color: hexToRgba(colors.text, 0.5) }}
           >
-            You have no other listings to copy to.
+            This property has no other units to copy to.
           </ThemedText>
         ) : (
           <View className="gap-2.5">
@@ -134,7 +128,7 @@ const CopySpaceSheet: React.FC<Props> = ({
                     numberOfLines={1}
                     style={{ fontSize: 14, fontFamily: Fonts.semibold }}
                   >
-                    {h.title ?? 'Untitled listing'}
+                    {h.title ?? 'Untitled unit'}
                   </ThemedText>
                   <View className="flex-row items-center gap-1">
                     <MapPin size={11} color={hexToRgba(colors.text, 0.4)} />
@@ -146,18 +140,6 @@ const CopySpaceSheet: React.FC<Props> = ({
                     </ThemedText>
                   </View>
                 </View>
-                {siblingOf(h) ? (
-                  <View
-                    className="rounded-full px-2 py-0.5"
-                    style={{ backgroundColor: hexToRgba(colors.primary, 0.14) }}
-                  >
-                    <ThemedText
-                      style={{ fontSize: 10, fontFamily: Fonts.semibold, color: colors.primary }}
-                    >
-                      Same property
-                    </ThemedText>
-                  </View>
-                ) : null}
                 {copyingId === h.id ? (
                   <ActivityIndicator size="small" color={colors.primary} />
                 ) : null}

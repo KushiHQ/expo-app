@@ -3,6 +3,7 @@ import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
 import HostingRoomImage from '@/components/atoms/a-hosting-room-image';
 import LoadingModal from '@/components/atoms/a-loading-modal';
 import CopySpaceSheet from '@/components/organisms/o-copy-space-sheet';
+import RoomActionsSheet from '@/components/organisms/o-room-actions-sheet';
 import ThemedText from '@/components/atoms/a-themed-text';
 import DetailsLayout from '@/components/layouts/details';
 import HostingStepper from '@/components/molecules/m-hosting-stepper';
@@ -19,6 +20,7 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
 import { Room } from '@/lib/types/enums/hostings';
+import { HostingKind } from '@/lib/services/graphql/generated';
 import { Layers, Plus } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { Pressable, RefreshControl, ScrollView, TextInput, View } from 'react-native';
@@ -61,6 +63,18 @@ export default function NewHostingStep2() {
   const [copySpace, setCopySpace] = React.useState<{ roomId: string; roomName: string } | null>(
     null,
   );
+  // Per-space action list (Copy / Delete). The target space is captured here so
+  // it survives closing the details modal (needed for the iOS modal handoff).
+  const [roomActions, setRoomActions] = React.useState<{
+    index: number;
+    roomId?: string;
+    roomName: string;
+    canCopy: boolean;
+  } | null>(null);
+
+  // Copying a space is only meaningful for a unit of a parent property — you
+  // copy it into a sibling unit of the same estate.
+  const isUnit = hosting?.kind === HostingKind.Child;
 
   const propertyType = hosting?.propertyType ?? undefined;
 
@@ -363,42 +377,27 @@ export default function NewHostingStep2() {
                 />
               </View>
 
-              {rooms[activeIndex]?.id ? (
-                <Button
-                  type="tinted"
-                  disabled={hostingRoomSaving}
-                  onPress={() => {
-                    // Estate workflow: copy this space (photos included, by
-                    // reference) into a sibling unit that missed it. Close the
-                    // details modal before presenting the sheet (stacked native
-                    // modals deadlock touch handling on iOS).
-                    const room = rooms[activeIndex];
-                    setActiveModalIndex(undefined);
-                    setTimeout(
-                      () => setCopySpace({ roomId: room.id!, roomName: Room[room.name] }),
-                      350,
-                    );
-                  }}
-                >
-                  <ThemedText content="tinted">Copy to another listing</ThemedText>
-                </Button>
-              ) : null}
-
               <View className="flex-row gap-2">
                 <Button
                   className="flex-1"
-                  type="error"
+                  type="shade"
                   disabled={hostingRoomSaving}
                   onPress={() => {
-                    // Close the details modal BEFORE presenting the confirm
-                    // modal — two stacked native Modals deadlock touch handling
-                    // on iOS (the "delete freezes the app" bug).
-                    const target = activeIndex;
+                    // Hand off to the actions sheet. Capture the target space
+                    // now and close the details modal first — two stacked native
+                    // modals deadlock touch handling on iOS.
+                    const room = rooms[activeIndex];
+                    const payload = {
+                      index: activeIndex,
+                      roomId: room?.id,
+                      roomName: room ? Room[room.name] : '',
+                      canCopy: !!room?.id && isUnit,
+                    };
                     setActiveModalIndex(undefined);
-                    setTimeout(() => setDeleteModalIndex(target), 350);
+                    setTimeout(() => setRoomActions(payload), 350);
                   }}
                 >
-                  <ThemedText content="error">Delete Space</ThemedText>
+                  <ThemedText content="shade">More options</ThemedText>
                 </Button>
                 <Button
                   disabled={hostingRoomSaving}
@@ -469,6 +468,26 @@ export default function NewHostingStep2() {
           )}
         </View>
       </ThemedModal>
+
+      {roomActions ? (
+        <RoomActionsSheet
+          visible={!!roomActions}
+          onClose={() => setRoomActions(null)}
+          spaceName={roomActions.roomName}
+          canCopy={roomActions.canCopy}
+          onCopy={() => {
+            const roomId = roomActions.roomId;
+            const roomName = roomActions.roomName;
+            setRoomActions(null);
+            if (roomId) setTimeout(() => setCopySpace({ roomId, roomName }), 350);
+          }}
+          onDelete={() => {
+            const target = roomActions.index;
+            setRoomActions(null);
+            setTimeout(() => setDeleteModalIndex(target), 350);
+          }}
+        />
+      ) : null}
 
       {copySpace ? (
         <CopySpaceSheet
