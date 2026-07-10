@@ -30,8 +30,10 @@ export const useTenancyTermsForm = (id: string) => {
     fetching: fetchingHosting,
   } = useHostingForm(id);
   const [{ data: hostQueryData, fetching: hostFetching }, refetchHost] = useAuthHostQuery();
+  // Pass the hosting id so the server returns the template filtered to this
+  // listing's use-class (residential/commercial/land/short-let).
   const [{ data: templateData, fetching: templateFetching }, refetchTemplate] =
-    useTenancyAgreementTemplateQuery();
+    useTenancyAgreementTemplateQuery({ variables: { hostingId: id }, pause: !id });
 
   const allTemplateSections = templateData?.tenancyAgreementTemplate?.sections || [];
 

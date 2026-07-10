@@ -291,6 +291,7 @@ export type AdminPhoneNumber = {
 /** Full admin view of a property type (includes id / sequence / active). */
 export type AdminPropertyType = {
   __typename?: 'AdminPropertyType';
+  agreementUseClass?: Maybe<Scalars['String']['output']>;
   category?: Maybe<Scalars['String']['output']>;
   facilities: Array<Scalars['String']['output']>;
   icon?: Maybe<Scalars['String']['output']>;
@@ -308,6 +309,7 @@ export type AdminPropertyType = {
  * See sprints/app-constants-plan.md.
  */
 export type AdminPropertyTypeInput = {
+  agreementUseClass?: InputMaybe<Scalars['String']['input']>;
   category?: InputMaybe<Scalars['String']['input']>;
   facilities: Array<Scalars['String']['input']>;
   icon?: InputMaybe<Scalars['String']['input']>;
@@ -2750,6 +2752,8 @@ export type ProfileUpdateInput = {
  */
 export type PropertyTypeConfig = {
   __typename?: 'PropertyTypeConfig';
+  /** Lease use-class (residential | commercial | land | short_let). */
+  agreementUseClass?: Maybe<Scalars['String']['output']>;
   category?: Maybe<Scalars['String']['output']>;
   facilities: Array<Scalars['String']['output']>;
   /** Icon name — clients map it to a component (with a fallback for unknown). */
@@ -2923,6 +2927,13 @@ export type Query = {
    */
   shouldShowNpsSurvey: Scalars['Boolean']['output'];
   supportChat: SupportChat;
+  /**
+   * The master tenancy template. When `hostingId` is supplied, the template
+   * is filtered to the clauses legally appropriate for that listing's
+   * use-class + term-class (the safety rail — a residential listing never
+   * sees commercial/land/short-let clauses). Without it, the full master
+   * template is returned (backward compatible).
+   */
   tenancyAgreementTemplate: TenancyTemplate;
   tenantMandateOptions: TenantMandateConfig;
   transactionByReference: Transaction;
@@ -3251,6 +3262,11 @@ export type QuerySupportChatArgs = {
 };
 
 
+export type QueryTenancyAgreementTemplateArgs = {
+  hostingId?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QueryTransactionByReferenceArgs = {
   reference: Scalars['String']['input'];
 };
@@ -3384,6 +3400,13 @@ export type StaffMember = {
 
 export type SubClause = {
   __typename?: 'SubClause';
+  /**
+   * Use-class / property-type tags this clause is legally appropriate for,
+   * e.g. ["residential","commercial"] or ["universal"] or a specific type
+   * like ["Commercial Retail"]. Absent ⇒ treated as ["residential"] for
+   * backward compatibility. Authored on the master template (KushiHQ/legal).
+   */
+  appliesTo?: Maybe<Array<Scalars['String']['output']>>;
   content: Scalars['String']['output'];
   description: Scalars['String']['output'];
   id: Scalars['String']['output'];
@@ -3393,10 +3416,22 @@ export type SubClause = {
   priority: Scalars['Int']['output'];
   providedValues: Array<SubClauseValue>;
   requiredVariables: Array<SubClauseVariable>;
+  /**
+   * "long_term_only" / "short_term_only" / null(any) — generalises the
+   * hardcoded short-term-inactive list into data.
+   */
+  termClass?: Maybe<Scalars['String']['output']>;
   title: Scalars['String']['output'];
 };
 
 export type SubClauseInput = {
+  /**
+   * Use-class / property-type tags this clause is legally appropriate for,
+   * e.g. ["residential","commercial"] or ["universal"] or a specific type
+   * like ["Commercial Retail"]. Absent ⇒ treated as ["residential"] for
+   * backward compatibility. Authored on the master template (KushiHQ/legal).
+   */
+  appliesTo?: InputMaybe<Array<Scalars['String']['input']>>;
   content: Scalars['String']['input'];
   description: Scalars['String']['input'];
   id: Scalars['String']['input'];
@@ -3406,6 +3441,11 @@ export type SubClauseInput = {
   priority: Scalars['Int']['input'];
   providedValues: Array<SubClauseValueInput>;
   requiredVariables: Array<SubClauseVariableInput>;
+  /**
+   * "long_term_only" / "short_term_only" / null(any) — generalises the
+   * hardcoded short-term-inactive list into data.
+   */
+  termClass?: InputMaybe<Scalars['String']['input']>;
   title: Scalars['String']['input'];
 };
 
@@ -3549,6 +3589,12 @@ export enum SupportItemType {
 
 export type TenancySection = {
   __typename?: 'TenancySection';
+  /**
+   * Optional whole-section gating: the use-classes / property types this
+   * section belongs to (e.g. ["commercial"]). Absent ⇒ derive visibility
+   * from the section's clauses. Tags live on the master template.
+   */
+  appliesTo?: Maybe<Array<Scalars['String']['output']>>;
   description: Scalars['String']['output'];
   id: Scalars['String']['output'];
   preamble?: Maybe<Scalars['String']['output']>;
@@ -3558,6 +3604,12 @@ export type TenancySection = {
 };
 
 export type TenancySectionInput = {
+  /**
+   * Optional whole-section gating: the use-classes / property types this
+   * section belongs to (e.g. ["commercial"]). Absent ⇒ derive visibility
+   * from the section's clauses. Tags live on the master template.
+   */
+  appliesTo?: InputMaybe<Array<Scalars['String']['input']>>;
   description: Scalars['String']['input'];
   id: Scalars['String']['input'];
   preamble?: InputMaybe<Scalars['String']['input']>;
@@ -4489,7 +4541,9 @@ export type AiHostingContentSuggestionQueryVariables = Exact<{
 
 export type AiHostingContentSuggestionQuery = { __typename?: 'Query', aiHostingContentSuggestion: { __typename?: 'HostingContentSuggestion', title: string, description: string } };
 
-export type TenancyAgreementTemplateQueryVariables = Exact<{ [key: string]: never; }>;
+export type TenancyAgreementTemplateQueryVariables = Exact<{
+  hostingId?: InputMaybe<Scalars['String']['input']>;
+}>;
 
 
 export type TenancyAgreementTemplateQuery = { __typename?: 'Query', tenancyAgreementTemplate: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, priority: number, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } };
@@ -6969,8 +7023,8 @@ export function useAiHostingContentSuggestionQuery(options: Omit<Urql.UseQueryAr
   return Urql.useQuery<AiHostingContentSuggestionQuery, AiHostingContentSuggestionQueryVariables>({ query: AiHostingContentSuggestionDocument, ...options });
 };
 export const TenancyAgreementTemplateDocument = gql`
-    query TenancyAgreementTemplate {
-  tenancyAgreementTemplate {
+    query TenancyAgreementTemplate($hostingId: String) {
+  tenancyAgreementTemplate(hostingId: $hostingId) {
     totalSections
     sections {
       id

@@ -41,8 +41,8 @@ export const AI_HOSTING_CONTENT_SUGGESTION = gql`
 `;
 
 export const TENANCY_AGREEMENT_TEMPLATE = gql`
-  query TenancyAgreementTemplate {
-    tenancyAgreementTemplate {
+  query TenancyAgreementTemplate($hostingId: String) {
+    tenancyAgreementTemplate(hostingId: $hostingId) {
       totalSections
       sections {
         id
