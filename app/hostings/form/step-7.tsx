@@ -21,7 +21,7 @@ import { showTenancySteps } from '@/lib/constants/hosting/step-rules';
 import { subClauseConditionMet } from '@/lib/utils/hosting/tenancyAgreement';
 import MemoizedSubClause from '@/components/organisms/o-memoised-sub-clause';
 import { MemoizedEditSection } from '@/components/organisms/o-memoised-edit-sub-clause';
-import { FileText, PenLine } from 'lucide-react-native';
+import { FileText, PenLine, Sparkles } from 'lucide-react-native';
 import { Fonts } from '@/lib/constants/theme';
 
 import { useRouter } from '@/lib/hooks/use-router';
@@ -51,6 +51,9 @@ export default function NewHostingStep7() {
     hasSection,
     hasSubClause,
     allTemplateSections,
+    tenancySummary,
+    suggestTenancy,
+    suggesting,
   } = useTenancyTermsForm(String(id));
 
   React.useEffect(() => {
@@ -91,6 +94,47 @@ export default function NewHostingStep7() {
         }
       >
         <View style={{ gap: 20, paddingBottom: 24 }}>
+          <SectionCard
+            icon={<Sparkles size={16} color={colors.primary} />}
+            title="AI tenancy assistant"
+            subtitle="Generate a tenancy agreement tailored to this property"
+          >
+            <Button type="primary" loading={suggesting} disabled={suggesting} onPress={suggestTenancy}>
+              <ThemedText content="primary">Suggest tenancy agreement</ThemedText>
+            </Button>
+            {tenancySummary.length > 0 && (
+              <View
+                style={{
+                  marginTop: 14,
+                  gap: 8,
+                  borderRadius: 14,
+                  padding: 14,
+                  backgroundColor: hexToRgba(colors.primary, 0.08),
+                }}
+              >
+                <ThemedText
+                  style={{ fontSize: 11, fontFamily: Fonts.semibold, color: colors.primary, letterSpacing: 1 }}
+                >
+                  SUMMARY
+                </ThemedText>
+                {tenancySummary.map((point, i) => (
+                  <View key={i} style={{ flexDirection: 'row', gap: 8 }}>
+                    <View
+                      style={{
+                        width: 4,
+                        height: 4,
+                        borderRadius: 2,
+                        marginTop: 7,
+                        backgroundColor: colors.primary,
+                      }}
+                    />
+                    <ThemedText style={{ flex: 1, fontSize: 13, lineHeight: 19 }}>{point}</ThemedText>
+                  </View>
+                ))}
+              </View>
+            )}
+          </SectionCard>
+
           <SectionCard
             icon={<FileText size={16} color={colors.primary} />}
             title="Agreement Clauses"

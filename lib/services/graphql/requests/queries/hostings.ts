@@ -439,3 +439,42 @@ export const HOST_LISTINGS_QUERY = gql`
     }
   }
 `;
+
+export const RECOMMENDED_TENANCY_TEMPLATE = gql`
+  query RecommendedTenancyTemplate($hostingId: String!) {
+    recommendedTenancyTemplate(hostingId: $hostingId) {
+      totalSections
+      sections {
+        id
+        title
+        description
+        priority
+        preamble
+        subClauses {
+          id
+          title
+          description
+          content
+          isMandatory
+          isActive
+          isCustom
+          priority
+          requiredVariables {
+            name
+            type
+          }
+          providedValues {
+            key
+            value
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const TENANCY_AGREEMENT_SUMMARY = gql`
+  query TenancyAgreementSummary($hostingId: String!) {
+    tenancyAgreementSummary(hostingId: $hostingId)
+  }
+`;

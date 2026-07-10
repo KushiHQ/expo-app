@@ -1,17 +1,23 @@
 import React from 'react';
+import { useClient } from 'urql';
 import { useRouter } from 'expo-router';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import {
+  RecommendedTenancyTemplateDocument,
   SubClause,
   SubClauseValueInput,
   TenancySection,
+  TenancyTemplate,
   UpdateHostMutation,
   UpdateHostMutationVariables,
   useAuthHostQuery,
+  useRecommendedTenancyTemplateQuery,
+  useTenancyAgreementSummaryQuery,
   useTenancyAgreementTemplateQuery,
 } from '@/lib/services/graphql/generated';
 import { handleError } from '@/lib/utils/error';
 import { useToast } from '@/lib/hooks/use-toast';
+import { cast } from '@/lib/types/utils';
 import { formMutation, generateRNFile } from '@/lib/services/graphql/utils/fetch';
 import { UPDATE_HOST } from '@/lib/services/graphql/requests/mutations/users';
 import { cleanupAgreementTemplateInput } from '@/lib/utils/hosting/tenancyAgreement';
@@ -37,6 +43,51 @@ export const useTenancyTermsForm = (id: string) => {
 
   const allTemplateSections = templateData?.tenancyAgreementTemplate?.sections || [];
 
+  const hasExistingTemplate =
+    (input.tenancyAgreementTemplate?.sections?.length ?? 0) > 0;
+
+  // First-time default: the AI recommendation (server falls back to the
+  // filtered template). Paused once an agreement exists so revisits don't
+  // spend tokens.
+  const [{ data: recData, fetching: recFetching }] = useRecommendedTenancyTemplateQuery({
+    variables: { hostingId: id },
+    pause: !id || hasExistingTemplate,
+  });
+  const recommendedSections = recData?.recommendedTenancyTemplate?.sections || [];
+
+  // Cached plain-English summary of the SAVED agreement.
+  const [{ data: summaryData }] = useTenancyAgreementSummaryQuery({
+    variables: { hostingId: id },
+    pause: !id || !hasExistingTemplate,
+  });
+  const tenancySummary = summaryData?.tenancyAgreementSummary ?? [];
+
+  // On-demand "Suggest tenancy agreement" — replaces the working terms.
+  const client = useClient();
+  const [suggesting, setSuggesting] = React.useState(false);
+  const suggestTenancy = async () => {
+    if (!id || suggesting) return;
+    setSuggesting(true);
+    try {
+      const res = await client
+        .query(RecommendedTenancyTemplateDocument, { hostingId: id }, { requestPolicy: 'network-only' })
+        .toPromise();
+      const t = res.data?.recommendedTenancyTemplate;
+      if (res.error || !t) {
+        if (res.error) handleError(res.error);
+        else show({ type: 'error', text2: "Couldn't generate a suggestion" });
+        return;
+      }
+      updateInput({
+        tenancyAgreementTemplate: cleanupAgreementTemplateInput(cast<TenancyTemplate>(t)),
+      });
+      templateInitialized.current = true;
+      show({ type: 'success', text1: 'Tenancy agreement suggested', text2: 'Review and save.' });
+    } finally {
+      setSuggesting(false);
+    }
+  };
+
   const [editOpen, setEditOpen] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
 
@@ -60,10 +111,10 @@ export const useTenancyTermsForm = (id: string) => {
   const [isReadyToInitialize, setIsReadyToInitialize] = React.useState(false);
 
   React.useEffect(() => {
-    if (!fetchingHosting && !templateFetching && hosting && templateData && input.id) {
+    if (!fetchingHosting && !recFetching && hosting && recData && input.id) {
       setIsReadyToInitialize(true);
     }
-  }, [fetchingHosting, templateFetching, hosting, templateData]);
+  }, [fetchingHosting, recFetching, hosting, recData]);
 
   React.useEffect(() => {
     const initialize = () => {
@@ -71,7 +122,8 @@ export const useTenancyTermsForm = (id: string) => {
         const currentTemplate = input.tenancyAgreementTemplate;
 
         if (!currentTemplate || currentTemplate.sections.length === 0) {
-          const processedSections = allTemplateSections
+          // Seed the first-time default from the AI recommendation.
+          const processedSections = recommendedSections
             .reduce((acc, { __typename, ...section }) => {
               let activeSubClauses = section.subClauses
                 .filter((sub) => sub.isActive || sub.isMandatory)
@@ -106,7 +158,7 @@ export const useTenancyTermsForm = (id: string) => {
     };
 
     initialize();
-  }, [allTemplateSections, input, updateInput, fetchingHosting, isReadyToInitialize]);
+  }, [recommendedSections, input, updateInput, fetchingHosting, isReadyToInitialize]);
 
   const handleHostSignatureSave = async (base64DataUrl: string) => {
     setUploading(true);
@@ -293,5 +345,8 @@ export const useTenancyTermsForm = (id: string) => {
     hasSection,
     hasSubClause,
     allTemplateSections,
+    tenancySummary,
+    suggestTenancy,
+    suggesting,
   };
 };

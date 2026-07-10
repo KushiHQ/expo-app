@@ -2916,6 +2916,14 @@ export type Query = {
    * the AI reads the same source so predictions return valid values.
    */
   propertyTypes: Array<PropertyTypeConfig>;
+  /**
+   * AI-recommended tenancy agreement for a listing: filter to the use-class,
+   * then ask the model which OPTIONAL clauses fit this property. Mandatory
+   * clauses are always active; hallucinated ids are ignored; on any AI
+   * failure it falls back to the filtered template as authored. Powers the
+   * "Suggest tenancy agreement" button AND the first-time default seed.
+   */
+  recommendedTenancyTemplate: TenancyTemplate;
   resolveBankAccount: Scalars['String']['output'];
   savedHosting: SavedHosting;
   savedHostingFolder: SavedHostingFolder;
@@ -2927,6 +2935,12 @@ export type Query = {
    */
   shouldShowNpsSurvey: Scalars['Boolean']['output'];
   supportChat: SupportChat;
+  /**
+   * Plain-English bullet-point summary of a hosting's tenancy agreement,
+   * cached on the hosting. Regenerated only when the agreement changes
+   * (hash mismatch) or no summary exists yet.
+   */
+  tenancyAgreementSummary: Array<Scalars['String']['output']>;
   /**
    * The master tenancy template. When `hostingId` is supplied, the template
    * is filtered to the clauses legally appropriate for that listing's
@@ -3231,6 +3245,11 @@ export type QueryNotificationsArgs = {
 };
 
 
+export type QueryRecommendedTenancyTemplateArgs = {
+  hostingId: Scalars['String']['input'];
+};
+
+
 export type QueryResolveBankAccountArgs = {
   input: VerifyAccountInput;
 };
@@ -3259,6 +3278,11 @@ export type QuerySavedHostingsArgs = {
 
 export type QuerySupportChatArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QueryTenancyAgreementSummaryArgs = {
+  hostingId: Scalars['String']['input'];
 };
 
 
@@ -4594,6 +4618,20 @@ export type HostListingsQueryVariables = Exact<{
 
 
 export type HostListingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, childCount: number, title?: string | null, description?: string | null, state?: string | null, city?: string | null, listingType?: ListingType | null, publishStatus?: PublishStatus | null, bookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } } | null }> };
+
+export type RecommendedTenancyTemplateQueryVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+}>;
+
+
+export type RecommendedTenancyTemplateQuery = { __typename?: 'Query', recommendedTenancyTemplate: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, priority: number, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } };
+
+export type TenancyAgreementSummaryQueryVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+}>;
+
+
+export type TenancyAgreementSummaryQuery = { __typename?: 'Query', tenancyAgreementSummary: Array<string> };
 
 export type KycStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -7441,6 +7479,51 @@ export const HostListingsDocument = gql`
 
 export function useHostListingsQuery(options?: Omit<Urql.UseQueryArgs<HostListingsQueryVariables>, 'query'>) {
   return Urql.useQuery<HostListingsQuery, HostListingsQueryVariables>({ query: HostListingsDocument, ...options });
+};
+export const RecommendedTenancyTemplateDocument = gql`
+    query RecommendedTenancyTemplate($hostingId: String!) {
+  recommendedTenancyTemplate(hostingId: $hostingId) {
+    totalSections
+    sections {
+      id
+      title
+      description
+      priority
+      preamble
+      subClauses {
+        id
+        title
+        description
+        content
+        isMandatory
+        isActive
+        isCustom
+        priority
+        requiredVariables {
+          name
+          type
+        }
+        providedValues {
+          key
+          value
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useRecommendedTenancyTemplateQuery(options: Omit<Urql.UseQueryArgs<RecommendedTenancyTemplateQueryVariables>, 'query'>) {
+  return Urql.useQuery<RecommendedTenancyTemplateQuery, RecommendedTenancyTemplateQueryVariables>({ query: RecommendedTenancyTemplateDocument, ...options });
+};
+export const TenancyAgreementSummaryDocument = gql`
+    query TenancyAgreementSummary($hostingId: String!) {
+  tenancyAgreementSummary(hostingId: $hostingId)
+}
+    `;
+
+export function useTenancyAgreementSummaryQuery(options: Omit<Urql.UseQueryArgs<TenancyAgreementSummaryQueryVariables>, 'query'>) {
+  return Urql.useQuery<TenancyAgreementSummaryQuery, TenancyAgreementSummaryQueryVariables>({ query: TenancyAgreementSummaryDocument, ...options });
 };
 export const KycStatusDocument = gql`
     query KycStatus {
