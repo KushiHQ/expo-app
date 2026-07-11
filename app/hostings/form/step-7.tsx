@@ -54,7 +54,20 @@ export default function NewHostingStep7() {
     tenancySummary,
     suggestTenancy,
     suggesting,
+    pendingSuggestion,
+    acceptSuggestion,
+    rejectSuggestion,
   } = useTenancyTermsForm(String(id));
+
+  // Clause-provided values so the summary fills variables the same way the
+  // agreement preview does (hosting-derived vars come from `hosting`).
+  const summaryProvidedValues = React.useMemo(
+    () =>
+      (input.tenancyAgreementTemplate?.sections ?? [])
+        .flatMap((s) => s.subClauses)
+        .flatMap((c) => c.providedValues ?? []),
+    [input.tenancyAgreementTemplate],
+  );
 
   React.useEffect(() => {
     if (hosting && !showTenancySteps(hosting.listingType, hosting.propertyType)) {
@@ -100,8 +113,24 @@ export default function NewHostingStep7() {
             subtitle="Generate a tenancy agreement tailored to this property"
           >
             <Button type="primary" loading={suggesting} disabled={suggesting} onPress={suggestTenancy}>
-              <ThemedText content="primary">Suggest tenancy agreement</ThemedText>
+              <ThemedText content="primary">
+                {pendingSuggestion ? 'Regenerate suggestion' : 'Suggest tenancy agreement'}
+              </ThemedText>
             </Button>
+            {pendingSuggestion && (
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+                <View style={{ flex: 1 }}>
+                  <Button type="primary" disabled={mutating || suggesting} onPress={acceptSuggestion}>
+                    <ThemedText content="primary">{mutating ? 'Saving…' : 'Accept'}</ThemedText>
+                  </Button>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Button type="tinted" disabled={mutating || suggesting} onPress={rejectSuggestion}>
+                    <ThemedText content="tinted">Reject</ThemedText>
+                  </Button>
+                </View>
+              </View>
+            )}
             {tenancySummary.length > 0 && (
               <View
                 style={{
@@ -128,7 +157,14 @@ export default function NewHostingStep7() {
                         backgroundColor: colors.primary,
                       }}
                     />
-                    <ThemedText style={{ flex: 1, fontSize: 13, lineHeight: 19 }}>{point}</ThemedText>
+                    <View style={{ flex: 1 }}>
+                      <TenancyAgreementVariableText
+                        text={point}
+                        hosting={hosting}
+                        providedValues={summaryProvidedValues}
+                        style={{ fontSize: 13, lineHeight: 19 }}
+                      />
+                    </View>
                   </View>
                 ))}
               </View>

@@ -2923,7 +2923,7 @@ export type Query = {
    * failure it falls back to the filtered template as authored. Powers the
    * "Suggest tenancy agreement" button AND the first-time default seed.
    */
-  recommendedTenancyTemplate: TenancyTemplate;
+  recommendedTenancyTemplate: TenancyRecommendation;
   resolveBankAccount: Scalars['String']['output'];
   savedHosting: SavedHosting;
   savedHostingFolder: SavedHostingFolder;
@@ -3610,6 +3610,16 @@ export enum SupportItemType {
   Hosting = 'HOSTING',
   Transaction = 'TRANSACTION'
 }
+
+/**
+ * An AI recommendation: the suggested (filtered + selected) agreement plus a
+ * plain-English summary of it, so a client can preview both in one request.
+ */
+export type TenancyRecommendation = {
+  __typename?: 'TenancyRecommendation';
+  summary: Array<Scalars['String']['output']>;
+  template: TenancyTemplate;
+};
 
 export type TenancySection = {
   __typename?: 'TenancySection';
@@ -4624,7 +4634,7 @@ export type RecommendedTenancyTemplateQueryVariables = Exact<{
 }>;
 
 
-export type RecommendedTenancyTemplateQuery = { __typename?: 'Query', recommendedTenancyTemplate: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, priority: number, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } };
+export type RecommendedTenancyTemplateQuery = { __typename?: 'Query', recommendedTenancyTemplate: { __typename?: 'TenancyRecommendation', summary: Array<string>, template: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, priority: number, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } } };
 
 export type TenancyAgreementSummaryQueryVariables = Exact<{
   hostingId: Scalars['String']['input'];
@@ -7483,29 +7493,32 @@ export function useHostListingsQuery(options?: Omit<Urql.UseQueryArgs<HostListin
 export const RecommendedTenancyTemplateDocument = gql`
     query RecommendedTenancyTemplate($hostingId: String!) {
   recommendedTenancyTemplate(hostingId: $hostingId) {
-    totalSections
-    sections {
-      id
-      title
-      description
-      priority
-      preamble
-      subClauses {
+    summary
+    template {
+      totalSections
+      sections {
         id
         title
         description
-        content
-        isMandatory
-        isActive
-        isCustom
         priority
-        requiredVariables {
-          name
-          type
-        }
-        providedValues {
-          key
-          value
+        preamble
+        subClauses {
+          id
+          title
+          description
+          content
+          isMandatory
+          isActive
+          isCustom
+          priority
+          requiredVariables {
+            name
+            type
+          }
+          providedValues {
+            key
+            value
+          }
         }
       }
     }

@@ -53,18 +53,27 @@ export const useTenancyTermsForm = (id: string) => {
     variables: { hostingId: id },
     pause: !id || hasExistingTemplate,
   });
-  const recommendedSections = recData?.recommendedTenancyTemplate?.sections || [];
+  const recommendedSections = recData?.recommendedTenancyTemplate?.template?.sections || [];
 
   // Cached plain-English summary of the SAVED agreement.
-  const [{ data: summaryData }] = useTenancyAgreementSummaryQuery({
+  const [{ data: summaryData }, refetchSummary] = useTenancyAgreementSummaryQuery({
     variables: { hostingId: id },
     pause: !id || !hasExistingTemplate,
   });
-  const tenancySummary = summaryData?.tenancyAgreementSummary ?? [];
+  const savedSummary = summaryData?.tenancyAgreementSummary ?? [];
 
-  // On-demand "Suggest tenancy agreement" — replaces the working terms.
+  // On-demand "Suggest tenancy agreement" — previews a full replacement
+  // (clauses AND summary together) without saving. The host then Accepts
+  // (persist) or Rejects (revert to the pre-suggest working state).
   const client = useClient();
   const [suggesting, setSuggesting] = React.useState(false);
+  const [pendingSuggestion, setPendingSuggestion] = React.useState(false);
+  // Working state captured the instant Suggest is pressed, so Reject can undo.
+  const preSuggestSnapshot = React.useRef<TenancyTemplate | null | undefined>(undefined);
+  // Summary of the previewed/accepted suggestion (overrides the saved summary
+  // while a preview is live and immediately after an Accept).
+  const [suggestedSummary, setSuggestedSummary] = React.useState<string[] | null>(null);
+
   const suggestTenancy = async () => {
     if (!id || suggesting) return;
     setSuggesting(true);
@@ -72,21 +81,76 @@ export const useTenancyTermsForm = (id: string) => {
       const res = await client
         .query(RecommendedTenancyTemplateDocument, { hostingId: id }, { requestPolicy: 'network-only' })
         .toPromise();
-      const t = res.data?.recommendedTenancyTemplate;
+      const rec = res.data?.recommendedTenancyTemplate;
+      const t = rec?.template;
       if (res.error || !t) {
         if (res.error) handleError(res.error);
         else show({ type: 'error', text2: "Couldn't generate a suggestion" });
         return;
       }
+      // Snapshot the current working terms before overwriting (Reject undoes).
+      preSuggestSnapshot.current = input.tenancyAgreementTemplate;
+      // Keep only the clauses the server marked active (mandatory floor + AI
+      // selection − fee-gated clauses) so the previewed clause list matches the
+      // summary. Drop sections left empty.
+      const activeTemplate = {
+        totalSections: 0,
+        sections: (t.sections as TenancySection[])
+          .map((s) => ({ ...s, subClauses: s.subClauses.filter((c) => c.isActive) }))
+          .filter((s) => s.subClauses.length > 0),
+      };
       updateInput({
-        tenancyAgreementTemplate: cleanupAgreementTemplateInput(cast<TenancyTemplate>(t)),
+        tenancyAgreementTemplate: cleanupAgreementTemplateInput(cast<TenancyTemplate>(activeTemplate)),
       });
+      setSuggestedSummary(rec?.summary ?? []);
+      setPendingSuggestion(true);
       templateInitialized.current = true;
-      show({ type: 'success', text1: 'Tenancy agreement suggested', text2: 'Review and save.' });
+      show({
+        type: 'success',
+        text1: 'Suggestion ready',
+        text2: 'Review below, then Accept or Reject.',
+      });
     } finally {
       setSuggesting(false);
     }
   };
+
+  // Accept the live preview: persist it. Stays on the step so the host can
+  // keep filling variables / signing.
+  const acceptSuggestion = async () => {
+    if (!input.tenancyAgreementTemplate) return;
+    const res = await mutate({
+      input: {
+        ...input,
+        tenancyAgreementTemplate: cleanupAgreementTemplateInput(input.tenancyAgreementTemplate),
+      },
+    });
+    if (res.error) {
+      handleError(res.error);
+      return;
+    }
+    setPendingSuggestion(false);
+    preSuggestSnapshot.current = undefined;
+    refetch();
+    // Server will regenerate/cache the saved summary; our preview summary
+    // matches it, so keep showing it in the meantime.
+    refetchSummary({ requestPolicy: 'network-only' });
+    show({ type: 'success', text1: 'Saved', text2: 'Tenancy agreement updated.' });
+  };
+
+  // Reject the live preview: revert to the state before Suggest was pressed.
+  const rejectSuggestion = () => {
+    if (preSuggestSnapshot.current !== undefined) {
+      updateInput({ tenancyAgreementTemplate: preSuggestSnapshot.current ?? undefined });
+    }
+    preSuggestSnapshot.current = undefined;
+    setSuggestedSummary(null);
+    setPendingSuggestion(false);
+  };
+
+  // While previewing (and just after accepting) show the suggestion's summary;
+  // otherwise the cached summary of the saved agreement.
+  const tenancySummary = suggestedSummary ?? savedSummary;
 
   const [editOpen, setEditOpen] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
@@ -122,21 +186,15 @@ export const useTenancyTermsForm = (id: string) => {
         const currentTemplate = input.tenancyAgreementTemplate;
 
         if (!currentTemplate || currentTemplate.sections.length === 0) {
-          // Seed the first-time default from the AI recommendation.
+          // Seed the first-time default from the AI recommendation. Keep only
+          // the clauses the server marked active — the mandatory floor, AI
+          // selection, and fee-gating (caution / service-charge / deposit) are
+          // already resolved server-side, so `isActive` is authoritative.
           const processedSections = recommendedSections
             .reduce((acc, { __typename, ...section }) => {
-              let activeSubClauses = section.subClauses
-                .filter((sub) => sub.isActive || sub.isMandatory)
+              const activeSubClauses = section.subClauses
+                .filter((sub) => sub.isActive)
                 .sort((a, b) => a.priority - b.priority);
-
-              if (!input.serviceCharge) {
-                activeSubClauses = activeSubClauses.filter(
-                  (sub) => sub.id !== 'sub_service_charge',
-                );
-              }
-              if (!input.cautionFee) {
-                activeSubClauses = activeSubClauses.filter((sub) => sub.id !== 'sub_caution');
-              }
 
               if (activeSubClauses.length > 0 || !section.subClauses.length) {
                 acc.push({ ...section, subClauses: activeSubClauses });
@@ -348,5 +406,8 @@ export const useTenancyTermsForm = (id: string) => {
     tenancySummary,
     suggestTenancy,
     suggesting,
+    pendingSuggestion,
+    acceptSuggestion,
+    rejectSuggestion,
   };
 };

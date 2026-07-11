@@ -73,6 +73,9 @@ const EMBEDDED = [
   'TenancyTemplate',
   'SubClauseVariable',
   'SubClauseValue',
+  // AI "suggest" result — a transient {template, summary} value object with no
+  // `id`, read once per recommendedTenancyTemplate call.
+  'TenancyRecommendation',
   // Host-analytics value objects (hostAnalytics + its revenue/growth series):
   // aggregates and time-series points with no `id`, always read nested.
   'HostAnalytics',

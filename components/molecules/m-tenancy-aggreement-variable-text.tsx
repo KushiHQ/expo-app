@@ -9,6 +9,7 @@ import {
 import { formatNaira } from '@/lib/utils/currency';
 import { capitalize, splitVariables } from '@/lib/utils/text';
 import React from 'react';
+import { StyleProp, TextStyle } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
 import {
   courtJurisdictionPhrase,
@@ -54,10 +55,11 @@ interface Props {
   application?: ApplicationVars | null;
   tenantUser?: TenantUserVars | null;
   fees?: CalculateHostingFeesQuery['calculateHostingFees'] | null;
+  style?: StyleProp<TextStyle>;
 }
 
 const TenancyAgreementVariableText: React.FC<Props> = React.memo(
-  ({ text, providedValues, replace = true, hosting, application, tenantUser, fees }) => {
+  ({ text, providedValues, replace = true, hosting, application, tenantUser, fees, style }) => {
     const colors = useThemeColors();
 
     const hostingAddress = React.useMemo(() => {
@@ -248,7 +250,7 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
     }, [text, replace, hosting, hostingAddress, providedValues, application, tenantUser, fees]);
 
     return (
-      <ThemedText>
+      <ThemedText style={style}>
         {splitVariables(replacedText).map((part, index) => {
           if (part.startsWith('{{') && part.endsWith('}}')) {
             const rawVariable = part.slice(2, -2);

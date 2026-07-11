@@ -17,6 +17,7 @@ import {
   useHostingQuery,
   useInitiateBookingApplicationMutation,
   useInitiateBookingApplicationSubmissionMutation,
+  useTenancyAgreementSummaryQuery,
   useUpdateBookingApplicationMutation,
 } from '@/lib/services/graphql/generated';
 import { UPDATE_GUEST } from '@/lib/services/graphql/requests/mutations/users';
@@ -54,6 +55,22 @@ export default function BookingApplicationStep2() {
       multiplier: input.intervalMultiplier ?? 1,
     },
   });
+  // Plain-English summary of the tenancy agreement, shown above it so the guest
+  // grasps the key terms before signing. Variables are filled client-side.
+  const [{ data: summaryData }] = useTenancyAgreementSummaryQuery({
+    variables: { hostingId: String(id) },
+    pause: !id,
+  });
+  const tenancySummary = summaryData?.tenancyAgreementSummary ?? [];
+  // Clause-provided values so the summary fills variables the same way the
+  // agreement below does (tenant/date/fee vars come from the props passed in).
+  const summaryProvidedValues = React.useMemo(
+    () =>
+      (hostingData?.hosting.tenancyAgreementTemplate?.sections ?? [])
+        .flatMap((s) => s.subClauses)
+        .flatMap((c) => c.providedValues ?? []),
+    [hostingData?.hosting.tenancyAgreementTemplate],
+  );
   const [{ fetching: initiatingSubmission, error: initiateSubmissionError }, initiateSubmission] =
     useInitiateBookingApplicationSubmissionMutation();
   const [{ fetching: completingSubmission, error: completionError }, completeSubmission] =
@@ -181,6 +198,48 @@ export default function BookingApplicationStep2() {
               "  Please review the landlord's rules and lease terms below. By submitting this application, you agree to these conditions. If you have questions or wish to discuss a specific clause, please contact the host before submitting."
             }
           </ThemedText>
+          {tenancySummary.length > 0 && (
+            <View
+              style={{
+                marginTop: 16,
+                gap: 8,
+                borderRadius: 14,
+                padding: 14,
+                backgroundColor: hexToRgba(colors.primary, 0.08),
+              }}
+            >
+              <ThemedText
+                style={{ fontSize: 11, color: colors.primary, letterSpacing: 1 }}
+                type="semibold"
+              >
+                SUMMARY OF KEY TERMS
+              </ThemedText>
+              {tenancySummary.map((point, i) => (
+                <View key={i} style={{ flexDirection: 'row', gap: 8 }}>
+                  <View
+                    style={{
+                      width: 4,
+                      height: 4,
+                      borderRadius: 2,
+                      marginTop: 7,
+                      backgroundColor: colors.primary,
+                    }}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <TenancyAgreementVariableText
+                      text={point}
+                      hosting={hostingData?.hosting}
+                      application={input}
+                      tenantUser={user.user.user}
+                      fees={feesData?.calculateHostingFees}
+                      providedValues={summaryProvidedValues}
+                      style={{ fontSize: 13, lineHeight: 19 }}
+                    />
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
           <View className="mt-8 min-h-[500px] gap-4">
             <View>
               {hostingData &&
