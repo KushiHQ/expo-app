@@ -1,6 +1,8 @@
 import {
+  ListingEventKind,
   useCreateUpdateSavedHostingMutation,
   useDeleteSavedHostingMutation,
+  useRecordListingEventMutation,
 } from '@/lib/services/graphql/generated';
 import { handleError } from '@/lib/utils/error';
 import * as Haptics from 'expo-haptics';
@@ -27,6 +29,7 @@ const HostingLikeButton: React.FC<Props> = ({ saved: defSaved, className, id, on
   }, [defSaved]);
   const [{ fetching: savingHosting }, saveHosting] = useCreateUpdateSavedHostingMutation();
   const [{ fetching: deletingSaved }, deleteSaved] = useDeleteSavedHostingMutation();
+  const [, recordListingEvent] = useRecordListingEventMutation();
 
   function toggleSaved() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -55,6 +58,9 @@ const HostingLikeButton: React.FC<Props> = ({ saved: defSaved, className, id, on
         }
         if (res.data) {
           onUpdate?.(true);
+          // Fire-and-forget analytics: a genuine save is a strong intent signal
+          // for the host (esp. agent-managed listings).
+          recordListingEvent({ hostingId: id, kind: ListingEventKind.Save });
           toast.show({
             type: 'success',
             text2: res.data.createUpdateSavedHosting.message,
