@@ -170,7 +170,7 @@ export default function NewHostingStep1() {
           >
             <SelectInput
               focused
-              label="Listing kind"
+              label="Listing Type"
               placeholder="Standalone listing"
               defaultValue={{
                 label:
@@ -270,7 +270,7 @@ export default function NewHostingStep1() {
             <View style={{ flex: 1 }}>
               <SelectInput
                 focused
-                label="Listing Type"
+                label="Sale Type"
                 placeholder="Rent"
                 defaultValue={
                   input.listingType
