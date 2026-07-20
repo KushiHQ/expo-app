@@ -24,7 +24,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     icon: HousePlus,
     title: 'Enter Property Details',
-    description: 'Start by adding key details like the property title, description.',
+    description: 'Start by choosing how it’s managed, the property type, and the listing style.',
   },
   {
     icon: Images,
@@ -70,7 +70,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     icon: MagePreviewFill,
     title: 'Review & Publish',
     description:
-      'Give all your information one final look. Confirm your details are correct and submit your listing.',
+      'Name and describe your listing (AI can help), give everything a final look, and submit.',
   },
   {
     icon: SolarVerifiedCheckOutline,

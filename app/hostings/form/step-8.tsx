@@ -1,10 +1,13 @@
 import React from 'react';
-import { View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import ThemedText from '@/components/atoms/a-themed-text';
 import Chip from '@/components/atoms/a-chip';
 import DataRow from '@/components/atoms/a-data-row';
 import StackedRow from '@/components/atoms/a-stacked-row';
 import ReviewSection from '@/components/molecules/m-review-section';
+import SectionCard from '@/components/molecules/m-section-card';
+import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
+import AiContentSuggestion from '@/components/molecules/m-ai-content-suggestion';
 import DetailsLayout from '@/components/layouts/details';
 import HostingStepper from '@/components/molecules/m-hosting-stepper';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
@@ -36,6 +39,8 @@ import { Room } from '@/lib/types/enums/hostings';
 import { removeTypenames } from '@/lib/utils/graphql/cleanup';
 import { Fonts } from '@/lib/constants/theme';
 import { useUploadStore } from '@/lib/stores/uploads';
+
+const DESCRIPTION_MAX = 1500;
 
 export default function NewHostingStep8() {
   const router = useRouter();
@@ -165,22 +170,79 @@ export default function NewHostingStep8() {
             </View>
           )}
 
+          {/* Name & describe — captured here at the end, with full context so the
+              AI can draft a title/description from the photos, location, etc. */}
+          <SectionCard
+            icon={<Sparkles size={16} color={colors.primary} />}
+            title="Name your listing"
+            subtitle="Add a title and description — or let AI draft one from your details"
+          >
+            {id ? (
+              <AiContentSuggestion
+                hostingId={String(id)}
+                onApply={({ title, description }) => updateInput({ title, description })}
+              />
+            ) : null}
+            <View style={{ height: 12 }} />
+            <FloatingLabelInput
+              focused
+              label="Title"
+              value={input.title ?? ''}
+              placeholder="4 Bedroom Apartment"
+              onChangeText={(v) => updateInput({ title: v })}
+            />
+            <View
+              style={{
+                backgroundColor: hexToRgba(colors.text, 0.06),
+                borderRadius: 16,
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                minHeight: 140,
+                marginTop: 12,
+              }}
+            >
+              <TextInput
+                multiline
+                textAlignVertical="top"
+                placeholder="A 4-bedroom bungalow with a spacious compound, 24/7 power, and a serene, gated neighbourhood…"
+                placeholderTextColor={hexToRgba(colors.text, 0.35)}
+                value={input.description ?? ''}
+                onChangeText={(v) => updateInput({ description: v })}
+                maxLength={DESCRIPTION_MAX}
+                style={{
+                  flex: 1,
+                  minHeight: 104,
+                  color: colors.text,
+                  fontFamily: Fonts.regular,
+                  fontSize: 15,
+                  lineHeight: 23,
+                }}
+              />
+            </View>
+            <ThemedText
+              style={{
+                fontSize: 12,
+                color: hexToRgba(colors.text, 0.45),
+                marginTop: 8,
+                textAlign: 'right',
+              }}
+            >
+              {input.description?.length ?? 0}/{DESCRIPTION_MAX}
+            </ThemedText>
+          </SectionCard>
+
           {/* Section 1 — Listing Details */}
           <ReviewSection
             icon={<FileText color={colors.primary} size={15} />}
             title="Listing Details"
             onEdit={() => router.push(editStep(1))}
           >
-            <DataRow label="Title" value={input.title ?? ''} />
             <DataRow label="Property Type" value={input.propertyType ?? ''} />
             {formatPaymentInterval(input.paymentInterval) ? (
               <DataRow
                 label="Payment Interval"
                 value={formatPaymentInterval(input.paymentInterval)}
               />
-            ) : null}
-            {input.description ? (
-              <StackedRow label="Description" value={input.description} />
             ) : null}
           </ReviewSection>
 

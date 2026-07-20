@@ -1,9 +1,7 @@
-import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
 import DetailsLayout from '@/components/layouts/details';
 import HostingStepper from '@/components/molecules/m-hosting-stepper';
 import SectionCard from '@/components/molecules/m-section-card';
 import SelectInput, { SelectOption } from '@/components/molecules/m-select-input';
-import AiContentSuggestion from '@/components/molecules/m-ai-content-suggestion';
 import { ParentListingOption } from '@/components/molecules/m-parent-listing-option';
 import ThemedText from '@/components/atoms/a-themed-text';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
@@ -18,23 +16,17 @@ import {
 } from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
 import { joinLocation } from '@/lib/utils/locations';
-import { Fonts } from '@/lib/constants/theme';
-import { cast } from '@/lib/types/utils';
 import { handleError } from '@/lib/utils/error';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { AlignLeft, Building2 } from 'lucide-react-native';
-import React, { useRef } from 'react';
-import { RefreshControl, TextInput, View } from 'react-native';
+import { Building2 } from 'lucide-react-native';
+import React from 'react';
+import { RefreshControl, View } from 'react-native';
 import { toast } from '@/lib/hooks/use-toast';
-
-const DESCRIPTION_MIN = 40;
-const DESCRIPTION_MAX = 1500;
 
 export default function NewHostingStep1() {
   const router = useRouter();
   const colors = useThemeColors();
   const { id } = useLocalSearchParams();
-  const descriptionRef = useRef<TextInput>(null);
   const {
     mutate,
     mutating,
@@ -46,7 +38,6 @@ export default function NewHostingStep1() {
   } = useHostingForm(id);
   const { user } = useUser();
   const { propertyTypes } = usePropertyTypeConfig();
-  const descLen = input.description?.length ?? 0;
 
   // Parent / child kind. Seed from the input, else the fetched hosting, else standalone.
   const currentKind =
@@ -113,13 +104,27 @@ export default function NewHostingStep1() {
       description: h.description ?? null,
     }));
 
+  // Title/description are now captured at the end (Review & Publish), so a new
+  // listing starts with a sensible placeholder name (D9). Number it against the
+  // host's existing "Untitled listing" placeholders so they stay distinct.
+  const [{ data: myListings }] = useHostListingsQuery({
+    variables: { filters: { creatorId: user.user?.id } },
+    pause: !!id || !user.user?.id,
+  });
+  const seededTitle = React.useMemo(() => {
+    const untitled = (myListings?.hostings ?? []).filter((h) =>
+      (h.title ?? '').startsWith('Untitled listing'),
+    ).length;
+    return untitled === 0 ? 'Untitled listing' : `Untitled listing (${untitled + 1})`;
+  }, [myListings]);
+
   const [refreshing, setRefreshing] = React.useState(false);
   React.useEffect(() => {
     if (!fetching) setRefreshing(false);
   }, [fetching]);
 
   const handleMutate = () => {
-    mutate({ input: input }).then((res) => {
+    mutate({ input: { ...input, title: input.title?.trim() || seededTitle } }).then((res) => {
       if (res.error) {
         handleError(res.error);
       }
@@ -152,10 +157,8 @@ export default function NewHostingStep1() {
           onPress={handleMutate}
           disabled={
             mutating ||
-            !input?.title?.length ||
             !input.propertyType?.length ||
             !input.listingType?.length ||
-            !input.description?.length ||
             (currentKind === HostingKind.Child && !currentParentId)
           }
           step={1}
@@ -167,7 +170,7 @@ export default function NewHostingStep1() {
           icon={<Building2 size={16} color={colors.primary} />}
           title="Property Identity"
           style={{ minHeight: 180 }}
-          subtitle="Title, property type, and listing style"
+          subtitle="How it's managed, property type, and listing style"
         >
           <SelectInput
             focused
@@ -251,16 +254,6 @@ export default function NewHostingStep1() {
             </View>
           ) : null}
 
-          <FloatingLabelInput
-            focused
-            label="Title"
-            value={cast(input.title)}
-            placeholder="4 Bedroom Apartment"
-            onChangeText={(v) => updateInput({ title: v })}
-            returnKeyType="next"
-            onSubmitEditing={() => descriptionRef.current?.focus()}
-            blurOnSubmit={false}
-          />
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <View style={{ flex: 1 }}>
               <SelectInput
@@ -310,77 +303,6 @@ export default function NewHostingStep1() {
                 renderItem={SelectOption}
               />
             </View>
-          </View>
-        </SectionCard>
-
-        {id ? (
-          <AiContentSuggestion
-            hostingId={String(id)}
-            onApply={({ title, description }) => updateInput({ title, description })}
-          />
-        ) : null}
-
-        <SectionCard
-          icon={<AlignLeft size={16} color={colors.primary} />}
-          title="Description"
-          subtitle="Tell guests what makes your property special"
-        >
-          <View
-            style={{
-              backgroundColor: hexToRgba(colors.text, 0.06),
-              borderRadius: 16,
-              paddingHorizontal: 16,
-              paddingVertical: 14,
-              minHeight: 168,
-            }}
-          >
-            <TextInput
-              ref={descriptionRef}
-              multiline
-              textAlignVertical="top"
-              placeholder="A 4-bedroom bungalow with a spacious compound, 24/7 power, and a serene, gated neighbourhood…"
-              placeholderTextColor={hexToRgba(colors.text, 0.35)}
-              value={cast(input.description)}
-              onChangeText={(v) => updateInput({ description: v })}
-              maxLength={DESCRIPTION_MAX}
-              returnKeyType="default"
-              style={{
-                flex: 1,
-                minHeight: 132,
-                color: colors.text,
-                fontFamily: Fonts.regular,
-                fontSize: 15,
-                lineHeight: 23,
-              }}
-            />
-          </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginTop: 10,
-              paddingHorizontal: 2,
-            }}
-          >
-            <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.45) }}>
-              {descLen === 0
-                ? 'A vivid description gets more applications'
-                : descLen < DESCRIPTION_MIN
-                  ? `Add ${DESCRIPTION_MIN - descLen} more character${
-                      DESCRIPTION_MIN - descLen === 1 ? '' : 's'
-                    }`
-                  : 'Great — that gives guests a real feel for it'}
-            </ThemedText>
-            <ThemedText
-              style={{
-                fontSize: 12,
-                fontFamily: Fonts.medium,
-                color: descLen >= DESCRIPTION_MIN ? colors.primary : hexToRgba(colors.text, 0.45),
-              }}
-            >
-              {descLen}/{DESCRIPTION_MAX}
-            </ThemedText>
           </View>
         </SectionCard>
       </View>
