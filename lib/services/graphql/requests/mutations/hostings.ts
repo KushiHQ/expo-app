@@ -441,3 +441,9 @@ export const VERIFY_LISTING_BOOST = gql`
     }
   }
 `;
+
+export const RECORD_LISTING_EVENT = gql`
+  mutation RecordListingEvent($hostingId: String!, $kind: ListingEventKind!) {
+    recordListingEvent(hostingId: $hostingId, kind: $kind)
+  }
+`;

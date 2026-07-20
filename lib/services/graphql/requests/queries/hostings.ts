@@ -500,3 +500,22 @@ export const LISTING_BOOST_CATALOGUE = gql`
     }
   }
 `;
+
+export const HOSTING_ANALYTICS = gql`
+  query HostingAnalytics($hostingId: String!) {
+    hostingAnalytics(hostingId: $hostingId) {
+      totalViews
+      uniqueViews
+      saves
+      messages
+      shares
+      contactReveals
+      viewsSeries {
+        dataPoints {
+          label
+          amount
+        }
+      }
+    }
+  }
+`;

@@ -6,10 +6,12 @@ import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import {
   HostingKind,
+  ListingEventKind,
   ListingType,
   UnitStructure,
   useHostingQuery,
   useInitiateHostingChatMutation,
+  useRecordListingEventMutation,
 } from '@/lib/services/graphql/generated';
 import HostingUnits from '@/components/organisms/o-hosting-units';
 import { cast } from '@/lib/types/utils';
@@ -20,7 +22,15 @@ import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
-import { AlignLeft, Building2, MapPin, MessageSquare, Rocket, Zap } from 'lucide-react-native';
+import {
+  AlignLeft,
+  Building2,
+  MapPin,
+  MessageSquare,
+  Rocket,
+  TrendingUp,
+  Zap,
+} from 'lucide-react-native';
 import { SURFACE } from '@/lib/constants/surface';
 import SectionHeader from '@/components/atoms/a-section-header';
 import React from 'react';
@@ -52,6 +62,7 @@ export default function HostingDetails() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const [_, initiateChat] = useInitiateHostingChatMutation();
+  const [, recordListingEvent] = useRecordListingEventMutation();
   const [{ data, error, fetching }] = useHostingQuery({
     variables: { hostingId: cast(id), childrenOnSale: true },
     requestPolicy: 'cache-and-network',
@@ -78,6 +89,9 @@ export default function HostingDetails() {
           ? { title: hosting?.title ?? undefined, message: caption, url: shareUrl }
           : { title: hosting?.title ?? undefined, message: `${caption}\n\n${shareUrl}` },
       );
+      if (hosting?.id) {
+        recordListingEvent({ hostingId: hosting.id, kind: ListingEventKind.Share });
+      }
     } catch (error: any) {
       handleError(error);
     }
@@ -87,8 +101,17 @@ export default function HostingDetails() {
     if (error) handleError(error);
   }, [error]);
 
+  // Count a view once per listing load — but not when the owner views their own.
+  React.useEffect(() => {
+    if (hosting?.id && !isHost) {
+      recordListingEvent({ hostingId: hosting.id, kind: ListingEventKind.View });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hosting?.id, isHost]);
+
   const handleInitiateChat = () => {
-    if (hosting)
+    if (hosting) {
+      recordListingEvent({ hostingId: hosting.id, kind: ListingEventKind.Message });
       initiateChat({ hostingId: hosting?.id }).then((res) => {
         if (res.error) {
           handleError(res.error);
@@ -97,6 +120,7 @@ export default function HostingDetails() {
           router.push(`/chats/${res.data.initiateHostingChat.id}`);
         }
       });
+    }
   };
 
   return (
@@ -124,25 +148,35 @@ export default function HostingDetails() {
               paddingHorizontal: 16,
               paddingBottom: 32,
               paddingTop: 12,
-              flexDirection: 'row',
               gap: 10,
             }}
           >
-            <View style={{ flex: 1 }}>
-              <Button
-                type="primary"
-                onPress={() => router.push(`/hostings/form/onboarding?id=${hosting?.id}`)}
-              >
-                <ThemedText content="primary">Edit Listing</ThemedText>
-              </Button>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Button type="tinted" onPress={() => router.push(`/hostings/${hosting?.id}/boost`)}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Rocket size={16} color={colors.primary} />
-                  <ThemedText content="tinted">Boost</ThemedText>
-                </View>
-              </Button>
+            <Button
+              type="primary"
+              onPress={() => router.push(`/hostings/form/onboarding?id=${hosting?.id}`)}
+            >
+              <ThemedText content="primary">Edit Listing</ThemedText>
+            </Button>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <View style={{ flex: 1 }}>
+                <Button type="tinted" onPress={() => router.push(`/hostings/${hosting?.id}/boost`)}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Rocket size={16} color={colors.primary} />
+                    <ThemedText content="tinted">Boost</ThemedText>
+                  </View>
+                </Button>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Button
+                  type="tinted"
+                  onPress={() => router.push(`/hostings/${hosting?.id}/insights`)}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <TrendingUp size={16} color={colors.primary} />
+                    <ThemedText content="tinted">Insights</ThemedText>
+                  </View>
+                </Button>
+              </View>
             </View>
           </View>
         ) : hosting?.kind === HostingKind.Parent &&

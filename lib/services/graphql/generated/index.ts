@@ -1262,6 +1262,19 @@ export type HostingRoomsArgs = {
   pagination?: InputMaybe<PaginationInput>;
 };
 
+/** Per-listing engagement over the last 30 days (owner-facing). */
+export type HostingAnalytics = {
+  __typename?: 'HostingAnalytics';
+  contactReveals: Scalars['Int']['output'];
+  messages: Scalars['Int']['output'];
+  saves: Scalars['Int']['output'];
+  shares: Scalars['Int']['output'];
+  totalViews: Scalars['Int']['output'];
+  uniqueViews: Scalars['Int']['output'];
+  /** Views per day over the window. */
+  viewsSeries: TimeSeriesData;
+};
+
 export type HostingChat = {
   __typename?: 'HostingChat';
   createdAt: Scalars['String']['output'];
@@ -1719,6 +1732,15 @@ export type LandlordMandateConfig = {
   propertyRelationships: Array<OptionItem>;
 };
 
+/** A tracked listing interaction (telemetry for the per-listing analytics). */
+export enum ListingEventKind {
+  ContactReveal = 'CONTACT_REVEAL',
+  Message = 'MESSAGE',
+  Save = 'SAVE',
+  Share = 'SHARE',
+  View = 'VIEW'
+}
+
 /** Paid priority tier for a listing (higher = ranks higher for a time window). */
 export enum ListingTier {
   Basic = 'BASIC',
@@ -1962,6 +1984,11 @@ export type Mutations = {
    * to "Bedroom 2". Requires ownership of the target room and every image.
    */
   moveHostingRoomImages: MessageResponse;
+  /**
+   * Record a listing interaction (view / save / message / share / contact
+   * reveal) for the owner's analytics. Fire-and-forget; works anonymously.
+   */
+  recordListingEvent: Scalars['Boolean']['output'];
   refreshToken: AuthTokenResponse;
   /**
    * Persist a host's manual image order within a room (drag-to-reorder).
@@ -2471,6 +2498,12 @@ export type MutationsMoveHostingRoomImagesArgs = {
 };
 
 
+export type MutationsRecordListingEventArgs = {
+  hostingId: Scalars['String']['input'];
+  kind: ListingEventKind;
+};
+
+
 export type MutationsRefreshTokenArgs = {
   input: RefreshTokenInput;
 };
@@ -2962,6 +2995,11 @@ export type Query = {
   hostAnalytics: HostAnalytics;
   hostPaymentDetails: Array<HostAccountDetails>;
   hosting: Hosting;
+  /**
+   * Per-listing engagement (views/saves/messages/shares) over the last 30
+   * days — owner only.
+   */
+  hostingAnalytics: HostingAnalytics;
   hostingChat: HostingChat;
   hostingCounts: HostingCounts;
   /**
@@ -3290,6 +3328,11 @@ export type QueryHostPaymentDetailsArgs = {
 
 
 export type QueryHostingArgs = {
+  hostingId: Scalars['String']['input'];
+};
+
+
+export type QueryHostingAnalyticsArgs = {
   hostingId: Scalars['String']['input'];
 };
 
@@ -4410,6 +4453,14 @@ export type VerifyListingBoostMutationVariables = Exact<{
 
 export type VerifyListingBoostMutation = { __typename?: 'Mutations', verifyListingBoost: { __typename?: 'TransactionResponse', message: string, data?: { __typename?: 'Transaction', id: string, amount: any, reference?: string | null, status: TransactionStatus } | null } };
 
+export type RecordListingEventMutationVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+  kind: ListingEventKind;
+}>;
+
+
+export type RecordListingEventMutation = { __typename?: 'Mutations', recordListingEvent: boolean };
+
 export type MarkNotificationAsReadMutationVariables = Exact<{
   notificationId: Scalars['String']['input'];
 }>;
@@ -4744,6 +4795,13 @@ export type ListingBoostCatalogueQueryVariables = Exact<{ [key: string]: never; 
 
 
 export type ListingBoostCatalogueQuery = { __typename?: 'Query', listingBoostCatalogue: Array<{ __typename?: 'ListingTierOption', tier: ListingTier, label: string, description?: string | null, price: any, durationDays: number }> };
+
+export type HostingAnalyticsQueryVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+}>;
+
+
+export type HostingAnalyticsQuery = { __typename?: 'Query', hostingAnalytics: { __typename?: 'HostingAnalytics', totalViews: number, uniqueViews: number, saves: number, messages: number, shares: number, contactReveals: number, viewsSeries: { __typename?: 'TimeSeriesData', dataPoints: Array<{ __typename?: 'AnalyticsDataPoint', label: string, amount: any }> } } };
 
 export type KycStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -6261,6 +6319,15 @@ export const VerifyListingBoostDocument = gql`
 export function useVerifyListingBoostMutation() {
   return Urql.useMutation<VerifyListingBoostMutation, VerifyListingBoostMutationVariables>(VerifyListingBoostDocument);
 };
+export const RecordListingEventDocument = gql`
+    mutation RecordListingEvent($hostingId: String!, $kind: ListingEventKind!) {
+  recordListingEvent(hostingId: $hostingId, kind: $kind)
+}
+    `;
+
+export function useRecordListingEventMutation() {
+  return Urql.useMutation<RecordListingEventMutation, RecordListingEventMutationVariables>(RecordListingEventDocument);
+};
 export const MarkNotificationAsReadDocument = gql`
     mutation MarkNotificationAsRead($notificationId: String!) {
   markNotificationAsRead(notificationId: $notificationId) {
@@ -7699,6 +7766,28 @@ export const ListingBoostCatalogueDocument = gql`
 
 export function useListingBoostCatalogueQuery(options?: Omit<Urql.UseQueryArgs<ListingBoostCatalogueQueryVariables>, 'query'>) {
   return Urql.useQuery<ListingBoostCatalogueQuery, ListingBoostCatalogueQueryVariables>({ query: ListingBoostCatalogueDocument, ...options });
+};
+export const HostingAnalyticsDocument = gql`
+    query HostingAnalytics($hostingId: String!) {
+  hostingAnalytics(hostingId: $hostingId) {
+    totalViews
+    uniqueViews
+    saves
+    messages
+    shares
+    contactReveals
+    viewsSeries {
+      dataPoints {
+        label
+        amount
+      }
+    }
+  }
+}
+    `;
+
+export function useHostingAnalyticsQuery(options: Omit<Urql.UseQueryArgs<HostingAnalyticsQueryVariables>, 'query'>) {
+  return Urql.useQuery<HostingAnalyticsQuery, HostingAnalyticsQueryVariables>({ query: HostingAnalyticsDocument, ...options });
 };
 export const KycStatusDocument = gql`
     query KycStatus {
