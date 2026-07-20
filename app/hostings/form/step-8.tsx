@@ -22,7 +22,7 @@ import {
   FileText,
 } from 'lucide-react-native';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
-import { showTenancySteps } from '@/lib/constants/hosting/step-rules';
+import { isAgentManaged, showTenancySteps } from '@/lib/constants/hosting/step-rules';
 import { capitalize } from '@/lib/utils/text';
 import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import HostingCard from '@/components/molecules/m-hosting-card';
@@ -344,30 +344,33 @@ export default function NewHostingStep8() {
             </ReviewSection>
           )}
 
-          {/* Section 8 — Verification Status */}
-          <ReviewSection
-            icon={<CheckCircle color={colors.primary} size={15} />}
-            title="Verification Status"
-          >
-            <View style={{ gap: 12 }}>
-              <DataRow
-                label="Verification Tier"
-                value={capitalize(
-                  hosting?.verification?.verificationTier ?? HostingVerificationTier.Unverified,
-                )}
-              />
-              <ThemedText
-                style={{
-                  fontSize: 11,
-                  color: hexToRgba(colors.text, 0.55),
-                  lineHeight: 16,
-                }}
-              >
-                Verification requests are managed separately. After publishing, head to the “Get
-                Verified” card on the onboarding hub to upload documents and request a higher tier.
-              </ThemedText>
-            </View>
-          </ReviewSection>
+          {/* Section 8 — Verification Status (Kushi-managed only; agent-managed
+              listings aren't verified by Kushi) */}
+          {!isAgentManaged(hosting?.managementType) && (
+            <ReviewSection
+              icon={<CheckCircle color={colors.primary} size={15} />}
+              title="Verification Status"
+            >
+              <View style={{ gap: 12 }}>
+                <DataRow
+                  label="Verification Tier"
+                  value={capitalize(
+                    hosting?.verification?.verificationTier ?? HostingVerificationTier.Unverified,
+                  )}
+                />
+                <ThemedText
+                  style={{
+                    fontSize: 11,
+                    color: hexToRgba(colors.text, 0.55),
+                    lineHeight: 16,
+                  }}
+                >
+                  Verification requests are managed separately. After publishing, head to the “Get
+                  Verified” card on the onboarding hub to upload documents and request a higher tier.
+                </ThemedText>
+              </View>
+            </ReviewSection>
+          )}
 
           {/* Attestations */}
           <View

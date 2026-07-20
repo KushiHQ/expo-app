@@ -28,20 +28,23 @@ const HostingLocation: React.FC<Props> = ({ hosting }) => {
           {joinLocation(hosting?.city, hosting?.state, hosting?.country)}
         </ThemedText>
       </View>
-      <LocationCard
-        zoom={15}
-        location={
-          hosting?.latitude && hosting.latitude
-            ? {
-                longitude: Number(hosting.longitude),
-                latitude: Number(hosting.latitude),
-              }
-            : undefined
-        }
-        title={hosting?.title}
-        hostingId={hosting?.id}
-        price={hosting?.price ? Number(hosting.price) : undefined}
-      />
+      {hosting?.latitude ? (
+        <LocationCard
+          zoom={15}
+          location={{
+            longitude: Number(hosting.longitude),
+            latitude: Number(hosting.latitude),
+          }}
+          title={hosting?.title}
+          hostingId={hosting?.id}
+          price={hosting?.price ? Number(hosting.price) : undefined}
+        />
+      ) : (
+        // Agent-managed listings mask the exact location — only area is shown.
+        <ThemedText style={{ fontSize: 13, color: hexToRgba(colors.text, 0.5) }}>
+          The exact location is shared on request — message the agent to arrange a viewing.
+        </ThemedText>
+      )}
     </View>
   );
 };
