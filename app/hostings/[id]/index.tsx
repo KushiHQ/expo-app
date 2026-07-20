@@ -71,7 +71,7 @@ export default function HostingDetails() {
   const { isTablet } = useBreakpoint();
 
   const hosting = data?.hosting;
-  const { user } = useUser();
+  const { user, setReturnUrl } = useUser();
   const isHost = !!hosting && hosting.host.user.id === user.user?.id;
 
   const handleShare = async () => {
@@ -110,17 +110,24 @@ export default function HostingDetails() {
   }, [hosting?.id, isHost]);
 
   const handleInitiateChat = () => {
-    if (hosting) {
-      recordListingEvent({ hostingId: hosting.id, kind: ListingEventKind.Message });
-      initiateChat({ hostingId: hosting?.id }).then((res) => {
-        if (res.error) {
-          handleError(res.error);
-        }
-        if (res.data) {
-          router.push(`/chats/${res.data.initiateHostingChat.id}`);
-        }
-      });
+    if (!hosting) return;
+    // A guest exploring without an account can reach this screen. Instead of
+    // firing the mutation (which errors), send them to sign in and bring them
+    // right back to this listing afterwards via the returnUrl flow.
+    if (!user.user?.id) {
+      setReturnUrl(`/hostings/${hosting.id}`);
+      router.push('/auth/sign-in');
+      return;
     }
+    recordListingEvent({ hostingId: hosting.id, kind: ListingEventKind.Message });
+    initiateChat({ hostingId: hosting?.id }).then((res) => {
+      if (res.error) {
+        handleError(res.error);
+      }
+      if (res.data) {
+        router.push(`/chats/${res.data.initiateHostingChat.id}`);
+      }
+    });
   };
 
   return (
