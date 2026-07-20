@@ -1,4 +1,9 @@
-import { ListingType, ManagementType } from '@/lib/services/graphql/generated';
+import {
+  ElectricityBilling,
+  ListingType,
+  ManagementType,
+  PaymentInterval,
+} from '@/lib/services/graphql/generated';
 import { PropertyType } from '@/lib/types/enums/hostings';
 
 /** Agent-managed = advertise-only: Kushi doesn't transact, so the on-platform
@@ -38,4 +43,44 @@ export function showAmenitiesStep(propertyType?: string | null): boolean {
  */
 export function showPayoutAccount(managementType?: string | null): boolean {
   return !isAgentManaged(managementType);
+}
+
+/** Human label for an electricity billing type. */
+export function electricityBillingLabel(billing?: string | null): string {
+  switch (billing) {
+    case ElectricityBilling.PrepaidMeter:
+      return 'Prepaid meter';
+    case ElectricityBilling.PostpaidMeter:
+      return 'Postpaid meter';
+    case ElectricityBilling.Estimated:
+      return 'Estimated (no meter)';
+    case ElectricityBilling.NoSupply:
+      return 'No supply';
+    default:
+      return '';
+  }
+}
+
+/**
+ * Whether to ask about an outstanding electricity balance. Only metered/estimated
+ * billing can carry arrears (prepaid/no-supply can't), and short-lets
+ * (nightly/weekly) have the host paying utilities — the guest inherits nothing.
+ */
+export function showElectricityDebt(
+  billing?: string | null,
+  paymentInterval?: string | null,
+): boolean {
+  if (
+    billing !== ElectricityBilling.PostpaidMeter &&
+    billing !== ElectricityBilling.Estimated
+  ) {
+    return false;
+  }
+  if (
+    paymentInterval === PaymentInterval.Nightly ||
+    paymentInterval === PaymentInterval.Weekly
+  ) {
+    return false;
+  }
+  return true;
 }

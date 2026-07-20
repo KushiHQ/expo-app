@@ -20,7 +20,7 @@ import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
-import { AlignLeft, Building2, MapPin, MessageSquare } from 'lucide-react-native';
+import { AlignLeft, Building2, MapPin, MessageSquare, Zap } from 'lucide-react-native';
 import { SURFACE } from '@/lib/constants/surface';
 import SectionHeader from '@/components/atoms/a-section-header';
 import React from 'react';
@@ -42,7 +42,11 @@ import HostingLocation from '@/components/molecules/m-hosting-location';
 import AVerificationTierBadge from '@/components/atoms/a-verification-tier-badge';
 import ListingTypeBadge from '@/components/atoms/a-listing-type-badge';
 import ManagementBadge from '@/components/atoms/a-management-badge';
-import { isAgentManaged } from '@/lib/constants/hosting/step-rules';
+import {
+  electricityBillingLabel,
+  isAgentManaged,
+  showElectricityDebt,
+} from '@/lib/constants/hosting/step-rules';
 
 export default function HostingDetails() {
   const router = useRouter();
@@ -498,6 +502,28 @@ export default function HostingDetails() {
             </View>
             <HostingHost hosting={hosting} isHost={isHost} />
             <HostingFacilities hosting={hosting} />
+            {hosting?.electricityBilling && (
+              <View
+                className="mt-8 gap-2 rounded-3xl p-5"
+                style={{ backgroundColor: hexToRgba(colors.text, 0.05) }}
+              >
+                <SectionHeader icon={Zap} title="Electricity" />
+                <ThemedText style={{ color: hexToRgba(colors.text, 0.7), fontSize: 15 }}>
+                  {electricityBillingLabel(hosting.electricityBilling)}
+                </ThemedText>
+                {showElectricityDebt(hosting.electricityBilling, hosting.paymentInterval) && (
+                  <ThemedText style={{ fontSize: 13, color: hexToRgba(colors.text, 0.55) }}>
+                    {hosting.electricityBalanceCleared
+                      ? 'No outstanding bills — cleared before move-in (as declared by the host).'
+                      : hosting.electricityOutstandingBalance
+                        ? `Outstanding balance: ₦${Number(
+                            hosting.electricityOutstandingBalance,
+                          ).toLocaleString()} — as declared by the host.`
+                        : 'Ask the host about any outstanding bills.'}
+                  </ThemedText>
+                )}
+              </View>
+            )}
             <HostingUnits hosting={hosting} isHost={isHost} />
 
             <HostingGalleryComponent hosting={hosting} />

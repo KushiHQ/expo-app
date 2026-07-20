@@ -5,17 +5,23 @@ import ThemedText from '@/components/atoms/a-themed-text';
 import DetailsLayout from '@/components/layouts/details';
 import HostingStepper from '@/components/molecules/m-hosting-stepper';
 import SectionCard from '@/components/molecules/m-section-card';
+import SelectInput, { SelectOption } from '@/components/molecules/m-select-input';
 import TextSelectButton from '@/components/molecules/m-text-select-button';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { showAmenitiesStep } from '@/lib/constants/hosting/step-rules';
+import {
+  electricityBillingLabel,
+  showAmenitiesStep,
+  showElectricityDebt,
+} from '@/lib/constants/hosting/step-rules';
+import { ElectricityBilling } from '@/lib/services/graphql/generated';
 import { usePropertyTypeConfig } from '@/lib/hooks/use-property-type-config';
 import { cast } from '@/lib/types/utils';
 import { hexToRgba } from '@/lib/utils/colors';
 import { handleError } from '@/lib/utils/error';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
-import { Check, Plus, Sparkles } from 'lucide-react-native';
+import { Check, Plus, Sparkles, Zap } from 'lucide-react-native';
 import React from 'react';
 import { View } from 'react-native';
 import { SimpleGrid } from 'react-native-super-grid';
@@ -141,6 +147,69 @@ export default function NewHostingStep4() {
                 <Check color={colors.primary} />
               </Button>
             </View>
+          </SectionCard>
+
+          {/* Electricity disclosure. This step is skipped for land, so it only
+              shows for residential/commercial (+ short-let, which hides debt). */}
+          <SectionCard
+            icon={<Zap size={16} color={colors.primary} />}
+            title="Electricity"
+            subtitle="How the property is billed — a top question for renters"
+          >
+            <SelectInput
+              focused
+              label="Billing type"
+              placeholder="Select billing type"
+              defaultValue={
+                input.electricityBilling
+                  ? {
+                      label: electricityBillingLabel(input.electricityBilling),
+                      value: input.electricityBilling,
+                    }
+                  : undefined
+              }
+              options={Object.values(ElectricityBilling).map((v) => ({
+                label: electricityBillingLabel(v),
+                value: v,
+              }))}
+              onSelect={(v) =>
+                updateInput({ electricityBilling: v.value as ElectricityBilling })
+              }
+              renderItem={SelectOption}
+            />
+
+            {showElectricityDebt(input.electricityBilling, input.paymentInterval) && (
+              <View style={{ marginTop: 12, gap: 12 }}>
+                <FloatingLabelInput
+                  focused
+                  inputMode="numeric"
+                  label="Outstanding electricity balance (optional)"
+                  value={
+                    input.electricityOutstandingBalance
+                      ? Number(input.electricityOutstandingBalance).toLocaleString()
+                      : undefined
+                  }
+                  onChangeText={(v) =>
+                    updateInput({
+                      electricityOutstandingBalance: v.replace('₦', '').replaceAll(',', ''),
+                    })
+                  }
+                  placeholder="₦ 0"
+                />
+                <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.5) }}>
+                  As declared by you — shown to renters so there are no surprises on move-in.
+                </ThemedText>
+                <TextSelectButton
+                  value="No outstanding bills / cleared before move-in"
+                  selected={input.electricityBalanceCleared ?? false}
+                  onSelect={() =>
+                    updateInput({
+                      electricityBalanceCleared: !input.electricityBalanceCleared,
+                    })
+                  }
+                />
+              </View>
+            )}
           </SectionCard>
         </View>
       </DetailsLayout>

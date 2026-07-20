@@ -303,6 +303,9 @@ export const HOSTING_QUERY = gql`
       cautionFee
       serviceCharge
       maxOccupants
+      electricityBilling
+      electricityOutstandingBalance
+      electricityBalanceCleared
       bookingApplicationsCount
     }
   }
