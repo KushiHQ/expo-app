@@ -20,7 +20,7 @@ import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
-import { AlignLeft, Building2, MapPin, MessageSquare, Zap } from 'lucide-react-native';
+import { AlignLeft, Building2, MapPin, MessageSquare, Rocket, Zap } from 'lucide-react-native';
 import { SURFACE } from '@/lib/constants/surface';
 import SectionHeader from '@/components/atoms/a-section-header';
 import React from 'react';
@@ -124,14 +124,26 @@ export default function HostingDetails() {
               paddingHorizontal: 16,
               paddingBottom: 32,
               paddingTop: 12,
+              flexDirection: 'row',
+              gap: 10,
             }}
           >
-            <Button
-              type="primary"
-              onPress={() => router.push(`/hostings/form/onboarding?id=${hosting?.id}`)}
-            >
-              <ThemedText content="primary">Edit Listing</ThemedText>
-            </Button>
+            <View style={{ flex: 1 }}>
+              <Button
+                type="primary"
+                onPress={() => router.push(`/hostings/form/onboarding?id=${hosting?.id}`)}
+              >
+                <ThemedText content="primary">Edit Listing</ThemedText>
+              </Button>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button type="tinted" onPress={() => router.push(`/hostings/${hosting?.id}/boost`)}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Rocket size={16} color={colors.primary} />
+                  <ThemedText content="tinted">Boost</ThemedText>
+                </View>
+              </Button>
+            </View>
           </View>
         ) : hosting?.kind === HostingKind.Parent &&
           hosting?.unitStructure !== UnitStructure.Group ? (

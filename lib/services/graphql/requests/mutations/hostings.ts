@@ -413,3 +413,31 @@ export const DUPLICATE_HOSTING = gql`
     }
   }
 `;
+
+export const INITIATE_LISTING_BOOST = gql`
+  mutation InitiateListingBoost($hostingId: String!, $tier: ListingTier!) {
+    initiateListingBoost(hostingId: $hostingId, tier: $tier) {
+      message
+      data {
+        id
+        amount
+        reference
+        status
+      }
+    }
+  }
+`;
+
+export const VERIFY_LISTING_BOOST = gql`
+  mutation VerifyListingBoost($reference: String!) {
+    verifyListingBoost(reference: $reference) {
+      message
+      data {
+        id
+        amount
+        reference
+        status
+      }
+    }
+  }
+`;

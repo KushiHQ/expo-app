@@ -488,3 +488,15 @@ export const TENANCY_AGREEMENT_SUMMARY = gql`
     tenancyAgreementSummary(hostingId: $hostingId)
   }
 `;
+
+export const LISTING_BOOST_CATALOGUE = gql`
+  query ListingBoostCatalogue {
+    listingBoostCatalogue {
+      tier
+      label
+      description
+      price
+      durationDays
+    }
+  }
+`;

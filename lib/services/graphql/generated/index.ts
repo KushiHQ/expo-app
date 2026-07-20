@@ -1201,6 +1201,8 @@ export type Hosting = {
   landmarks?: Maybe<Scalars['String']['output']>;
   lastUpdated: Scalars['String']['output'];
   latitude?: Maybe<Scalars['String']['output']>;
+  /** Paid priority tier + when the current boost expires (null = no boost). */
+  listingTier: ListingTier;
   listingType?: Maybe<ListingType>;
   longitude?: Maybe<Scalars['String']['output']>;
   /** Kushi-Managed (default) or Agent-Managed (advertise-only). */
@@ -1226,6 +1228,7 @@ export type Hosting = {
   state?: Maybe<Scalars['String']['output']>;
   street?: Maybe<Scalars['String']['output']>;
   tenancyAgreementTemplate?: Maybe<TenancyTemplate>;
+  tierExpiresAt?: Maybe<Scalars['String']['output']>;
   title?: Maybe<Scalars['String']['output']>;
   totalRatings?: Maybe<Scalars['Int']['output']>;
   /** Parent-only: whether units are sold individually or as one group. */
@@ -1716,6 +1719,25 @@ export type LandlordMandateConfig = {
   propertyRelationships: Array<OptionItem>;
 };
 
+/** Paid priority tier for a listing (higher = ranks higher for a time window). */
+export enum ListingTier {
+  Basic = 'BASIC',
+  Free = 'FREE',
+  Platinum = 'PLATINUM',
+  Pro = 'PRO',
+  Vip = 'VIP'
+}
+
+/** A purchasable priority tier (from the admin-editable catalogue). */
+export type ListingTierOption = {
+  __typename?: 'ListingTierOption';
+  description?: Maybe<Scalars['String']['output']>;
+  durationDays: Scalars['Int']['output'];
+  label: Scalars['String']['output'];
+  price: Scalars['Decimal']['output'];
+  tier: ListingTier;
+};
+
 export enum ListingType {
   Rent = 'RENT',
   Sale = 'SALE'
@@ -1922,6 +1944,12 @@ export type Mutations = {
    * `requestHostingVerificationTier` to submit one with documents.
    */
   initiateHostingVerification: HostingVerificationResponse;
+  /**
+   * Start a priority-boost purchase for a listing the caller owns. Returns
+   * the pending transaction (reference + amount) the client pays via
+   * Flutterwave; `verify_listing_boost` applies the tier on success.
+   */
+  initiateListingBoost: TransactionResponse;
   initiatePhoneNumberVerification: MessageResponse;
   initiateSupportChat: SupportChat;
   login: AuthTokenResponse;
@@ -1996,6 +2024,8 @@ export type Mutations = {
   verifyBookingPayment: BookingResponse;
   verifyEmail: MessageResponse;
   verifyKyc: Kyc;
+  /** Verify a boost payment; on success the listing's tier + expiry are set. */
+  verifyListingBoost: TransactionResponse;
   verifyTransactionByReference: TransactionResponse;
 };
 
@@ -2407,6 +2437,12 @@ export type MutationsInitiateHostingVerificationArgs = {
 };
 
 
+export type MutationsInitiateListingBoostArgs = {
+  hostingId: Scalars['String']['input'];
+  tier: ListingTier;
+};
+
+
 export type MutationsInitiatePhoneNumberVerificationArgs = {
   phoneNumber: Scalars['String']['input'];
 };
@@ -2604,6 +2640,11 @@ export type MutationsVerifyEmailArgs = {
 
 export type MutationsVerifyKycArgs = {
   input: KycInput;
+};
+
+
+export type MutationsVerifyListingBoostArgs = {
+  reference: Scalars['String']['input'];
 };
 
 
@@ -2942,6 +2983,11 @@ export type Query = {
    */
   kycStatus: KycStatus;
   landlordMandateOptions: LandlordMandateConfig;
+  /**
+   * The purchasable priority-boost tiers (admin-editable catalogue), for the
+   * client's boost picker. Free isn't listed (it's the un-boosted default).
+   */
+  listingBoostCatalogue: Array<ListingTierOption>;
   me: User;
   mySupportChats: Array<SupportChat>;
   notifications: Array<Notification>;
@@ -3800,7 +3846,8 @@ export enum TransactionType {
   BookingPayment = 'booking_payment',
   GuestCancellationRefund = 'guest_cancellation_refund',
   HostBookingPayment = 'host_booking_payment',
-  HostCancellationCompensation = 'host_cancellation_compensation'
+  HostCancellationCompensation = 'host_cancellation_compensation',
+  ListingTierBoost = 'listing_tier_boost'
 }
 
 /** How a parent transacts its units: individually (default) or as one group. */
@@ -4348,6 +4395,21 @@ export type DuplicateHostingMutationVariables = Exact<{
 
 export type DuplicateHostingMutation = { __typename?: 'Mutations', duplicateHosting: { __typename?: 'HostingResponse', message: string, data?: { __typename?: 'Hosting', id: string } | null } };
 
+export type InitiateListingBoostMutationVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+  tier: ListingTier;
+}>;
+
+
+export type InitiateListingBoostMutation = { __typename?: 'Mutations', initiateListingBoost: { __typename?: 'TransactionResponse', message: string, data?: { __typename?: 'Transaction', id: string, amount: any, reference?: string | null, status: TransactionStatus } | null } };
+
+export type VerifyListingBoostMutationVariables = Exact<{
+  reference: Scalars['String']['input'];
+}>;
+
+
+export type VerifyListingBoostMutation = { __typename?: 'Mutations', verifyListingBoost: { __typename?: 'TransactionResponse', message: string, data?: { __typename?: 'Transaction', id: string, amount: any, reference?: string | null, status: TransactionStatus } | null } };
+
 export type MarkNotificationAsReadMutationVariables = Exact<{
   notificationId: Scalars['String']['input'];
 }>;
@@ -4677,6 +4739,11 @@ export type TenancyAgreementSummaryQueryVariables = Exact<{
 
 
 export type TenancyAgreementSummaryQuery = { __typename?: 'Query', tenancyAgreementSummary: Array<string> };
+
+export type ListingBoostCatalogueQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ListingBoostCatalogueQuery = { __typename?: 'Query', listingBoostCatalogue: Array<{ __typename?: 'ListingTierOption', tier: ListingTier, label: string, description?: string | null, price: any, durationDays: number }> };
 
 export type KycStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -6160,6 +6227,40 @@ export const DuplicateHostingDocument = gql`
 export function useDuplicateHostingMutation() {
   return Urql.useMutation<DuplicateHostingMutation, DuplicateHostingMutationVariables>(DuplicateHostingDocument);
 };
+export const InitiateListingBoostDocument = gql`
+    mutation InitiateListingBoost($hostingId: String!, $tier: ListingTier!) {
+  initiateListingBoost(hostingId: $hostingId, tier: $tier) {
+    message
+    data {
+      id
+      amount
+      reference
+      status
+    }
+  }
+}
+    `;
+
+export function useInitiateListingBoostMutation() {
+  return Urql.useMutation<InitiateListingBoostMutation, InitiateListingBoostMutationVariables>(InitiateListingBoostDocument);
+};
+export const VerifyListingBoostDocument = gql`
+    mutation VerifyListingBoost($reference: String!) {
+  verifyListingBoost(reference: $reference) {
+    message
+    data {
+      id
+      amount
+      reference
+      status
+    }
+  }
+}
+    `;
+
+export function useVerifyListingBoostMutation() {
+  return Urql.useMutation<VerifyListingBoostMutation, VerifyListingBoostMutationVariables>(VerifyListingBoostDocument);
+};
 export const MarkNotificationAsReadDocument = gql`
     mutation MarkNotificationAsRead($notificationId: String!) {
   markNotificationAsRead(notificationId: $notificationId) {
@@ -7583,6 +7684,21 @@ export const TenancyAgreementSummaryDocument = gql`
 
 export function useTenancyAgreementSummaryQuery(options: Omit<Urql.UseQueryArgs<TenancyAgreementSummaryQueryVariables>, 'query'>) {
   return Urql.useQuery<TenancyAgreementSummaryQuery, TenancyAgreementSummaryQueryVariables>({ query: TenancyAgreementSummaryDocument, ...options });
+};
+export const ListingBoostCatalogueDocument = gql`
+    query ListingBoostCatalogue {
+  listingBoostCatalogue {
+    tier
+    label
+    description
+    price
+    durationDays
+  }
+}
+    `;
+
+export function useListingBoostCatalogueQuery(options?: Omit<Urql.UseQueryArgs<ListingBoostCatalogueQueryVariables>, 'query'>) {
+  return Urql.useQuery<ListingBoostCatalogueQuery, ListingBoostCatalogueQueryVariables>({ query: ListingBoostCatalogueDocument, ...options });
 };
 export const KycStatusDocument = gql`
     query KycStatus {
