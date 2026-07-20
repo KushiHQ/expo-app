@@ -10,7 +10,12 @@ import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { usePropertyTypeConfig } from '@/lib/hooks/use-property-type-config';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { useUser } from '@/lib/hooks/user';
-import { HostingKind, ListingType, useHostListingsQuery } from '@/lib/services/graphql/generated';
+import {
+  HostingKind,
+  ListingType,
+  ManagementType,
+  useHostListingsQuery,
+} from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
 import { joinLocation } from '@/lib/utils/locations';
 import { Fonts } from '@/lib/constants/theme';
@@ -54,6 +59,16 @@ export default function NewHostingStep1() {
     { label: 'Standalone listing', value: HostingKind.Standalone },
     { label: 'Parent (a multi-unit property)', value: HostingKind.Parent },
     { label: 'Child (a unit within a property)', value: HostingKind.Child },
+  ];
+
+  // Kushi-managed (full flow) vs agent-managed (advertise-only). Default Kushi.
+  const currentManagement =
+    (input.managementType as ManagementType | undefined) ??
+    hosting?.managementType ??
+    ManagementType.KushiManaged;
+  const MANAGEMENT_OPTIONS = [
+    { label: 'Kushi Managed', value: ManagementType.KushiManaged },
+    { label: 'Agent Managed', value: ManagementType.AgentManaged },
   ];
 
   // Eligible parents = the host's own Parent/Standalone listings (not this one).
@@ -127,6 +142,33 @@ export default function NewHostingStep1() {
           style={{ minHeight: 180 }}
           subtitle="Title, property type, and listing style"
         >
+          <SelectInput
+            focused
+            label="Who manages this listing?"
+            placeholder="Kushi Managed"
+            defaultValue={{
+              label:
+                MANAGEMENT_OPTIONS.find((o) => o.value === currentManagement)?.label ??
+                'Kushi Managed',
+              value: currentManagement,
+            }}
+            options={MANAGEMENT_OPTIONS}
+            onSelect={(v) => updateInput({ managementType: v.value as ManagementType })}
+            renderItem={SelectOption}
+          />
+          <ThemedText
+            style={{
+              fontSize: 12,
+              marginTop: 6,
+              marginBottom: 14,
+              color: hexToRgba(colors.text, 0.5),
+            }}
+          >
+            {currentManagement === ManagementType.AgentManaged
+              ? 'Advert only — interested renters contact you directly. No tenancy agreement, mandate, or payout on Kushi, and the exact address stays hidden (only state & city show).'
+              : 'The full Kushi flow — verified, digital tenancy agreement, and payment held in escrow.'}
+          </ThemedText>
+
           <View
             pointerEvents={kindLocked ? 'none' : 'auto'}
             style={kindLocked ? { opacity: 0.55 } : undefined}

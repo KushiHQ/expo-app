@@ -10,7 +10,7 @@ import SectionCard from '@/components/molecules/m-section-card';
 import SelectInput, { SelectOption } from '@/components/molecules/m-select-input';
 import SelectedPaymentDetails from '@/components/molecules/m-selected-payment-detail';
 import { Fonts } from '@/lib/constants/theme';
-import { showTenancySteps } from '@/lib/constants/hosting/step-rules';
+import { showPayoutAccount, showTenancySteps } from '@/lib/constants/hosting/step-rules';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import {
@@ -110,7 +110,7 @@ export default function NewHostingStep5() {
       if (res.error) handleError(res.error);
       if (res.data?.createOrUpdateHosting) {
         router.push(
-          showTenancySteps(hosting?.listingType, hosting?.propertyType)
+          showTenancySteps(hosting?.listingType, hosting?.propertyType, hosting?.managementType)
             ? `/hostings/form/step-6?id=${res.data?.createOrUpdateHosting.data?.id}`
             : `/hostings/form/step-8?id=${res.data?.createOrUpdateHosting.data?.id}`,
         );
@@ -136,7 +136,11 @@ export default function NewHostingStep5() {
           <HostingStepper
             onPress={handleMutate}
             loading={mutating}
-            disabled={!selectedAccount || !input.price || (!isSale && !input.paymentInterval)}
+            disabled={
+              !input.price ||
+              (!isSale && !input.paymentInterval) ||
+              (showPayoutAccount(hosting?.managementType) && !selectedAccount)
+            }
             step={6}
           />
         }
@@ -256,7 +260,8 @@ export default function NewHostingStep5() {
             )}
           </SectionCard>
 
-          {/* Payout account section */}
+          {/* Payout account — skipped for agent-managed (no on-platform payment) */}
+          {showPayoutAccount(hosting?.managementType) && (
           <SectionCard
             icon={<Wallet size={16} color={colors.primary} />}
             title="Payout Account"
@@ -396,6 +401,7 @@ export default function NewHostingStep5() {
               </View>
             )}
           </SectionCard>
+          )}
         </View>
       </DetailsLayout>
       <LoadingModal visible={loading} />

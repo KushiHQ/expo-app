@@ -41,6 +41,8 @@ import HostingReviews from '@/components/organisms/o-hosting-reviews';
 import HostingLocation from '@/components/molecules/m-hosting-location';
 import AVerificationTierBadge from '@/components/atoms/a-verification-tier-badge';
 import ListingTypeBadge from '@/components/atoms/a-listing-type-badge';
+import ManagementBadge from '@/components/atoms/a-management-badge';
+import { isAgentManaged } from '@/lib/constants/hosting/step-rules';
 
 export default function HostingDetails() {
   const router = useRouter();
@@ -181,6 +183,52 @@ export default function HostingDetails() {
             >
               <ThemedText content="primary">View the full property</ThemedText>
             </Button>
+          </View>
+        ) : isAgentManaged(hosting?.managementType) ? (
+          <View
+            style={{
+              backgroundColor: colors.background,
+              paddingHorizontal: 16,
+              paddingBottom: 32,
+              paddingTop: 12,
+              gap: 10,
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: hexToRgba(colors.text, 0.05),
+                borderRadius: 14,
+                padding: 14,
+                gap: 4,
+              }}
+            >
+              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 13 }}>
+                Managed by the agent
+              </ThemedText>
+              <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55) }}>
+                Contact the agent directly to arrange a viewing and terms. Kushi doesn’t process this
+                transaction.
+              </ThemedText>
+            </View>
+            <View className="mt-2 flex-row items-center justify-between gap-8">
+              <View className="flex-1 gap-1">
+                <ThemedText style={{ fontSize: 15, color: hexToRgba(colors.text, 0.6) }}>
+                  Price
+                </ThemedText>
+                <View className="flex-row items-center gap-2">
+                  <ThemedText>₦{Number(hosting?.price).toLocaleString()}</ThemedText>
+                  <ThemedText style={{ color: hexToRgba(colors.text, 0.5) }}>
+                    {formatPaymentInterval(hosting?.paymentInterval)}
+                  </ThemedText>
+                </View>
+              </View>
+              <Button className="flex-1" type="primary" onPress={handleInitiateChat}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <MessageSquare size={16} color={colors['primary-content']} />
+                  <ThemedText content="primary">Message Agent</ThemedText>
+                </View>
+              </Button>
+            </View>
           </View>
         ) : hosting?.listingType === ListingType.Sale ? (
           <View
@@ -367,6 +415,7 @@ export default function HostingDetails() {
                 <View className="mt-2 flex-row flex-wrap items-center justify-between gap-3">
                   <View className="flex-row flex-wrap items-center gap-2">
                     <ListingTypeBadge listingType={hosting?.listingType} />
+                    <ManagementBadge managementType={hosting?.managementType} />
                     {hosting?.kind === HostingKind.Parent &&
                     hosting?.unitStructure === UnitStructure.Group ? (
                       <View

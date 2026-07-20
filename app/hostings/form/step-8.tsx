@@ -91,7 +91,7 @@ export default function NewHostingStep8() {
   }
 
   const totalPhotos = hosting?.rooms?.reduce((sum, r) => sum + r.images.length, 0) ?? 0;
-  const showTenancy = showTenancySteps(hosting?.listingType, hosting?.propertyType);
+  const showTenancy = showTenancySteps(hosting?.listingType, hosting?.propertyType, hosting?.managementType);
 
   const isLive = hosting?.publishStatus === PublishStatus.Live;
 

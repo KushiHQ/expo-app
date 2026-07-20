@@ -22,6 +22,7 @@ export const CREATE_UPDATE_HOSTING_MUTATION = gql`
         title
         propertyType
         listingType
+        managementType
         description
         categories
         postalCode

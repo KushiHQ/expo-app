@@ -26,6 +26,7 @@ import { capitalize } from '@/lib/utils/text';
 import { getAssetResizeUrl } from '@/lib/utils/urls';
 import HostingLikeButton from '../atoms/a-hosting-like-button';
 import ListingTypeBadge from '../atoms/a-listing-type-badge';
+import ManagementBadge from '../atoms/a-management-badge';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
@@ -126,6 +127,7 @@ const HostingCard: React.FC<Props> = ({ hosting, disabled, index }) => {
           ) : null}
           <View className="absolute bottom-4 left-4 right-4 flex-row items-center gap-2">
             <ListingTypeBadge listingType={hosting.listingType} variant="overlay" />
+            <ManagementBadge managementType={hosting.managementType} variant="overlay" />
             {isMultiUnit ? (
               <View
                 style={{ backgroundColor: hexToRgba('#000000', 0.5) }}

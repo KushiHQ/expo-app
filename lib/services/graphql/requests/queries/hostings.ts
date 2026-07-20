@@ -80,6 +80,7 @@ export const HOSTING_QUERY = gql`
       kind
       parentId
       unitStructure
+      managementType
       childCount
       priceFrom
       isBookable
@@ -99,6 +100,7 @@ export const HOSTING_QUERY = gql`
         price
         paymentInterval
         listingType
+        managementType
         publishStatus
         isBookable
         bookingApplicationsCount
@@ -316,6 +318,7 @@ export const HOSTINGS_QUERY = gql`
       isBookable
       price
       listingType
+      managementType
       totalRatings
       averageRating
       country
@@ -432,6 +435,7 @@ export const HOST_LISTINGS_QUERY = gql`
       state
       city
       listingType
+      managementType
       publishStatus
       bookingApplicationsCount
       createdAt

@@ -70,7 +70,7 @@ export default function NewHostingStep7() {
   );
 
   React.useEffect(() => {
-    if (hosting && !showTenancySteps(hosting.listingType, hosting.propertyType)) {
+    if (hosting && !showTenancySteps(hosting.listingType, hosting.propertyType, hosting.managementType)) {
       router.replace(`/hostings/form/step-8?id=${hosting.id}`);
     }
   }, [hosting]);
