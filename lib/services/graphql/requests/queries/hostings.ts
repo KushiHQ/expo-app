@@ -526,6 +526,8 @@ export const USER_PROFILE = gql`
       id
       fullName
       avatar
+      memberSince
+      verified
       agentRatingAvg
       agentReviewCount
       reviews {

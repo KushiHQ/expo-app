@@ -2915,8 +2915,8 @@ export type PropertyTypeConfig = {
 
 /**
  * Public-facing profile of a user: their agent rating, the reviews others left,
- * and the agent-managed listings they've posted. Deliberately excludes private
- * fields (email/phone).
+ * and the live listings they've posted. Deliberately excludes private fields
+ * (email/phone).
  */
 export type PublicUserProfile = {
   __typename?: 'PublicUserProfile';
@@ -2926,7 +2926,11 @@ export type PublicUserProfile = {
   fullName: Scalars['String']['output'];
   id: Scalars['String']['output'];
   listings: Array<Hosting>;
+  /** When the user joined Kushi (RFC 3339) — drives "Member since …". */
+  memberSince: Scalars['String']['output'];
   reviews: Array<AgentReview>;
+  /** Identity fully verified (BVN + NIN + liveness all confirmed). */
+  verified: Scalars['Boolean']['output'];
 };
 
 export enum PublishStatus {
@@ -4897,7 +4901,7 @@ export type UserProfileQueryVariables = Exact<{
 }>;
 
 
-export type UserProfileQuery = { __typename?: 'Query', userProfile: { __typename?: 'PublicUserProfile', id: string, fullName: string, avatar?: string | null, agentRatingAvg?: number | null, agentReviewCount: number, reviews: Array<{ __typename?: 'AgentReview', id: string, rating: number, comment?: string | null, reviewerName: string, reviewerAvatar?: string | null, hostingId?: string | null, createdAt: string }>, listings: Array<{ __typename?: 'Hosting', id: string, title?: string | null, state?: string | null, city?: string | null, price?: any | null, listingType?: ListingType | null, managementType: ManagementType, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }> } };
+export type UserProfileQuery = { __typename?: 'Query', userProfile: { __typename?: 'PublicUserProfile', id: string, fullName: string, avatar?: string | null, memberSince: string, verified: boolean, agentRatingAvg?: number | null, agentReviewCount: number, reviews: Array<{ __typename?: 'AgentReview', id: string, rating: number, comment?: string | null, reviewerName: string, reviewerAvatar?: string | null, hostingId?: string | null, createdAt: string }>, listings: Array<{ __typename?: 'Hosting', id: string, title?: string | null, state?: string | null, city?: string | null, price?: any | null, listingType?: ListingType | null, managementType: ManagementType, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }> } };
 
 export type KycStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -7923,6 +7927,8 @@ export const UserProfileDocument = gql`
     id
     fullName
     avatar
+    memberSince
+    verified
     agentRatingAvg
     agentReviewCount
     reviews {

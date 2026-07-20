@@ -3,7 +3,7 @@ import React from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
 import moment from 'moment';
-import { Star, Flag, MessageSquareText } from 'lucide-react-native';
+import { Star, Flag, MessageSquareText, BadgeCheck, ShieldCheck } from 'lucide-react-native';
 import DetailsLayout from '@/components/layouts/details';
 import ThemedText from '@/components/atoms/a-themed-text';
 import Button from '@/components/atoms/a-button';
@@ -113,9 +113,34 @@ export default function UserProfileScreen() {
               }}
             />
           </View>
-          <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
-            {profile?.fullName ?? (fetching ? 'Loading…' : 'User')}
-          </ThemedText>
+          <View className="flex-row items-center gap-1.5">
+            <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
+              {profile?.fullName ?? (fetching ? 'Loading…' : 'User')}
+            </ThemedText>
+            {profile?.verified && (
+              <BadgeCheck size={18} color={colors.primary} fill={hexToRgba(colors.primary, 0.15)} />
+            )}
+          </View>
+          {profile?.verified ? (
+            <View
+              className="flex-row items-center gap-1 rounded-full px-2.5 py-1"
+              style={{ backgroundColor: hexToRgba(colors.primary, 0.12) }}
+            >
+              <ShieldCheck size={12} color={colors.primary} />
+              <ThemedText style={{ color: colors.primary, fontSize: 11, fontFamily: Fonts.medium }}>
+                Identity verified
+              </ThemedText>
+            </View>
+          ) : (
+            <ThemedText style={{ color: hexToRgba(colors.text, 0.4), fontSize: 11 }}>
+              Identity not yet verified
+            </ThemedText>
+          )}
+          {profile?.memberSince && (
+            <ThemedText style={{ color: hexToRgba(colors.text, 0.5), fontSize: 12 }}>
+              Member since {moment(profile.memberSince).format('MMMM YYYY')}
+            </ThemedText>
+          )}
           {(profile?.agentReviewCount ?? 0) > 0 ? (
             <View className="flex-row items-center gap-2">
               <Stars rating={profile?.agentRatingAvg ?? 0} />
@@ -143,7 +168,7 @@ export default function UserProfileScreen() {
         {(profile?.listings.length ?? 0) > 0 && (
           <View className="gap-3">
             <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 15 }}>
-              Listings ({profile?.listings.length})
+              Active listings ({profile?.listings.length})
             </ThemedText>
             {profile?.listings.map((l) => (
               <Pressable
