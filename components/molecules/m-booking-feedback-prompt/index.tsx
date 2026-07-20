@@ -5,6 +5,7 @@ import ThemedView from '@/components/atoms/a-themed-view';
 import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
+import { SURFACE } from '@/lib/constants/surface';
 import * as Haptics from 'expo-haptics';
 import { Star, Sparkles, BadgeCheck } from 'lucide-react-native';
 import { useSubmitFeedbackMutation, FeedbackType } from '@/lib/services/graphql/generated';
@@ -55,13 +56,16 @@ const BookingFeedbackPrompt: React.FC<BookingFeedbackPromptProps> = ({
     }
   };
 
-  // Refined dark card shared by both states.
+  // Refined dark card shared by both states. This floats over the modal's
+  // dimmed backdrop, so it needs an OPAQUE elevated surface (a translucent
+  // tint would let the backdrop show through and read as see-through).
   const cardStyle = {
     width: '100%' as const,
     maxWidth: 400,
     padding: 28,
     borderRadius: 26,
-    backgroundColor: hexToRgba(colors.text, 0.05),
+    backgroundColor: colors.surface,
+    boxShadow: SURFACE.shadowHigh,
   };
 
   if (submitted) {
