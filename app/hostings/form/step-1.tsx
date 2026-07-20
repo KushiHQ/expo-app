@@ -3,7 +3,6 @@ import DetailsLayout from '@/components/layouts/details';
 import HostingStepper from '@/components/molecules/m-hosting-stepper';
 import SectionCard from '@/components/molecules/m-section-card';
 import SelectInput, { SelectOption } from '@/components/molecules/m-select-input';
-import ManagementOption from '@/components/molecules/m-management-option';
 import AiContentSuggestion from '@/components/molecules/m-ai-content-suggestion';
 import { ParentListingOption } from '@/components/molecules/m-parent-listing-option';
 import ThemedText from '@/components/atoms/a-themed-text';
@@ -57,9 +56,24 @@ export default function NewHostingStep1() {
   const kindLocked = hosting?.kind === HostingKind.Parent && (hosting?.childCount ?? 0) > 0;
 
   const KIND_OPTIONS = [
-    { label: 'Standalone listing', value: HostingKind.Standalone },
-    { label: 'Parent (a multi-unit property)', value: HostingKind.Parent },
-    { label: 'Child (a unit within a property)', value: HostingKind.Child },
+    {
+      label: 'Standalone listing',
+      value: HostingKind.Standalone,
+      description: 'A single, self-contained property.',
+      sequence: 1,
+    },
+    {
+      label: 'Parent (a multi-unit property)',
+      value: HostingKind.Parent,
+      description: 'A property with multiple units — e.g. a block of flats or a plaza.',
+      sequence: 2,
+    },
+    {
+      label: 'Child (a unit within a property)',
+      value: HostingKind.Child,
+      description: 'One unit that belongs to a parent property.',
+      sequence: 3,
+    },
   ];
 
   // Kushi-managed (full flow) vs agent-managed (advertise-only). Default Kushi.
@@ -73,12 +87,14 @@ export default function NewHostingStep1() {
       value: ManagementType.KushiManaged,
       description:
         'Kushi handles it on the platform — the property is verified, the paperwork and signing are handled for you, and payment is secured in escrow.',
+      sequence: 1,
     },
     {
       label: 'Agent Managed',
       value: ManagementType.AgentManaged,
       description:
         'An advert only. Interested people contact you directly and you handle the deal off Kushi — no verification, paperwork, or payments here, and your exact address stays hidden.',
+      sequence: 2,
     },
   ];
 
@@ -160,7 +176,7 @@ export default function NewHostingStep1() {
             defaultValue={MANAGEMENT_OPTIONS.find((o) => o.value === currentManagement)}
             options={MANAGEMENT_OPTIONS}
             onSelect={(v) => updateInput({ managementType: v.value as ManagementType })}
-            renderItem={ManagementOption}
+            renderItem={SelectOption}
           />
           <View style={{ marginBottom: 14 }} />
 
@@ -180,7 +196,7 @@ export default function NewHostingStep1() {
               options={KIND_OPTIONS}
               onSelect={(v) =>
                 updateInput({
-                  kind: v.value,
+                  kind: v.value as HostingKind,
                   // clear the parent unless this is (still) a child
                   parentId: v.value === HostingKind.Child ? currentParentId : null,
                 })
@@ -277,9 +293,14 @@ export default function NewHostingStep1() {
                     ? { label: input.listingType, value: input.listingType }
                     : undefined
                 }
-                options={Object.keys(ListingType).map((v) => ({
+                options={Object.keys(ListingType).map((v, i) => ({
                   label: `For ${v}`,
                   value: v,
+                  description:
+                    v === 'Sale'
+                      ? 'Sell the property outright to a buyer.'
+                      : 'Let the property to a tenant for a rental period.',
+                  sequence: i + 1,
                 }))}
                 onSelect={(v) =>
                   updateInput({

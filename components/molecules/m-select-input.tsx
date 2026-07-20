@@ -296,6 +296,8 @@ export type SelectOptionType = {
   value: string;
   /** Optional synonyms/aliases that also match search (e.g. "flat" -> Residential). */
   searchTerms?: string[];
+  /** Explicit sort order in the dropdown; without it options sort alphabetically by value. */
+  sequence?: number;
 };
 
 export const SelectOption: React.FC<SelectOptionType & SelectionDetails> = ({
