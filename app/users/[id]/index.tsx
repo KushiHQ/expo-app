@@ -1,4 +1,4 @@
-import { Pressable, View } from 'react-native';
+import { Platform, Pressable, Share, View } from 'react-native';
 import React from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
@@ -20,6 +20,7 @@ import { useUser } from '@/lib/hooks/user';
 import { toast } from '@/lib/hooks/use-toast';
 import { handleError } from '@/lib/utils/error';
 import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
+import { slugify } from '@/lib/utils/text';
 import { formatNaira } from '@/lib/utils/currency';
 import {
   ManagementType,
@@ -93,13 +94,30 @@ export default function UserProfileScreen() {
     toast.show({ type: 'success', text2: 'Review reported to our team' });
   };
 
+  const handleShareProfile = async () => {
+    if (!profile) return;
+    const slug = `${slugify(profile.fullName)}___${id}`;
+    const base = process.env.EXPO_PUBLIC_SHARE_HOST_URL || 'https://kushicorp.com/host/<slug>';
+    const shareUrl = base.replace('<slug>', slug);
+    const caption = `Check out ${profile.fullName} on Kushi`;
+    try {
+      await Share.share(
+        Platform.OS === 'ios'
+          ? { title: profile.fullName, message: caption, url: shareUrl }
+          : { title: profile.fullName, message: `${caption}\n\n${shareUrl}` },
+      );
+    } catch (error: any) {
+      handleError(error);
+    }
+  };
+
   const card = {
     backgroundColor: hexToRgba(colors.text, 0.05),
     boxShadow: SURFACE.shadow,
   } as const;
 
   return (
-    <DetailsLayout title="Profile">
+    <DetailsLayout title="Profile" withShare onShare={handleShareProfile}>
       <View className="gap-5 px-4 pb-10">
         {/* Header */}
         <View className="items-center gap-3 rounded-3xl p-6" style={card}>
