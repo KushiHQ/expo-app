@@ -8,6 +8,9 @@ import { handleError } from '@/lib/utils/error';
 import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { Pressable, View } from 'react-native';
+import { usePathname } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
+import { useUser } from '@/lib/hooks/user';
 import { toast } from '@/lib/hooks/use-toast';
 import { PhHeart, PhHeartFill } from '../icons/i-heart';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
@@ -21,6 +24,9 @@ type Props = {
 
 const HostingLikeButton: React.FC<Props> = ({ saved: defSaved, className, id, onUpdate }) => {
   const colors = useThemeColors();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user, setReturnUrl } = useUser();
   const [saved, setSaved] = React.useState(defSaved ?? false);
   // Re-sync when the prop changes (refetch, or FlatList recycling this instance
   // for a different hosting) — otherwise the heart shows a stale saved state.
@@ -32,6 +38,13 @@ const HostingLikeButton: React.FC<Props> = ({ saved: defSaved, className, id, on
   const [, recordListingEvent] = useRecordListingEventMutation();
 
   function toggleSaved() {
+    // Guests can browse (and see the heart) without an account. Saving needs
+    // one, so send them to sign in and bring them back to where they were.
+    if (!user.user?.id) {
+      setReturnUrl(pathname);
+      router.push('/auth/sign-in');
+      return;
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const previousSaved = saved;
     setSaved(!previousSaved);
