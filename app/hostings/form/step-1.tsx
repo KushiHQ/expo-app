@@ -3,6 +3,7 @@ import DetailsLayout from '@/components/layouts/details';
 import HostingStepper from '@/components/molecules/m-hosting-stepper';
 import SectionCard from '@/components/molecules/m-section-card';
 import SelectInput, { SelectOption } from '@/components/molecules/m-select-input';
+import ManagementOption from '@/components/molecules/m-management-option';
 import AiContentSuggestion from '@/components/molecules/m-ai-content-suggestion';
 import { ParentListingOption } from '@/components/molecules/m-parent-listing-option';
 import ThemedText from '@/components/atoms/a-themed-text';
@@ -22,9 +23,9 @@ import { Fonts } from '@/lib/constants/theme';
 import { cast } from '@/lib/types/utils';
 import { handleError } from '@/lib/utils/error';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { AlignLeft, Building2, Check } from 'lucide-react-native';
+import { AlignLeft, Building2 } from 'lucide-react-native';
 import React, { useRef } from 'react';
-import { Pressable, RefreshControl, TextInput, View } from 'react-native';
+import { RefreshControl, TextInput, View } from 'react-native';
 import { toast } from '@/lib/hooks/use-toast';
 
 const DESCRIPTION_MIN = 40;
@@ -68,16 +69,16 @@ export default function NewHostingStep1() {
     ManagementType.KushiManaged;
   const MANAGEMENT_OPTIONS = [
     {
+      label: 'Kushi Managed',
       value: ManagementType.KushiManaged,
-      title: 'Kushi Managed',
       description:
-        'Kushi runs the whole let: the property is verified, tenants sign a digital tenancy agreement, and their rent is held in escrow until move-in.',
+        'Kushi handles it on the platform — the property is verified, the paperwork and signing are handled for you, and payment is secured in escrow.',
     },
     {
+      label: 'Agent Managed',
       value: ManagementType.AgentManaged,
-      title: 'Agent Managed',
       description:
-        'Just an advert. Interested renters message you and you close the deal yourself — no verification, tenancy agreement, or payments on Kushi, and your exact address stays hidden.',
+        'An advert only. Interested people contact you directly and you handle the deal off Kushi — no verification, paperwork, or payments here, and your exact address stays hidden.',
     },
   ];
 
@@ -152,54 +153,16 @@ export default function NewHostingStep1() {
           style={{ minHeight: 180 }}
           subtitle="Title, property type, and listing style"
         >
-          <ThemedText
-            style={{
-              fontSize: 12,
-              marginBottom: 8,
-              fontFamily: Fonts.medium,
-              color: hexToRgba(colors.text, 0.5),
-            }}
-          >
-            Who manages this listing?
-          </ThemedText>
-          <View style={{ gap: 10, marginBottom: 14 }}>
-            {MANAGEMENT_OPTIONS.map((opt) => {
-              const selected = currentManagement === opt.value;
-              return (
-                <Pressable
-                  key={opt.value}
-                  onPress={() => updateInput({ managementType: opt.value })}
-                  style={{
-                    borderRadius: 16,
-                    padding: 14,
-                    gap: 4,
-                    backgroundColor: selected
-                      ? hexToRgba(colors.primary, 0.1)
-                      : hexToRgba(colors.text, 0.04),
-                    boxShadow: selected ? `0 0 0 1.5px ${colors.primary}` : undefined,
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <ThemedText type="semibold" style={{ fontSize: 15 }}>
-                      {opt.title}
-                    </ThemedText>
-                    {selected ? <Check size={18} color={colors.primary} /> : null}
-                  </View>
-                  <ThemedText
-                    style={{ fontSize: 12, lineHeight: 18, color: hexToRgba(colors.text, 0.55) }}
-                  >
-                    {opt.description}
-                  </ThemedText>
-                </Pressable>
-              );
-            })}
-          </View>
+          <SelectInput
+            focused
+            label="Who manages this listing?"
+            placeholder="Kushi Managed"
+            defaultValue={MANAGEMENT_OPTIONS.find((o) => o.value === currentManagement)}
+            options={MANAGEMENT_OPTIONS}
+            onSelect={(v) => updateInput({ managementType: v.value as ManagementType })}
+            renderItem={ManagementOption}
+          />
+          <View style={{ marginBottom: 14 }} />
 
           <View
             pointerEvents={kindLocked ? 'none' : 'auto'}
