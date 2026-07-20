@@ -489,6 +489,18 @@ export type AdminVerificationTierResponse = {
   message: Scalars['String']['output'];
 };
 
+/** A single review left on an agent (with the reviewer's public identity). */
+export type AgentReview = {
+  __typename?: 'AgentReview';
+  comment?: Maybe<Scalars['String']['output']>;
+  createdAt: Scalars['String']['output'];
+  hostingId?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  rating: Scalars['Float']['output'];
+  reviewerAvatar?: Maybe<Scalars['String']['output']>;
+  reviewerName: Scalars['String']['output'];
+};
+
 export type AiSearchPrediction = {
   __typename?: 'AiSearchPrediction';
   filters: AiSearchPredictionFilter;
@@ -1937,6 +1949,8 @@ export type Mutations = {
   createUpdateSavedHosting: SavedHostingResponse;
   createUpdateSavedHostingFolder: SavedHostingFolderResponse;
   deleteAccount: BoolResponse;
+  /** Delete your own agent review. */
+  deleteAgentReview: Scalars['Boolean']['output'];
   deleteHostPaymentDetails: MessageResponse;
   deleteHosting: MessageResponse;
   deleteHostingRoom: MessageResponse;
@@ -2000,6 +2014,8 @@ export type Mutations = {
    * lists every room of the hosting in the desired display order.
    */
   reorderHostingRooms: MessageResponse;
+  /** Report an agent review for moderation. */
+  reportAgentReview: Scalars['Boolean']['output'];
   /** Guest requests a refund of their remaining caution balance after tenancy ends. */
   requestCautionRefund: CautionRefundResponse;
   /** Host requests a partial or full release of the caution deposit. */
@@ -2016,6 +2032,11 @@ export type Mutations = {
   /** Guest approves or disputes a caution release claim. */
   respondToCautionClaim: CautionClaimResponse;
   retryBookingPayment: TransactionResponse;
+  /**
+   * Leave (or update) a review of an agent. Only allowed once you've messaged
+   * them; one review per agent, editable.
+   */
+  reviewAgent: Scalars['Boolean']['output'];
   sendChatCallNotification: MessageResponse;
   sendSupportMessage: SupportChatMessage;
   /**
@@ -2371,6 +2392,11 @@ export type MutationsCreateUpdateSavedHostingFolderArgs = {
 };
 
 
+export type MutationsDeleteAgentReviewArgs = {
+  reviewId: Scalars['String']['input'];
+};
+
+
 export type MutationsDeleteHostPaymentDetailsArgs = {
   paymentDetailsId: Scalars['String']['input'];
 };
@@ -2521,6 +2547,11 @@ export type MutationsReorderHostingRoomsArgs = {
 };
 
 
+export type MutationsReportAgentReviewArgs = {
+  reviewId: Scalars['String']['input'];
+};
+
+
 export type MutationsRequestCautionRefundArgs = {
   input: RequestCautionRefundInput;
 };
@@ -2558,6 +2589,14 @@ export type MutationsRespondToCautionClaimArgs = {
 
 export type MutationsRetryBookingPaymentArgs = {
   bookingId: Scalars['String']['input'];
+};
+
+
+export type MutationsReviewAgentArgs = {
+  agentId: Scalars['String']['input'];
+  comment?: InputMaybe<Scalars['String']['input']>;
+  hostingId?: InputMaybe<Scalars['String']['input']>;
+  rating: Scalars['Float']['input'];
 };
 
 
@@ -2874,6 +2913,22 @@ export type PropertyTypeConfig = {
   value: Scalars['String']['output'];
 };
 
+/**
+ * Public-facing profile of a user: their agent rating, the reviews others left,
+ * and the agent-managed listings they've posted. Deliberately excludes private
+ * fields (email/phone).
+ */
+export type PublicUserProfile = {
+  __typename?: 'PublicUserProfile';
+  agentRatingAvg?: Maybe<Scalars['Float']['output']>;
+  agentReviewCount: Scalars['Int']['output'];
+  avatar?: Maybe<Scalars['String']['output']>;
+  fullName: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  listings: Array<Hosting>;
+  reviews: Array<AgentReview>;
+};
+
 export enum PublishStatus {
   Archived = 'ARCHIVED',
   Draft = 'DRAFT',
@@ -3072,6 +3127,11 @@ export type Query = {
   transactionByReference: Transaction;
   transactions: Array<Transaction>;
   userChats: Array<HostingChat>;
+  /**
+   * Public profile of a user: identity, agent rating, reviews others left,
+   * and their agent-managed listings. Public — no auth required.
+   */
+  userProfile: PublicUserProfile;
 };
 
 
@@ -3429,6 +3489,11 @@ export type QueryTransactionsArgs = {
 export type QueryUserChatsArgs = {
   filter?: InputMaybe<HostingChatFilter>;
   pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QueryUserProfileArgs = {
+  userId: Scalars['String']['input'];
 };
 
 export type RefreshTokenInput = {
@@ -4461,6 +4526,30 @@ export type RecordListingEventMutationVariables = Exact<{
 
 export type RecordListingEventMutation = { __typename?: 'Mutations', recordListingEvent: boolean };
 
+export type ReviewAgentMutationVariables = Exact<{
+  agentId: Scalars['String']['input'];
+  rating: Scalars['Float']['input'];
+  comment?: InputMaybe<Scalars['String']['input']>;
+  hostingId?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type ReviewAgentMutation = { __typename?: 'Mutations', reviewAgent: boolean };
+
+export type DeleteAgentReviewMutationVariables = Exact<{
+  reviewId: Scalars['String']['input'];
+}>;
+
+
+export type DeleteAgentReviewMutation = { __typename?: 'Mutations', deleteAgentReview: boolean };
+
+export type ReportAgentReviewMutationVariables = Exact<{
+  reviewId: Scalars['String']['input'];
+}>;
+
+
+export type ReportAgentReviewMutation = { __typename?: 'Mutations', reportAgentReview: boolean };
+
 export type MarkNotificationAsReadMutationVariables = Exact<{
   notificationId: Scalars['String']['input'];
 }>;
@@ -4802,6 +4891,13 @@ export type HostingAnalyticsQueryVariables = Exact<{
 
 
 export type HostingAnalyticsQuery = { __typename?: 'Query', hostingAnalytics: { __typename?: 'HostingAnalytics', totalViews: number, uniqueViews: number, saves: number, messages: number, shares: number, contactReveals: number, viewsSeries: { __typename?: 'TimeSeriesData', dataPoints: Array<{ __typename?: 'AnalyticsDataPoint', label: string, amount: any }> } } };
+
+export type UserProfileQueryVariables = Exact<{
+  userId: Scalars['String']['input'];
+}>;
+
+
+export type UserProfileQuery = { __typename?: 'Query', userProfile: { __typename?: 'PublicUserProfile', id: string, fullName: string, avatar?: string | null, agentRatingAvg?: number | null, agentReviewCount: number, reviews: Array<{ __typename?: 'AgentReview', id: string, rating: number, comment?: string | null, reviewerName: string, reviewerAvatar?: string | null, hostingId?: string | null, createdAt: string }>, listings: Array<{ __typename?: 'Hosting', id: string, title?: string | null, state?: string | null, city?: string | null, price?: any | null, listingType?: ListingType | null, managementType: ManagementType, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }> } };
 
 export type KycStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -6328,6 +6424,38 @@ export const RecordListingEventDocument = gql`
 export function useRecordListingEventMutation() {
   return Urql.useMutation<RecordListingEventMutation, RecordListingEventMutationVariables>(RecordListingEventDocument);
 };
+export const ReviewAgentDocument = gql`
+    mutation ReviewAgent($agentId: String!, $rating: Float!, $comment: String, $hostingId: String) {
+  reviewAgent(
+    agentId: $agentId
+    rating: $rating
+    comment: $comment
+    hostingId: $hostingId
+  )
+}
+    `;
+
+export function useReviewAgentMutation() {
+  return Urql.useMutation<ReviewAgentMutation, ReviewAgentMutationVariables>(ReviewAgentDocument);
+};
+export const DeleteAgentReviewDocument = gql`
+    mutation DeleteAgentReview($reviewId: String!) {
+  deleteAgentReview(reviewId: $reviewId)
+}
+    `;
+
+export function useDeleteAgentReviewMutation() {
+  return Urql.useMutation<DeleteAgentReviewMutation, DeleteAgentReviewMutationVariables>(DeleteAgentReviewDocument);
+};
+export const ReportAgentReviewDocument = gql`
+    mutation ReportAgentReview($reviewId: String!) {
+  reportAgentReview(reviewId: $reviewId)
+}
+    `;
+
+export function useReportAgentReviewMutation() {
+  return Urql.useMutation<ReportAgentReviewMutation, ReportAgentReviewMutationVariables>(ReportAgentReviewDocument);
+};
 export const MarkNotificationAsReadDocument = gql`
     mutation MarkNotificationAsRead($notificationId: String!) {
   markNotificationAsRead(notificationId: $notificationId) {
@@ -7788,6 +7916,45 @@ export const HostingAnalyticsDocument = gql`
 
 export function useHostingAnalyticsQuery(options: Omit<Urql.UseQueryArgs<HostingAnalyticsQueryVariables>, 'query'>) {
   return Urql.useQuery<HostingAnalyticsQuery, HostingAnalyticsQueryVariables>({ query: HostingAnalyticsDocument, ...options });
+};
+export const UserProfileDocument = gql`
+    query UserProfile($userId: String!) {
+  userProfile(userId: $userId) {
+    id
+    fullName
+    avatar
+    agentRatingAvg
+    agentReviewCount
+    reviews {
+      id
+      rating
+      comment
+      reviewerName
+      reviewerAvatar
+      hostingId
+      createdAt
+    }
+    listings {
+      id
+      title
+      state
+      city
+      price
+      listingType
+      managementType
+      coverImage {
+        asset {
+          id
+          publicUrl
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useUserProfileQuery(options: Omit<Urql.UseQueryArgs<UserProfileQueryVariables>, 'query'>) {
+  return Urql.useQuery<UserProfileQuery, UserProfileQueryVariables>({ query: UserProfileDocument, ...options });
 };
 export const KycStatusDocument = gql`
     query KycStatus {

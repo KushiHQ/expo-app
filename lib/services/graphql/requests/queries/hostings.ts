@@ -519,3 +519,39 @@ export const HOSTING_ANALYTICS = gql`
     }
   }
 `;
+
+export const USER_PROFILE = gql`
+  query UserProfile($userId: String!) {
+    userProfile(userId: $userId) {
+      id
+      fullName
+      avatar
+      agentRatingAvg
+      agentReviewCount
+      reviews {
+        id
+        rating
+        comment
+        reviewerName
+        reviewerAvatar
+        hostingId
+        createdAt
+      }
+      listings {
+        id
+        title
+        state
+        city
+        price
+        listingType
+        managementType
+        coverImage {
+          asset {
+            id
+            publicUrl
+          }
+        }
+      }
+    }
+  }
+`;

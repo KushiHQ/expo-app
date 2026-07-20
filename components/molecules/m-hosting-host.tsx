@@ -76,7 +76,10 @@ const HostingHost: React.FC<Props> = ({ hosting, isHost = false }) => {
         }}
       >
         <SectionHeader icon={UserRound} title="Host" />
-        <View className="flex-row items-center gap-3">
+        <Pressable
+          className="flex-row items-center gap-3"
+          onPress={() => hosting && router.push(`/users/${hosting.host.user.id}`)}
+        >
           <View className="h-11 w-11 overflow-hidden rounded-full">
             <Image
               style={{
@@ -105,7 +108,7 @@ const HostingHost: React.FC<Props> = ({ hosting, isHost = false }) => {
               Joined {moment(hosting?.host.createdAt).fromNow()}
             </ThemedText>
           </View>
-        </View>
+        </Pressable>
         {!isHost && (
           <View className="mt-4 flex-row items-center gap-4">
             <AnimatedPressable

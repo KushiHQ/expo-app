@@ -447,3 +447,21 @@ export const RECORD_LISTING_EVENT = gql`
     recordListingEvent(hostingId: $hostingId, kind: $kind)
   }
 `;
+
+export const REVIEW_AGENT = gql`
+  mutation ReviewAgent($agentId: String!, $rating: Float!, $comment: String, $hostingId: String) {
+    reviewAgent(agentId: $agentId, rating: $rating, comment: $comment, hostingId: $hostingId)
+  }
+`;
+
+export const DELETE_AGENT_REVIEW = gql`
+  mutation DeleteAgentReview($reviewId: String!) {
+    deleteAgentReview(reviewId: $reviewId)
+  }
+`;
+
+export const REPORT_AGENT_REVIEW = gql`
+  mutation ReportAgentReview($reviewId: String!) {
+    reportAgentReview(reviewId: $reviewId)
+  }
+`;
