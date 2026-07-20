@@ -2,7 +2,7 @@ import React from 'react';
 import { RefreshControl, View } from 'react-native';
 import { SimpleGrid } from 'react-native-super-grid';
 import { useLocalSearchParams } from 'expo-router';
-import { Eye, Heart, MessageSquare, Phone, Share2, Users } from 'lucide-react-native';
+import { Eye, Heart, MessageSquare, Share2, Users } from 'lucide-react-native';
 import AnalyticsCard from '@/components/atoms/a-analytics-card';
 import AreaChart from '@/components/molecules/m-area-chart';
 import DetailsLayout from '@/components/layouts/details';
@@ -31,7 +31,6 @@ export default function ListingInsights() {
     { label: 'Saves', value: a?.saves ?? 0, icon: Heart, description: 'Added to a saved list.' },
     { label: 'Messages', value: a?.messages ?? 0, icon: MessageSquare, description: 'Chats started with you.' },
     { label: 'Shares', value: a?.shares ?? 0, icon: Share2, description: 'Times it was shared.' },
-    { label: 'Contact reveals', value: a?.contactReveals ?? 0, icon: Phone, description: 'Times contact was requested.' },
   ];
 
   const chartData = (a?.viewsSeries.dataPoints ?? []).map((dp) => ({
