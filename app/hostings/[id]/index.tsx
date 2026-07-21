@@ -77,7 +77,9 @@ export default function HostingDetails() {
   const handleShare = async () => {
     const slug = `${slugify(hosting?.title ?? '')}___${id}`;
     const base = process.env.EXPO_PUBLIC_SHARE_PROPERTY_URL || 'https://kushicorp.com/guest/<slug>';
-    const shareUrl = base.replace('<slug>', slug);
+    const url = base.replace('<slug>', slug);
+    // Tag so the recipient's web page offers/attempts to open the Kushi app.
+    const shareUrl = `${url}${url.includes('?') ? '&' : '?'}shared=true`;
     // iOS treats `message` and `url` as separate share items, so putting the
     // link in BOTH duplicates it. On iOS keep the URL only in `url` (nicer link
     // preview too); on Android `url` is ignored, so the link must live in the

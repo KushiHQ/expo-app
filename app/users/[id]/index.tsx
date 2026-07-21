@@ -98,7 +98,9 @@ export default function UserProfileScreen() {
     if (!profile) return;
     const slug = `${slugify(profile.fullName)}___${id}`;
     const base = process.env.EXPO_PUBLIC_SHARE_HOST_URL || 'https://kushicorp.com/host/<slug>';
-    const shareUrl = base.replace('<slug>', slug);
+    const url = base.replace('<slug>', slug);
+    // Tag so the recipient's web page offers/attempts to open the Kushi app.
+    const shareUrl = `${url}${url.includes('?') ? '&' : '?'}shared=true`;
     const caption = `Check out ${profile.fullName} on Kushi`;
     try {
       await Share.share(
