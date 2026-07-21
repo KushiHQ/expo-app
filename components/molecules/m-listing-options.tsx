@@ -18,6 +18,7 @@ import {
 import LoadingModal from '../atoms/a-loading-modal';
 import { toast } from '@/lib/hooks/use-toast';
 import { handleError } from '@/lib/utils/error';
+import { Rocket, TrendingUp } from 'lucide-react-native';
 
 type Props = {
   open: boolean;
@@ -117,6 +118,36 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting, onDelete, onD
             </ThemedText>
           </View>
           <View className="w-full gap-4">
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <View style={{ flex: 1 }}>
+                <Button
+                  type="tinted"
+                  onPress={() => {
+                    onClose?.();
+                    router.push(`/hostings/${hosting.id}/boost`);
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Rocket size={16} color={colors.primary} />
+                    <ThemedText content="tinted">Boost</ThemedText>
+                  </View>
+                </Button>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Button
+                  type="tinted"
+                  onPress={() => {
+                    onClose?.();
+                    router.push(`/hostings/${hosting.id}/insights`);
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <TrendingUp size={16} color={colors.primary} />
+                    <ThemedText content="tinted">Insights</ThemedText>
+                  </View>
+                </Button>
+              </View>
+            </View>
             <Button
               type="primary"
               onPress={() => {
@@ -125,24 +156,6 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting, onDelete, onD
               }}
             >
               <ThemedText content="primary">View Listing</ThemedText>
-            </Button>
-            <Button
-              type="tinted"
-              onPress={() => {
-                onClose?.();
-                router.push(`/hostings/${hosting.id}/boost`);
-              }}
-            >
-              <ThemedText content="tinted">Boost Listing</ThemedText>
-            </Button>
-            <Button
-              type="tinted"
-              onPress={() => {
-                onClose?.();
-                router.push(`/hostings/${hosting.id}/insights`);
-              }}
-            >
-              <ThemedText content="tinted">Insights</ThemedText>
             </Button>
             <Button type="tinted" onPress={handleDuplicate}>
               <ThemedText content="tinted">Duplicate Listing</ThemedText>
