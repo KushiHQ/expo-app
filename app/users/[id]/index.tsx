@@ -173,7 +173,7 @@ export default function UserProfileScreen() {
             </ThemedText>
           )}
           {!isSelf && (
-            <Button className="mt-1" onPress={() => setSheetOpen(true)}>
+            <Button type="primary" className="mt-1" onPress={() => setSheetOpen(true)}>
               <View className="flex-row items-center gap-2">
                 <MessageSquareText size={16} color="#050505" />
                 <ThemedText content="primary">Leave a review</ThemedText>
@@ -292,7 +292,7 @@ export default function UserProfileScreen() {
             value={comment}
             onChangeText={setComment}
           />
-          <Button onPress={handleSubmit} disabled={submitting}>
+          <Button type="primary" onPress={handleSubmit} disabled={submitting}>
             <ThemedText content="primary">
               {submitting ? 'Submitting…' : 'Submit review'}
             </ThemedText>
