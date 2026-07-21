@@ -11,6 +11,7 @@ import {
   useMarkNotificationAsReadMutation,
 } from '@/lib/services/graphql/generated';
 import { useRouter } from '@/lib/hooks/use-router';
+import { isAppUpdateIntent, openAppStore } from '@/lib/utils/urls';
 import moment from 'moment';
 import notifee from '@notifee/react-native';
 import {
@@ -56,6 +57,7 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
   const intentKey = String(data.intent ?? '')
     .toLowerCase()
     .replace(/[^a-z]/g, '');
+  const isAppUpdate = isAppUpdateIntent(data.intent);
 
   const getRoute = (): string | null => {
     const id = data.id;
@@ -81,6 +83,12 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
       onRead?.();
     }
 
+    // App-update notifications open the store instead of an in-app route.
+    if (isAppUpdate) {
+      openAppStore();
+      return;
+    }
+
     const route = getRoute();
     if (route) {
       router.push(route as any);
@@ -94,10 +102,11 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
     markReadAndNavigate();
   };
 
-  const hasRoute = !!getRoute();
+  const hasRoute = !!getRoute() || isAppUpdate;
   const isUnread = !notification.isRead;
 
   const getActionLabel = () => {
+    if (isAppUpdate) return 'Update now';
     if (subjectKey === 'booking') return 'View Booking';
     if (subjectKey === 'bookingapplication') return 'View Application';
     if (subjectKey === 'hosting') return 'View Listing';

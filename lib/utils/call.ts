@@ -12,6 +12,7 @@ import { createAudioPlayer } from 'expo-audio';
 import { CALL_TYPE_VALUE } from '../types/enums/hoting-chat';
 import { CallType } from '../services/graphql/generated';
 import { Href } from 'expo-router';
+import { isAppUpdateIntent, openAppStore } from './urls';
 
 const receiverRingtone = require('@/assets/audio/ringtone.mp3');
 
@@ -101,6 +102,12 @@ export const handleNotifeeEvent = async ({ type, detail }: Event) => {
     // Chat message notification tap — route to the chat
     if (data?.intent === 'notification' && data?.chatId) {
       await Linking.openURL(`kushi://chats/${data.chatId}`);
+      return;
+    }
+
+    // App-update notification tap — open the store
+    if (isAppUpdateIntent(data?.intent)) {
+      await openAppStore();
       return;
     }
 

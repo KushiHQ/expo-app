@@ -1,6 +1,49 @@
-import { Alert, Linking } from 'react-native';
+import { Alert, Linking, Platform } from 'react-native';
 
 type Coordinates = { longitude: number; latitude: number };
+
+// Kushi's store identifiers (stable): Apple App Store id from eas.json
+// (ascAppId), Android package from app.config.js.
+const IOS_APP_STORE_ID = '6768449564';
+const ANDROID_PACKAGE = 'com.kushicorp.kushi';
+
+/**
+ * Open the device's app store on the Kushi listing so the user can update.
+ * Prefers the native store scheme (deep-links straight into the store app),
+ * falling back to the https store URL if that isn't available.
+ */
+export const openAppStore = async () => {
+  const native =
+    Platform.OS === 'ios'
+      ? `itms-apps://apps.apple.com/app/id${IOS_APP_STORE_ID}`
+      : `market://details?id=${ANDROID_PACKAGE}`;
+  const web =
+    Platform.OS === 'ios'
+      ? `https://apps.apple.com/app/id${IOS_APP_STORE_ID}`
+      : `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE}`;
+  try {
+    if (await Linking.canOpenURL(native)) {
+      await Linking.openURL(native);
+    } else {
+      await Linking.openURL(web);
+    }
+  } catch (error) {
+    console.error('Failed to open app store:', error);
+    try {
+      await Linking.openURL(web);
+    } catch {
+      Alert.alert('Update Kushi', 'Please open your app store to update Kushi.');
+    }
+  }
+};
+
+/**
+ * True when a notification's `intent` marks it as an app-update prompt.
+ * Tolerant of the different spellings the value takes across layers
+ * (`app-update` push, `AppUpdate` serde, `APP_UPDATE` GraphQL enum).
+ */
+export const isAppUpdateIntent = (intent?: string | null) =>
+  !!intent && String(intent).toLowerCase().replace(/[^a-z]/g, '') === 'appupdate';
 
 export const openGoogleMaps = async (coordinates: Coordinates) => {
   const url = `https://www.google.com/maps/dir/?api=1&destination=${coordinates.latitude},${coordinates.longitude}`;

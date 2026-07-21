@@ -10,9 +10,11 @@ import VoipPushNotification from 'react-native-voip-push-notification';
 import { Platform } from 'react-native';
 import { handleIncomingCall } from './lib/utils/call';
 import {
+  handleIncomingAppUpdate,
   handleIncomingChatMessage,
   handleIncomingVerificationNotification,
 } from './lib/utils/notifications';
+import { isAppUpdateIntent } from './lib/utils/urls';
 import { EventEmitter } from './lib/utils/event-emitter';
 
 // Keyed by callId so answerCall/endCall events can look up the full call data
@@ -137,6 +139,8 @@ messaging().setBackgroundMessageHandler(async (remoteMessage) => {
       await handleIncomingChatMessage(remoteMessage);
     } else if (intent === 'verification') {
       await handleIncomingVerificationNotification(remoteMessage);
+    } else if (isAppUpdateIntent(intent)) {
+      await handleIncomingAppUpdate(remoteMessage);
     }
   }
 });

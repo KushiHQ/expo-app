@@ -13,7 +13,8 @@ import {
 } from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
 import { handleIncomingCall, handleNotifeeEvent } from '@/lib/utils/call';
-import { handleIncomingChatMessage } from '@/lib/utils/notifications';
+import { handleIncomingAppUpdate, handleIncomingChatMessage } from '@/lib/utils/notifications';
+import { isAppUpdateIntent, openAppStore } from '@/lib/utils/urls';
 import { useRouter } from '@/lib/hooks/use-router';
 import { CALL_TYPE_VALUE } from '@/lib/types/enums/hoting-chat';
 import { AppState, AppStateStatus, Platform } from 'react-native';
@@ -229,17 +230,21 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
       }
     });
 
-    // Handle tapping an FCM system-tray chat notification from a cold start
+    // Handle tapping an FCM system-tray notification from a cold start
     getInitialNotification(messagingInstance).then((remoteMessage) => {
       if (remoteMessage?.data?.intent === 'notification' && remoteMessage.data?.id) {
         router.push(`/chats/${remoteMessage.data.id}` as any);
+      } else if (isAppUpdateIntent(remoteMessage?.data?.intent as string)) {
+        openAppStore();
       }
     });
 
-    // Handle tapping an FCM system-tray chat notification while app is backgrounded
+    // Handle tapping an FCM system-tray notification while app is backgrounded
     const unsubscribeOpenedApp = onNotificationOpenedApp(messagingInstance, (remoteMessage) => {
       if (remoteMessage?.data?.intent === 'notification' && remoteMessage.data?.id) {
         router.push(`/chats/${remoteMessage.data.id}` as any);
+      } else if (isAppUpdateIntent(remoteMessage?.data?.intent as string)) {
+        openAppStore();
       }
     });
 
@@ -259,6 +264,16 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
         remoteMessage.data?.intent === CALL_TYPE_VALUE[CallType.Video]
       ) {
         routeToCall(remoteMessage.data);
+        return;
+      }
+
+      // App-update broadcast → show a banner with the "Update now" action.
+      if (isAppUpdateIntent(remoteMessage.data?.intent as string)) {
+        try {
+          await handleIncomingAppUpdate(remoteMessage);
+        } catch (err) {
+          console.error('Failed to show app-update notification banner', err);
+        }
         return;
       }
 
@@ -292,6 +307,10 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
         const data = event.detail.notification?.data as any;
         if (data?.intent === 'notification' && data?.chatId) {
           router.push(`/chats/${data.chatId}` as any);
+          return;
+        }
+        if (isAppUpdateIntent(data?.intent)) {
+          await openAppStore();
           return;
         }
       }

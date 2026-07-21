@@ -1,5 +1,6 @@
 import notifee, { EventType } from '@notifee/react-native';
 import * as Linking from 'expo-linking';
+import { isAppUpdateIntent, openAppStore } from '@/lib/utils/urls';
 
 // ────────────────────────────────────────────────────────────────────────
 // Notifee background event handler
@@ -15,6 +16,12 @@ notifee.onBackgroundEvent(async (event) => {
 
   if (type === EventType.PRESS || type === EventType.ACTION_PRESS) {
     const data = detail.notification?.data as Record<string, string> | undefined;
+
+    // App-update notification tap → open the device app store.
+    if (isAppUpdateIntent(data?.intent)) {
+      await openAppStore();
+      return;
+    }
 
     // Chat message notification → open the chat
     if (data?.intent === 'notification' && data?.chatId) {

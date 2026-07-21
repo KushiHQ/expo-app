@@ -20,6 +20,43 @@ export function initializeNotifications() {
 }
 
 /**
+ * Displays a Notifee banner for an admin-broadcast "app update available"
+ * notification. Tapping the notification opens the device app store (handled
+ * by the PRESS handlers via openAppStore) — no custom action button.
+ */
+export const handleIncomingAppUpdate = async (remoteMessage: any) => {
+  const notification = remoteMessage.notification;
+
+  const channelId = await notifee.createChannel({
+    id: 'app-updates',
+    name: 'App Updates',
+    importance: AndroidImportance.HIGH,
+    vibration: true,
+  });
+
+  await notifee.displayNotification({
+    id: 'app-update',
+    title: notification?.title ?? 'Update available',
+    body: notification?.body ?? 'A new version of Kushi is available.',
+    data: { intent: 'app-update' },
+    android: {
+      channelId,
+      importance: AndroidImportance.HIGH,
+      pressAction: { id: 'default', launchActivity: 'default' },
+      color: '#FFA500',
+    },
+    ios: {
+      sound: 'default',
+      foregroundPresentationOptions: {
+        alert: true,
+        sound: true,
+        badge: true,
+      },
+    },
+  });
+};
+
+/**
  * Displays a Notifee notification banner for an incoming chat message.
  * Called in the foreground when the user is NOT currently viewing that chat.
  */
