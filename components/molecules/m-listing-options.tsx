@@ -126,6 +126,24 @@ const ListingOptions: React.FC<Props> = ({ open, onClose, hosting, onDelete, onD
             >
               <ThemedText content="primary">View Listing</ThemedText>
             </Button>
+            <Button
+              type="tinted"
+              onPress={() => {
+                onClose?.();
+                router.push(`/hostings/${hosting.id}/boost`);
+              }}
+            >
+              <ThemedText content="tinted">Boost Listing</ThemedText>
+            </Button>
+            <Button
+              type="tinted"
+              onPress={() => {
+                onClose?.();
+                router.push(`/hostings/${hosting.id}/insights`);
+              }}
+            >
+              <ThemedText content="tinted">Insights</ThemedText>
+            </Button>
             <Button type="tinted" onPress={handleDuplicate}>
               <ThemedText content="tinted">Duplicate Listing</ThemedText>
             </Button>
