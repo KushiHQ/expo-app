@@ -29,14 +29,16 @@ import { handleError } from '@/lib/utils/error';
 import { generateRNFile } from '@/lib/utils/file';
 import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
 import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/lib/hooks/use-router';
 import React from 'react';
-import { FlatList, View, ActivityIndicator } from 'react-native';
+import { FlatList, View, ActivityIndicator, Pressable } from 'react-native';
 import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
 import { useAudioPlayer } from 'expo-audio';
 import { useNotifications } from '@/components/contexts/notifications';
 
 export default function ChatDetails() {
   const { id } = useLocalSearchParams();
+  const router = useRouter();
   const colors = useThemeColors();
   const flatListRef = React.useRef<FlatList>(null);
   const isNearBottomRef = React.useRef(true);
@@ -274,7 +276,13 @@ export default function ChatDetails() {
         }}
         ListFooterComponent={
           <View style={{ marginBottom: 32, marginTop: 16 }}>
-            <View style={{ alignItems: 'center', gap: 8, marginBottom: 24 }}>
+            <Pressable
+              style={{ alignItems: 'center', gap: 8, marginBottom: 24 }}
+              onPress={() => {
+                const uid = chatData?.hostingChat.recipientUser?.id;
+                if (uid) router.push(`/users/${uid}`);
+              }}
+            >
               <View
                 style={{
                   width: 72,
@@ -328,7 +336,7 @@ export default function ChatDetails() {
                   marginTop: 4,
                 }}
               />
-            </View>
+            </Pressable>
             <HostingChatSummaryCard hosting={chatData?.hostingChat.hosting} />
             {messagesFetching && hasNextPage && (
               <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} />
