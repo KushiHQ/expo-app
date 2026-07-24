@@ -5,6 +5,7 @@ import React from 'react';
 export default function Layout() {
   return (
     <Stack screenOptions={STACK_SCREEN_OPTIONS}>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="profile" options={{ headerShown: false }} />
       <Stack.Screen name="notification-settings" options={{ headerShown: false }} />
       <Stack.Screen name="security" options={{ headerShown: false }} />
