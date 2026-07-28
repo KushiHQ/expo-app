@@ -21,6 +21,8 @@ import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
 import { Room } from '@/lib/types/enums/hostings';
 import { HostingKind } from '@/lib/services/graphql/generated';
+import { isLand } from '@/lib/constants/hosting/step-rules';
+import HostingPosters from '@/components/organisms/o-hosting-posters';
 import { Layers, Plus } from 'lucide-react-native';
 import React, { useRef } from 'react';
 import { Pressable, RefreshControl, ScrollView, TextInput, View } from 'react-native';
@@ -159,8 +161,12 @@ export default function NewHostingStep2() {
         <View style={{ gap: 20, paddingBottom: 24 }}>
           <SectionCard
             icon={<Layers size={16} color={colors.primary} />}
-            title="Spaces & Photos"
-            subtitle="Add space types and upload media for each space"
+            title={isLand(propertyType) ? 'Site photos' : 'Spaces & Photos'}
+            subtitle={
+              isLand(propertyType)
+                ? 'Capture real, on-site photos of the plot (used for verification)'
+                : 'Add space types and upload media for each space'
+            }
           >
             {/* Grouped spaces — same type together, each instance its own card */}
             {groups.map((group) => (
@@ -290,6 +296,15 @@ export default function NewHostingStep2() {
               />
             )}
           </SectionCard>
+
+          {isLand(propertyType) && hosting && (
+            <HostingPosters
+              hostingId={String(id)}
+              posters={hosting.hostingImages ?? []}
+              coverAssetId={hosting.coverImage?.asset?.id}
+              onChange={refetchHosting}
+            />
+          )}
 
           <View
             style={{
