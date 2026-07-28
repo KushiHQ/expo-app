@@ -17,6 +17,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # ubuntu-latest ships ~14GB free — not enough for a local Android
+      # app-bundle build (it fails with "No space left on device"). Reclaim
+      # the large pre-installed toolchains we don't use, keeping the Android
+      # SDK, Java, Node and Docker engine intact.
+      - name: Free disk space
+        run: |
+          echo "Disk before cleanup:"; df -h /
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /usr/share/swift /usr/local/share/powershell 2>/dev/null || true
+          sudo rm -rf /opt/hostedtoolcache/CodeQL 2>/dev/null || true
+          docker image prune -af 2>/dev/null || true
+          sudo apt-get clean 2>/dev/null || true
+          echo "Disk after cleanup:"; df -h /
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
