@@ -195,6 +195,17 @@ export const HOSTING_QUERY = gql`
           lastUpdated
         }
       }
+      hostingImages(variant: POSTER) {
+        id
+        variant
+        caption
+        sequence
+        asset {
+          id
+          publicUrl
+          lastUpdated
+        }
+      }
       video {
         id
         durationSeconds
