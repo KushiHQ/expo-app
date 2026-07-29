@@ -182,6 +182,7 @@ export const BOOKINGS_QUERY = gql`
         reference
       }
       createdAt
+      autoFinalizeAt
       commencementDate
       expiryDate
       guestServiceCharge
@@ -235,6 +236,7 @@ export const BOOKING_QUERY = gql`
         reference
       }
       createdAt
+      autoFinalizeAt
       commencementDate
       expiryDate
       guestServiceCharge

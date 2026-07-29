@@ -465,3 +465,43 @@ export const REPORT_AGENT_REVIEW = gql`
     reportAgentReview(reviewId: $reviewId)
   }
 `;
+
+export const UPLOAD_HOSTING_IMAGE = gql`
+  mutation UploadHostingImage(
+    $hostingId: String!
+    $variant: HostingImageVariant!
+    $image: Upload!
+    $caption: String
+  ) {
+    uploadHostingImage(hostingId: $hostingId, variant: $variant, image: $image, caption: $caption) {
+      message
+      data {
+        id
+        variant
+        caption
+        sequence
+        asset {
+          id
+          publicUrl
+          lastUpdated
+        }
+      }
+    }
+  }
+`;
+
+export const DELETE_HOSTING_IMAGE = gql`
+  mutation DeleteHostingImage($id: String!) {
+    deleteHostingImage(id: $id) {
+      message
+    }
+  }
+`;
+
+export const SET_HOSTING_COVER = gql`
+  mutation SetHostingCover($hostingId: String!, $assetId: String) {
+    setHostingCover(hostingId: $hostingId, assetId: $assetId) {
+      message
+    }
+  }
+`;

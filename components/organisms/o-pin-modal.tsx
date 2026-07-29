@@ -7,17 +7,29 @@ import ThemedText from '../atoms/a-themed-text';
 import Button from '../atoms/a-button';
 import { hexToRgba } from '@/lib/utils/colors';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { TriangleAlert } from 'lucide-react-native';
 
 type Props = {
   open: boolean;
   label?: string;
   description?: string;
+  /** Optional attention callout shown above the action — e.g. an irreversible
+   *  step the user should double-check before confirming. */
+  warning?: string;
   length: number;
   onClose: () => void;
   onSubmit?: (pin: string) => void;
 };
 
-const PINModal: React.FC<Props> = ({ open, label, description, onClose, length, onSubmit }) => {
+const PINModal: React.FC<Props> = ({
+  open,
+  label,
+  description,
+  warning,
+  onClose,
+  length,
+  onSubmit,
+}) => {
   const colors = useThemeColors();
   const [pin, setPin] = React.useState('');
 
@@ -45,6 +57,19 @@ const PINModal: React.FC<Props> = ({ open, label, description, onClose, length, 
         <View className="items-center gap-2">
           <OTPInput onChangeText={setPin} length={length} />
         </View>
+        {warning && (
+          <View
+            className="flex-row items-start gap-2.5 rounded-2xl p-3.5"
+            style={{ backgroundColor: hexToRgba(colors.primary, 0.1) }}
+          >
+            <TriangleAlert size={16} color={colors.primary} style={{ marginTop: 1 }} />
+            <ThemedText
+              style={{ flex: 1, fontSize: 12.5, lineHeight: 18, color: hexToRgba(colors.text, 0.8) }}
+            >
+              {warning}
+            </ThemedText>
+          </View>
+        )}
         <View className="my-8 flex-row gap-4">
           <Button onPress={onClose} className="flex-1" variant="outline" type="primary">
             <ThemedText content="tinted">Cancel</ThemedText>

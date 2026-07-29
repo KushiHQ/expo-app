@@ -28,6 +28,11 @@ export function showTenancySteps(
   return true;
 }
 
+/** A bare land plot (drives Site-photos labelling + poster uploads). */
+export function isLand(propertyType?: string | null): boolean {
+  return propertyType === PropertyType.LandPlots;
+}
+
 /**
  * Whether the amenities / features step should be shown.
  * Land plots have no buildings — no amenities to list.

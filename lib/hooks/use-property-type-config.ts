@@ -15,6 +15,9 @@ export type PropertyTypeConfig = {
   rooms: string[];
   facilities: string[];
   category?: string | null;
+  // 'residential' | 'commercial' | 'land' | 'short_let' — the reliable
+  // use-class signal (unlike `category`, which is seeded NULL server-side).
+  agreementUseClass?: string | null;
   icon?: string | null;
 };
 
@@ -51,6 +54,7 @@ export const usePropertyTypeConfig = () => {
         rooms: p.rooms ?? [],
         facilities: p.facilities ?? [],
         category: p.category,
+        agreementUseClass: p.agreementUseClass,
         icon: p.icon,
       }));
     }
@@ -68,5 +72,13 @@ export const usePropertyTypeConfig = () => {
     [propertyTypes],
   );
 
-  return { propertyTypes, roomsFor, facilitiesFor, fetching };
+  // Use-class for a property type ('residential' | 'commercial' | 'land' | …).
+  // Falls back to null when unknown (e.g. offline before the server list loads).
+  const useClassFor = React.useCallback(
+    (type?: string | null): string | null =>
+      propertyTypes.find((p) => p.value === type)?.agreementUseClass ?? null,
+    [propertyTypes],
+  );
+
+  return { propertyTypes, roomsFor, facilitiesFor, useClassFor, fetching };
 };

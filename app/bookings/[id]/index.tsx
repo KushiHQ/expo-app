@@ -21,12 +21,12 @@ import { useUser } from '@/lib/hooks/user';
 import {
   BookingStatus,
   PaymentStatus,
-  TransactionStatus,
   useBookingQuery,
   useCancelBookingMutation,
   useFinalizeBookingMutation,
   useInitiateCancelBookingMutation,
   useInitiateFinalizeBookingMutation,
+  useInitiateHostingChatMutation,
 } from '@/lib/services/graphql/generated';
 import { cast } from '@/lib/types/utils';
 import { hexToRgba } from '@/lib/utils/colors';
@@ -35,6 +35,7 @@ import { handleError } from '@/lib/utils/error';
 import { openLocalFile } from '@/lib/utils/file';
 import { calculateBookingDuration } from '@/lib/utils/time';
 import { toTitleCase } from '@/lib/utils/text';
+import { isLand } from '@/lib/constants/hosting/step-rules';
 import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import { toast } from '@/lib/hooks/use-toast';
 import { Image } from 'expo-image';
@@ -53,9 +54,10 @@ import {
   User,
 } from 'lucide-react-native';
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, RefreshControl, View } from 'react-native';
 import FeedbackPromptModal from '@/components/molecules/m-feedback-prompt-modal';
 import { useFeedbackStore, canShowFeedback } from '@/lib/stores/feedback';
+import { TablerMessage2 } from '@/components/icons/i-message';
 import Pdf from 'react-native-pdf';
 
 const BOOKING_STATUS_COLORS: Record<string, string> = {
@@ -64,18 +66,52 @@ const BOOKING_STATUS_COLORS: Record<string, string> = {
   [BookingStatus.Canceled]: '#94A3B8',
 };
 
+// Human "time left" until a paid booking auto-finalizes (escrow releases to the
+// host). Null when there's no deadline (unpaid, or paid before the feature).
+function autoFinalizeNote(iso?: string | null): string | null {
+  if (!iso) return null;
+  const ms = new Date(iso).getTime() - Date.now();
+  if (ms <= 0) return 'Auto-finalizes shortly if you don’t confirm.';
+  const days = Math.floor(ms / 86_400_000);
+  const hours = Math.floor((ms % 86_400_000) / 3_600_000);
+  if (days >= 1)
+    return `Auto-finalizes in ${days} day${days === 1 ? '' : 's'} — funds release to the host then, unless you finalize sooner.`;
+  if (hours >= 1)
+    return `Auto-finalizes in ${hours} hour${hours === 1 ? '' : 's'} — funds release to the host then, unless you finalize sooner.`;
+  return 'Auto-finalizes within the hour — funds release to the host then, unless you finalize sooner.';
+}
+
 export default function UserBooking() {
   const colors = useThemeColors();
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { download, getLocalUri } = useDownlods();
-  const [{ data, fetching: fetchingBooking }] = useBookingQuery({
+  const [{ data, fetching: fetchingBooking }, refetchBooking] = useBookingQuery({
     variables: { bookingId: cast(id) },
   });
+  // Pull fresh booking data from the server (bypassing the cache) — used after
+  // finalize/cancel, whose mutations only return `{ id }`, so the cached booking
+  // otherwise keeps its old status and (for finalize) a missing tenancy
+  // agreement asset, leaving the PDF skeleton pulsing forever.
+  const refreshBooking = React.useCallback(
+    () => refetchBooking({ requestPolicy: 'network-only' }),
+    [refetchBooking],
+  );
+
+  // Pull-to-refresh.
+  const [refreshing, setRefreshing] = React.useState(false);
+  React.useEffect(() => {
+    if (!fetchingBooking) setRefreshing(false);
+  }, [fetchingBooking]);
+  const handleRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    refreshBooking();
+  }, [refreshBooking]);
   const [{ fetching: initiatingFinalize }, initiateFinalize] = useInitiateFinalizeBookingMutation();
   const [{ fetching: finalizing }, finanlizeBooking] = useFinalizeBookingMutation();
   const [{ fetching: initiatingCancel }, initiateCancel] = useInitiateCancelBookingMutation();
   const [{ fetching: canceling }, cancelBooking] = useCancelBookingMutation();
+  const [{ fetching: chatInitiating }, initiateChat] = useInitiateHostingChatMutation();
   const [localPdfUri, setLocalPdfUri] = React.useState<string | null>(null);
   const [receiptOpen, setReceiptOpen] = React.useState(false);
   const [cancelOpen, setCancelOpen] = React.useState(false);
@@ -123,10 +159,22 @@ export default function UserBooking() {
     (booking?.paymentStatus === PaymentStatus.Pending ||
       booking?.paymentStatus === PaymentStatus.Failed);
 
+  // Finalizable once the booking is paid and not yet terminal. Gate on the
+  // booking's own paymentStatus (the canonical "paid" signal, same as
+  // isPaymentPending) — NOT transaction.status, which can still read non-Success
+  // for a beat after payment and would otherwise leave a dead footer (no
+  // Complete Payment, no Finalize/Cancel, no countdown) right after paying.
   const canFinalize =
     booking?.status !== BookingStatus.Completed &&
     booking?.status !== BookingStatus.Canceled &&
-    booking?.transaction?.status === TransactionStatus.Success;
+    booking?.paymentStatus === PaymentStatus.Paid;
+
+  // Finalizing releases the escrowed payment to the host and can't be undone —
+  // remind the guest to take possession first. Land has no keys, so word it as
+  // a completed handover instead.
+  const finalizeWarning = isLand(booking?.hosting?.propertyType)
+    ? "Only finalize once the handover is complete and you've taken possession of the land. This releases your payment to the host and can't be undone."
+    : "Only finalize once you've received your keys and taken possession of the property. This releases your payment to the host and can't be undone.";
 
   const total = Number(booking?.amount ?? 0) + Number(booking?.guestServiceCharge ?? 0);
 
@@ -178,6 +226,7 @@ export default function UserBooking() {
           text1: 'Booking Cancelled',
           text2: res.data.cancelBooking.message,
         });
+        refreshBooking();
       }
     });
   };
@@ -204,6 +253,9 @@ export default function UserBooking() {
         text1: 'Booking Finalized',
         text2: 'Your Tenancy Agreement has been sent to your email.',
       });
+      // Refetch so the booking flips to Completed and the freshly-generated
+      // tenancy agreement asset loads (the mutation returns only `{ id }`).
+      refreshBooking();
     });
   };
 
@@ -221,6 +273,15 @@ export default function UserBooking() {
     });
   };
 
+  const handleMessageHost = () => {
+    const hostingId = booking?.hosting?.id;
+    if (!hostingId) return;
+    initiateChat({ hostingId }).then((res) => {
+      if (res.error) return handleError(res.error);
+      if (res.data) router.push(`/chats/${res.data.initiateHostingChat.id}`);
+    });
+  };
+
   const openTenancyAgreement = async () => {
     if (!booking?.tenancyAgreementAsset?.publicUrl) return;
     const localUri = getLocalUri(booking?.tenancyAgreementAsset?.publicUrl);
@@ -232,12 +293,7 @@ export default function UserBooking() {
     isGuest &&
     (isPaymentPending ? (
       <View className="flex-row gap-4 p-4 pb-8" style={{ backgroundColor: colors.background }}>
-        <Button
-          onPress={handleCompletePayment}
-          type="primary"
-          className="flex-1"
-          style={{ backgroundColor: colors.accent }}
-        >
+        <Button onPress={handleCompletePayment} type="accent" className="flex-1">
           <ThemedText style={{ color: 'white', fontWeight: '600' }}>Complete Payment</ThemedText>
         </Button>
       </View>
@@ -258,7 +314,8 @@ export default function UserBooking() {
             style={{ marginTop: 2 }}
           />
           <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.5), flex: 1 }}>
-            Bookings will be automatically finalized within 2 weeks of payment.
+            {autoFinalizeNote(booking?.autoFinalizeAt) ??
+              'Bookings finalize automatically about 2 weeks after payment.'}
           </ThemedText>
         </View>
         <View className="flex-row gap-4">
@@ -284,6 +341,7 @@ export default function UserBooking() {
         title={booking?.hosting?.title ?? 'My Booking'}
         footer={footer}
         withSupport={true}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
         {fetchingBooking && !booking ? (
           <View style={{ gap: 14, paddingTop: 8 }}>
@@ -343,6 +401,23 @@ export default function UserBooking() {
                     </ThemedText>
                   ) : null}
                 </View>
+                {isGuest && (
+                  <Button
+                    variant="outline"
+                    type="primary"
+                    style={{ marginTop: 4 }}
+                    onPress={handleMessageHost}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <TablerMessage2 size={18} color={colors.primary} strokeWidth={2} />
+                      <ThemedText
+                        style={{ color: colors.primary, fontFamily: Fonts.semibold, fontSize: 14 }}
+                      >
+                        Message host
+                      </ThemedText>
+                    </View>
+                  </Button>
+                )}
               </View>
             </ReviewSection>
 
@@ -686,6 +761,7 @@ export default function UserBooking() {
       <PINModal
         label="Enter OTP"
         description={`A finalization confirmation code has been sent to ${user.user?.email ?? 'your email'}`}
+        warning={finalizeWarning}
         length={6}
         onSubmit={handleFinalize}
         open={finalizeOtpOpen}
@@ -697,7 +773,7 @@ export default function UserBooking() {
         title="Cancellation Failed"
         description={cancelError ?? undefined}
       />
-      <LoadingModal visible={loading} />
+      <LoadingModal visible={loading || chatInitiating} />
 
       {/* Booking Feedback Prompt Modal */}
       <FeedbackPromptModal

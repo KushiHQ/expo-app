@@ -137,40 +137,58 @@ export default function BoostListing() {
                     style={{
                       borderRadius: 16,
                       padding: 14,
-                      gap: 4,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 12,
                       backgroundColor: isSel
                         ? hexToRgba(colors.primary, 0.1)
                         : hexToRgba(colors.text, 0.04),
                       boxShadow: isSel ? `0 0 0 1.5px ${colors.primary}` : undefined,
                     }}
                   >
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
+                    {/* Left: the tier's text content. */}
+                    <View style={{ flex: 1, gap: 4 }}>
                       <ThemedText type="semibold" style={{ fontSize: 15 }}>
                         {opt.label}
                       </ThemedText>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <ThemedText type="semibold" style={{ fontSize: 15, color: colors.primary }}>
-                          ₦{Number(opt.price).toLocaleString()}
+                      {opt.description ? (
+                        <ThemedText
+                          style={{
+                            fontSize: 12,
+                            lineHeight: 18,
+                            color: hexToRgba(colors.text, 0.55),
+                          }}
+                        >
+                          {opt.description}
                         </ThemedText>
-                        {isSel ? <Check size={18} color={colors.primary} /> : null}
+                      ) : null}
+                      <ThemedText style={{ fontSize: 11, color: hexToRgba(colors.text, 0.4) }}>
+                        {opt.durationDays} days
+                      </ThemedText>
+                    </View>
+
+                    {/* Right: price sits flush to the edge with the circular
+                        selection indicator (matches SelectOption) directly below
+                        it — the whole group vertically centered on the card. */}
+                    <View style={{ alignItems: 'flex-end', gap: 10 }}>
+                      <ThemedText type="semibold" style={{ fontSize: 15, color: colors.primary }}>
+                        ₦{Number(opt.price).toLocaleString()}
+                      </ThemedText>
+                      <View
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 12,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: isSel ? colors.primary : hexToRgba(colors.text, 0.08),
+                        }}
+                      >
+                        {isSel ? (
+                          <Check size={13} color={colors['primary-content']} strokeWidth={3} />
+                        ) : null}
                       </View>
                     </View>
-                    {opt.description ? (
-                      <ThemedText
-                        style={{ fontSize: 12, lineHeight: 18, color: hexToRgba(colors.text, 0.55) }}
-                      >
-                        {opt.description}
-                      </ThemedText>
-                    ) : null}
-                    <ThemedText style={{ fontSize: 11, color: hexToRgba(colors.text, 0.4) }}>
-                      {opt.durationDays} days
-                    </ThemedText>
                   </Pressable>
                 );
               })}

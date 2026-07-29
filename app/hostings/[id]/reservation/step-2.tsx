@@ -17,9 +17,11 @@ import {
   BookingApplicationUpdateInput,
   GuestFormDataInput,
   GuestFormEmploymentStatus,
+  useHostingQuery,
   useInitiateBookingApplicationMutation,
   useUpdateBookingApplicationMutation,
 } from '@/lib/services/graphql/generated';
+import { usePropertyTypeConfig } from '@/lib/hooks/use-property-type-config';
 import { cast } from '@/lib/types/utils';
 import { hexToRgba } from '@/lib/utils/colors';
 import { handleError } from '@/lib/utils/error';
@@ -42,6 +44,21 @@ export default function BookingApplicationStep2() {
   const [{ fetching: updatingBookingApplication, error: updateError }, mutate] =
     useUpdateBookingApplicationMutation();
   const [hasGurantor, setHasGuarantor] = React.useState(false);
+
+  // Occupancy type (Single/Couple/Family) is residential-only context — a
+  // commercial tenant has no "occupancy". Hide the field for commercial
+  // listings; the server accepts a missing occupancy for them. Defaults to
+  // showing it until the property-type config confirms the use-class (safe).
+  const [{ data: hostingData }] = useHostingQuery({ variables: { hostingId: String(id) } });
+  const { useClassFor } = usePropertyTypeConfig();
+  const isCommercial = useClassFor(hostingData?.hosting?.propertyType) === 'commercial';
+
+  // Income is required for anyone with earnings — Employed OR Self-employed —
+  // mirroring the server (it only exempts Unemployed / Student / Corp member).
+  // The income field and the guarantor path key off this, not just "Employed".
+  const requiresIncome =
+    input.guestFormData?.employmentStatus === GuestFormEmploymentStatus.Employed ||
+    input.guestFormData?.employmentStatus === GuestFormEmploymentStatus.SelfEmployed;
 
   React.useEffect(() => {
     initiateApplication({
@@ -97,14 +114,12 @@ export default function BookingApplicationStep2() {
               onPress={handleMutate}
               type="primary"
               disabled={
-                !input.guestFormData?.occupancyTypes ||
-                !input.guestFormData.employmentStatus ||
-                (input.guestFormData.employmentStatus === GuestFormEmploymentStatus.Employed
-                  ? !input.guestFormData.incomeRanges
-                  : false) ||
+                (!isCommercial && !input.guestFormData?.occupancyTypes) ||
+                !input.guestFormData?.employmentStatus ||
+                (requiresIncome ? !input.guestFormData?.incomeRanges : false) ||
                 (hasGurantor &&
-                  input.guestFormData.employmentStatus !== GuestFormEmploymentStatus.Employed &&
-                  (!input.guestFormData.guarantorRelationships ||
+                  !requiresIncome &&
+                  (!input.guestFormData?.guarantorRelationships ||
                     !input.guestFormData.guarantorName ||
                     !input.guestFormData.guarantorPhone ||
                     !input.guestFormData.guarantorAddress))
@@ -123,28 +138,30 @@ export default function BookingApplicationStep2() {
             }
           </ThemedText>
           <View className="mt-8 min-h-[500px] gap-4">
-            <View>
-              <SelectInput
-                focused
-                label="Occupancy Type"
-                placeholder="Single"
-                description="Select the number of people who will be living in this property."
-                defaultValue={
-                  input.guestFormData?.occupancyTypes
-                    ? {
-                        label:
-                          BOOKING_APPLICATION_OCCUPANCY_TYPES.find(
-                            (v) => v.value === input.guestFormData?.occupancyTypes,
-                          )?.label ?? input.guestFormData.occupancyTypes,
-                        value: input.guestFormData.occupancyTypes,
-                      }
-                    : undefined
-                }
-                onSelect={(v) => updateGuestFormData({ occupancyTypes: cast(v.value) })}
-                options={BOOKING_APPLICATION_OCCUPANCY_TYPES}
-                renderItem={SelectOption}
-              />
-            </View>
+            {!isCommercial && (
+              <View>
+                <SelectInput
+                  focused
+                  label="Occupancy Type"
+                  placeholder="Single"
+                  description="Select the number of people who will be living in this property."
+                  defaultValue={
+                    input.guestFormData?.occupancyTypes
+                      ? {
+                          label:
+                            BOOKING_APPLICATION_OCCUPANCY_TYPES.find(
+                              (v) => v.value === input.guestFormData?.occupancyTypes,
+                            )?.label ?? input.guestFormData.occupancyTypes,
+                          value: input.guestFormData.occupancyTypes,
+                        }
+                      : undefined
+                  }
+                  onSelect={(v) => updateGuestFormData({ occupancyTypes: cast(v.value) })}
+                  options={BOOKING_APPLICATION_OCCUPANCY_TYPES}
+                  renderItem={SelectOption}
+                />
+              </View>
+            )}
             <View>
               <SelectInput
                 focused
@@ -167,7 +184,7 @@ export default function BookingApplicationStep2() {
                 renderItem={SelectOption}
               />
             </View>
-            {input.guestFormData?.employmentStatus === GuestFormEmploymentStatus.Employed ? (
+            {requiresIncome ? (
               <View>
                 <SelectInput
                   focused
@@ -206,9 +223,8 @@ export default function BookingApplicationStep2() {
                 <ThemedSwitch value={hasGurantor} onValueChange={setHasGuarantor} />
               </View>
             )}
-            {hasGurantor &&
-              input.guestFormData?.employmentStatus !== GuestFormEmploymentStatus.Employed && (
-                <View className="gap-4">
+            {hasGurantor && !requiresIncome && (
+              <View className="gap-4">
                   <View>
                     <SelectInput
                       focused

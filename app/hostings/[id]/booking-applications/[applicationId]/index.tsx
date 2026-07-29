@@ -22,6 +22,7 @@ import {
   useHostingQuery,
   useHostUpdateBookingApplicationStatusMutation,
   useInitiateAcceptBookingApplicationMutation,
+  useInitiateHostingChatWithGuestMutation,
 } from '@/lib/services/graphql/generated';
 import { hexToRgba } from '@/lib/utils/colors';
 import { handleError } from '@/lib/utils/error';
@@ -29,6 +30,7 @@ import { hostingDuration } from '@/lib/utils/hosting/tenancyAgreement';
 import { capitalize, toTitleCase } from '@/lib/utils/text';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
+import { TablerMessage2 } from '@/components/icons/i-message';
 import { Briefcase, Building2, CalendarDays, MapPin, ShieldCheck, User } from 'lucide-react-native';
 import React from 'react';
 import { Image } from 'expo-image';
@@ -50,6 +52,8 @@ export default function BookingApplicationDetails() {
     useHostUpdateBookingApplicationStatusMutation();
   const [{ fetching: initiating }, initiateAccept] = useInitiateAcceptBookingApplicationMutation();
   const [{ fetching: accepting }, acceptMutate] = useAcceptBookingApplicationMutation();
+  const [{ fetching: chatInitiating }, initiateGuestChat] =
+    useInitiateHostingChatWithGuestMutation();
 
   const [{ data, fetching }] = useBookingApplicationQuery({
     variables: { bookingApplicationId: String(applicationId) },
@@ -73,6 +77,14 @@ export default function BookingApplicationDetails() {
   }, [rejectError]);
 
   const app = data?.bookingApplication;
+
+  // The host can Accept/Reject while an application awaits their decision.
+  // After submission a background risk check advances Submited → SystemVerified,
+  // and the server accepts either — so gate the actions on both, not just
+  // Submited (otherwise verified applications show no action buttons).
+  const canReview =
+    app?.status === BookingApplicationStatus.Submited ||
+    app?.status === BookingApplicationStatus.SystemVerified;
 
   function handleReject() {
     if (!app?.id) return;
@@ -122,6 +134,16 @@ export default function BookingApplicationDetails() {
     });
   }
 
+  function handleMessageGuest() {
+    const hostingId = app?.hosting?.id;
+    const guestUserId = app?.guest?.user?.id;
+    if (!hostingId || !guestUserId) return;
+    initiateGuestChat({ hostingId, guestUserId }).then((res) => {
+      if (res.error) return handleError(res.error);
+      if (res.data) router.push(`/chats/${res.data.initiateHostingChatWithGuest.id}`);
+    });
+  }
+
   const statusColor = app?.status
     ? BOOKING_APPLICATION_STATUS_COLORS[app.status]
     : hexToRgba(colors.text, 0.4);
@@ -135,7 +157,7 @@ export default function BookingApplicationDetails() {
       <DetailsLayout
         title="Booking Application"
         footer={
-          app?.status === BookingApplicationStatus.Submited ? (
+          canReview ? (
             <View
               className="flex-row gap-4 p-4 pb-8"
               style={{ backgroundColor: colors.background }}
@@ -212,6 +234,21 @@ export default function BookingApplicationDetails() {
                     </View>
                   ) : null}
                 </View>
+                <Button
+                  variant="outline"
+                  type="primary"
+                  style={{ marginTop: 4 }}
+                  onPress={handleMessageGuest}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <TablerMessage2 size={18} color={colors.primary} strokeWidth={2} />
+                    <ThemedText
+                      style={{ color: colors.primary, fontFamily: Fonts.semibold, fontSize: 14 }}
+                    >
+                      Message guest
+                    </ThemedText>
+                  </View>
+                </Button>
               </View>
             </ReviewSection>
 

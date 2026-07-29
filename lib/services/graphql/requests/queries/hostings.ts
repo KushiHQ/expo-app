@@ -9,6 +9,7 @@ export const PROPERTY_TYPES = gql`
       rooms
       facilities
       category
+      agreementUseClass
       icon
     }
   }
@@ -104,6 +105,7 @@ export const HOSTING_QUERY = gql`
         publishStatus
         isBookable
         bookingApplicationsCount
+        pendingBookingApplicationsCount
         createdAt
         lastUpdated
         coverImage {
@@ -189,6 +191,17 @@ export const HOSTING_QUERY = gql`
         id
         createdAt
         lastUpdated
+        asset {
+          id
+          publicUrl
+          lastUpdated
+        }
+      }
+      hostingImages(variant: POSTER) {
+        id
+        variant
+        caption
+        sequence
         asset {
           id
           publicUrl
@@ -441,6 +454,7 @@ export const HOST_LISTINGS_QUERY = gql`
       managementType
       publishStatus
       bookingApplicationsCount
+      pendingBookingApplicationsCount
       createdAt
       lastUpdated
     }

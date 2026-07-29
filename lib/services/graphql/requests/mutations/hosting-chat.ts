@@ -8,6 +8,16 @@ export const INITIATE_HOSTING_CHAT_MUTATION = gql`
   }
 `;
 
+// Host-perspective: open (or reuse) the chat with a specific guest of one of
+// the host's listings — used from the host's booking/application detail.
+export const INITIATE_HOSTING_CHAT_WITH_GUEST = gql`
+  mutation InitiateHostingChatWithGuest($hostingId: String!, $guestUserId: String!) {
+    initiateHostingChatWithGuest(hostingId: $hostingId, guestUserId: $guestUserId) {
+      id
+    }
+  }
+`;
+
 export const CREATE_UPDATE_MESSAGE = gql`
   mutation CreateUpdateMessage($input: HostingChatMessageInput!) {
     createUpdateMessage(input: $input) {
