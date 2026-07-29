@@ -146,25 +146,11 @@ export default function BoostListing() {
                       boxShadow: isSel ? `0 0 0 1.5px ${colors.primary}` : undefined,
                     }}
                   >
-                    {/* Text content — label + price share the top row; the
-                        indicator lives outside this block so the price keeps the
-                        top-right to itself. */}
+                    {/* Left: the tier's text content. */}
                     <View style={{ flex: 1, gap: 4 }}>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: 8,
-                        }}
-                      >
-                        <ThemedText type="semibold" style={{ fontSize: 15 }}>
-                          {opt.label}
-                        </ThemedText>
-                        <ThemedText type="semibold" style={{ fontSize: 15, color: colors.primary }}>
-                          ₦{Number(opt.price).toLocaleString()}
-                        </ThemedText>
-                      </View>
+                      <ThemedText type="semibold" style={{ fontSize: 15 }}>
+                        {opt.label}
+                      </ThemedText>
                       {opt.description ? (
                         <ThemedText
                           style={{
@@ -181,21 +167,27 @@ export default function BoostListing() {
                       </ThemedText>
                     </View>
 
-                    {/* Circular selection indicator (matches SelectOption in
-                        m-select-input), vertically centered on the card. */}
-                    <View
-                      style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: 12,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: isSel ? colors.primary : hexToRgba(colors.text, 0.08),
-                      }}
-                    >
-                      {isSel ? (
-                        <Check size={13} color={colors['primary-content']} strokeWidth={3} />
-                      ) : null}
+                    {/* Right: price sits flush to the edge with the circular
+                        selection indicator (matches SelectOption) directly below
+                        it — the whole group vertically centered on the card. */}
+                    <View style={{ alignItems: 'flex-end', gap: 10 }}>
+                      <ThemedText type="semibold" style={{ fontSize: 15, color: colors.primary }}>
+                        ₦{Number(opt.price).toLocaleString()}
+                      </ThemedText>
+                      <View
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 12,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: isSel ? colors.primary : hexToRgba(colors.text, 0.08),
+                        }}
+                      >
+                        {isSel ? (
+                          <Check size={13} color={colors['primary-content']} strokeWidth={3} />
+                        ) : null}
+                      </View>
                     </View>
                   </Pressable>
                 );
