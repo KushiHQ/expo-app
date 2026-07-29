@@ -18,11 +18,14 @@ import { toast } from '@/lib/hooks/use-toast';
 import {
   useBookingApplicationQuery,
   useCancelBookingApplicationMutation,
+  useInitiateHostingChatMutation,
   BookingApplicationStatus,
 } from '@/lib/services/graphql/generated';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { hexToRgba } from '@/lib/utils/colors';
 import { toTitleCase } from '@/lib/utils/text';
+import { handleError } from '@/lib/utils/error';
+import { TablerMessage2 } from '@/components/icons/i-message';
 import { Briefcase, Building2, CalendarDays, MapPin, ShieldCheck, User } from 'lucide-react-native';
 import React from 'react';
 import { Image } from 'expo-image';
@@ -38,8 +41,18 @@ export default function BookingApplicationDetails() {
   });
 
   const [{ fetching: cancelling }, cancelApplication] = useCancelBookingApplicationMutation();
+  const [{ fetching: chatInitiating }, initiateChat] = useInitiateHostingChatMutation();
 
   const app = data?.bookingApplication;
+
+  const handleMessageHost = () => {
+    const hostingId = app?.hosting?.id;
+    if (!hostingId) return;
+    initiateChat({ hostingId }).then((res) => {
+      if (res.error) return handleError(res.error);
+      if (res.data) router.push(`/chats/${res.data.initiateHostingChat.id}`);
+    });
+  };
 
   const canCancel = React.useMemo(() => {
     if (!app) return false;
@@ -147,6 +160,21 @@ export default function BookingApplicationDetails() {
                     </View>
                   ) : null}
                 </View>
+                <Button
+                  variant="outline"
+                  type="primary"
+                  style={{ marginTop: 4 }}
+                  onPress={handleMessageHost}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <TablerMessage2 size={18} color={colors.primary} strokeWidth={2} />
+                    <ThemedText
+                      style={{ color: colors.primary, fontFamily: Fonts.semibold, fontSize: 14 }}
+                    >
+                      Message host
+                    </ThemedText>
+                  </View>
+                </Button>
               </View>
             </ReviewSection>
 
@@ -293,7 +321,7 @@ export default function BookingApplicationDetails() {
         onClose={() => setCancelOpen(false)}
         onConfirm={handleCancel}
       />
-      <LoadingModal visible={cancelling} />
+      <LoadingModal visible={cancelling || chatInitiating} />
     </>
   );
 }

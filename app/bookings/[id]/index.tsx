@@ -27,6 +27,7 @@ import {
   useFinalizeBookingMutation,
   useInitiateCancelBookingMutation,
   useInitiateFinalizeBookingMutation,
+  useInitiateHostingChatMutation,
 } from '@/lib/services/graphql/generated';
 import { cast } from '@/lib/types/utils';
 import { hexToRgba } from '@/lib/utils/colors';
@@ -56,6 +57,7 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 import FeedbackPromptModal from '@/components/molecules/m-feedback-prompt-modal';
 import { useFeedbackStore, canShowFeedback } from '@/lib/stores/feedback';
+import { TablerMessage2 } from '@/components/icons/i-message';
 import Pdf from 'react-native-pdf';
 
 const BOOKING_STATUS_COLORS: Record<string, string> = {
@@ -76,6 +78,7 @@ export default function UserBooking() {
   const [{ fetching: finalizing }, finanlizeBooking] = useFinalizeBookingMutation();
   const [{ fetching: initiatingCancel }, initiateCancel] = useInitiateCancelBookingMutation();
   const [{ fetching: canceling }, cancelBooking] = useCancelBookingMutation();
+  const [{ fetching: chatInitiating }, initiateChat] = useInitiateHostingChatMutation();
   const [localPdfUri, setLocalPdfUri] = React.useState<string | null>(null);
   const [receiptOpen, setReceiptOpen] = React.useState(false);
   const [cancelOpen, setCancelOpen] = React.useState(false);
@@ -221,6 +224,15 @@ export default function UserBooking() {
     });
   };
 
+  const handleMessageHost = () => {
+    const hostingId = booking?.hosting?.id;
+    if (!hostingId) return;
+    initiateChat({ hostingId }).then((res) => {
+      if (res.error) return handleError(res.error);
+      if (res.data) router.push(`/chats/${res.data.initiateHostingChat.id}`);
+    });
+  };
+
   const openTenancyAgreement = async () => {
     if (!booking?.tenancyAgreementAsset?.publicUrl) return;
     const localUri = getLocalUri(booking?.tenancyAgreementAsset?.publicUrl);
@@ -343,6 +355,23 @@ export default function UserBooking() {
                     </ThemedText>
                   ) : null}
                 </View>
+                {isGuest && (
+                  <Button
+                    variant="outline"
+                    type="primary"
+                    style={{ marginTop: 4 }}
+                    onPress={handleMessageHost}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <TablerMessage2 size={18} color={colors.primary} strokeWidth={2} />
+                      <ThemedText
+                        style={{ color: colors.primary, fontFamily: Fonts.semibold, fontSize: 14 }}
+                      >
+                        Message host
+                      </ThemedText>
+                    </View>
+                  </Button>
+                )}
               </View>
             </ReviewSection>
 
@@ -697,7 +726,7 @@ export default function UserBooking() {
         title="Cancellation Failed"
         description={cancelError ?? undefined}
       />
-      <LoadingModal visible={loading} />
+      <LoadingModal visible={loading || chatInitiating} />
 
       {/* Booking Feedback Prompt Modal */}
       <FeedbackPromptModal
