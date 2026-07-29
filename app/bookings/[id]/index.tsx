@@ -35,6 +35,7 @@ import { handleError } from '@/lib/utils/error';
 import { openLocalFile } from '@/lib/utils/file';
 import { calculateBookingDuration } from '@/lib/utils/time';
 import { toTitleCase } from '@/lib/utils/text';
+import { isLand } from '@/lib/constants/hosting/step-rules';
 import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
 import { toast } from '@/lib/hooks/use-toast';
 import { Image } from 'expo-image';
@@ -149,6 +150,13 @@ export default function UserBooking() {
     booking?.status !== BookingStatus.Completed &&
     booking?.status !== BookingStatus.Canceled &&
     booking?.paymentStatus === PaymentStatus.Paid;
+
+  // Finalizing releases the escrowed payment to the host and can't be undone —
+  // remind the guest to take possession first. Land has no keys, so word it as
+  // a completed handover instead.
+  const finalizeWarning = isLand(booking?.hosting?.propertyType)
+    ? "Only finalize once the handover is complete and you've taken possession of the land. This releases your payment to the host and can't be undone."
+    : "Only finalize once you've received your keys and taken possession of the property. This releases your payment to the host and can't be undone.";
 
   const total = Number(booking?.amount ?? 0) + Number(booking?.guestServiceCharge ?? 0);
 
@@ -730,6 +738,7 @@ export default function UserBooking() {
       <PINModal
         label="Enter OTP"
         description={`A finalization confirmation code has been sent to ${user.user?.email ?? 'your email'}`}
+        warning={finalizeWarning}
         length={6}
         onSubmit={handleFinalize}
         open={finalizeOtpOpen}
