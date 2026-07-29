@@ -7,7 +7,7 @@ import {
 } from '@/lib/services/graphql/generated';
 
 export const BOOKING_APPLICATION_EMPLOYMENT_STATUS: {
-  label: keyof typeof GuestFormEmploymentStatus;
+  label: string;
   value: GuestFormEmploymentStatus;
   description?: string;
 }[] = [
@@ -18,10 +18,16 @@ export const BOOKING_APPLICATION_EMPLOYMENT_STATUS: {
       'You currently hold a full-time or part-time position with an employer and receive a regular salary or wage.',
   },
   {
-    label: 'SelfEmployed',
+    label: 'Self Employed',
     value: GuestFormEmploymentStatus.SelfEmployed,
     description:
       'You operate your own business, work as a freelancer, or are an independent contractor generating your own income.',
+  },
+  {
+    label: 'Corp Member',
+    value: GuestFormEmploymentStatus.CorpMember,
+    description:
+      'You are currently serving in the National Youth Service Corps (NYSC). (You may be asked to provide a financial guarantor).',
   },
   {
     label: 'Student',

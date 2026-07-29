@@ -53,6 +53,13 @@ export default function BookingApplicationStep2() {
   const { useClassFor } = usePropertyTypeConfig();
   const isCommercial = useClassFor(hostingData?.hosting?.propertyType) === 'commercial';
 
+  // Income is required for anyone with earnings — Employed OR Self-employed —
+  // mirroring the server (it only exempts Unemployed / Student / Corp member).
+  // The income field and the guarantor path key off this, not just "Employed".
+  const requiresIncome =
+    input.guestFormData?.employmentStatus === GuestFormEmploymentStatus.Employed ||
+    input.guestFormData?.employmentStatus === GuestFormEmploymentStatus.SelfEmployed;
+
   React.useEffect(() => {
     initiateApplication({
       hostingId: String(id),
@@ -109,12 +116,10 @@ export default function BookingApplicationStep2() {
               disabled={
                 (!isCommercial && !input.guestFormData?.occupancyTypes) ||
                 !input.guestFormData?.employmentStatus ||
-                (input.guestFormData.employmentStatus === GuestFormEmploymentStatus.Employed
-                  ? !input.guestFormData.incomeRanges
-                  : false) ||
+                (requiresIncome ? !input.guestFormData?.incomeRanges : false) ||
                 (hasGurantor &&
-                  input.guestFormData.employmentStatus !== GuestFormEmploymentStatus.Employed &&
-                  (!input.guestFormData.guarantorRelationships ||
+                  !requiresIncome &&
+                  (!input.guestFormData?.guarantorRelationships ||
                     !input.guestFormData.guarantorName ||
                     !input.guestFormData.guarantorPhone ||
                     !input.guestFormData.guarantorAddress))
@@ -179,7 +184,7 @@ export default function BookingApplicationStep2() {
                 renderItem={SelectOption}
               />
             </View>
-            {input.guestFormData?.employmentStatus === GuestFormEmploymentStatus.Employed ? (
+            {requiresIncome ? (
               <View>
                 <SelectInput
                   focused
@@ -218,9 +223,8 @@ export default function BookingApplicationStep2() {
                 <ThemedSwitch value={hasGurantor} onValueChange={setHasGuarantor} />
               </View>
             )}
-            {hasGurantor &&
-              input.guestFormData?.employmentStatus !== GuestFormEmploymentStatus.Employed && (
-                <View className="gap-4">
+            {hasGurantor && !requiresIncome && (
+              <View className="gap-4">
                   <View>
                     <SelectInput
                       focused
