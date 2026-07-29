@@ -86,9 +86,17 @@ export default function UserBooking() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { download, getLocalUri } = useDownlods();
-  const [{ data, fetching: fetchingBooking }] = useBookingQuery({
+  const [{ data, fetching: fetchingBooking }, refetchBooking] = useBookingQuery({
     variables: { bookingId: cast(id) },
   });
+  // Pull fresh booking data from the server (bypassing the cache) — used after
+  // finalize/cancel, whose mutations only return `{ id }`, so the cached booking
+  // otherwise keeps its old status and (for finalize) a missing tenancy
+  // agreement asset, leaving the PDF skeleton pulsing forever.
+  const refreshBooking = React.useCallback(
+    () => refetchBooking({ requestPolicy: 'network-only' }),
+    [refetchBooking],
+  );
   const [{ fetching: initiatingFinalize }, initiateFinalize] = useInitiateFinalizeBookingMutation();
   const [{ fetching: finalizing }, finanlizeBooking] = useFinalizeBookingMutation();
   const [{ fetching: initiatingCancel }, initiateCancel] = useInitiateCancelBookingMutation();
@@ -208,6 +216,7 @@ export default function UserBooking() {
           text1: 'Booking Cancelled',
           text2: res.data.cancelBooking.message,
         });
+        refreshBooking();
       }
     });
   };
@@ -234,6 +243,9 @@ export default function UserBooking() {
         text1: 'Booking Finalized',
         text2: 'Your Tenancy Agreement has been sent to your email.',
       });
+      // Refetch so the booking flips to Completed and the freshly-generated
+      // tenancy agreement asset loads (the mutation returns only `{ id }`).
+      refreshBooking();
     });
   };
 
