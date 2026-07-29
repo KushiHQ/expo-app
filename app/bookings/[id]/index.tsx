@@ -259,12 +259,7 @@ export default function UserBooking() {
     isGuest &&
     (isPaymentPending ? (
       <View className="flex-row gap-4 p-4 pb-8" style={{ backgroundColor: colors.background }}>
-        <Button
-          onPress={handleCompletePayment}
-          type="primary"
-          className="flex-1"
-          style={{ backgroundColor: colors.accent }}
-        >
+        <Button onPress={handleCompletePayment} type="accent" className="flex-1">
           <ThemedText style={{ color: 'white', fontWeight: '600' }}>Complete Payment</ThemedText>
         </Button>
       </View>
