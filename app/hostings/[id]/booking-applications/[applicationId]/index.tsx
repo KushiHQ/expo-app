@@ -78,6 +78,14 @@ export default function BookingApplicationDetails() {
 
   const app = data?.bookingApplication;
 
+  // The host can Accept/Reject while an application awaits their decision.
+  // After submission a background risk check advances Submited → SystemVerified,
+  // and the server accepts either — so gate the actions on both, not just
+  // Submited (otherwise verified applications show no action buttons).
+  const canReview =
+    app?.status === BookingApplicationStatus.Submited ||
+    app?.status === BookingApplicationStatus.SystemVerified;
+
   function handleReject() {
     if (!app?.id) return;
     rejectMutate({
@@ -149,7 +157,7 @@ export default function BookingApplicationDetails() {
       <DetailsLayout
         title="Booking Application"
         footer={
-          app?.status === BookingApplicationStatus.Submited ? (
+          canReview ? (
             <View
               className="flex-row gap-4 p-4 pb-8"
               style={{ backgroundColor: colors.background }}
