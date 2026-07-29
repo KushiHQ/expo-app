@@ -36,6 +36,7 @@ import { twMerge } from 'tailwind-merge';
 import {
   AiHostingSearchPredictionsQuery,
   HostingVerificationTier,
+  ListingType,
   useAiHostingSearchPredictionsQuery,
 } from '@/lib/services/graphql/generated';
 import { formatTierLabel } from '@/lib/utils/verification/tier';
@@ -50,6 +51,12 @@ const TIER_FILTER_OPTIONS: HostingVerificationTier[] = [
   HostingVerificationTier.AddressVerified,
   HostingVerificationTier.TitleChecked,
   HostingVerificationTier.KushiVetted,
+];
+
+// Offer type — rent vs sale. "All" is the absence of the filter (no pill active).
+const LISTING_TYPE_OPTIONS: { label: string; value: ListingType }[] = [
+  { label: 'For rent', value: ListingType.Rent },
+  { label: 'For sale', value: ListingType.Sale },
 ];
 type Props = {
   isMapView?: boolean;
@@ -418,6 +425,36 @@ const HostingFilterManager: React.FC<Props> = ({ isMapView }) => {
             Filter
           </ThemedText>
           <View className="gap-6">
+            <View className="gap-3">
+              <ThemedText style={{ fontSize: 14 }}>Listing type</ThemedText>
+              <View className="flex-row gap-2">
+                {LISTING_TYPE_OPTIONS.map((opt) => {
+                  const active = filter.listingType === opt.value;
+                  return (
+                    <Pressable
+                      key={opt.value}
+                      onPress={() => updateFilter({ listingType: active ? undefined : opt.value })}
+                      className="rounded-full px-3.5 py-2"
+                      style={{
+                        backgroundColor: active
+                          ? hexToRgba(colors.primary, 0.16)
+                          : hexToRgba(colors.text, 0.06),
+                      }}
+                    >
+                      <ThemedText
+                        style={{
+                          fontSize: 12,
+                          fontFamily: Fonts.semibold,
+                          color: active ? colors.primary : colors.text,
+                        }}
+                      >
+                        {opt.label}
+                      </ThemedText>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
             <View className="gap-3">
               <ThemedText style={{ fontSize: 14 }}>Category</ThemedText>
               <HotingVariantFilter

@@ -9,6 +9,7 @@ export const PROPERTY_TYPES = gql`
       rooms
       facilities
       category
+      agreementUseClass
       icon
     }
   }

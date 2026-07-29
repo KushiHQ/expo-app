@@ -1037,7 +1037,7 @@ export type GuestFormData = {
   guarantorPhone?: Maybe<Scalars['String']['output']>;
   guarantorRelationships?: Maybe<GuestFormGuarantorRelationships>;
   incomeRanges?: Maybe<GuestFormIncomeRange>;
-  occupancyTypes: GuestFormOccupancyType;
+  occupancyTypes?: Maybe<GuestFormOccupancyType>;
 };
 
 export type GuestFormDataInput = {
@@ -1047,7 +1047,7 @@ export type GuestFormDataInput = {
   guarantorPhone?: InputMaybe<Scalars['String']['input']>;
   guarantorRelationships?: InputMaybe<GuestFormGuarantorRelationships>;
   incomeRanges?: InputMaybe<GuestFormIncomeRange>;
-  occupancyTypes: GuestFormOccupancyType;
+  occupancyTypes?: InputMaybe<GuestFormOccupancyType>;
 };
 
 export enum GuestFormEmploymentStatus {
@@ -1391,6 +1391,7 @@ export type HostingFilterInput = {
   creatorId?: InputMaybe<Scalars['String']['input']>;
   facilities?: InputMaybe<Array<Scalars['String']['input']>>;
   isDraft?: InputMaybe<Scalars['Boolean']['input']>;
+  listingType?: InputMaybe<ListingType>;
   maxPrice?: InputMaybe<Scalars['Decimal']['input']>;
   minPrice?: InputMaybe<Scalars['Decimal']['input']>;
   minRating?: InputMaybe<Scalars['Int']['input']>;
@@ -2020,6 +2021,12 @@ export type Mutations = {
   initiateFinalizeBooking: MessageResponse;
   initiateHostingChat: HostingChat;
   /**
+   * Host-side counterpart: the host opens (or reuses) the chat with a specific
+   * guest of one of their listings — e.g. from a booking / application. The
+   * caller must be the hosting's host.
+   */
+  initiateHostingChatWithGuest: HostingChat;
+  /**
    * Initiate (or refresh) the hosting verification row for a hosting.
    * Does not create a verification request — call
    * `requestHostingVerificationTier` to submit one with documents.
@@ -2548,6 +2555,12 @@ export type MutationsInitiateFinalizeBookingArgs = {
 
 
 export type MutationsInitiateHostingChatArgs = {
+  hostingId: Scalars['String']['input'];
+};
+
+
+export type MutationsInitiateHostingChatWithGuestArgs = {
+  guestUserId: Scalars['String']['input'];
   hostingId: Scalars['String']['input'];
 };
 
@@ -4265,14 +4278,14 @@ export type InitiateBookingApplicationMutationVariables = Exact<{
 }>;
 
 
-export type InitiateBookingApplicationMutation = { __typename?: 'Mutations', initiateBookingApplication: { __typename?: 'BookingApplicationResponse', message: string, data?: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, commencementDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, bookingAggrement?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes: GuestFormOccupancyType, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null } | null } };
+export type InitiateBookingApplicationMutation = { __typename?: 'Mutations', initiateBookingApplication: { __typename?: 'BookingApplicationResponse', message: string, data?: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, commencementDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, bookingAggrement?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes?: GuestFormOccupancyType | null, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null } | null } };
 
 export type UpdateBookingApplicationMutationVariables = Exact<{
   input: BookingApplicationUpdateInput;
 }>;
 
 
-export type UpdateBookingApplicationMutation = { __typename?: 'Mutations', updateBookingApplication: { __typename?: 'BookingApplicationResponse', message: string, data?: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, commencementDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, bookingAggrement?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes: GuestFormOccupancyType, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null } | null } };
+export type UpdateBookingApplicationMutation = { __typename?: 'Mutations', updateBookingApplication: { __typename?: 'BookingApplicationResponse', message: string, data?: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, commencementDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, bookingAggrement?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes?: GuestFormOccupancyType | null, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null } | null } };
 
 export type VerifyBookingPaymentMutationVariables = Exact<{
   verifyBookingPaymentId: Scalars['String']['input'];
@@ -4410,6 +4423,14 @@ export type InitiateHostingChatMutationVariables = Exact<{
 
 
 export type InitiateHostingChatMutation = { __typename?: 'Mutations', initiateHostingChat: { __typename?: 'HostingChat', id: string } };
+
+export type InitiateHostingChatWithGuestMutationVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+  guestUserId: Scalars['String']['input'];
+}>;
+
+
+export type InitiateHostingChatWithGuestMutation = { __typename?: 'Mutations', initiateHostingChatWithGuest: { __typename?: 'HostingChat', id: string } };
 
 export type CreateUpdateMessageMutationVariables = Exact<{
   input: HostingChatMessageInput;
@@ -4817,7 +4838,7 @@ export type BookingApplicationQueryVariables = Exact<{
 }>;
 
 
-export type BookingApplicationQuery = { __typename?: 'Query', bookingApplication: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, commencementDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } } }, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes: GuestFormOccupancyType, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null, bookingAggrement?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, booking?: { __typename?: 'Booking', id: string } | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null } } };
+export type BookingApplicationQuery = { __typename?: 'Query', bookingApplication: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, commencementDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } } }, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes?: GuestFormOccupancyType | null, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null, bookingAggrement?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, booking?: { __typename?: 'Booking', id: string } | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null } } };
 
 export type BookingsQueryVariables = Exact<{
   filter?: InputMaybe<BookingFilterInput>;
@@ -4907,7 +4928,7 @@ export type HostingVerificationTierQuery = { __typename?: 'Query', hostingVerifi
 export type PropertyTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type PropertyTypesQuery = { __typename?: 'Query', propertyTypes: Array<{ __typename?: 'PropertyTypeConfig', value: string, label: string, searchTerms: Array<string>, rooms: Array<string>, facilities: Array<string>, category?: string | null, icon?: string | null }> };
+export type PropertyTypesQuery = { __typename?: 'Query', propertyTypes: Array<{ __typename?: 'PropertyTypeConfig', value: string, label: string, searchTerms: Array<string>, rooms: Array<string>, facilities: Array<string>, category?: string | null, agreementUseClass?: string | null, icon?: string | null }> };
 
 export type AiHostingSearchPredictionsQueryVariables = Exact<{
   userInput: Scalars['String']['input'];
@@ -5946,6 +5967,17 @@ export const InitiateHostingChatDocument = gql`
 
 export function useInitiateHostingChatMutation() {
   return Urql.useMutation<InitiateHostingChatMutation, InitiateHostingChatMutationVariables>(InitiateHostingChatDocument);
+};
+export const InitiateHostingChatWithGuestDocument = gql`
+    mutation InitiateHostingChatWithGuest($hostingId: String!, $guestUserId: String!) {
+  initiateHostingChatWithGuest(hostingId: $hostingId, guestUserId: $guestUserId) {
+    id
+  }
+}
+    `;
+
+export function useInitiateHostingChatWithGuestMutation() {
+  return Urql.useMutation<InitiateHostingChatWithGuestMutation, InitiateHostingChatWithGuestMutationVariables>(InitiateHostingChatWithGuestDocument);
 };
 export const CreateUpdateMessageDocument = gql`
     mutation CreateUpdateMessage($input: HostingChatMessageInput!) {
@@ -7525,6 +7557,7 @@ export const PropertyTypesDocument = gql`
     rooms
     facilities
     category
+    agreementUseClass
     icon
   }
 }
