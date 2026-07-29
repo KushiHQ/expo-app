@@ -21,7 +21,6 @@ import { useUser } from '@/lib/hooks/user';
 import {
   BookingStatus,
   PaymentStatus,
-  TransactionStatus,
   useBookingQuery,
   useCancelBookingMutation,
   useFinalizeBookingMutation,
@@ -141,10 +140,15 @@ export default function UserBooking() {
     (booking?.paymentStatus === PaymentStatus.Pending ||
       booking?.paymentStatus === PaymentStatus.Failed);
 
+  // Finalizable once the booking is paid and not yet terminal. Gate on the
+  // booking's own paymentStatus (the canonical "paid" signal, same as
+  // isPaymentPending) — NOT transaction.status, which can still read non-Success
+  // for a beat after payment and would otherwise leave a dead footer (no
+  // Complete Payment, no Finalize/Cancel, no countdown) right after paying.
   const canFinalize =
     booking?.status !== BookingStatus.Completed &&
     booking?.status !== BookingStatus.Canceled &&
-    booking?.transaction?.status === TransactionStatus.Success;
+    booking?.paymentStatus === PaymentStatus.Paid;
 
   const total = Number(booking?.amount ?? 0) + Number(booking?.guestServiceCharge ?? 0);
 
