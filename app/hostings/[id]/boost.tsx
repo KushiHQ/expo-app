@@ -154,11 +154,29 @@ export default function BoostListing() {
                       <ThemedText type="semibold" style={{ fontSize: 15 }}>
                         {opt.label}
                       </ThemedText>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                         <ThemedText type="semibold" style={{ fontSize: 15, color: colors.primary }}>
                           ₦{Number(opt.price).toLocaleString()}
                         </ThemedText>
-                        {isSel ? <Check size={18} color={colors.primary} /> : null}
+                        {/* Circular selection indicator — matches SelectOption
+                            (m-select-input) so tier selection reads like the
+                            app's other pickers, not a bare floating checkmark. */}
+                        <View
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 12,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: isSel
+                              ? colors.primary
+                              : hexToRgba(colors.text, 0.08),
+                          }}
+                        >
+                          {isSel ? (
+                            <Check size={13} color={colors['primary-content']} strokeWidth={3} />
+                          ) : null}
+                        </View>
                       </View>
                     </View>
                     {opt.description ? (
