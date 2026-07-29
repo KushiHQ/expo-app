@@ -105,6 +105,7 @@ export const HOSTING_QUERY = gql`
         publishStatus
         isBookable
         bookingApplicationsCount
+        pendingBookingApplicationsCount
         createdAt
         lastUpdated
         coverImage {
