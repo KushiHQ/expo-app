@@ -1236,6 +1236,12 @@ export type Hosting = {
   parentId?: Maybe<Scalars['String']['output']>;
   paymentDetails?: Maybe<HostAccountDetails>;
   paymentInterval?: Maybe<PaymentInterval>;
+  /**
+   * Applications awaiting the host's review (status Submited) for this
+   * listing OR any of its child units — powers the "N pending" badge on the
+   * host's listing cards without opening the detail screen.
+   */
+  pendingBookingApplicationsCount: Scalars['Int']['output'];
   postalCode?: Maybe<Scalars['String']['output']>;
   price?: Maybe<Scalars['Decimal']['output']>;
   /** Lowest price among this plaza's available shops — the card's "from ₦X". */
@@ -5002,7 +5008,7 @@ export type HostListingsQueryVariables = Exact<{
 }>;
 
 
-export type HostListingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, childCount: number, title?: string | null, description?: string | null, state?: string | null, city?: string | null, listingType?: ListingType | null, managementType: ManagementType, publishStatus?: PublishStatus | null, bookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } } | null }> };
+export type HostListingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, childCount: number, title?: string | null, description?: string | null, state?: string | null, city?: string | null, listingType?: ListingType | null, managementType: ManagementType, publishStatus?: PublishStatus | null, bookingApplicationsCount: number, pendingBookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } } | null }> };
 
 export type RecommendedTenancyTemplateQueryVariables = Exact<{
   hostingId: Scalars['String']['input'];
@@ -8035,6 +8041,7 @@ export const HostListingsDocument = gql`
     managementType
     publishStatus
     bookingApplicationsCount
+    pendingBookingApplicationsCount
     createdAt
     lastUpdated
   }

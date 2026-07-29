@@ -43,6 +43,8 @@ const ListingCard: React.FC<Props> = ({ hosting, onDelete, onDuplicate }) => {
   };
 
   const isParent = hosting.kind === HostingKind.Parent;
+  // Applications awaiting the host's review — for a parent this spans its units.
+  const pendingApplications = hosting.pendingBookingApplicationsCount ?? 0;
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -87,21 +89,33 @@ const ListingCard: React.FC<Props> = ({ hosting, onDelete, onDuplicate }) => {
               priority="high"
             />
             <ImageScrim from="top" intensity={0.45} height="42%" />
-            <View
-              className="absolute left-3 top-3 flex-row items-center gap-1.5 rounded-full px-2.5 py-1"
-              style={{ backgroundColor: hexToRgba('#000000', 0.5) }}
-            >
-              <IconParkOutlineDot color={statusColor} size={9} />
-              <Text
-                style={{
-                  fontSize: 11,
-                  color: '#fff',
-                  fontFamily: Fonts.semibold,
-                  textTransform: 'capitalize',
-                }}
+            <View className="absolute left-3 top-3 gap-1.5">
+              <View
+                className="flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-1"
+                style={{ backgroundColor: hexToRgba('#000000', 0.5) }}
               >
-                {status}
-              </Text>
+                <IconParkOutlineDot color={statusColor} size={9} />
+                <Text
+                  style={{
+                    fontSize: 11,
+                    color: '#fff',
+                    fontFamily: Fonts.semibold,
+                    textTransform: 'capitalize',
+                  }}
+                >
+                  {status}
+                </Text>
+              </View>
+              {pendingApplications > 0 && (
+                <View
+                  className="flex-row items-center gap-1 self-start rounded-full px-2.5 py-1"
+                  style={{ backgroundColor: colors.accent }}
+                >
+                  <Text style={{ fontSize: 11, color: '#fff', fontFamily: Fonts.semibold }}>
+                    {pendingApplications} pending
+                  </Text>
+                </View>
+              )}
             </View>
             <Pressable
               onPress={() => {

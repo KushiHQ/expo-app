@@ -453,6 +453,7 @@ export const HOST_LISTINGS_QUERY = gql`
       managementType
       publishStatus
       bookingApplicationsCount
+      pendingBookingApplicationsCount
       createdAt
       lastUpdated
     }

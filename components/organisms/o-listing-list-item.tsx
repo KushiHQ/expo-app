@@ -41,6 +41,8 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete, onDuplicate }) =>
   };
 
   const isParent = hosting.kind === HostingKind.Parent;
+  // Applications awaiting the host's review — for a parent this spans its units.
+  const pendingApplications = hosting.pendingBookingApplicationsCount ?? 0;
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -153,6 +155,16 @@ const ListingListItem: React.FC<Props> = ({ hosting, onDelete, onDuplicate }) =>
                   {hosting.childCount} unit{hosting.childCount === 1 ? '' : 's'}
                 </Text>
               ) : null}
+              {pendingApplications > 0 && (
+                <View
+                  className="flex-row items-center gap-1 rounded-full px-2 py-0.5"
+                  style={{ backgroundColor: colors.accent }}
+                >
+                  <Text style={{ fontSize: 11, color: '#fff', fontFamily: Fonts.semibold }}>
+                    {pendingApplications} pending
+                  </Text>
+                </View>
+              )}
             </View>
             <ThemedText
               style={{
