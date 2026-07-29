@@ -54,7 +54,7 @@ import {
   User,
 } from 'lucide-react-native';
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, RefreshControl, View } from 'react-native';
 import FeedbackPromptModal from '@/components/molecules/m-feedback-prompt-modal';
 import { useFeedbackStore, canShowFeedback } from '@/lib/stores/feedback';
 import { TablerMessage2 } from '@/components/icons/i-message';
@@ -97,6 +97,16 @@ export default function UserBooking() {
     () => refetchBooking({ requestPolicy: 'network-only' }),
     [refetchBooking],
   );
+
+  // Pull-to-refresh.
+  const [refreshing, setRefreshing] = React.useState(false);
+  React.useEffect(() => {
+    if (!fetchingBooking) setRefreshing(false);
+  }, [fetchingBooking]);
+  const handleRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    refreshBooking();
+  }, [refreshBooking]);
   const [{ fetching: initiatingFinalize }, initiateFinalize] = useInitiateFinalizeBookingMutation();
   const [{ fetching: finalizing }, finanlizeBooking] = useFinalizeBookingMutation();
   const [{ fetching: initiatingCancel }, initiateCancel] = useInitiateCancelBookingMutation();
@@ -331,6 +341,7 @@ export default function UserBooking() {
         title={booking?.hosting?.title ?? 'My Booking'}
         footer={footer}
         withSupport={true}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
         {fetchingBooking && !booking ? (
           <View style={{ gap: 14, paddingTop: 8 }}>
