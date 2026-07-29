@@ -66,6 +66,21 @@ const BOOKING_STATUS_COLORS: Record<string, string> = {
   [BookingStatus.Canceled]: '#94A3B8',
 };
 
+// Human "time left" until a paid booking auto-finalizes (escrow releases to the
+// host). Null when there's no deadline (unpaid, or paid before the feature).
+function autoFinalizeNote(iso?: string | null): string | null {
+  if (!iso) return null;
+  const ms = new Date(iso).getTime() - Date.now();
+  if (ms <= 0) return 'Auto-finalizes shortly if you don’t confirm.';
+  const days = Math.floor(ms / 86_400_000);
+  const hours = Math.floor((ms % 86_400_000) / 3_600_000);
+  if (days >= 1)
+    return `Auto-finalizes in ${days} day${days === 1 ? '' : 's'} — funds release to the host then, unless you finalize sooner.`;
+  if (hours >= 1)
+    return `Auto-finalizes in ${hours} hour${hours === 1 ? '' : 's'} — funds release to the host then, unless you finalize sooner.`;
+  return 'Auto-finalizes within the hour — funds release to the host then, unless you finalize sooner.';
+}
+
 export default function UserBooking() {
   const colors = useThemeColors();
   const { id } = useLocalSearchParams();
@@ -270,7 +285,8 @@ export default function UserBooking() {
             style={{ marginTop: 2 }}
           />
           <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.5), flex: 1 }}>
-            Bookings will be automatically finalized within 2 weeks of payment.
+            {autoFinalizeNote(booking?.autoFinalizeAt) ??
+              'Bookings finalize automatically about 2 weeks after payment.'}
           </ThemedText>
         </View>
         <View className="flex-row gap-4">
