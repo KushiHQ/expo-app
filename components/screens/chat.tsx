@@ -301,6 +301,20 @@ const ChatScreen: React.FC<Props> = ({ variant = 'guest' }) => {
     refresh();
   };
 
+  // Live re-ordering. The server sorts by lastUpdated desc, but that order is
+  // baked into the cached list at fetch time — an incoming message updates the
+  // entity's lastUpdated without moving its row. Sorting here re-applies the
+  // server's own ordering to the data we already hold, so a chat jumps to the
+  // top the moment its subscription event lands: no refetch, no paging reset.
+  const orderedChats = React.useMemo(
+    () =>
+      [...(userChats ?? [])].sort(
+        (a: any, b: any) =>
+          new Date(b?.lastUpdated ?? 0).getTime() - new Date(a?.lastUpdated ?? 0).getTime(),
+      ),
+    [userChats],
+  );
+
   const keyExtractor = React.useCallback((item: any) => item.id, []);
   const renderItem = React.useCallback(
     ({ item }: { item: any }) => <ChatListItem chat={item} />,
@@ -310,7 +324,7 @@ const ChatScreen: React.FC<Props> = ({ variant = 'guest' }) => {
   return (
     <DetailsLayout title="Messages" withProfile variant={variant} scrollable={false}>
       <FlatList
-        data={userChats}
+        data={orderedChats}
         keyExtractor={keyExtractor}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
         renderItem={renderItem}
