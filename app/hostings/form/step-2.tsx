@@ -124,10 +124,16 @@ export default function NewHostingStep2() {
 
   const allRoomTypesUsed = rooms.length >= 20;
 
-  // Quality floor: require at least 5 photos across all spaces before the host
-  // can continue, and surface progress so the requirement is clear.
-  const MIN_PHOTOS = 5;
-  const totalPhotos = rooms.reduce((sum, room) => sum + (room.images?.length ?? 0), 0);
+  // Quality floor: require a few photos before the host can continue, and
+  // surface progress so the requirement is clear. Posters (land development
+  // renders) count toward the total — they're real listing imagery. This can't
+  // let a land listing publish with no actual site photo: the server's land
+  // publish gate separately requires a geotagged room image on the listing or
+  // its parent.
+  const MIN_PHOTOS = 3;
+  const totalPhotos =
+    rooms.reduce((sum, room) => sum + (room.images?.length ?? 0), 0) +
+    (hosting?.hostingImages?.length ?? 0);
   const hasEnoughPhotos = totalPhotos >= MIN_PHOTOS;
 
   const [refreshing, setRefreshing] = React.useState(false);
@@ -325,7 +331,9 @@ export default function NewHostingStep2() {
             >
               {hasEnoughPhotos
                 ? `Great — ${totalPhotos} photos added.`
-                : `Add at least ${MIN_PHOTOS} photos across your spaces to continue (${totalPhotos}/${MIN_PHOTOS}). Quality photos help your listing stand out.`}
+                : `Add at least ${MIN_PHOTOS} photos ${
+                    isLand(propertyType) ? 'of the site (posters count too)' : 'across your spaces'
+                  } to continue (${totalPhotos}/${MIN_PHOTOS}). Quality photos help your listing stand out.`}
             </ThemedText>
           </View>
         </View>
