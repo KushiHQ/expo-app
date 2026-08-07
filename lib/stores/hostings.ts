@@ -216,8 +216,14 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>((set, get
       images,
       video,
       bookingApplicationsCount,
+      hostingImages,
       ...rest
     } = hosting;
+    // NOTE: `rest` is sent verbatim as HostingInput, so EVERY read-only field
+    // selected by HOSTING_QUERY must be destructured away above. Adding a field
+    // to that query without listing it here makes the server reject the whole
+    // mutation with `unknown field "<name>" of type "HostingInput"` — which is
+    // how `hostingImages` (posters) broke saving on the location step.
 
     const {
       __typename: __vTypeName,
