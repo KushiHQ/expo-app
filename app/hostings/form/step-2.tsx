@@ -156,7 +156,13 @@ export default function NewHostingStep2() {
         }
         footer={
           <HostingStepper
-            disabled={!rooms.length || !hasEnoughPhotos}
+            // `hasEnoughPhotos` is the single gate — it already counts room
+            // photos AND posters. A separate `!rooms.length` check contradicted
+            // it: a land listing with 3 posters and no spaces read "Great — 3
+            // photos added" while Continue stayed disabled. It's also redundant
+            // elsewhere, since only land has posters, so any non-land listing
+            // that clears the floor necessarily has at least one space.
+            disabled={!hasEnoughPhotos}
             step={2}
             onPress={() => {
               router.push(`/hostings/form/step-2-video?id=${hosting?.id}`);
