@@ -7,7 +7,12 @@ import { Fonts } from '@/lib/constants/theme';
 import { useDebounce } from '@/lib/hooks/use-debounce';
 import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useUserChatsQuery } from '@/lib/services/graphql/generated';
+import {
+  useUserChatsQuery,
+  type UserChatUpdatedSubscription,
+} from '@/lib/services/graphql/generated';
+import { USER_CHAT_UPDATED } from '@/lib/services/graphql/requests/subscriptions/hosting_chat';
+import { useSubscription } from 'urql';
 import { hexToRgba } from '@/lib/utils/colors';
 import { AUDIO_EXTENSIONS } from '@/lib/utils/file';
 import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
@@ -236,11 +241,43 @@ const ChatScreen: React.FC<Props> = ({ variant = 'guest' }) => {
     initialVariables,
   });
 
+  // Refetch on focus so returning from a conversation reflects reality.
+  // Held in a ref, NOT the dep array: `refresh` is rebound whenever the urql
+  // request changes (paging/search), so `[]` captured a stale executeQuery that
+  // got discarded on the next render — the refetch silently did nothing, which
+  // is why only pull-to-refresh worked. Depending on `refresh` directly would
+  // instead re-fire the effect after each loadMore and reset paging to page 1.
+  const refreshRef = React.useRef(refresh);
+  refreshRef.current = refresh;
+
   useFocusEffect(
     React.useCallback(() => {
-      refresh();
+      refreshRef.current();
     }, []),
   );
+
+  // Live list. `userChatUpdated` fires whenever a message lands in any of the
+  // user's chats; because the subscription selects the same fields as the list
+  // query, graphcache writes them straight onto the HostingChat entity — the
+  // unread badge and last message update in place with no refetch.
+  //
+  // Two things the entity update can't do on its own: surface a brand-new chat
+  // that isn't in the list yet, and re-sort by lastUpdated. Refetch for those,
+  // but only when the chat is genuinely unknown, so an ordinary incoming
+  // message stays refetch-free.
+  const knownChatIds = React.useRef<Set<string>>(new Set());
+  React.useEffect(() => {
+    knownChatIds.current = new Set((userChats ?? []).map((c: any) => c?.id).filter(Boolean));
+  }, [userChats]);
+
+  useSubscription<UserChatUpdatedSubscription>({ query: USER_CHAT_UPDATED }, (_prev, data) => {
+    const chatId = data?.userChatUpdated?.id;
+    if (chatId && !knownChatIds.current.has(chatId)) {
+      knownChatIds.current.add(chatId);
+      refreshRef.current();
+    }
+    return data;
+  });
 
   React.useEffect(() => {
     if (debouncedSearchText) {
@@ -264,6 +301,20 @@ const ChatScreen: React.FC<Props> = ({ variant = 'guest' }) => {
     refresh();
   };
 
+  // Live re-ordering. The server sorts by lastUpdated desc, but that order is
+  // baked into the cached list at fetch time — an incoming message updates the
+  // entity's lastUpdated without moving its row. Sorting here re-applies the
+  // server's own ordering to the data we already hold, so a chat jumps to the
+  // top the moment its subscription event lands: no refetch, no paging reset.
+  const orderedChats = React.useMemo(
+    () =>
+      [...(userChats ?? [])].sort(
+        (a: any, b: any) =>
+          new Date(b?.lastUpdated ?? 0).getTime() - new Date(a?.lastUpdated ?? 0).getTime(),
+      ),
+    [userChats],
+  );
+
   const keyExtractor = React.useCallback((item: any) => item.id, []);
   const renderItem = React.useCallback(
     ({ item }: { item: any }) => <ChatListItem chat={item} />,
@@ -273,7 +324,7 @@ const ChatScreen: React.FC<Props> = ({ variant = 'guest' }) => {
   return (
     <DetailsLayout title="Messages" withProfile variant={variant} scrollable={false}>
       <FlatList
-        data={userChats}
+        data={orderedChats}
         keyExtractor={keyExtractor}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
         renderItem={renderItem}

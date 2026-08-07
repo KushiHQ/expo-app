@@ -1,4 +1,5 @@
 import { cacheExchange, type Cache } from '@urql/exchange-graphcache';
+import { gql } from 'urql';
 
 /**
  * Normalized cache (replaces urql's coarse document cache — see
@@ -139,6 +140,30 @@ const invalidateHosting = (_r: unknown, _a: unknown, cache: Cache) =>
 const invalidateSaved = (_r: unknown, _a: unknown, cache: Cache) =>
   invalidateQueries(cache, [...SAVED_QUERIES, ...HOSTING_QUERIES]);
 
+/**
+ * Zero a chat's unread badge the moment the conversation clears it.
+ *
+ * `clearChatUrnreadMessages` returns a bare MessageResponse (no id, and
+ * deliberately non-normalized), so graphcache has nothing to reconcile and the
+ * chat list keeps rendering the stale `unreadMessageCount`. Write it directly
+ * onto the HostingChat entity so every list showing that row un-highlights
+ * immediately — no refetch, no waiting for a focus/pull refresh.
+ */
+const CHAT_UNREAD_FRAGMENT = gql`
+  fragment _ChatUnread on HostingChat {
+    id
+    unreadMessageCount
+  }
+`;
+
+const clearChatUnread = (_r: unknown, args: { chatId?: string }, cache: Cache) => {
+  if (!args?.chatId) return;
+  cache.writeFragment(CHAT_UNREAD_FRAGMENT, {
+    id: args.chatId,
+    unreadMessageCount: 0,
+  });
+};
+
 export const graphcacheExchange = cacheExchange({
   keys,
   updates: {
@@ -153,9 +178,15 @@ export const graphcacheExchange = cacheExchange({
       deleteHostingRoom: invalidateHosting,
       reorderHostingRooms: invalidateHosting,
       setHostingVideo: invalidateHosting,
+      // Hosting-level images (land posters) + the host-chosen cover.
+      uploadHostingImage: invalidateHosting,
+      deleteHostingImage: invalidateHosting,
+      setHostingCover: invalidateHosting,
       // New / removed listings → refetch the listing collections.
       duplicateHosting: invalidateHosting,
       deleteHosting: invalidateHosting,
+      // Reading a chat clears its unread badge across every cached list.
+      clearChatUrnreadMessages: clearChatUnread,
       // Saved state also flips the `saved` flag shown on hosting cards.
       createUpdateSavedHosting: invalidateSaved,
       deleteSavedHosting: invalidateSaved,
