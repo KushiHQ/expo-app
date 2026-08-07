@@ -7,7 +7,12 @@ import { Fonts } from '@/lib/constants/theme';
 import { useDebounce } from '@/lib/hooks/use-debounce';
 import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useUserChatsQuery } from '@/lib/services/graphql/generated';
+import {
+  useUserChatsQuery,
+  type UserChatUpdatedSubscription,
+} from '@/lib/services/graphql/generated';
+import { USER_CHAT_UPDATED } from '@/lib/services/graphql/requests/subscriptions/hosting_chat';
+import { useSubscription } from 'urql';
 import { hexToRgba } from '@/lib/utils/colors';
 import { AUDIO_EXTENSIONS } from '@/lib/utils/file';
 import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
@@ -250,6 +255,29 @@ const ChatScreen: React.FC<Props> = ({ variant = 'guest' }) => {
       refreshRef.current();
     }, []),
   );
+
+  // Live list. `userChatUpdated` fires whenever a message lands in any of the
+  // user's chats; because the subscription selects the same fields as the list
+  // query, graphcache writes them straight onto the HostingChat entity — the
+  // unread badge and last message update in place with no refetch.
+  //
+  // Two things the entity update can't do on its own: surface a brand-new chat
+  // that isn't in the list yet, and re-sort by lastUpdated. Refetch for those,
+  // but only when the chat is genuinely unknown, so an ordinary incoming
+  // message stays refetch-free.
+  const knownChatIds = React.useRef<Set<string>>(new Set());
+  React.useEffect(() => {
+    knownChatIds.current = new Set((userChats ?? []).map((c: any) => c?.id).filter(Boolean));
+  }, [userChats]);
+
+  useSubscription<UserChatUpdatedSubscription>({ query: USER_CHAT_UPDATED }, (_prev, data) => {
+    const chatId = data?.userChatUpdated?.id;
+    if (chatId && !knownChatIds.current.has(chatId)) {
+      knownChatIds.current.add(chatId);
+      refreshRef.current();
+    }
+    return data;
+  });
 
   React.useEffect(() => {
     if (debouncedSearchText) {

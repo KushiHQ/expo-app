@@ -3826,6 +3826,19 @@ export type Subscriptions = {
   latestHostingChatMessage: HostingChatMessage;
   onlineUser: OnlineUser;
   supportChatMessageAdded: SupportChatMessage;
+  /**
+   * Live updates for the caller's chat LIST.
+   *
+   * Emits the affected chat whenever a message lands in ANY chat the caller
+   * participates in, so the list can update its unread badge, last message
+   * and ordering without polling — the conversation screen has
+   * `latest_hosting_chat_message`, this is its list-level counterpart.
+   *
+   * The yielded `HostingChat` resolves its per-viewer fields
+   * (`unreadMessageCount`, `lastMessage`, `recipientUser`) against the
+   * subscriber's own auth context, so each subscriber sees their own counts.
+   */
+  userChatUpdated: HostingChat;
 };
 
 
@@ -5146,6 +5159,11 @@ export type UserPhoneNumersQueryVariables = Exact<{
 
 
 export type UserPhoneNumersQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, phoneNumbers: Array<{ __typename?: 'PhoneNumber', id: string, number: string, verificationStatus: PhoneNumberVerificationStatus, createdAt: string, lastUpdated: string }> } };
+
+export type UserChatUpdatedSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type UserChatUpdatedSubscription = { __typename?: 'Subscriptions', userChatUpdated: { __typename?: 'HostingChat', id: string, lastUpdated: string, unreadMessageCount: number, lastMessage?: { __typename?: 'HostingChatMessage', id: string, text: string, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null } }> } | null, recipientUser: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null, image?: { __typename?: 'Asset', publicUrl: string } | null }, onlineUser: { __typename?: 'OnlineUser', id: string, online: boolean } }, hosting: { __typename?: 'Hosting', id: string, title?: string | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null } } };
 
 export type LatestHostingChatMessageSubscriptionVariables = Exact<{
   chatId: Scalars['String']['input'];
@@ -8605,6 +8623,57 @@ export const UserPhoneNumersDocument = gql`
 
 export function useUserPhoneNumersQuery(options?: Omit<Urql.UseQueryArgs<UserPhoneNumersQueryVariables>, 'query'>) {
   return Urql.useQuery<UserPhoneNumersQuery, UserPhoneNumersQueryVariables>({ query: UserPhoneNumersDocument, ...options });
+};
+export const UserChatUpdatedDocument = gql`
+    subscription UserChatUpdated {
+  userChatUpdated {
+    id
+    lastUpdated
+    unreadMessageCount
+    lastMessage {
+      id
+      text
+      assets {
+        id
+        asset {
+          id
+          publicUrl
+          contentType
+        }
+      }
+    }
+    recipientUser {
+      id
+      profile {
+        fullName
+        id
+        gender
+        image {
+          publicUrl
+        }
+      }
+      onlineUser {
+        id
+        online
+      }
+    }
+    hosting {
+      id
+      title
+      coverImage {
+        id
+        asset {
+          id
+          publicUrl
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useUserChatUpdatedSubscription<TData = UserChatUpdatedSubscription>(options?: Omit<Urql.UseSubscriptionArgs<UserChatUpdatedSubscriptionVariables>, 'query'>, handler?: Urql.SubscriptionHandler<UserChatUpdatedSubscription, TData>) {
+  return Urql.useSubscription<UserChatUpdatedSubscription, TData, UserChatUpdatedSubscriptionVariables>({ query: UserChatUpdatedDocument, ...options }, handler);
 };
 export const LatestHostingChatMessageDocument = gql`
     subscription LatestHostingChatMessage($chatId: String!) {
