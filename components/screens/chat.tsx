@@ -236,9 +236,18 @@ const ChatScreen: React.FC<Props> = ({ variant = 'guest' }) => {
     initialVariables,
   });
 
+  // Refetch on focus so returning from a conversation reflects reality.
+  // Held in a ref, NOT the dep array: `refresh` is rebound whenever the urql
+  // request changes (paging/search), so `[]` captured a stale executeQuery that
+  // got discarded on the next render — the refetch silently did nothing, which
+  // is why only pull-to-refresh worked. Depending on `refresh` directly would
+  // instead re-fire the effect after each loadMore and reset paging to page 1.
+  const refreshRef = React.useRef(refresh);
+  refreshRef.current = refresh;
+
   useFocusEffect(
     React.useCallback(() => {
-      refresh();
+      refreshRef.current();
     }, []),
   );
 
