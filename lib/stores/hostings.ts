@@ -189,8 +189,16 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>((set, get
     // No-op when the incoming hosting is unchanged — initiate() deep-spreads the
     // whole hosting and runs on every refocus, so guarding it avoids needless
     // state churn / re-renders (WS-12).
+    //
+    // Guard on OBJECT IDENTITY, not `lastUpdated`. urql hands every mounted
+    // useHostingForm the same object, which is the churn WS-12 targeted — while
+    // `lastUpdated` is the hosting ROW's timestamp and says nothing about
+    // relation-derived fields. Uploading a walkthrough (or a poster, room photo,
+    // verification…) doesn't touch the row, and inheriting a PARENT's video
+    // never could — so the old guard kept serving a stale copy whose `video` was
+    // null, which is why the walkthrough step read "not done" on a child.
     const prev = get().hosting;
-    if (prev && prev.id && prev.id === hosting.id && prev.lastUpdated === hosting.lastUpdated) {
+    if (prev === hosting) {
       return;
     }
 

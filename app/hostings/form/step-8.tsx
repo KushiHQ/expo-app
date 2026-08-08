@@ -90,9 +90,9 @@ export default function NewHostingStep8() {
 
   function editStep(step: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 9): Href {
     if (step === 9) {
-      return `/hostings/form/verification/overview?id=${hosting?.id}` as Href;
+      return `/hostings/form/verification/overview?id=${id}` as Href;
     }
-    return `/hostings/form/step-${step}?id=${hosting?.id}` as Href;
+    return `/hostings/form/step-${step}?id=${id}` as Href;
   }
 
   const totalPhotos = hosting?.rooms?.reduce((sum, r) => sum + r.images.length, 0) ?? 0;

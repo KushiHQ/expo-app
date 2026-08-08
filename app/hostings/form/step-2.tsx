@@ -165,7 +165,10 @@ export default function NewHostingStep2() {
             disabled={!hasEnoughPhotos}
             step={2}
             onPress={() => {
-              router.push(`/hostings/form/step-2-video?id=${hosting?.id}`);
+              // Route id, not the shared store's — the store can legitimately
+              // hold another listing, and carrying it forward walked the rest
+              // of the wizard (and the publish step) onto the wrong hosting.
+              router.push(`/hostings/form/step-2-video?id=${id}`);
             }}
           />
         }

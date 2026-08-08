@@ -35,7 +35,7 @@ export default function NewHostingStep6() {
 
   React.useEffect(() => {
     if (hosting && !showTenancySteps(hosting.listingType, hosting.propertyType, hosting.managementType)) {
-      router.replace(`/hostings/form/step-8?id=${hosting.id}`);
+      router.replace(`/hostings/form/step-8?id=${id}`);
     }
   }, [hosting]);
 
@@ -45,7 +45,7 @@ export default function NewHostingStep6() {
         handleError(res.error);
       }
       if (res.data?.initiateHostingVerification) {
-        router.push(`/hostings/form/step-7?id=${hosting?.id}`);
+        router.push(`/hostings/form/step-7?id=${id}`);
         toast.show({
           type: 'success',
           text1: 'Success',

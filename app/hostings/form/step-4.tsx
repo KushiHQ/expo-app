@@ -44,7 +44,7 @@ export default function NewHostingStep4() {
 
   React.useEffect(() => {
     if (hosting && !showAmenitiesStep(hosting.propertyType)) {
-      router.replace(`/hostings/form/step-5?id=${hosting.id}`);
+      router.replace(`/hostings/form/step-5?id=${id}`);
     }
   }, [hosting]);
 
