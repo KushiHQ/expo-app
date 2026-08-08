@@ -21,6 +21,9 @@ import {
 } from '@/lib/services/graphql/requests/mutations/hostings';
 import { toast } from '@/lib/hooks/use-toast';
 import { handleError } from '@/lib/utils/error';
+import { usePhotoGalleryScreen } from '@/lib/hooks/camera';
+import { usePathname } from 'expo-router';
+import { cast } from '@/lib/types/utils';
 
 const MAX_POSTERS = 5;
 
@@ -45,6 +48,8 @@ const HostingPosters: React.FC<Props> = ({ hostingId, posters, coverAssetId, onC
   const [busyId, setBusyId] = React.useState<string | null>(null);
   const [, deletePoster] = useDeleteHostingImageMutation();
   const [, setCover] = useSetHostingCoverMutation();
+  const { redirect: openGallery } = usePhotoGalleryScreen();
+  const pathname = usePathname();
 
   const atLimit = posters.length >= MAX_POSTERS;
 
@@ -116,11 +121,27 @@ const HostingPosters: React.FC<Props> = ({ hostingId, posters, coverAssetId, onC
                 boxShadow: SURFACE.shadow,
               }}
             >
-              <Image
-                source={{ uri: p.asset.publicUrl }}
+              {/* Tapping opens the same fullscreen swipe gallery as room
+                  photos. View-only: posters are added/removed with the controls
+                  on this tile, not edited in place like geo-captured photos. */}
+              <Pressable
+                onPress={() =>
+                  openGallery({
+                    images: posters.map((x) => x.asset.publicUrl),
+                    activeIndex: posters.findIndex((x) => x.id === p.id),
+                    redirect: cast(pathname),
+                    viewOnly: true,
+                    push: true,
+                  })
+                }
                 style={{ width: '100%', height: '100%' }}
-                contentFit="cover"
-              />
+              >
+                <Image
+                  source={{ uri: p.asset.publicUrl }}
+                  style={{ width: '100%', height: '100%' }}
+                  contentFit="cover"
+                />
+              </Pressable>
               {busy && (
                 <View
                   style={{
