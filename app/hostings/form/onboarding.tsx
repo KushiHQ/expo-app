@@ -127,12 +127,15 @@ export default function HostingOnboarding() {
         actions[i0].disabled = false;
       }
 
-      // Step 1: Photos
+      // Step 1: Photos — posters count as listing imagery too, mirroring the
+      // photo step's own gate (step-2). Without this a land listing with only
+      // posters read "not done" and, because an unfilled required step blocks
+      // the ones after it, greyed out the whole rest of the wizard.
       const i1 = idx(1);
       if (i1 >= 0) {
-        actions[i1].filled = !!hosting.rooms?.some(
-          (room) => room?.images && room.images.length > 0,
-        );
+        actions[i1].filled =
+          !!hosting.rooms?.some((room) => room?.images && room.images.length > 0) ||
+          !!hosting.hostingImages?.length;
       }
 
       // Step 2: Video Walkthrough — optional: reflect whether a video exists,
