@@ -105,14 +105,14 @@ export default function HostingOnboarding() {
         filled: false,
         disabled: true,
         link: isLast
-          ? `/hostings/form/verification/overview?id=${hosting?.id}`
+          ? `/hostings/form/verification/overview?id=${id}`
           : `/hostings/form/${
               originalIndex === 2
                 ? 'step-2-video'
                 : originalIndex < 2
                   ? `step-${originalIndex + 1}`
                   : `step-${originalIndex}`
-            }?id=${hosting?.id}`,
+            }?id=${id}`,
       };
     });
 
