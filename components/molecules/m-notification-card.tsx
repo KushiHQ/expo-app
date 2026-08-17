@@ -64,6 +64,10 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
     if (!id) return null;
 
     if (subjectKey === 'booking') return `/bookings/${id}`;
+    // Guest-side route. A host can receive this same subject ("someone applied
+    // to your listing"), and the notification carries no side hint — so that
+    // screen redirects owners to the host review screen once it knows who's
+    // looking. See app/users/booking-applications/[id].tsx.
     if (subjectKey === 'bookingapplication') return `/users/booking-applications/${id}`;
     if (subjectKey === 'hosting') return `/hostings/${id}`;
     if (subjectKey === 'chat') return `/chats/${id}/`;

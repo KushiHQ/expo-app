@@ -141,6 +141,12 @@ export const BOOKING_APPLICATION = gql`
         city
         country
         state
+        host {
+          id
+          user {
+            id
+          }
+        }
         coverImage {
           id
           asset {

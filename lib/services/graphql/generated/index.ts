@@ -1205,9 +1205,15 @@ export type Hosting = {
   hostingImages: Array<HostingImage>;
   id: Scalars['String']['output'];
   /**
-   * Top images across all of the hosting's rooms, ranked by `sequence`
-   * (exterior/living-room first by default; cover leads). Pass `limit: 4`
-   * for the hosting-list carousel; omit for the full set.
+   * Display imagery for the listing, ranked by `sequence` (exterior/living
+   * room first by default; cover leads). Pass `limit: 4` for the
+   * hosting-list carousel; omit for the full set.
+   *
+   * Room photos lead, then hosting-level images (land posters) fill in — a
+   * land plot's imagery is often ONLY posters, and without them every card,
+   * carousel and listing preview rendered blank. This is display-only and
+   * deliberately separate from `images_count` / the land publish gate, which
+   * still count geo-captured room photos alone.
    */
   images: Array<HostingRoomImage>;
   imagesCount: Scalars['Int']['output'];
@@ -4863,7 +4869,7 @@ export type BookingApplicationQueryVariables = Exact<{
 }>;
 
 
-export type BookingApplicationQuery = { __typename?: 'Query', bookingApplication: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, commencementDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } } }, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes?: GuestFormOccupancyType | null, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null, bookingAggrement?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, booking?: { __typename?: 'Booking', id: string } | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null } } };
+export type BookingApplicationQuery = { __typename?: 'Query', bookingApplication: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, commencementDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } } }, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes?: GuestFormOccupancyType | null, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null, bookingAggrement?: { __typename?: 'TenancyTemplate', sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, booking?: { __typename?: 'Booking', id: string } | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, host: { __typename?: 'Host', id: string, user: { __typename?: 'User', id: string } }, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null } } };
 
 export type BookingsQueryVariables = Exact<{
   filter?: InputMaybe<BookingFilterInput>;
@@ -7147,6 +7153,12 @@ export const BookingApplicationDocument = gql`
       city
       country
       state
+      host {
+        id
+        user {
+          id
+        }
+      }
       coverImage {
         id
         asset {

@@ -25,6 +25,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { hexToRgba } from '@/lib/utils/colors';
 import { toTitleCase } from '@/lib/utils/text';
 import { handleError } from '@/lib/utils/error';
+import { useUser } from '@/lib/hooks/user';
 import { TablerMessage2 } from '@/components/icons/i-message';
 import { Briefcase, Building2, CalendarDays, MapPin, ShieldCheck, User } from 'lucide-react-native';
 import React from 'react';
@@ -44,6 +45,22 @@ export default function BookingApplicationDetails() {
   const [{ fetching: chatInitiating }, initiateChat] = useInitiateHostingChatMutation();
 
   const app = data?.bookingApplication;
+
+  // This is the GUEST's view of an application — it offers "Message host" and
+  // "Cancel Application", neither of which makes sense for the host of the
+  // listing. But every entry point lands here: notification taps and push
+  // deep-links both route by subject alone (m-notification-card.tsx), with no
+  // way to know which side of the application the recipient is on. So when the
+  // viewer turns out to own the listing, hand them to the host's review screen
+  // (which has Accept/Reject and "Message guest") instead of showing them a
+  // screen written for the other party.
+  const { user } = useUser();
+  const isHost = !!app?.hosting?.host?.user?.id && app.hosting.host.user.id === user.user?.id;
+
+  React.useEffect(() => {
+    if (!isHost || !app?.hosting?.id) return;
+    router.replace(`/hostings/${app.hosting.id}/booking-applications/${app.id}`);
+  }, [isHost, app?.hosting?.id, app?.id, router]);
 
   const handleMessageHost = () => {
     const hostingId = app?.hosting?.id;
@@ -88,33 +105,38 @@ export default function BookingApplicationDetails() {
       <DetailsLayout
         title="Application Details"
         footer={
-          <View className="flex-row gap-4 p-4 pb-8" style={{ backgroundColor: colors.background }}>
-            {app?.booking?.id && (
-              <Button
-                type="primary"
-                className="flex-1"
-                onPress={() => router.push(`/bookings/${app.booking?.id}`)}
-              >
-                <ThemedText content="primary">View Booking</ThemedText>
-              </Button>
-            )}
-            {canCancel && (
-              <Button
-                className="flex-1"
-                variant="outline"
-                type="error"
-                style={{ borderColor: hexToRgba(colors.error, 0.6) }}
-                onPress={() => setCancelOpen(true)}
-              >
-                <ThemedText style={{ color: hexToRgba(colors.error, 0.9) }}>
-                  Cancel Application
-                </ThemedText>
-              </Button>
-            )}
-          </View>
+          isHost ? undefined : (
+            <View
+              className="flex-row gap-4 p-4 pb-8"
+              style={{ backgroundColor: colors.background }}
+            >
+              {app?.booking?.id && (
+                <Button
+                  type="primary"
+                  className="flex-1"
+                  onPress={() => router.push(`/bookings/${app.booking?.id}`)}
+                >
+                  <ThemedText content="primary">View Booking</ThemedText>
+                </Button>
+              )}
+              {canCancel && (
+                <Button
+                  className="flex-1"
+                  variant="outline"
+                  type="error"
+                  style={{ borderColor: hexToRgba(colors.error, 0.6) }}
+                  onPress={() => setCancelOpen(true)}
+                >
+                  <ThemedText style={{ color: hexToRgba(colors.error, 0.9) }}>
+                    Cancel Application
+                  </ThemedText>
+                </Button>
+              )}
+            </View>
+          )
         }
       >
-        {fetching ? (
+        {fetching || isHost ? (
           <View style={{ gap: 14, paddingTop: 8 }}>
             <Skeleton style={{ height: 160, borderRadius: 16 }} />
             <Skeleton style={{ height: 130, borderRadius: 16 }} />
