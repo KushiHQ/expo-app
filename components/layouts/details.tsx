@@ -414,7 +414,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
                   <Pressable
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      router.push(variant === 'guest' ? '/guest/profile' : '/host/profile');
+                      router.push(variant === 'guest' ? '/you' : '/host/you');
                     }}
                     className="h-10 w-10 overflow-hidden rounded-xl border"
                     style={{

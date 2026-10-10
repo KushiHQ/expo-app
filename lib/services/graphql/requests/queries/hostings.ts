@@ -448,6 +448,9 @@ export const HOST_LISTINGS_QUERY = gql`
         }
       }
       title
+      price
+      priceFrom
+      paymentInterval
       description
       state
       city

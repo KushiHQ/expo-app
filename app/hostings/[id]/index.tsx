@@ -460,11 +460,14 @@ function Detail({ h }: { h: Listing }) {
 			{/* Price bar */}
 			{!isOwner ? (
 				<View style={[s.bar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-					<Pressable onPress={() => mode === 'book' && setQuoteOpen(true)} style={{ flex: 1 }}>
-						<KText v="xs">{mode === 'units' && h.priceFrom ? 'Units from' : h.listingType === 'SALE' ? 'Asking price' : 'Rent'}</KText>
-						<KText style={{ fontFamily: font.display, fontSize: 19, color: color.fg, letterSpacing: -0.6 }}>
+					<Pressable onPress={() => mode === 'book' && setQuoteOpen(true)} style={{ flex: 1, minWidth: 0 }}>
+						<KText style={{ fontFamily: font.display, fontSize: 18, color: color.fg, letterSpacing: -0.6 }} numberOfLines={1} adjustsFontSizeToFit>
 							{naira(mode === 'units' && h.priceFrom ? h.priceFrom : h.price)}
-							{h.listingType !== 'SALE' ? <KText v="small"> {perInterval(interval)}</KText> : null}
+						</KText>
+						<KText v="xs" numberOfLines={1}>
+							{mode === 'units' && h.priceFrom ? 'units from · ' : ''}
+							{h.listingType === 'SALE' ? 'asking price' : perInterval(interval).replace('/ ', 'per ')}
+							{mode === 'book' ? ' · see total' : ''}
 						</KText>
 					</Pressable>
 					<Button title={cta.title} onPress={cta.onPress} loading={opening && mode !== 'book'} testID="listing-cta" />

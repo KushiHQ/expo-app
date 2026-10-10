@@ -255,7 +255,7 @@ export default function UserBookings() {
                         <EmptyList
                           message="No bookings found"
                           buttonTitle="Explore Hostings"
-                          onButtonPress={() => router.replace('/guest/home')}
+                          onButtonPress={() => router.replace('/')}
                         />
                       </View>
                     ) : null
@@ -298,7 +298,7 @@ export default function UserBookings() {
                         <EmptyList
                           message="No applications found"
                           buttonTitle="Explore Hostings"
-                          onButtonPress={() => router.replace('/guest/home')}
+                          onButtonPress={() => router.replace('/')}
                         />
                       </View>
                     ) : null

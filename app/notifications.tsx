@@ -26,7 +26,7 @@ function target(n: N): Href | null {
 		case NotificationSubject.Chat:
 			return `/chats/${d.id}`;
 		case NotificationSubject.BookingApplication:
-			return host ? `/users/booking-applications/${d.id}` : `/trips/${d.id}`;
+			return host ? `/applications/${d.id}` : `/trips/${d.id}`;
 		case NotificationSubject.Booking:
 			return host ? '/host' : `/trips/booking/${d.id}`;
 		case NotificationSubject.Hosting:

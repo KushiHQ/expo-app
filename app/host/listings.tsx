@@ -1,197 +1,62 @@
-import SearchInput from '@/components/atoms/a-search-input';
-import Skeleton from '@/components/atoms/a-skeleton';
-import ThemedText from '@/components/atoms/a-themed-text';
-import { CircumGrid2H, CircumGrid41 } from '@/components/icons/i-grid';
-import { MultiList } from '@/components/icons/i-list';
-import DetailsLayout from '@/components/layouts/details';
-import EmptyList from '@/components/molecules/m-empty-list';
-import ListingCard from '@/components/organisms/o-listing-card';
-import ListingListItem from '@/components/organisms/o-listing-list-item';
-import { Fonts } from '@/lib/constants/theme';
-import { useDebounce } from '@/lib/hooks/use-debounce';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useUser } from '@/lib/hooks/user';
-import { useHostListingsQuery } from '@/lib/services/graphql/generated';
-import { useRouter } from '@/lib/hooks/use-router';
-import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
-import { SURFACE } from '@/lib/constants/surface';
-import { hexToRgba } from '@/lib/utils/colors';
-import React from 'react';
-import { FlatList, Pressable, RefreshControl, View } from 'react-native';
-import { FlatGrid } from 'react-native-super-grid';
+import { useMemo, useState } from 'react';
+import { FlatList, View } from 'react-native';
+import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Plus } from 'lucide-react-native';
+import { HostListingRow } from '@/components/k/host-bits';
+import { Button, Empty, PageTitle, Segmented, Skeleton } from '@/components/k';
+import { color, gutter } from '@/lib/k/theme';
+import { useUserStore } from '@/lib/stores/users';
+import { useHostListingsQuery } from '@/lib/services/graphql/generated';
 
-export default function HostListings() {
-  const router = useRouter();
-  const { user, updateUser } = useUser();
-  const [title, setTitle] = React.useState('');
-  const debouncedTitle = useDebounce(title, 500);
+export default function Listings() {
+	const insets = useSafeAreaInsets();
+	const me = useUserStore((s) => s.user.user?.id);
+	const [{ data, fetching }, refetch] = useHostListingsQuery({ variables: { filters: { creatorId: me }, pagination: { limit: 200, offset: 0 } }, pause: !me, requestPolicy: 'cache-and-network' });
+	const [tab, setTab] = useState<'all' | 'LIVE' | 'INREVIEW' | 'DRAFT'>('all');
+	const all = data?.hostings ?? [];
+	const list = useMemo(() => all.filter((l) => tab === 'all' || (l.publishStatus ?? 'DRAFT') === tab), [all, tab]);
+	const count = (s: string) => all.filter((l) => (l.publishStatus ?? 'DRAFT') === s).length;
 
-  const {
-    items: hostings,
-    fetching,
-    loadMore,
-    hasNextPage,
-    refresh,
-    showInitialSkeleton,
-    showEmpty,
-  } = useInfiniteQuery(useHostListingsQuery, {
-    queryKey: 'hostings',
-    initialVariables: {
-      filters: {
-        creatorId: user.user?.id,
-        title: debouncedTitle || undefined,
-      },
-    },
-  });
-
-  const colors = useThemeColors();
-
-  const [refreshing, setRefreshing] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!fetching) setRefreshing(false);
-  }, [fetching]);
-
-  // Skeletons only on the very first load — never while typing a search.
-  const showSkeleton = showInitialSkeleton && !refreshing;
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-    refresh();
-  };
-
-  const handleView = () => {
-    if (user.hostListingsView === 'list') {
-      updateUser({ hostListingsView: 'grid' });
-    } else if (user.hostListingsView === 'grid') {
-      updateUser({ hostListingsView: 'block' });
-    } else {
-      updateUser({ hostListingsView: 'list' });
-    }
-  };
-
-  const renderHeader = () => (
-    <View className="mb-4 gap-4">
-      <View className="flex-row items-center justify-between px-1">
-        <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 17, letterSpacing: -0.3 }}>
-          My Listings
-        </ThemedText>
-        <Pressable
-          onPress={handleView}
-          className="h-9 w-9 items-center justify-center rounded-full"
-          style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
-        >
-          {user.hostListingsView === 'list' ? (
-            <MultiList color={colors.text} size={18} />
-          ) : user.hostListingsView === 'block' ? (
-            <CircumGrid2H color={colors.text} size={18} />
-          ) : (
-            <CircumGrid41 color={colors.text} size={18} />
-          )}
-        </Pressable>
-      </View>
-      {showEmpty && (
-        <EmptyList
-          message="No listings yet"
-          buttonTitle="Create Listing"
-          onButtonPress={() => router.push('/hostings/form')}
-        />
-      )}
-
-      {/* Loading States */}
-      {showSkeleton &&
-        (user.hostListingsView === 'list' ? (
-          <View className="gap-4">
-            {Array.from({ length: 10 }).map((_, index) => (
-              <Skeleton style={{ height: 100, width: '100%', borderRadius: 10 }} key={index} />
-            ))}
-          </View>
-        ) : (
-          <FlatGrid
-            itemDimension={user.hostListingsView === 'block' ? 350 : 170}
-            spacing={1}
-            data={Array.from({ length: 10 }).fill(0)}
-            renderItem={() => (
-              <Skeleton
-                style={{
-                  width: user.hostListingsView === 'block' ? '100%' : '96%',
-                  aspectRatio: '1/0.75',
-                  marginRight: 8,
-                  marginBottom: 8,
-                  borderRadius: 10,
-                }}
-              />
-            )}
-          />
-        ))}
-    </View>
-  );
-
-  return (
-    <DetailsLayout
-      title="Listings"
-      variant="host"
-      withNotifications
-      withProfile
-      scrollable={false}
-      footer={
-        <Pressable
-          aria-label="New Listing"
-          onPress={() => router.push('/hostings/form')}
-          className="absolute bottom-5 right-5 items-center justify-center rounded-full"
-          style={{
-            backgroundColor: colors.primary,
-            width: 58,
-            height: 58,
-            boxShadow: SURFACE.ctaGlow,
-          }}
-        >
-          <Plus color={colors['primary-content']} size={30} />
-        </Pressable>
-      }
-    >
-      <View className="flex-1">
-        <View style={{ paddingHorizontal: 20, paddingBottom: 16 }}>
-          <SearchInput value={title} onChangeText={setTitle} placeholder="Search..." />
-        </View>
-        {user.hostListingsView === 'list' ? (
-          <FlatList
-            style={{ flex: 1 }}
-            data={hostings}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
-            ListHeaderComponent={renderHeader}
-            keyboardShouldPersistTaps="handled"
-            renderItem={({ item }) => (
-              <View className="mb-4">
-                <ListingListItem hosting={item} onDelete={refresh} onDuplicate={refresh} />
-              </View>
-            )}
-            onEndReached={() => hasNextPage && loadMore()}
-            onEndReachedThreshold={0.5}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-          />
-        ) : (
-          <FlatGrid
-            style={{ flex: 1 }}
-            itemDimension={user.hostListingsView === 'block' ? 350 : 160}
-            spacing={16}
-            data={hostings}
-            renderItem={({ item }) => (
-              <View className="mb-2 mr-2">
-                <ListingCard hosting={item} onDelete={refresh} onDuplicate={refresh} />
-              </View>
-            )}
-            ListHeaderComponent={renderHeader}
-            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}
-            keyboardShouldPersistTaps="handled"
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-            onEndReached={() => hasNextPage && loadMore()}
-            onEndReachedThreshold={0.5}
-          />
-        )}
-      </View>
-    </DetailsLayout>
-  );
+	return (
+		<View style={{ flex: 1, backgroundColor: color.bg, paddingTop: insets.top }}>
+			<FlatList
+				data={fetching && !data ? [] : list}
+				keyExtractor={(l) => l.id}
+				renderItem={({ item }) => <HostListingRow l={item} />}
+				ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+				contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: 40 }}
+				onRefresh={() => refetch({ requestPolicy: 'network-only' })}
+				refreshing={false}
+				ListHeaderComponent={
+					<View style={{ gap: 16, paddingBottom: 16 }}>
+						<PageTitle eyebrow="Hosting" title="Listings" right={<Button title="New" size="sm" icon={<Plus size={15} color={color.onAmber} />} onPress={() => router.push('/hostings/form')} />} />
+						{all.length ? (
+							<Segmented
+								value={tab}
+								onChange={setTab}
+								options={[
+									{ value: 'all', label: `All ${all.length}` },
+									{ value: 'LIVE', label: `Live ${count('LIVE')}` },
+									{ value: 'INREVIEW', label: `Review ${count('INREVIEW')}` },
+									{ value: 'DRAFT', label: `Drafts ${count('DRAFT')}` }
+								]}
+							/>
+						) : null}
+					</View>
+				}
+				ListEmptyComponent={
+					fetching ? (
+						<View style={{ gap: 10 }}>
+							{[0, 1, 2].map((i) => (
+								<Skeleton key={i} style={{ height: 92 }} />
+							))}
+						</View>
+					) : (
+						<Empty eyebrow={all.length ? 'None here' : 'No listings yet'} title={all.length ? 'Nothing in this view' : 'Put your first property on the map'} body={all.length ? undefined : 'Listing is free. Kushi verifies it, brings verified renters and handles the agreement and escrow.'} action={all.length ? undefined : 'Create a listing'} onAction={() => router.push('/hostings/form')} />
+					)
+				}
+			/>
+		</View>
+	);
 }

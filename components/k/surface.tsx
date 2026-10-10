@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import { color, font, radius } from '@/lib/k/theme';
@@ -97,6 +98,7 @@ export function Segmented<T extends string>({ value, options, onChange }: { valu
 
 /** Avatar from a URL or initials. */
 export function Avatar({ name, uri, size = 40 }: { name?: string | null; uri?: string | null; size?: number }) {
+	const [failed, setFailed] = useState(false);
 	const initials = (name ?? '?')
 		.split(/\s+/)
 		.filter(Boolean)
@@ -105,8 +107,8 @@ export function Avatar({ name, uri, size = 40 }: { name?: string | null; uri?: s
 		.join('');
 	return (
 		<View style={{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden', backgroundColor: color.surface2, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: color.line2 }}>
-			{uri ? (
-				<Image source={{ uri }} style={{ width: size, height: size }} contentFit="cover" />
+			{uri && !failed ? (
+				<Image source={{ uri }} style={{ width: size, height: size }} contentFit="cover" onError={() => setFailed(true)} />
 			) : (
 				<KText style={{ fontFamily: font.display, fontSize: size * 0.36, color: color.fg2 }}>{initials}</KText>
 			)}

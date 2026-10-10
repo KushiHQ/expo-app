@@ -5041,7 +5041,7 @@ export type HostListingsQueryVariables = Exact<{
 }>;
 
 
-export type HostListingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, childCount: number, title?: string | null, description?: string | null, state?: string | null, city?: string | null, listingType?: ListingType | null, managementType: ManagementType, publishStatus?: PublishStatus | null, bookingApplicationsCount: number, pendingBookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } } | null }> };
+export type HostListingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, childCount: number, title?: string | null, price?: any | null, priceFrom?: any | null, paymentInterval?: PaymentInterval | null, description?: string | null, state?: string | null, city?: string | null, listingType?: ListingType | null, managementType: ManagementType, publishStatus?: PublishStatus | null, bookingApplicationsCount: number, pendingBookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } } | null }> };
 
 export type RecommendedTenancyTemplateQueryVariables = Exact<{
   hostingId: Scalars['String']['input'];
@@ -8236,6 +8236,9 @@ export const HostListingsDocument = gql`
       }
     }
     title
+    price
+    priceFrom
+    paymentInterval
     description
     state
     city

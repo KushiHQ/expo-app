@@ -102,7 +102,7 @@ export const ListingCard = memo(function ListingCard({ h, width: w }: { h: CardH
 				</View>
 				<KText v="small" numberOfLines={1}>
 					{place(h.city, h.state) || 'Nigeria'}
-					{isParent && h.childCount ? ` · ${h.childCount} units` : ''}
+					{isParent && h.childCount ? ` · ${h.childCount} unit${h.childCount === 1 ? '' : 's'}` : ''}
 				</KText>
 				<KText v="small" c="fg">
 					{isParent && h.priceFrom ? <KText v="small">from </KText> : null}
