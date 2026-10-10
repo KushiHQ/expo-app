@@ -1,0 +1,4 @@
+{
+	"public": ["/", "/onboarding", "/auth/sign-in", "/guest/home"],
+	"signedIn": []
+}
