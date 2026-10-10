@@ -73,12 +73,12 @@ export function Row({ icon, title, detail, right, onPress, danger }: { icon?: Re
 /** key — value line (fees, details). */
 export function KV({ k, v, strong }: { k: string; v: React.ReactNode; strong?: boolean }) {
 	return (
-		<View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 16, paddingVertical: 8 }}>
-			<KText v="small" style={{ flexShrink: 1 }}>
+		<View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 16, paddingVertical: 2 }}>
+			<KText v="small" style={{ flexShrink: 0, maxWidth: '55%' }}>
 				{k}
 			</KText>
 			{typeof v === 'string' || typeof v === 'number' ? (
-				<KText v={strong ? 'bodyStrong' : 'smallStrong'} style={{ textAlign: 'right', flexShrink: 1 }}>
+				<KText v={strong ? 'bodyStrong' : 'smallStrong'} style={{ textAlign: 'right', flex: 1 }}>
 					{v}
 				</KText>
 			) : (

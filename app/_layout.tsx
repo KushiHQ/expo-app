@@ -83,7 +83,7 @@ function RootLayout() {
 
       if (isMobile && isShared) {
         // Detect slugified hosting or reservation routes
-        const isHosting = pathname.startsWith('/guest/') && pathname.includes('___');
+        const isHosting = (pathname.startsWith('/homes/') || pathname.startsWith('/guest/')) && pathname.includes('___');
         const isReservation = pathname.includes('/reservation/');
 
         if (isHosting || isReservation) {

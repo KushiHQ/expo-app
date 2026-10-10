@@ -1,8 +1,14 @@
 {
-	"public": ["/welcome", "/auth/sign-in", "/auth/sign-up", "/you"],
+	"public": [
+		"/welcome",
+		"/auth/sign-in",
+		"/auth/sign-up",
+		"/you"
+	],
 	"signedIn": [
 		"/",
 		"/hostings/1067b864-0c09-4433-908e-492042bb43f8",
+		"/hostings/1067b864-0c09-4433-908e-492042bb43f8/gallery?start=2",
 		"/hostings/1067b864-0c09-4433-908e-492042bb43f8/apply",
 		"/saved",
 		"/trips",
@@ -16,6 +22,12 @@
 		"/host",
 		"/host/listings",
 		"/host/applications",
-		"/applications/177f3a0c-b9c5-4a00-bb2d-e61af3de3659"
+		"/applications/177f3a0c-b9c5-4a00-bb2d-e61af3de3659",
+		"/map",
+		"/users/9c8f0039-02f2-4aba-b646-705b53be6fe1/profile/edit",
+		"/users/9c8f0039-02f2-4aba-b646-705b53be6fe1/transactions",
+		"/users/9c8f0039-02f2-4aba-b646-705b53be6fe1/notification-settings",
+		"/support",
+		"/users/feedback"
 	]
 }

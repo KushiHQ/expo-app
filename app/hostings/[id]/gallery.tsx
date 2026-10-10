@@ -1,149 +1,117 @@
-import ListImage from '@/components/atoms/a-list-image';
-import ThemedText from '@/components/atoms/a-themed-text';
-import DetailsLayout from '@/components/layouts/details';
-import { ROOM_ICONS } from '@/components/organisms/o-room-item-card';
-import { Fonts } from '@/lib/constants/theme';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useHostingQuery } from '@/lib/services/graphql/generated';
-import { Room } from '@/lib/types/enums/hostings';
-import { cast } from '@/lib/types/utils';
-import { hexToRgba } from '@/lib/utils/colors';
-import { SURFACE } from '@/lib/constants/surface';
-import { extractHostingImages, galleryImageUri } from '@/lib/utils/hosting/images';
+import { useMemo, useRef, useState } from 'react';
+import { FlatList, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { Image } from 'expo-image';
+import { X } from 'lucide-react-native';
+import { IconButton, KText, Spinner } from '@/components/k';
+import { color, radius } from '@/lib/k/theme';
+import { listingPhotos, type Listing } from '@/lib/k/listing';
 import { getAssetResizeUrl } from '@/lib/utils/urls';
-import { Home, Images } from 'lucide-react-native';
-import { useLocalSearchParams } from 'expo-router';
-import React from 'react';
-import { View } from 'react-native';
-import { SimpleGrid } from 'react-native-super-grid';
+import { useHostingQuery } from '@/lib/services/graphql/generated';
 
-export default function HostingGallery() {
-  const { id } = useLocalSearchParams();
-  const colors = useThemeColors();
-  const [{ data }] = useHostingQuery({ variables: { hostingId: cast(id) } });
+/** Full-screen photo viewer, grouped by room, opened at `start`. */
+export default function Gallery() {
+	const { id, start } = useLocalSearchParams<{ id: string; start?: string }>();
+	const { width, height } = useWindowDimensions();
+	const insets = useSafeAreaInsets();
+	const [{ data }] = useHostingQuery({ variables: { hostingId: id, pagination: { limit: 1, offset: 0 } } });
+	const h = data?.hosting as Listing | undefined;
+	const photos = useMemo(() => (h ? listingPhotos(h) : []), [h]);
+	const groups = useMemo(() => {
+		const out: { name: string; first: number; count: number }[] = [];
+		photos.forEach((p, i) => {
+			const g = out.find((x) => x.name === p.group);
+			if (g) g.count++;
+			else out.push({ name: p.group, first: i, count: 1 });
+		});
+		return out;
+	}, [photos]);
+	const initial = Math.min(Number(start ?? 0) || 0, Math.max(photos.length - 1, 0));
+	const [index, setIndex] = useState(initial);
+	const pager = useRef<FlatList>(null);
+	const close = () => (router.canGoBack() ? router.back() : router.replace(`/hostings/${id}`));
+	const cur = photos[index];
 
-  const hosting = data?.hosting;
-  const { captions, images } = React.useMemo(() => extractHostingImages(hosting), [hosting]);
+	function jump(i: number) {
+		setIndex(i);
+		pager.current?.scrollToIndex({ index: i, animated: false });
+	}
 
-  const getIndex = (src: string) => {
-    const index = images.findIndex((c) => c === src);
-    return index < 0 ? 0 : index;
-  };
+	return (
+		<View style={{ flex: 1, backgroundColor: '#000' }}>
+			<StatusBar style="light" />
+			{photos.length ? (
+				<FlatList
+					ref={pager}
+					data={photos}
+					horizontal
+					pagingEnabled
+					initialScrollIndex={initial}
+					getItemLayout={(_, i) => ({ length: width, offset: width * i, index: i })}
+					showsHorizontalScrollIndicator={false}
+					keyExtractor={(p) => p.id}
+					onMomentumScrollEnd={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
+					renderItem={({ item }) => (
+						<View style={{ width, height, justifyContent: 'center' }}>
+							<Image
+								source={{ uri: getAssetResizeUrl(item.id, 1600, 1200, 85) }}
+								placeholder={{ uri: getAssetResizeUrl(item.id, 800, 600, 80) }}
+								style={{ width, height: height * 0.72 }}
+								contentFit="contain"
+								transition={200}
+								cachePolicy="memory-disk"
+							/>
+						</View>
+					)}
+				/>
+			) : (
+				<View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>{data ? <KText c="dim">No photos yet</KText> : <Spinner />}</View>
+			)}
 
-  // Only rooms that actually have photos are worth a section.
-  const rooms = (hosting?.rooms ?? []).filter((r) => (r.images?.length ?? 0) > 0);
+			<View style={[s.top, { top: insets.top + 8 }]}>
+				<View style={{ flex: 1, gap: 2 }}>
+					<KText v="micro" style={{ color: color.amber }}>
+						{cur?.group ?? ''}
+					</KText>
+					<KText v="smallStrong" style={{ color: '#fff' }}>
+						{photos.length ? `${index + 1} / ${photos.length}` : ''}
+					</KText>
+				</View>
+				<IconButton label="Close" onPress={close}>
+					<X size={18} color={color.fg} />
+				</IconButton>
+			</View>
 
-  return (
-    <DetailsLayout title="Property Gallery">
-      <View className="gap-5 pb-8">
-        {/* Overview line */}
-        <ThemedText
-          style={{ fontSize: 13, color: hexToRgba(colors.text, 0.5), fontFamily: Fonts.medium }}
-        >
-          {images.length} {images.length === 1 ? 'photo' : 'photos'} across {rooms.length}{' '}
-          {rooms.length === 1 ? 'space' : 'spaces'}
-        </ThemedText>
-
-        {rooms.map((room) => {
-          const photoCount = room.images?.length ?? 0;
-          const RoomIcon = ROOM_ICONS[room.name as keyof typeof Room] ?? Home;
-          return (
-            <View
-              key={room.id}
-              className="gap-3.5 rounded-3xl p-4"
-              style={{
-                backgroundColor: hexToRgba(colors.text, 0.05),
-                boxShadow: SURFACE.shadow,
-              }}
-            >
-              {/* Room header: icon chip + name (+ ×count) with photo count on the right */}
-              <View className="flex-row items-center gap-2.5">
-                <View
-                  className="h-8 w-8 items-center justify-center rounded-full"
-                  style={{ backgroundColor: hexToRgba(colors.primary, 0.12) }}
-                >
-                  <RoomIcon size={15} color={colors.primary} />
-                </View>
-                <View className="flex-1 flex-row items-center gap-2">
-                  <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 16, letterSpacing: -0.3 }}>
-                    {Room[room.name as keyof typeof Room] ?? room.name}
-                  </ThemedText>
-                  {room.count && room.count > 1 ? (
-                    <View
-                      style={{
-                        paddingHorizontal: 8,
-                        paddingVertical: 2,
-                        borderRadius: 999,
-                        backgroundColor: hexToRgba(colors.primary, 0.12),
-                      }}
-                    >
-                      <ThemedText
-                        style={{ fontSize: 11, fontFamily: Fonts.semibold, color: colors.primary }}
-                      >
-                        ×{room.count}
-                      </ThemedText>
-                    </View>
-                  ) : null}
-                </View>
-                <View
-                  className="flex-row items-center gap-1 rounded-full px-2.5 py-1"
-                  style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
-                >
-                  <Images size={11} color={hexToRgba(colors.text, 0.5)} />
-                  <ThemedText
-                    style={{
-                      fontSize: 11,
-                      color: hexToRgba(colors.text, 0.55),
-                      fontFamily: Fonts.semibold,
-                    }}
-                  >
-                    {photoCount}
-                  </ThemedText>
-                </View>
-              </View>
-
-              {room.description ? (
-                <ThemedText
-                  numberOfLines={2}
-                  style={{
-                    fontSize: 13,
-                    lineHeight: 19,
-                    color: hexToRgba(colors.text, 0.6),
-                    marginTop: -4,
-                  }}
-                >
-                  {room.description}
-                </ThemedText>
-              ) : null}
-
-              <SimpleGrid
-                listKey={room.id}
-                itemDimension={100}
-                spacing={8}
-                style={{ margin: -4 }}
-                data={room.images ?? []}
-                renderItem={({ item }) => (
-                  <ListImage
-                    key={item.id}
-                    width="100%"
-                    height={100}
-                    style={{ height: 100, width: '100%', borderRadius: 14 }}
-                    images={images}
-                    captions={captions}
-                    openable
-                    src={
-                      item.asset.id
-                        ? getAssetResizeUrl(item.asset.id, 240, 240, 80, item.asset.lastUpdated)
-                        : item.asset.publicUrl
-                    }
-                    index={getIndex(galleryImageUri(item.asset))}
-                  />
-                )}
-              />
-            </View>
-          );
-        })}
-      </View>
-    </DetailsLayout>
-  );
+			<View style={[s.bottom, { paddingBottom: insets.bottom + 14 }]}>
+				{cur?.caption ? (
+					<KText v="small" numberOfLines={3} style={{ color: 'rgba(255,255,255,0.82)', paddingHorizontal: 20 }}>
+						{cur.caption}
+					</KText>
+				) : null}
+				{groups.length > 1 ? (
+					<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}>
+						{groups.map((g) => {
+							const on = cur?.group === g.name;
+							return (
+								<Pressable key={g.name} onPress={() => jump(g.first)} style={[s.group, on && s.groupOn]} accessibilityRole="button">
+									<KText v="small" style={{ color: on ? color.onAmber : '#fff' }}>
+										{g.name} · {g.count}
+									</KText>
+								</Pressable>
+							);
+						})}
+					</ScrollView>
+				) : null}
+			</View>
+		</View>
+	);
 }
+
+const s = StyleSheet.create({
+	top: { position: 'absolute', left: 20, right: 20, flexDirection: 'row', alignItems: 'center' },
+	bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, gap: 12 },
+	group: { paddingHorizontal: 14, height: 36, justifyContent: 'center', borderRadius: radius.pill, borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)', backgroundColor: 'rgba(0,0,0,0.5)' },
+	groupOn: { backgroundColor: color.amber, borderColor: color.amber }
+});

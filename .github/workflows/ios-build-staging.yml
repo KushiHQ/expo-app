@@ -95,6 +95,7 @@ jobs:
 
       - name: Notify Discord
         if: always()
+        continue-on-error: true
         env:
           JOB_STATUS: ${{ job.status }}
           BRANCH: ${{ github.ref_name }}
