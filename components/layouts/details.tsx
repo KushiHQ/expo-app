@@ -12,28 +12,22 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
-import { hexToRgba } from '@/lib/utils/colors';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import ThemedText from '../atoms/a-themed-text';
-import { ChevronLeft, Share2Icon } from 'lucide-react-native';
+import { ArrowLeft, Bell, Headset, Phone, Share2Icon, Video } from 'lucide-react-native';
+import { Avatar, IconButton, KText } from '../k';
+import { color as k } from '@/lib/k/theme';
 import { Href, useLocalSearchParams, usePathname } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
-import { Image } from 'expo-image';
 import { EventEmitter } from '@/lib/utils/event-emitter';
-import { HugeiconsVideo01, SolarPhoneOutline } from '../icons/i-phone';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useGradualKeyboardAnimation } from '@/lib/hooks/keyboard';
 import ThemedView from '../atoms/a-themed-view';
 import AmbientGlow from '../atoms/a-ambient-glow';
-import { IonNotificationsOutline } from '../icons/i-notifications';
-import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
 import { useUser } from '@/lib/hooks/user';
 import { buildCallURL } from '@/lib/utils/call';
-import { Fonts } from '@/lib/constants/theme';
 
 import * as Haptics from 'expo-haptics';
-import { Support } from '../icons/i-support';
 import {
   useInitiateSupportChatMutation,
   SupportItemType,
@@ -96,7 +90,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
       withVideo,
       scrollable = true,
       onShare,
-      ambientGlow = true,
+      ambientGlow = false,
     },
     ref,
   ) => {
@@ -239,201 +233,75 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
               alignSelf: isTablet ? 'flex-start' : 'center',
             }}
           >
-            <View className="flex-row items-center justify-between p-5">
-              <View className="flex-row items-center gap-2">
-                {router.canGoBack() && (
-                  <Pressable
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      router.back();
-                    }}
-                    aria-label="Go Back"
-                    className="h-11 w-11 items-center justify-center rounded-2xl"
-                    style={{
-                      backgroundColor:
-                        backButton === 'translucent'
-                          ? colors['surface-01']
-                          : backButton === 'light'
-                            ? hexToRgba('#fff', 0.15)
-                            : colors.secondary,
-                    }}
-                  >
-                    <ChevronLeft
-                      size={22}
-                      color={
-                        backButton === 'translucent'
-                          ? colors.text
-                          : backButton === 'light'
-                            ? '#fff'
-                            : colors.background
-                      }
-                    />
-                  </Pressable>
-                )}
-                <View className="flex-row items-center gap-2">
-                  {avatar && (
-                    <View
-                      className="h-10 w-10 overflow-hidden rounded-xl border"
-                      style={{ borderColor: hexToRgba(colors.text, 0.2) }}
-                    >
-                      <Image
-                        style={{
-                          height: '100%',
-                          width: '100%',
-                          objectFit: 'cover',
-                        }}
-                        source={{
-                          uri: avatar.image,
-                        }}
-                      />
-                    </View>
-                  )}
-                  <View className="gap-0.5">
-                    <ThemedText
-                      className="py-0"
-                      style={{
-                        fontSize: avatar ? 12 : 16,
-                        fontFamily: avatar ? Fonts.medium : Fonts.semibold,
-                        color: backButton === 'light' ? '#fff' : colors.text,
-                      }}
-                    >
-                      {title}
-                    </ThemedText>
-                    {avatar?.online !== undefined && (
-                      <ThemedText
-                        className="py-0"
-                        style={{
-                          fontSize: 10,
-                          fontFamily: Fonts.regular,
-                          color: hexToRgba(backButton === 'light' ? '#fff' : colors.text, 0.5),
-                        }}
-                      >
-                        {avatar?.online
-                          ? 'Online'
-                          : `Last seen ${moment(avatar?.lastSeen).fromNow()}`}
-                      </ThemedText>
-                    )}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 8, paddingBottom: 12 }}>
+              {!inTabs && (
+                <IconButton
+                  label="Back"
+                  tone={backButton === 'light' ? 'glass' : 'ghost'}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                    if (router.canGoBack()) router.back();
+                    else router.replace('/');
+                  }}
+                >
+                  <ArrowLeft size={19} color={k.fg} />
+                </IconButton>
+              )}
+              {avatar && <Avatar uri={avatar.image} name={title} size={40} />}
+              <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
+                <KText v={avatar ? 'bodyStrong' : 'heading'} numberOfLines={1} style={backButton === 'light' ? { color: '#fff' } : undefined}>
+                  {title}
+                </KText>
+                {avatar?.online !== undefined && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: avatar.online ? k.success : k.dim }} />
+                    <KText v="xs">{avatar.online ? 'Online' : avatar.lastSeen ? `Last seen ${moment(avatar.lastSeen).fromNow()}` : 'Offline'}</KText>
                   </View>
-                </View>
+                )}
               </View>
-              <View className="flex-row items-center gap-3">
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 {isFormStep && (
-                  <Pressable
-                    onPress={handleDone}
-                    disabled={doneSaving}
-                    aria-label="Done editing"
-                    hitSlop={12}
-                    className="h-11 flex-row items-center justify-center gap-1.5 px-1"
-                  >
-                    {doneSaving && <ActivityIndicator size="small" color={colors.primary} />}
-                    <ThemedText
-                      style={{
-                        fontSize: 15,
-                        fontFamily: Fonts.semibold,
-                        color: colors.primary,
-                      }}
-                    >
+                  <Pressable onPress={handleDone} disabled={doneSaving} aria-label="Done editing" hitSlop={12} style={{ height: 42, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 4 }}>
+                    {doneSaving && <ActivityIndicator size="small" color={k.amber} />}
+                    <KText v="smallStrong" style={{ color: k.amber }}>
                       {doneSaving ? 'Saving…' : 'Done'}
-                    </ThemedText>
+                    </KText>
                   </Pressable>
                 )}
                 {withSupport && (
-                  <Pressable
-                    onPress={handleSupportPress}
-                    disabled={initiateSupportChatResult.fetching}
-                    className="h-11 w-11 items-center justify-center rounded-2xl"
-                    style={{
-                      backgroundColor: colors['surface-01'],
-                      borderColor: hexToRgba(colors.text, 0.08),
-                      opacity: initiateSupportChatResult.fetching ? 0.7 : 1,
-                    }}
-                  >
-                    {initiateSupportChatResult.fetching ? (
-                      <ActivityIndicator size="small" color={colors.primary} />
-                    ) : (
-                      <Support size={20} color={colors.primary} />
-                    )}
-                  </Pressable>
+                  <IconButton label="Get help" onPress={handleSupportPress} disabled={initiateSupportChatResult.fetching}>
+                    {initiateSupportChatResult.fetching ? <ActivityIndicator size="small" color={k.amber} /> : <Headset size={18} color={k.fg} />}
+                  </IconButton>
                 )}
                 {withShare && (
-                  <Pressable
+                  <IconButton
+                    label="Share"
                     onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
                       onShare?.();
                     }}
-                    className="h-11 w-11 items-center justify-center rounded-2xl"
-                    style={{
-                      backgroundColor: colors['surface-01'],
-                      borderColor: hexToRgba(colors.text, 0.08),
-                    }}
                   >
-                    <Share2Icon size={20} color={colors.primary} />
-                  </Pressable>
+                    <Share2Icon size={18} color={k.fg} />
+                  </IconButton>
                 )}
                 {withPhone && (
-                  <Pressable
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      router.push(buildCallURL(String(id), 'voice', true));
-                    }}
-                    className="h-11 w-11 items-center justify-center rounded-2xl"
-                    style={{
-                      backgroundColor: colors['surface-01'],
-                      borderColor: hexToRgba(colors.text, 0.08),
-                    }}
-                  >
-                    <SolarPhoneOutline size={20} color={colors.primary} />
-                  </Pressable>
+                  <IconButton label="Voice call" onPress={() => router.push(buildCallURL(String(id), 'voice', true))}>
+                    <Phone size={18} color={k.fg} />
+                  </IconButton>
                 )}
                 {withVideo && (
-                  <Pressable
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      router.push(buildCallURL(String(id), 'video', true));
-                    }}
-                    className="h-11 w-11 items-center justify-center rounded-2xl"
-                    style={{
-                      backgroundColor: colors['surface-01'],
-                      borderColor: hexToRgba(colors.text, 0.08),
-                    }}
-                  >
-                    <HugeiconsVideo01 size={20} color={colors.primary} />
-                  </Pressable>
+                  <IconButton label="Video call" onPress={() => router.push(buildCallURL(String(id), 'video', true))}>
+                    <Video size={18} color={k.fg} />
+                  </IconButton>
                 )}
                 {withNotifications && (
-                  <Pressable
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      router.push('/users/notifications');
-                    }}
-                  >
-                    <IonNotificationsOutline color={hexToRgba(colors['text'], 0.7)} />
-                  </Pressable>
+                  <IconButton label="Notifications" onPress={() => router.push('/notifications')}>
+                    <Bell size={18} color={k.fg} />
+                  </IconButton>
                 )}
                 {withProfile && (
-                  <Pressable
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      router.push(variant === 'guest' ? '/you' : '/host/you');
-                    }}
-                    className="h-10 w-10 overflow-hidden rounded-xl border"
-                    style={{
-                      borderColor: hexToRgba(colors['text'], 0.6),
-                      borderWidth: 2,
-                    }}
-                  >
-                    <Image
-                      style={{
-                        height: '100%',
-                        width: '100%',
-                        objectFit: 'cover',
-                      }}
-                      source={{
-                        uri:
-                          user.user?.profile?.image?.publicUrl ??
-                          getDefaultProfileImageUrl(user.user?.profile.fullName ?? ''),
-                      }}
-                    />
+                  <Pressable onPress={() => router.push(variant === 'guest' ? '/you' : '/host/you')} accessibilityLabel="You">
+                    <Avatar uri={user.user?.profile?.image?.publicUrl} name={user.user?.profile?.fullName} size={40} />
                   </Pressable>
                 )}
               </View>
