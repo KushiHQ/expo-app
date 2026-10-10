@@ -102,6 +102,14 @@ jobs:
           echo "AAB_PATH=$AAB_PATH" >> "$GITHUB_ENV"
           echo "✅ Built AAB: $AAB_PATH"
 
+      # Keep the build so a failed store upload can be retried without rebuilding.
+      - name: Save build
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build
+          path: ${{ env.AAB_PATH }}
+          retention-days: 7
+
       - name: Extract build number
         run: |
           BUILD_NUMBER=$(grep -oE 'versionCode from [0-9]+ to ([0-9]+)' /tmp/eas-output.txt | grep -oE '[0-9]+$' | tail -1)
