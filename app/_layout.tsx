@@ -1,17 +1,6 @@
 import * as Sentry from '@sentry/react-native';
 import { MODAL_SCREEN_OPTIONS } from '@/lib/constants/navigation';
-import {
-  Inter_100Thin,
-  Inter_200ExtraLight,
-  Inter_300Light,
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  Inter_800ExtraBold,
-  Inter_900Black,
-  useFonts,
-} from '@expo-google-fonts/inter';
+import { useFonts } from 'expo-font';
 import { Unbounded_500Medium, Unbounded_600SemiBold } from '@expo-google-fonts/unbounded';
 import { InterTight_400Regular, InterTight_500Medium, InterTight_600SemiBold, InterTight_700Bold } from '@expo-google-fonts/inter-tight';
 import { JetBrainsMono_400Regular, JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
@@ -27,7 +16,6 @@ import UploadProgress from '@/components/organisms/o-upload-progress';
 import { NotificationProvider } from '@/components/contexts/notifications';
 import GraphqlClientProvider from '@/components/providers/graphql-client';
 import TansStackProvider from '@/components/providers/tanstack';
-import { Fonts } from '@/lib/constants/theme';
 import { useLockScreen } from '@/lib/hooks/use-lock-screen';
 import { initializeNotifications } from '@/lib/utils/notifications';
 import React from 'react';
@@ -124,15 +112,6 @@ function RootLayout() {
     }
   }, [pathname, params]);
   const [loaded, error] = useFonts({
-    [Fonts.thin]: Inter_100Thin,
-    [Fonts.extralight]: Inter_200ExtraLight,
-    [Fonts.light]: Inter_300Light,
-    [Fonts.regular]: Inter_400Regular,
-    [Fonts.medium]: Inter_500Medium,
-    [Fonts.semibold]: Inter_600SemiBold,
-    [Fonts.bold]: Inter_700Bold,
-    [Fonts.extrabold]: Inter_800ExtraBold,
-    [Fonts.black]: Inter_900Black,
     Unbounded_500Medium,
     Unbounded_600SemiBold,
     InterTight_400Regular,

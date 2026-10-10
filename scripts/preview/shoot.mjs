@@ -23,8 +23,7 @@ const ctx = await browser.newContext({
 
 async function shoot(page, path, name) {
 	const errors = [];
-	const onErr = (e) => errors.push((String(e.message ?? e) + ' @ ' + String(e.stack ?? '').split('
-').slice(1, 3).join(' | ')).slice(0, 500));
+	const onErr = (e) => errors.push((String(e.message ?? e) + ' @ ' + String(e.stack ?? '').split(String.fromCharCode(10)).slice(1, 3).join(' | ')).slice(0, 500));
 	const onConsole = (m) => m.type() === 'error' && errors.push('console: ' + m.text().slice(0, 300));
 	page.on('pageerror', onErr);
 	page.on('console', onConsole);

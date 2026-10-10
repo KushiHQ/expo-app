@@ -92,7 +92,9 @@ export function Selfie({ onDone }: { onDone: () => void }) {
 				<Notice tone="warn" title="Camera access needed">
 					Kushi uses your front camera once to take a selfie for your identity check.
 				</Notice>
-				<Button title="Allow camera" onPress={() => requestPermission().then((ok) => !ok && Linking.openSettings())} />
+				<Button title="Allow camera" onPress={async () => {
+						if (!(await requestPermission())) Linking.openSettings();
+					}} />
 			</View>
 		);
 
