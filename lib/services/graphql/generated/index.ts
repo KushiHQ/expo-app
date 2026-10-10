@@ -4713,6 +4713,20 @@ export type SetHostingCoverMutationVariables = Exact<{
 
 export type SetHostingCoverMutation = { __typename?: 'Mutations', setHostingCover: { __typename?: 'MessageResponse', message: string } };
 
+export type KInitiateBookingApplicationMutationVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+}>;
+
+
+export type KInitiateBookingApplicationMutation = { __typename?: 'Mutations', initiateBookingApplication: { __typename?: 'BookingApplicationResponse', message: string, data?: { __typename?: 'BookingApplication', id: string, status: BookingApplicationStatus, email?: string | null, fullName?: string | null, correspondenceAddress?: string | null, commencementDate?: string | null, phoneNumber?: string | null, intervalMultiplier?: number | null, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes?: GuestFormOccupancyType | null, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null, bookingAggrement?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null } | null } };
+
+export type KUpdateBookingApplicationMutationVariables = Exact<{
+  input: BookingApplicationUpdateInput;
+}>;
+
+
+export type KUpdateBookingApplicationMutation = { __typename?: 'Mutations', updateBookingApplication: { __typename?: 'BookingApplicationResponse', message: string, data?: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, commencementDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, bookingAggrement?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes?: GuestFormOccupancyType | null, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null } | null } };
+
 export type MarkNotificationAsReadMutationVariables = Exact<{
   notificationId: Scalars['String']['input'];
 }>;
@@ -6720,6 +6734,125 @@ export const SetHostingCoverDocument = gql`
 
 export function useSetHostingCoverMutation() {
   return Urql.useMutation<SetHostingCoverMutation, SetHostingCoverMutationVariables>(SetHostingCoverDocument);
+};
+export const KInitiateBookingApplicationDocument = gql`
+    mutation KInitiateBookingApplication($hostingId: String!) {
+  initiateBookingApplication(hostingId: $hostingId) {
+    message
+    data {
+      id
+      status
+      email
+      fullName
+      correspondenceAddress
+      commencementDate
+      phoneNumber
+      intervalMultiplier
+      guestFormData {
+        employmentStatus
+        incomeRanges
+        occupancyTypes
+        guarantorRelationships
+        guarantorName
+        guarantorPhone
+        guarantorAddress
+      }
+      bookingAggrement {
+        totalSections
+        sections {
+          id
+          title
+          description
+          priority
+          preamble
+          subClauses {
+            id
+            title
+            description
+            priority
+            content
+            isMandatory
+            isActive
+            isCustom
+            requiredVariables {
+              name
+              type
+            }
+            providedValues {
+              key
+              value
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useKInitiateBookingApplicationMutation() {
+  return Urql.useMutation<KInitiateBookingApplicationMutation, KInitiateBookingApplicationMutationVariables>(KInitiateBookingApplicationDocument);
+};
+export const KUpdateBookingApplicationDocument = gql`
+    mutation KUpdateBookingApplication($input: BookingApplicationUpdateInput!) {
+  updateBookingApplication(input: $input) {
+    message
+    data {
+      id
+      fullName
+      email
+      phoneNumber
+      commencementDate
+      correspondenceAddress
+      intervalMultiplier
+      status
+      statusDetails
+      createdAt
+      lastUpdated
+      bookingAggrement {
+        totalSections
+        sections {
+          id
+          title
+          description
+          priority
+          preamble
+          subClauses {
+            id
+            title
+            description
+            priority
+            content
+            isMandatory
+            isActive
+            isCustom
+            requiredVariables {
+              name
+              type
+            }
+            providedValues {
+              key
+              value
+            }
+          }
+        }
+      }
+      guestFormData {
+        employmentStatus
+        incomeRanges
+        occupancyTypes
+        guarantorRelationships
+        guarantorName
+        guarantorPhone
+        guarantorAddress
+      }
+    }
+  }
+}
+    `;
+
+export function useKUpdateBookingApplicationMutation() {
+  return Urql.useMutation<KUpdateBookingApplicationMutation, KUpdateBookingApplicationMutationVariables>(KUpdateBookingApplicationDocument);
 };
 export const MarkNotificationAsReadDocument = gql`
     mutation MarkNotificationAsRead($notificationId: String!) {

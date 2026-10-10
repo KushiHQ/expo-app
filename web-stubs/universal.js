@@ -1,7 +1,7 @@
 /**
  * Web-only stand-in for native modules (used by the CI web preview build;
  * see metro.config.js). Every property is another stub. Calling it returns a
- * stub that can also be awaited (resolves to undefined). Called with an object
+ * stub that can also be awaited (resolves to an empty array). Called with an object
  * (React props, or an options object) it returns null, so as a component it
  * renders nothing. Never shipped in iOS/Android builds.
  */
@@ -10,7 +10,7 @@ function make(thenable) {
 	return new Proxy(fn, {
 		get(_t, prop) {
 			if (prop === '__esModule') return true;
-			if (prop === 'then') return thenable ? (resolve) => resolve(undefined) : undefined;
+			if (prop === 'then') return thenable ? (resolve) => resolve([]) : undefined; // empty list: safest default
 			if (prop === 'catch' || prop === 'finally') return thenable ? () => called : undefined;
 			if (prop === 'prototype') return undefined; // render as a function component
 			if (prop === Symbol.toPrimitive) return () => '';

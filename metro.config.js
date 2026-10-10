@@ -48,6 +48,8 @@ module.exports = (() => {
 		"expo-local-authentication",
 		"react-native-nitro-modules",
 		"react-native-nitro-image",
+		"@react-native-community/datetimepicker",
+		"react-native-webview",
 	];
 	const stubPath = require("path").resolve(__dirname, "web-stubs/universal.js");
 	const baseResolve = config.resolver.resolveRequest;
