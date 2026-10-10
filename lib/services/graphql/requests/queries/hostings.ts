@@ -355,6 +355,7 @@ export const HOSTINGS_QUERY = gql`
       }
       coverImage {
         asset {
+          id
           publicUrl
           lastUpdated
         }

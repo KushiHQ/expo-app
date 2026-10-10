@@ -42,6 +42,9 @@ async function shoot(page, path, name) {
 	page.off('console', onConsole);
 }
 
+// The first-launch welcome would cover every route; mark it as seen.
+await ctx.addInitScript(() => { try { localStorage.setItem('k.welcomed.v1', '1'); } catch {} });
+
 const slug = (p) => p.replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '') || 'root';
 const page = await ctx.newPage();
 for (const p of cfg.public ?? []) await shoot(page, p, 'pub-' + slug(p));

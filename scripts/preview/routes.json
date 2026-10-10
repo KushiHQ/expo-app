@@ -1,4 +1,4 @@
 {
-	"public": ["/", "/onboarding", "/auth/sign-in", "/guest/home"],
-	"signedIn": []
+	"public": ["/welcome", "/", "/hostings/caa0a4fd-4bfb-4821-9a4d-30a59d4d3f74", "/auth/sign-in", "/auth/sign-up", "/you"],
+	"signedIn": ["/", "/saved", "/trips", "/inbox", "/you", "/hostings/1067b864-0c09-4433-908e-492042bb43f8"]
 }
