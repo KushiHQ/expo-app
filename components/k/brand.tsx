@@ -26,7 +26,9 @@ export function Logo({ height = 22, venture = 'Housing' }: { height?: number; ve
 			<Svg width={height * ratio(LOGO_VIEWBOX)} height={height} viewBox={LOGO_VIEWBOX}>
 				<Path d={LOGO_ARMS} fill={color.fg} />
 				<Polygon points={LOGO_POINTER} fill={color.amber} />
-				<Path d={LOGO_LETTERS} fill={color.fg} />
+				{(Array.isArray(LOGO_LETTERS) ? LOGO_LETTERS : [LOGO_LETTERS]).map((d, i) => (
+					<Path key={i} d={d} fill={color.fg} />
+				))}
 				<Path d={LOGO_DOT} fill={color.amber} />
 			</Svg>
 			{venture ? (
