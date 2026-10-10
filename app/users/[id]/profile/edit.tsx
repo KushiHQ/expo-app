@@ -27,7 +27,7 @@ export default function ProfileEdit() {
 	}
 
 	async function save() {
-		if (name.trim().length < 2) return toast.show({ type: 'error', text1: 'Add your full name' });
+		if (name.trim().length < 2) return toast.show({ type: 'error', text1: 'Add your full name', text2: 'Use the name on your ID.' });
 		setSaving(true);
 		const res = await formMutation<{ updateProfile: { message: string; data: User['profile'] } }, unknown>(UPDATE_USER_PROFILE, {
 			input: { fullName: name.trim(), gender: me?.profile?.gender, profilePicture: photo ? generateRNFile(photo) : undefined }

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -31,6 +31,13 @@ export default function Gallery() {
 	const initial = Math.min(Number(start ?? 0) || 0, Math.max(photos.length - 1, 0));
 	const [index, setIndex] = useState(initial);
 	const pager = useRef<FlatList>(null);
+	// Photos arrive after mount; land on the one that was tapped.
+	useEffect(() => {
+		if (!photos.length) return;
+		setIndex(initial);
+		const t = setTimeout(() => pager.current?.scrollToIndex({ index: initial, animated: false }), 0);
+		return () => clearTimeout(t);
+	}, [photos.length, initial]);
 	const close = () => (router.canGoBack() ? router.back() : router.replace(`/hostings/${id}`));
 	const cur = photos[index];
 

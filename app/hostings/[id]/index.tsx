@@ -28,7 +28,7 @@ import { useSaveToggle } from '@/components/k/listing-card';
 import { color, font, gutter, radius } from '@/lib/k/theme';
 import { date, duration, humanize, intervalAdverb, isShortLet, naira, perInterval, place } from '@/lib/k/format';
 import { TIERS, TIER_ORDER, tierRank } from '@/lib/k/tiers';
-import { listingMode, listingPhotos, shareUrl, type Listing } from '@/lib/k/listing';
+import { listingMode, listingPhotos, roomLabel, shareUrl, type Listing } from '@/lib/k/listing';
 import { isSignedIn, requireSignIn } from '@/lib/k/session';
 import { useUserStore } from '@/lib/stores/users';
 import { toast } from '@/lib/hooks/use-toast';
@@ -277,7 +277,7 @@ function Detail({ h }: { h: Listing }) {
 											<View style={{ width: 160, gap: 6 }}>
 												<Photo assetId={r.images?.[0]?.asset?.id} w={400} h={300} style={{ width: 160, height: 116 }} />
 												<KText v="smallStrong">
-													{r.name}
+													{roomLabel(r.name)}
 													{(r.count ?? 1) > 1 ? ` × ${r.count}` : ''}
 												</KText>
 												{r.description ? (
