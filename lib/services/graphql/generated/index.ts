@@ -4713,6 +4713,20 @@ export type SetHostingCoverMutationVariables = Exact<{
 
 export type SetHostingCoverMutation = { __typename?: 'Mutations', setHostingCover: { __typename?: 'MessageResponse', message: string } };
 
+export type KInitiateBookingApplicationMutationVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+}>;
+
+
+export type KInitiateBookingApplicationMutation = { __typename?: 'Mutations', initiateBookingApplication: { __typename?: 'BookingApplicationResponse', message: string, data?: { __typename?: 'BookingApplication', id: string, status: BookingApplicationStatus, email?: string | null, fullName?: string | null, correspondenceAddress?: string | null, commencementDate?: string | null, phoneNumber?: string | null, intervalMultiplier?: number | null, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes?: GuestFormOccupancyType | null, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null, bookingAggrement?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null } | null } };
+
+export type KUpdateBookingApplicationMutationVariables = Exact<{
+  input: BookingApplicationUpdateInput;
+}>;
+
+
+export type KUpdateBookingApplicationMutation = { __typename?: 'Mutations', updateBookingApplication: { __typename?: 'BookingApplicationResponse', message: string, data?: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, commencementDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, bookingAggrement?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes?: GuestFormOccupancyType | null, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null } | null } };
+
 export type MarkNotificationAsReadMutationVariables = Exact<{
   notificationId: Scalars['String']['input'];
 }>;
@@ -4997,7 +5011,7 @@ export type HostingsQueryVariables = Exact<{
 }>;
 
 
-export type HostingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, childCount: number, priceFrom?: any | null, isBookable: boolean, price?: any | null, listingType?: ListingType | null, managementType: ManagementType, totalRatings?: number | null, averageRating?: number | null, country?: string | null, state?: string | null, title?: string | null, city?: string | null, street?: string | null, landmarks?: string | null, saved: boolean, publishStatus?: PublishStatus | null, latitude?: string | null, longitude?: string | null, paymentInterval?: PaymentInterval | null, createdAt: string, verification?: { __typename?: 'HostingVerificationData', id: string, verificationTier: HostingVerificationTier, tierTooltip: string } | null, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', publicUrl: string, lastUpdated: string } } | null, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } }> }> };
+export type HostingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, childCount: number, priceFrom?: any | null, isBookable: boolean, price?: any | null, listingType?: ListingType | null, managementType: ManagementType, totalRatings?: number | null, averageRating?: number | null, country?: string | null, state?: string | null, title?: string | null, city?: string | null, street?: string | null, landmarks?: string | null, saved: boolean, publishStatus?: PublishStatus | null, latitude?: string | null, longitude?: string | null, paymentInterval?: PaymentInterval | null, createdAt: string, verification?: { __typename?: 'HostingVerificationData', id: string, verificationTier: HostingVerificationTier, tierTooltip: string } | null, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } } | null, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } }> }> };
 
 export type SavedHostingFoldersQueryVariables = Exact<{
   pagination?: InputMaybe<PaginationInput>;
@@ -5027,7 +5041,7 @@ export type HostListingsQueryVariables = Exact<{
 }>;
 
 
-export type HostListingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, childCount: number, title?: string | null, description?: string | null, state?: string | null, city?: string | null, listingType?: ListingType | null, managementType: ManagementType, publishStatus?: PublishStatus | null, bookingApplicationsCount: number, pendingBookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } } | null }> };
+export type HostListingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, childCount: number, title?: string | null, price?: any | null, priceFrom?: any | null, paymentInterval?: PaymentInterval | null, description?: string | null, state?: string | null, city?: string | null, listingType?: ListingType | null, managementType: ManagementType, publishStatus?: PublishStatus | null, bookingApplicationsCount: number, pendingBookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } } | null }> };
 
 export type RecommendedTenancyTemplateQueryVariables = Exact<{
   hostingId: Scalars['String']['input'];
@@ -5061,6 +5075,43 @@ export type UserProfileQueryVariables = Exact<{
 
 
 export type UserProfileQuery = { __typename?: 'Query', userProfile: { __typename?: 'PublicUserProfile', id: string, fullName: string, avatar?: string | null, memberSince: string, verified: boolean, agentRatingAvg?: number | null, agentReviewCount: number, reviews: Array<{ __typename?: 'AgentReview', id: string, rating: number, comment?: string | null, reviewerName: string, reviewerAvatar?: string | null, hostingId?: string | null, createdAt: string }>, listings: Array<{ __typename?: 'Hosting', id: string, title?: string | null, state?: string | null, city?: string | null, price?: any | null, listingType?: ListingType | null, managementType: ManagementType, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }> } };
+
+export type KSavedQueryVariables = Exact<{
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type KSavedQuery = { __typename?: 'Query', savedHostings: Array<{ __typename?: 'SavedHosting', id: string, createdAt: string, hosting: { __typename?: 'Hosting', id: string, kind: HostingKind, childCount: number, priceFrom?: any | null, isBookable: boolean, price?: any | null, listingType?: ListingType | null, managementType: ManagementType, totalRatings?: number | null, averageRating?: number | null, state?: string | null, title?: string | null, city?: string | null, saved: boolean, publishStatus?: PublishStatus | null, latitude?: string | null, longitude?: string | null, paymentInterval?: PaymentInterval | null, verification?: { __typename?: 'HostingVerificationData', id: string, verificationTier: HostingVerificationTier, tierTooltip: string } | null, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } } | null, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } }> } }> };
+
+export type KBookingApplicationsQueryVariables = Exact<{
+  filter?: InputMaybe<BookingApplicationFilter>;
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type KBookingApplicationsQuery = { __typename?: 'Query', bookingApplications: Array<{ __typename?: 'BookingApplication', commencementDate?: string | null, fullName?: string | null, createdAt: string, status: BookingApplicationStatus, id: string, intervalMultiplier?: number | null, booking?: { __typename?: 'Booking', id: string } | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string } } | null }, guest: { __typename?: 'Guest', user: { __typename?: 'User', profile: { __typename?: 'Profile', fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } } } }> };
+
+export type KBookingApplicationQueryVariables = Exact<{
+  bookingApplicationId: Scalars['String']['input'];
+}>;
+
+
+export type KBookingApplicationQuery = { __typename?: 'Query', bookingApplication: { __typename?: 'BookingApplication', id: string, fullName?: string | null, email?: string | null, phoneNumber?: string | null, commencementDate?: string | null, correspondenceAddress?: string | null, intervalMultiplier?: number | null, status: BookingApplicationStatus, statusDetails?: string | null, createdAt: string, lastUpdated: string, guest: { __typename?: 'Guest', user: { __typename?: 'User', id: string, kyc: { __typename?: 'Kyc', ninVerified?: boolean | null, bvnVerified?: boolean | null }, profile: { __typename?: 'Profile', fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } } }, guestFormData?: { __typename?: 'GuestFormData', employmentStatus: GuestFormEmploymentStatus, incomeRanges?: GuestFormIncomeRange | null, occupancyTypes?: GuestFormOccupancyType | null, guarantorRelationships?: GuestFormGuarantorRelationships | null, guarantorName?: string | null, guarantorPhone?: string | null, guarantorAddress?: string | null } | null, bookingAggrement?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, priority: number, content: string, isMandatory: boolean, isActive: boolean, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, booking?: { __typename?: 'Booking', id: string } | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null } } };
+
+export type KBookingsQueryVariables = Exact<{
+  filter?: InputMaybe<BookingFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type KBookingsQuery = { __typename?: 'Query', bookings: Array<{ __typename?: 'Booking', id: string, expiresAt?: string | null, paymentStatus: PaymentStatus, status?: BookingStatus | null, createdAt: string, commencementDate?: string | null, expiryDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, cautionFee?: any | null, legalFee?: any | null, stampDuty?: any | null, serviceCharge?: any | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string, reference?: string | null } | null, bookingApplication: { __typename?: 'BookingApplication', id: string } }> };
+
+export type KBookingQueryVariables = Exact<{
+  bookingId: Scalars['String']['input'];
+}>;
+
+
+export type KBookingQuery = { __typename?: 'Query', booking: { __typename?: 'Booking', id: string, expiresAt?: string | null, autoFinalizeAt?: string | null, paymentStatus: PaymentStatus, createdAt: string, commencementDate?: string | null, expiryDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, fullName: string, email: string, paymentMethod?: string | null, status?: BookingStatus | null, cautionFee?: any | null, serviceCharge?: any | null, legalFee?: any | null, stampDuty?: any | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, propertyType?: string | null, street?: string | null, landmarks?: string | null, averageRating?: number | null, totalRatings?: number | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string, status: TransactionStatus, reference?: string | null, amount: any } | null, tenancyAgreementAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null, userReview?: { __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, checkIn?: number | null, accuracy?: number | null, cleanliness?: number | null, communication?: number | null, value?: number | null, location?: number | null, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } } | null, bookingApplication: { __typename?: 'BookingApplication', id: string, intervalMultiplier?: number | null, commencementDate?: string | null } } };
 
 export type KycStatusQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -6684,6 +6735,125 @@ export const SetHostingCoverDocument = gql`
 export function useSetHostingCoverMutation() {
   return Urql.useMutation<SetHostingCoverMutation, SetHostingCoverMutationVariables>(SetHostingCoverDocument);
 };
+export const KInitiateBookingApplicationDocument = gql`
+    mutation KInitiateBookingApplication($hostingId: String!) {
+  initiateBookingApplication(hostingId: $hostingId) {
+    message
+    data {
+      id
+      status
+      email
+      fullName
+      correspondenceAddress
+      commencementDate
+      phoneNumber
+      intervalMultiplier
+      guestFormData {
+        employmentStatus
+        incomeRanges
+        occupancyTypes
+        guarantorRelationships
+        guarantorName
+        guarantorPhone
+        guarantorAddress
+      }
+      bookingAggrement {
+        totalSections
+        sections {
+          id
+          title
+          description
+          priority
+          preamble
+          subClauses {
+            id
+            title
+            description
+            priority
+            content
+            isMandatory
+            isActive
+            isCustom
+            requiredVariables {
+              name
+              type
+            }
+            providedValues {
+              key
+              value
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useKInitiateBookingApplicationMutation() {
+  return Urql.useMutation<KInitiateBookingApplicationMutation, KInitiateBookingApplicationMutationVariables>(KInitiateBookingApplicationDocument);
+};
+export const KUpdateBookingApplicationDocument = gql`
+    mutation KUpdateBookingApplication($input: BookingApplicationUpdateInput!) {
+  updateBookingApplication(input: $input) {
+    message
+    data {
+      id
+      fullName
+      email
+      phoneNumber
+      commencementDate
+      correspondenceAddress
+      intervalMultiplier
+      status
+      statusDetails
+      createdAt
+      lastUpdated
+      bookingAggrement {
+        totalSections
+        sections {
+          id
+          title
+          description
+          priority
+          preamble
+          subClauses {
+            id
+            title
+            description
+            priority
+            content
+            isMandatory
+            isActive
+            isCustom
+            requiredVariables {
+              name
+              type
+            }
+            providedValues {
+              key
+              value
+            }
+          }
+        }
+      }
+      guestFormData {
+        employmentStatus
+        incomeRanges
+        occupancyTypes
+        guarantorRelationships
+        guarantorName
+        guarantorPhone
+        guarantorAddress
+      }
+    }
+  }
+}
+    `;
+
+export function useKUpdateBookingApplicationMutation() {
+  return Urql.useMutation<KUpdateBookingApplicationMutation, KUpdateBookingApplicationMutationVariables>(KUpdateBookingApplicationDocument);
+};
 export const MarkNotificationAsReadDocument = gql`
     mutation MarkNotificationAsRead($notificationId: String!) {
   markNotificationAsRead(notificationId: $notificationId) {
@@ -7961,6 +8131,7 @@ export const HostingsDocument = gql`
     }
     coverImage {
       asset {
+        id
         publicUrl
         lastUpdated
       }
@@ -8065,6 +8236,9 @@ export const HostListingsDocument = gql`
       }
     }
     title
+    price
+    priceFrom
+    paymentInterval
     description
     state
     city
@@ -8207,6 +8381,326 @@ export const UserProfileDocument = gql`
 
 export function useUserProfileQuery(options: Omit<Urql.UseQueryArgs<UserProfileQueryVariables>, 'query'>) {
   return Urql.useQuery<UserProfileQuery, UserProfileQueryVariables>({ query: UserProfileDocument, ...options });
+};
+export const KSavedDocument = gql`
+    query KSaved($pagination: PaginationInput) {
+  savedHostings(pagination: $pagination) {
+    id
+    createdAt
+    hosting {
+      id
+      kind
+      childCount
+      priceFrom
+      isBookable
+      price
+      listingType
+      managementType
+      totalRatings
+      averageRating
+      state
+      title
+      city
+      saved
+      publishStatus
+      latitude
+      longitude
+      paymentInterval
+      verification {
+        id
+        verificationTier
+        tierTooltip
+      }
+      coverImage {
+        asset {
+          id
+          publicUrl
+          lastUpdated
+        }
+      }
+      images(limit: 4) {
+        id
+        asset {
+          id
+          publicUrl
+          lastUpdated
+          originalFilename
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useKSavedQuery(options?: Omit<Urql.UseQueryArgs<KSavedQueryVariables>, 'query'>) {
+  return Urql.useQuery<KSavedQuery, KSavedQueryVariables>({ query: KSavedDocument, ...options });
+};
+export const KBookingApplicationsDocument = gql`
+    query KBookingApplications($filter: BookingApplicationFilter, $pagination: PaginationInput) {
+  bookingApplications(filter: $filter, pagination: $pagination) {
+    commencementDate
+    fullName
+    createdAt
+    status
+    id
+    intervalMultiplier
+    booking {
+      id
+    }
+    hosting {
+      id
+      title
+      city
+      country
+      state
+      price
+      paymentInterval
+      coverImage {
+        id
+        asset {
+          id
+        }
+      }
+    }
+    guest {
+      user {
+        profile {
+          fullName
+          image {
+            publicUrl
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useKBookingApplicationsQuery(options?: Omit<Urql.UseQueryArgs<KBookingApplicationsQueryVariables>, 'query'>) {
+  return Urql.useQuery<KBookingApplicationsQuery, KBookingApplicationsQueryVariables>({ query: KBookingApplicationsDocument, ...options });
+};
+export const KBookingApplicationDocument = gql`
+    query KBookingApplication($bookingApplicationId: String!) {
+  bookingApplication(bookingApplicationId: $bookingApplicationId) {
+    id
+    fullName
+    email
+    phoneNumber
+    commencementDate
+    correspondenceAddress
+    intervalMultiplier
+    status
+    statusDetails
+    createdAt
+    lastUpdated
+    guest {
+      user {
+        id
+        kyc {
+          ninVerified
+          bvnVerified
+        }
+        profile {
+          fullName
+          image {
+            publicUrl
+          }
+        }
+      }
+    }
+    guestFormData {
+      employmentStatus
+      incomeRanges
+      occupancyTypes
+      guarantorRelationships
+      guarantorName
+      guarantorPhone
+      guarantorAddress
+    }
+    bookingAggrement {
+      totalSections
+      sections {
+        id
+        title
+        description
+        priority
+        preamble
+        subClauses {
+          id
+          title
+          description
+          priority
+          content
+          isMandatory
+          isActive
+          isCustom
+          requiredVariables {
+            name
+            type
+          }
+          providedValues {
+            key
+            value
+          }
+        }
+      }
+    }
+    booking {
+      id
+    }
+    hosting {
+      id
+      title
+      city
+      country
+      state
+      price
+      paymentInterval
+      coverImage {
+        id
+        asset {
+          id
+          publicUrl
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useKBookingApplicationQuery(options: Omit<Urql.UseQueryArgs<KBookingApplicationQueryVariables>, 'query'>) {
+  return Urql.useQuery<KBookingApplicationQuery, KBookingApplicationQueryVariables>({ query: KBookingApplicationDocument, ...options });
+};
+export const KBookingsDocument = gql`
+    query KBookings($filter: BookingFilterInput, $pagination: PaginationInput) {
+  bookings(filter: $filter, pagination: $pagination) {
+    id
+    hosting {
+      id
+      coverImage {
+        id
+        asset {
+          id
+          publicUrl
+        }
+      }
+      title
+      city
+      country
+      state
+      price
+      paymentInterval
+    }
+    expiresAt
+    paymentStatus
+    status
+    transaction {
+      id
+      reference
+    }
+    bookingApplication {
+      id
+    }
+    createdAt
+    commencementDate
+    expiryDate
+    guestServiceCharge
+    amount
+    phoneNumber
+    cautionFee
+    legalFee
+    stampDuty
+    serviceCharge
+  }
+}
+    `;
+
+export function useKBookingsQuery(options?: Omit<Urql.UseQueryArgs<KBookingsQueryVariables>, 'query'>) {
+  return Urql.useQuery<KBookingsQuery, KBookingsQueryVariables>({ query: KBookingsDocument, ...options });
+};
+export const KBookingDocument = gql`
+    query KBooking($bookingId: String!) {
+  booking(bookingId: $bookingId) {
+    id
+    hosting {
+      id
+      coverImage {
+        id
+        asset {
+          id
+          publicUrl
+        }
+      }
+      title
+      city
+      country
+      state
+      price
+      paymentInterval
+      propertyType
+      street
+      landmarks
+      averageRating
+      totalRatings
+    }
+    expiresAt
+    autoFinalizeAt
+    paymentStatus
+    transaction {
+      id
+      status
+      reference
+      amount
+    }
+    createdAt
+    commencementDate
+    expiryDate
+    guestServiceCharge
+    amount
+    phoneNumber
+    fullName
+    email
+    paymentMethod
+    tenancyAgreementAsset {
+      id
+      publicUrl
+    }
+    status
+    userReview {
+      averageRating
+      description
+      lastUpdated
+      id
+      user {
+        id
+        profile {
+          fullName
+          id
+          gender
+        }
+      }
+      checkIn
+      accuracy
+      cleanliness
+      communication
+      value
+      location
+    }
+    bookingApplication {
+      id
+      intervalMultiplier
+      commencementDate
+    }
+    cautionFee
+    serviceCharge
+    legalFee
+    stampDuty
+  }
+}
+    `;
+
+export function useKBookingQuery(options: Omit<Urql.UseQueryArgs<KBookingQueryVariables>, 'query'>) {
+  return Urql.useQuery<KBookingQuery, KBookingQueryVariables>({ query: KBookingDocument, ...options });
 };
 export const KycStatusDocument = gql`
     query KycStatus {

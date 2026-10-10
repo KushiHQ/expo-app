@@ -84,7 +84,8 @@ export default ({ config }) => ({
 	},
 	web: {
 		bundler: "metro",
-		output: "static",
+		// CI web previews render a single-page build; everything else is unchanged.
+		output: process.env.WEB_PREVIEW ? "single" : "static",
 		favicon: "./assets/icons/adaptive-icon.png",
 	},
 	extra: {

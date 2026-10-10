@@ -1,592 +1,522 @@
-import Button from '@/components/atoms/a-button';
-import Carousel from '@/components/atoms/a-carousel';
-import { HostingDetailsSkeleton } from '@/components/molecules/m-hosting-card';
-import { PROPERTY_BLURHASH } from '@/lib/constants/images';
-import { Fonts } from '@/lib/constants/theme';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
+import { useEffect, useMemo, useState } from 'react';
+import { FlatList, Pressable, Share, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MapView, { Circle } from 'react-native-maps';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import {
-  HostingKind,
-  ListingEventKind,
-  ListingType,
-  UnitStructure,
-  useHostingQuery,
-  useInitiateHostingChatMutation,
-  useRecordListingEventMutation,
-} from '@/lib/services/graphql/generated';
-import HostingUnits from '@/components/organisms/o-hosting-units';
-import { cast } from '@/lib/types/utils';
-import { hexToRgba } from '@/lib/utils/colors';
-import { handleError } from '@/lib/utils/error';
-import { slugify } from '@/lib/utils/text';
-import { formatPaymentInterval } from '@/lib/utils/hosting/interval';
-import { Image } from 'expo-image';
-import { useLocalSearchParams } from 'expo-router';
-import { useRouter } from '@/lib/hooks/use-router';
-import {
-  AlignLeft,
-  Building2,
-  MapPin,
-  MessageSquare,
-  Rocket,
-  TrendingUp,
-  Zap,
+	ArrowLeft,
+	BedDouble,
+	Building2,
+	CalendarClock,
+	Check,
+	ChevronRight,
+	Heart,
+	Landmark,
+	MapPin,
+	MessageCircle,
+	PlayCircle,
+	Share2,
+	ShieldCheck,
+	Star,
+	Users,
+	Zap
 } from 'lucide-react-native';
-import { SURFACE } from '@/lib/constants/surface';
-import SectionHeader from '@/components/atoms/a-section-header';
-import React from 'react';
-import { Platform, Pressable, Share, View } from 'react-native';
-import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
-import { useUser } from '@/lib/hooks/user';
-import Skeleton from '@/components/atoms/a-skeleton';
-import DetailsLayout from '@/components/layouts/details';
-import HostingLikeButton from '@/components/atoms/a-hosting-like-button';
-import ThemedText from '@/components/atoms/a-themed-text';
-import TruncatedText from '@/components/atoms/a-truncated-text';
-import { MynauiStarSolid } from '@/components/icons/i-star';
-import HostingHost from '@/components/molecules/m-hosting-host';
-import HostingFacilities from '@/components/molecules/m-hosting-facilities';
-import HostingGalleryComponent from '@/components/molecules/m-hosting-gallery';
-import { getAssetResizeUrl } from '@/lib/utils/urls';
-import HostingReviews from '@/components/organisms/o-hosting-reviews';
-import HostingLocation from '@/components/molecules/m-hosting-location';
-import AVerificationTierBadge from '@/components/atoms/a-verification-tier-badge';
-import ListingTypeBadge from '@/components/atoms/a-listing-type-badge';
-import ManagementBadge from '@/components/atoms/a-management-badge';
-import {
-  electricityBillingLabel,
-  isAgentManaged,
-  showElectricityDebt,
-} from '@/lib/constants/hosting/step-rules';
+import { Avatar, Button, Card, Divider, Empty, Eyebrow, IconButton, KText, Photo, Pill, Sheet, Skeleton, Stepper, Waypoint } from '@/components/k';
+import { QuoteLines, useQuote } from '@/components/k/quote';
+import { useSaveToggle } from '@/components/k/listing-card';
+import { color, font, gutter, radius } from '@/lib/k/theme';
+import { date, duration, humanize, intervalAdverb, isShortLet, naira, perInterval, place } from '@/lib/k/format';
+import { TIERS, TIER_ORDER, tierRank } from '@/lib/k/tiers';
+import { listingMode, listingPhotos, roomLabel, shareUrl, type Listing } from '@/lib/k/listing';
+import { isSignedIn, requireSignIn } from '@/lib/k/session';
+import { useUserStore } from '@/lib/stores/users';
+import { toast } from '@/lib/hooks/use-toast';
+import { ListingEventKind, useHostingQuery, useInitiateHostingChatMutation, useRecordListingEventMutation } from '@/lib/services/graphql/generated';
 
-export default function HostingDetails() {
-  const router = useRouter();
-  const { id } = useLocalSearchParams();
-  const [_, initiateChat] = useInitiateHostingChatMutation();
-  const [, recordListingEvent] = useRecordListingEventMutation();
-  const [{ data, error, fetching }] = useHostingQuery({
-    variables: { hostingId: cast(id), childrenOnSale: true },
-    requestPolicy: 'cache-and-network',
-  });
-  const colors = useThemeColors();
-  const { isTablet } = useBreakpoint();
+const MAX: Record<string, number> = { NIGHTLY: 60, WEEKLY: 26, MONTHLY: 24, ANUALLY: 5, ONE_TIME_PAYMENT: 1 };
 
-  const hosting = data?.hosting;
-  const { user, setReturnUrl } = useUser();
-  const isHost = !!hosting && hosting.host.user.id === user.user?.id;
+export default function ListingScreen() {
+	const { id } = useLocalSearchParams<{ id: string }>();
+	const [{ data, fetching, error }, refetch] = useHostingQuery({ variables: { hostingId: id, pagination: { limit: 20, offset: 0 }, childrenOnSale: true } });
+	const h = data?.hosting;
+	const [, record] = useRecordListingEventMutation();
+	useEffect(() => {
+		if (id) record({ hostingId: id, kind: ListingEventKind.View }).catch(() => {});
+	}, [id, record]);
 
-  const handleShare = async () => {
-    const slug = `${slugify(hosting?.title ?? '')}___${id}`;
-    const base = process.env.EXPO_PUBLIC_SHARE_PROPERTY_URL || 'https://kushicorp.com/guest/<slug>';
-    const url = base.replace('<slug>', slug);
-    // Tag so the recipient's web page offers/attempts to open the Kushi app.
-    const shareUrl = `${url}${url.includes('?') ? '&' : '?'}shared=true`;
-    // iOS treats `message` and `url` as separate share items, so putting the
-    // link in BOTH duplicates it. On iOS keep the URL only in `url` (nicer link
-    // preview too); on Android `url` is ignored, so the link must live in the
-    // message text.
-    const caption = `Check out this property on Kushi: ${hosting?.title}`;
-    try {
-      await Share.share(
-        Platform.OS === 'ios'
-          ? { title: hosting?.title ?? undefined, message: caption, url: shareUrl }
-          : { title: hosting?.title ?? undefined, message: `${caption}\n\n${shareUrl}` },
-      );
-      if (hosting?.id) {
-        recordListingEvent({ hostingId: hosting.id, kind: ListingEventKind.Share });
-      }
-    } catch (error: any) {
-      handleError(error);
-    }
-  };
-
-  React.useEffect(() => {
-    if (error) handleError(error);
-  }, [error]);
-
-  // Count a view once per listing load — but not when the owner views their own.
-  React.useEffect(() => {
-    if (hosting?.id && !isHost) {
-      recordListingEvent({ hostingId: hosting.id, kind: ListingEventKind.View });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hosting?.id, isHost]);
-
-  const handleInitiateChat = () => {
-    if (!hosting) return;
-    // A guest exploring without an account can reach this screen. Instead of
-    // firing the mutation (which errors), send them to sign in and bring them
-    // right back to this listing afterwards via the returnUrl flow.
-    if (!user.user?.id) {
-      setReturnUrl(`/hostings/${hosting.id}`);
-      router.push('/auth/sign-in');
-      return;
-    }
-    recordListingEvent({ hostingId: hosting.id, kind: ListingEventKind.Message });
-    initiateChat({ hostingId: hosting?.id }).then((res) => {
-      if (res.error) {
-        handleError(res.error);
-      }
-      if (res.data) {
-        router.push(`/chats/${res.data.initiateHostingChat.id}`);
-      }
-    });
-  };
-
-  return (
-    <DetailsLayout
-      title="Property Details"
-      withShare
-      withSupport
-      onShare={handleShare}
-      footer={
-        fetching ? (
-          <View
-            className="flex-row items-center gap-4 p-6"
-            style={{ backgroundColor: colors.background }}
-          >
-            <View className="flex-1 gap-1">
-              <Skeleton style={{ height: 14, width: 80, borderRadius: 4 }} />
-              <Skeleton style={{ height: 20, width: 120, borderRadius: 4 }} />
-            </View>
-            <Skeleton style={{ height: 50, width: 140, borderRadius: 12 }} />
-          </View>
-        ) : isHost ? (
-          <View
-            style={{
-              backgroundColor: colors.background,
-              paddingHorizontal: 16,
-              paddingBottom: 32,
-              paddingTop: 12,
-              gap: 10,
-            }}
-          >
-            <Button
-              type="primary"
-              onPress={() => router.push(`/hostings/form/onboarding?id=${hosting?.id}`)}
-            >
-              <ThemedText content="primary">Edit Listing</ThemedText>
-            </Button>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <View style={{ flex: 1 }}>
-                <Button type="tinted" onPress={() => router.push(`/hostings/${hosting?.id}/boost`)}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Rocket size={16} color={colors.primary} />
-                    <ThemedText content="tinted">Boost</ThemedText>
-                  </View>
-                </Button>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Button
-                  type="tinted"
-                  onPress={() => router.push(`/hostings/${hosting?.id}/insights`)}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <TrendingUp size={16} color={colors.primary} />
-                    <ThemedText content="tinted">Insights</ThemedText>
-                  </View>
-                </Button>
-              </View>
-            </View>
-          </View>
-        ) : hosting?.kind === HostingKind.Parent &&
-          hosting?.unitStructure !== UnitStructure.Group ? (
-          <View
-            style={{
-              backgroundColor: colors.background,
-              paddingHorizontal: 16,
-              paddingBottom: 32,
-              paddingTop: 12,
-            }}
-          >
-            <ThemedText
-              style={{
-                fontSize: 13,
-                color: hexToRgba(colors.text, 0.6),
-                textAlign: 'center',
-              }}
-            >
-              {hosting.childCount} {hosting.childCount === 1 ? 'unit' : 'units'} available — choose
-              one above to apply.
-            </ThemedText>
-          </View>
-        ) : hosting?.kind === HostingKind.Child &&
-          hosting?.parent?.unitStructure === UnitStructure.Group ? (
-          <View
-            style={{
-              backgroundColor: colors.background,
-              paddingHorizontal: 16,
-              paddingBottom: 32,
-              paddingTop: 12,
-              gap: 10,
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: hexToRgba(colors.text, 0.05),
-                borderRadius: 14,
-                padding: 14,
-                gap: 4,
-              }}
-            >
-              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 13 }}>
-                Part of a property sold as a whole
-              </ThemedText>
-              <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55) }}>
-                This unit isn’t sold on its own. Everything is transacted on the full property
-                listing.
-              </ThemedText>
-            </View>
-            <Button
-              type="primary"
-              onPress={() => router.push(`/hostings/${hosting?.parentId}`)}
-            >
-              <ThemedText content="primary">View the full property</ThemedText>
-            </Button>
-          </View>
-        ) : isAgentManaged(hosting?.managementType) ? (
-          <View
-            style={{
-              backgroundColor: colors.background,
-              paddingHorizontal: 16,
-              paddingBottom: 32,
-              paddingTop: 12,
-              gap: 10,
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: hexToRgba(colors.text, 0.05),
-                borderRadius: 14,
-                padding: 14,
-                gap: 4,
-              }}
-            >
-              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 13 }}>
-                Managed by the agent
-              </ThemedText>
-              <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55) }}>
-                Contact the agent directly to arrange a viewing and terms. Kushi doesn’t process this
-                transaction.
-              </ThemedText>
-            </View>
-            <View className="mt-2 flex-row items-center justify-between gap-8">
-              <View className="flex-1 gap-1">
-                <ThemedText style={{ fontSize: 15, color: hexToRgba(colors.text, 0.6) }}>
-                  Price
-                </ThemedText>
-                <View className="flex-row items-center gap-2">
-                  <ThemedText>₦{Number(hosting?.price).toLocaleString()}</ThemedText>
-                  <ThemedText style={{ color: hexToRgba(colors.text, 0.5) }}>
-                    {formatPaymentInterval(hosting?.paymentInterval)}
-                  </ThemedText>
-                </View>
-              </View>
-              <Button className="flex-1" type="primary" onPress={handleInitiateChat}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <MessageSquare size={16} color={colors['primary-content']} />
-                  <ThemedText content="primary">Message Agent</ThemedText>
-                </View>
-              </Button>
-            </View>
-          </View>
-        ) : hosting?.listingType === ListingType.Sale ? (
-          <View
-            style={{
-              backgroundColor: colors.background,
-              paddingHorizontal: 16,
-              paddingBottom: 32,
-              paddingTop: 12,
-              gap: 10,
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: hexToRgba(colors.primary, 0.1),
-                borderRadius: 14,
-                padding: 14,
-                gap: 6,
-              }}
-            >
-              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 13 }}>
-                Sale — Coming Soon
-              </ThemedText>
-              <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.55) }}>
-                Online purchase processing for sale listings isn’t available yet. Contact the host
-                directly to arrange the sale.
-              </ThemedText>
-            </View>
-            <View className="mt-4 flex-row justify-between gap-8">
-              <View className="flex-1 gap-1">
-                <ThemedText style={{ fontSize: 15, color: hexToRgba(colors.text, 0.6) }}>
-                  Total Payment
-                </ThemedText>
-                <View className="flex-row items-center gap-2">
-                  <ThemedText>₦{Number(hosting?.price).toLocaleString()}</ThemedText>
-                  <ThemedText style={{ color: hexToRgba(colors.text, 0.5) }}>
-                    {formatPaymentInterval(hosting?.paymentInterval)}
-                  </ThemedText>
-                </View>
-              </View>
-              <Button className="flex-1" type="primary" onPress={handleInitiateChat}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <MessageSquare size={16} color={colors['primary-content']} />
-                  <ThemedText content="primary">Message Host</ThemedText>
-                </View>
-              </Button>
-            </View>
-          </View>
-        ) : (
-          <View
-            className="flex-row items-center p-6"
-            style={{ backgroundColor: colors.background }}
-          >
-            <View className="gap-1">
-              <ThemedText style={{ fontSize: 15, color: hexToRgba(colors.text, 0.6) }}>
-                Total Payment
-              </ThemedText>
-              <View className="flex-row items-center gap-2">
-                <ThemedText>₦{Number(hosting?.price).toLocaleString()}</ThemedText>
-                <ThemedText style={{ color: hexToRgba(colors.text, 0.5) }}>
-                  {formatPaymentInterval(hosting?.paymentInterval)}
-                </ThemedText>
-              </View>
-            </View>
-            <View className="flex-1 items-end">
-              <Button
-                onPress={() => {
-                  router.push(`/hostings/${hosting?.id}/reservation/checkout-summary/`);
-                }}
-                type="primary"
-              >
-                <ThemedText content="primary">Reserve Now</ThemedText>
-              </Button>
-            </View>
-          </View>
-        )
-      }
-    >
-      <View>
-        {fetching ? (
-          <HostingDetailsSkeleton />
-        ) : (
-          <>
-            <View style={{ height: isTablet ? 420 : 300 }} className="relative">
-              <View
-                style={{ boxShadow: SURFACE.shadow }}
-                className="h-full w-full overflow-hidden rounded-3xl"
-              >
-                <Carousel autoplay style={{ height: '100%', width: '100%' }}>
-                  {(hosting?.rooms.map((r) => r.images).flat() ?? []).map((img, index) => (
-                    <Image
-                      source={{
-                        uri: img.asset?.id
-                          ? getAssetResizeUrl(img.asset.id, 1280, 960, 85, img.asset.lastUpdated)
-                          : img.asset?.publicUrl,
-                      }}
-                      style={{ height: '100%', width: '100%' }}
-                      contentFit="cover"
-                      transition={300}
-                      placeholder={{ blurhash: PROPERTY_BLURHASH }}
-                      placeholderContentFit="cover"
-                      cachePolicy="memory-disk"
-                      priority="high"
-                      recyclingKey={img.id}
-                      key={index}
-                    />
-                  ))}
-                </Carousel>
-              </View>
-              {/* Verification tier badge sits over the carousel (outside the
-								clipped wrapper so its tooltip isn't cut off). */}
-              {hosting?.verification?.verificationTier && (
-                <View className="absolute left-4 top-4">
-                  <AVerificationTierBadge
-                    tier={hosting.verification.verificationTier}
-                    tooltipDescription={hosting.verification.tierTooltip ?? undefined}
-                  />
-                </View>
-              )}
-            </View>
-            <View className="mt-8">
-              <View className="gap-1.5">
-                <View className="flex-row items-center justify-between">
-                  <ThemedText
-                    numberOfLines={2}
-                    ellipsizeMode="tail"
-                    className="max-w-[82%]"
-                    style={{
-                      fontSize: 22,
-                      fontFamily: Fonts.bold,
-                      lineHeight: 28,
-                    }}
-                  >
-                    {hosting?.title}
-                  </ThemedText>
-                  {hosting && !isHost && (
-                    <HostingLikeButton saved={hosting?.saved ?? false} id={hosting?.id ?? ''} />
-                  )}
-                </View>
-                {isHost && hosting && !hosting.verification?.verificationTier && (
-                  <Pressable
-                    onPress={() =>
-                      router.push(`/hostings/form/verification/overview?id=${hosting.id}`)
-                    }
-                    style={{
-                      marginTop: 8,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: 10,
-                      borderRadius: 12,
-                      padding: 12,
-                      backgroundColor: hexToRgba(colors.primary, 0.08),
-                    }}
-                  >
-                    <View style={{ flex: 1 }}>
-                      <ThemedText
-                        style={{
-                          fontSize: 13,
-                          fontFamily: Fonts.medium,
-                          color: colors.primary,
-                        }}
-                      >
-                        Get this property verified
-                      </ThemedText>
-                      <ThemedText style={{ fontSize: 12, opacity: 0.6 }}>
-                        It’s already listed — verification adds a trust badge guests look for.
-                      </ThemedText>
-                    </View>
-                    <ThemedText style={{ fontSize: 18, color: colors.primary }}>›</ThemedText>
-                  </Pressable>
-                )}
-                <View className="flex-row items-center gap-1.5">
-                  <MapPin size={13} color={hexToRgba(colors.text, 0.45)} />
-                  <ThemedText
-                    style={{
-                      fontSize: 14,
-                      fontFamily: Fonts.medium,
-                      color: hexToRgba(colors.text, 0.6),
-                    }}
-                  >
-                    {[hosting?.city, hosting?.state].filter(Boolean).join(', ')}
-                  </ThemedText>
-                </View>
-                <View className="mt-2 flex-row flex-wrap items-center justify-between gap-3">
-                  <View className="flex-row flex-wrap items-center gap-2">
-                    <ListingTypeBadge listingType={hosting?.listingType} />
-                    <ManagementBadge managementType={hosting?.managementType} />
-                    {hosting?.kind === HostingKind.Parent &&
-                    hosting?.unitStructure === UnitStructure.Group ? (
-                      <View
-                        className="flex-row items-center gap-1.5 rounded-full px-2.5 py-1"
-                        style={{ backgroundColor: hexToRgba(colors.primary, 0.12) }}
-                      >
-                        <Building2 size={12} color={colors.primary} />
-                        <ThemedText
-                          style={{
-                            fontSize: 12,
-                            fontFamily: Fonts.semibold,
-                            color: colors.primary,
-                          }}
-                        >
-                          Sold as a whole · {hosting.childCount}{' '}
-                          {hosting.childCount === 1 ? 'unit' : 'units'}
-                        </ThemedText>
-                      </View>
-                    ) : null}
-                  </View>
-                  <View
-                    className="flex-row items-center gap-1.5 rounded-full px-2.5 py-1"
-                    style={{ backgroundColor: hexToRgba(colors.text, 0.06) }}
-                  >
-                    <MynauiStarSolid size={13} color={colors.primary} />
-                    <ThemedText style={{ fontSize: 13, fontFamily: Fonts.semibold }}>
-                      {Number(hosting?.averageRating ?? '0').toFixed(1)}
-                    </ThemedText>
-                    <ThemedText
-                      style={{
-                        fontSize: 12,
-                        color: hexToRgba(colors.text, 0.45),
-                      }}
-                    >
-                      ({Number(hosting?.totalRatings ?? '0')} reviews)
-                    </ThemedText>
-                  </View>
-                </View>
-                {hosting?.parentId ? (
-                  <Pressable
-                    onPress={() => router.push(`/hostings/${hosting.parentId}`)}
-                    style={{
-                      marginTop: 8,
-                      alignSelf: 'flex-start',
-                      borderRadius: 999,
-                      paddingVertical: 6,
-                      paddingHorizontal: 12,
-                      backgroundColor: hexToRgba(colors.primary, 0.1),
-                    }}
-                  >
-                    <ThemedText
-                      style={{
-                        fontSize: 12,
-                        fontFamily: Fonts.medium,
-                        color: colors.primary,
-                      }}
-                    >
-                      Part of {hosting.parent?.title ?? 'this property'} ›
-                    </ThemedText>
-                  </Pressable>
-                ) : null}
-              </View>
-              <View
-                className="my-8 rounded-3xl p-5"
-                style={{
-                  backgroundColor: hexToRgba(colors.text, 0.05),
-                  boxShadow: SURFACE.shadow,
-                }}
-              >
-                <SectionHeader icon={AlignLeft} title="Description" />
-                <TruncatedText
-                  text={hosting?.description ?? ''}
-                  style={{
-                    fontSize: 14,
-                    fontFamily: Fonts.light,
-                    color: hexToRgba(colors.text, 0.7),
-                  }}
-                />
-              </View>
-            </View>
-            <HostingHost hosting={hosting} isHost={isHost} />
-            <HostingFacilities hosting={hosting} />
-            {hosting?.electricityBilling && (
-              <View
-                className="mt-8 gap-2 rounded-3xl p-5"
-                style={{ backgroundColor: hexToRgba(colors.text, 0.05) }}
-              >
-                <SectionHeader icon={Zap} title="Electricity" />
-                <ThemedText style={{ color: hexToRgba(colors.text, 0.7), fontSize: 15 }}>
-                  {electricityBillingLabel(hosting.electricityBilling)}
-                </ThemedText>
-                {showElectricityDebt(hosting.electricityBilling, hosting.paymentInterval) && (
-                  <ThemedText style={{ fontSize: 13, color: hexToRgba(colors.text, 0.55) }}>
-                    {hosting.electricityBalanceCleared
-                      ? 'No outstanding bills — cleared before move-in (as declared by the host).'
-                      : hosting.electricityOutstandingBalance
-                        ? `Outstanding balance: ₦${Number(
-                            hosting.electricityOutstandingBalance,
-                          ).toLocaleString()} — as declared by the host.`
-                        : 'Ask the host about any outstanding bills.'}
-                  </ThemedText>
-                )}
-              </View>
-            )}
-            <HostingUnits hosting={hosting} isHost={isHost} />
-
-            <HostingGalleryComponent hosting={hosting} />
-            <HostingReviews hosting={hosting} />
-            <HostingLocation hosting={hosting} />
-          </>
-        )}
-      </View>
-    </DetailsLayout>
-  );
+	if (!h)
+		return (
+			<View style={{ flex: 1, backgroundColor: color.bg }}>
+				{fetching ? (
+					<View style={{ gap: 16 }}>
+						<Skeleton style={{ height: 340, borderRadius: 0 }} />
+						<View style={{ paddingHorizontal: gutter, gap: 12 }}>
+							<Skeleton style={{ height: 28, width: '80%' }} />
+							<Skeleton style={{ height: 16, width: '50%' }} />
+						</View>
+					</View>
+				) : (
+					<View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: gutter }}>
+						<Empty eyebrow="Off the map" title={error ? 'We couldn’t load this home' : 'This home isn’t listed anymore'} body="It may have been taken off Kushi. There are plenty more verified homes waiting." action={error ? 'Try again' : 'Explore homes'} onAction={() => (error ? refetch({ requestPolicy: 'network-only' }) : router.replace('/'))} />
+					</View>
+				)}
+			</View>
+		);
+	return <Detail h={h} />;
 }
+
+function Detail({ h }: { h: Listing }) {
+	const insets = useSafeAreaInsets();
+	const { width } = useWindowDimensions();
+	const me = useUserStore((s) => s.user.user?.id);
+	const mode = listingMode(h);
+	const isOwner = !!me && h.host?.user?.id === me;
+	const photos = useMemo(() => listingPhotos(h), [h]);
+	const [page, setPage] = useState(0);
+	const { saved, toggle } = useSaveToggle(h.id, h.saved);
+	const [, record] = useRecordListingEventMutation();
+	const [{ fetching: opening }, initiateChat] = useInitiateHostingChatMutation();
+	const [more, setMore] = useState(false);
+	const [quoteOpen, setQuoteOpen] = useState(false);
+	const interval = h.paymentInterval ?? 'ANUALLY';
+	const [periods, setPeriods] = useState(1);
+	const { quote, fetching: quoting } = useQuote(h.id, periods, !quoteOpen || mode !== 'book');
+	const tier = h.verification?.verificationTier ?? null;
+	const rank = tierRank(tier);
+	const where = place(h.city, h.state) || 'Nigeria';
+	const hostName = h.host?.user?.profile?.fullName ?? 'Your host';
+	const H = Math.round(width * 0.86);
+
+	async function share() {
+		record({ hostingId: h.id, kind: ListingEventKind.Share }).catch(() => {});
+		await Share.share({ message: `${h.title} on Kushi — ${shareUrl(h)}`, url: shareUrl(h) }).catch(() => {});
+	}
+	async function message() {
+		if (!isSignedIn()) return requireSignIn(`/hostings/${h.id}`);
+		const r = await initiateChat({ hostingId: h.id });
+		const cid = r.data?.initiateHostingChat?.id;
+		if (!cid) return toast.show({ type: 'error', text1: 'Couldn’t open chat', text2: (r.error?.message ?? '').replace('[GraphQL] ', '') || 'Try again in a moment.' });
+		record({ hostingId: h.id, kind: ListingEventKind.Message }).catch(() => {});
+		router.push(`/chats/${cid}`);
+	}
+	function apply() {
+		if (!isSignedIn()) return requireSignIn(`/hostings/${h.id}`);
+		setQuoteOpen(false);
+		router.push({ pathname: '/hostings/[id]/apply', params: { id: h.id, periods: String(periods) } });
+	}
+
+	const facts = [
+		{ icon: Building2, k: 'Type', v: humanize(h.propertyType) },
+		h.listingType !== 'SALE' ? { icon: CalendarClock, k: 'Stay', v: `${isShortLet(interval) ? 'Short-let' : 'Lease'} · ${intervalAdverb(interval)}` } : null,
+		h.maxOccupants ? { icon: Users, k: 'Up to', v: `${h.maxOccupants} people` } : null,
+		(h.childCount ?? 0) > 0 ? { icon: BedDouble, k: 'Units', v: `${h.childCount} available` } : null,
+		h.electricityBilling ? { icon: Zap, k: 'Power', v: humanize(h.electricityBilling) } : null
+	].filter(Boolean) as { icon: typeof Building2; k: string; v: string }[];
+
+	const bars = h.reviewAverage
+		? ([
+				['Cleanliness', h.reviewAverage.cleanliness],
+				['Accuracy', h.reviewAverage.accuracy],
+				['Communication', h.reviewAverage.communication],
+				['Location', h.reviewAverage.location],
+				['Move-in', h.reviewAverage.checkIn],
+				['Value', h.reviewAverage.value]
+			] as [string, number | null | undefined][]).filter(([, v]) => v != null)
+		: [];
+
+	const cta =
+		mode === 'book'
+			? { title: 'Check price & apply', onPress: () => setQuoteOpen(true) }
+			: mode === 'units'
+				? { title: 'Choose a unit', onPress: () => toast.show({ type: 'info', text2: 'Scroll down to pick a unit.' }) }
+				: mode === 'group-unit' && h.parent
+					? { title: 'View whole property', onPress: () => router.push(`/hostings/${h.parent!.id}`) }
+					: mode === 'agent'
+						? { title: 'Message the agent', onPress: message }
+						: mode === 'sale'
+							? { title: 'Contact the seller', onPress: message }
+							: { title: 'Ask about availability', onPress: message };
+
+	return (
+		<View style={{ flex: 1, backgroundColor: color.bg }}>
+			<FlatList
+				data={[0]}
+				keyExtractor={() => 'x'}
+				showsVerticalScrollIndicator={false}
+				contentContainerStyle={{ paddingBottom: 130 }}
+				renderItem={() => (
+					<View>
+						{/* Gallery */}
+						<View style={{ height: H, backgroundColor: color.surface }}>
+							{photos.length ? (
+								<FlatList
+									data={photos}
+									horizontal
+									pagingEnabled
+									showsHorizontalScrollIndicator={false}
+									keyExtractor={(p) => p.id}
+									onMomentumScrollEnd={(e) => setPage(Math.round(e.nativeEvent.contentOffset.x / width))}
+									renderItem={({ item, index }) => (
+										<Pressable onPress={() => router.push({ pathname: '/hostings/[id]/gallery', params: { id: h.id, start: String(index) } })}>
+											<Photo assetId={item.id} w={1200} h={1100} radius={0} priority={index === 0} style={{ width, height: H }} />
+										</Pressable>
+									)}
+								/>
+							) : (
+								<Photo assetId={null} radius={0} style={{ width, height: H }} />
+							)}
+							<View style={[s.galleryTop, { top: insets.top + 8 }]}>
+								<IconButton label="Back" tone="glass" onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}>
+									<ArrowLeft size={19} color="#fff" />
+								</IconButton>
+								<View style={{ flexDirection: 'row', gap: 8 }}>
+									<IconButton label="Share" tone="glass" onPress={share}>
+										<Share2 size={18} color="#fff" />
+									</IconButton>
+									<IconButton label={saved ? 'Unsave' : 'Save'} tone="glass" onPress={toggle}>
+										<Heart size={18} color={saved ? color.amber : '#fff'} fill={saved ? color.amber : 'transparent'} />
+									</IconButton>
+								</View>
+							</View>
+							{photos.length > 1 ? (
+								<View style={s.counter}>
+									<KText v="micro" style={{ color: '#fff' }}>
+										{page + 1} / {photos.length} · {photos[page]?.group}
+									</KText>
+								</View>
+							) : null}
+						</View>
+
+						<View style={{ paddingHorizontal: gutter, gap: 26, paddingTop: 22 }}>
+							{/* Title */}
+							<View style={{ gap: 10 }}>
+								{tier ? <Pill tone={TIERS[tier].tone}>{TIERS[tier].label}</Pill> : null}
+								<KText v="display">{h.title}</KText>
+								<View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+									<MapPin size={14} color={color.muted} />
+									<KText v="small">{where}</KText>
+									{h.averageRating && (h.totalRatings ?? 0) > 0 ? (
+										<>
+											<KText v="small"> · </KText>
+											<Star size={13} color={color.amber} fill={color.amber} />
+											<KText v="small" c="fg">
+												{h.averageRating.toFixed(1)}
+											</KText>
+											<KText v="small">({h.totalRatings})</KText>
+										</>
+									) : null}
+								</View>
+							</View>
+
+							{isOwner ? (
+								<Card tone="signal">
+									<KText v="bodyStrong">This is your listing</KText>
+									<KText v="small">Manage photos, price and applications from hosting.</KText>
+									<Button title="Manage listing" variant="ghost" size="sm" onPress={() => router.push({ pathname: '/hostings/form/onboarding', params: { id: h.id } })} />
+								</Card>
+							) : null}
+
+							{/* Facts */}
+							<View style={s.facts}>
+								{facts.map((f) => (
+									<View key={f.k} style={s.fact}>
+										<f.icon size={17} color={color.amber} />
+										<KText v="micro">{f.k}</KText>
+										<KText v="smallStrong" numberOfLines={2}>
+											{f.v}
+										</KText>
+									</View>
+								))}
+							</View>
+
+							{/* Host */}
+							<View style={s.host}>
+								<Pressable onPress={() => h.host?.user?.id && router.push(`/users/${h.host.user.id}`)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
+									<Avatar name={hostName} uri={h.host?.user?.profile?.image?.publicUrl} size={46} />
+									<View style={{ flex: 1 }}>
+										<KText v="bodyStrong" numberOfLines={1}>
+											{h.managementType === 'AGENT_MANAGED' ? 'Listed by' : 'Hosted by'} {hostName}
+										</KText>
+										<KText v="xs">On Kushi since {date(h.host?.createdAt)}</KText>
+									</View>
+								</Pressable>
+								{!isOwner ? (
+									<Button title="Message" variant="ghost" size="sm" loading={opening} icon={<MessageCircle size={15} color={color.fg} />} onPress={message} />
+								) : null}
+							</View>
+
+							{h.description ? (
+								<View style={{ gap: 10 }}>
+									<KText v="heading">About this home</KText>
+									<KText v="body" numberOfLines={more ? undefined : 6} style={{ color: color.fg2 }}>
+										{h.description}
+									</KText>
+									{h.description.length > 280 ? (
+										<Pressable onPress={() => setMore((m) => !m)}>
+											<KText v="smallStrong" style={{ textDecorationLine: 'underline' }}>
+												{more ? 'Show less' : 'Read more'}
+											</KText>
+										</Pressable>
+									) : null}
+								</View>
+							) : null}
+
+							{h.video?.asset?.publicUrl ? <VideoTour uri={h.video.asset.publicUrl} seconds={h.video.durationSeconds} /> : null}
+
+							{(h.rooms ?? []).length ? (
+								<View style={{ gap: 12 }}>
+									<KText v="heading">Inside</KText>
+									<FlatList
+										horizontal
+										data={h.rooms}
+										keyExtractor={(r) => r.id}
+										showsHorizontalScrollIndicator={false}
+										contentContainerStyle={{ gap: 12 }}
+										renderItem={({ item: r }) => (
+											<View style={{ width: 160, gap: 6 }}>
+												<Photo assetId={r.images?.[0]?.asset?.id} w={400} h={300} style={{ width: 160, height: 116 }} />
+												<KText v="smallStrong">
+													{roomLabel(r.name)}
+													{(r.count ?? 1) > 1 ? ` × ${r.count}` : ''}
+												</KText>
+												{r.description ? (
+													<KText v="xs" numberOfLines={2}>
+														{r.description}
+													</KText>
+												) : null}
+											</View>
+										)}
+									/>
+								</View>
+							) : null}
+
+							{(h.facilities ?? []).length ? (
+								<View style={{ gap: 12 }}>
+									<KText v="heading">What’s here</KText>
+									<View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 10 }}>
+										{(h.facilities ?? []).map((f) => (
+											<View key={f} style={{ width: '50%', flexDirection: 'row', alignItems: 'center', gap: 8, paddingRight: 8 }}>
+												<Check size={15} color={color.amber} />
+												<KText v="small" numberOfLines={1} style={{ flex: 1 }}>
+													{humanize(f)}
+												</KText>
+											</View>
+										))}
+									</View>
+								</View>
+							) : null}
+
+							{(h.children ?? []).length ? (
+								<View style={{ gap: 12 }}>
+									<KText v="heading">Units in this property</KText>
+									{(h.children ?? []).map((u) => (
+										<Pressable key={u.id} onPress={() => router.push(`/hostings/${u.id}`)} style={({ pressed }) => [s.unit, pressed && { opacity: 0.8 }]}>
+											<Photo assetId={u.coverImage?.asset?.id} w={300} h={220} style={{ width: 84, height: 64 }} />
+											<View style={{ flex: 1, gap: 2 }}>
+												<KText v="smallStrong" numberOfLines={1}>
+													{u.title}
+												</KText>
+												<KText v="small">
+													{naira(u.price)} {perInterval(u.paymentInterval)}
+												</KText>
+												<KText v="xs" c={u.isBookable ? 'success' : 'muted'}>
+													{u.isBookable ? 'Available' : 'Not available'}
+												</KText>
+											</View>
+											<ChevronRight size={18} color={color.dim} />
+										</Pressable>
+									))}
+								</View>
+							) : null}
+
+							{/* Trust */}
+							<View style={{ gap: 12 }}>
+								<KText v="heading">What Kushi has checked</KText>
+								{TIER_ORDER.slice(1).map((t, i) => {
+									const done = rank >= i + 1;
+									return (
+										<View key={t} style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
+											<View style={{ paddingTop: 5 }}>
+												<Waypoint done={done} />
+											</View>
+											<View style={{ flex: 1 }}>
+												<KText v="smallStrong">{TIERS[t].label}</KText>
+												<KText v="xs">{TIERS[t].what}</KText>
+											</View>
+											<KText v="micro" c={done ? 'amber' : 'dim'}>
+												{done ? 'Checked' : 'Not yet'}
+											</KText>
+										</View>
+									);
+								})}
+							</View>
+
+							{mode === 'book' ? (
+								<Card>
+									<Eyebrow>How renting on Kushi works</Eyebrow>
+									{[
+										[ShieldCheck, 'Apply and sign on your phone', 'Verify your identity once, then apply and sign the tenancy agreement.'],
+										[Landmark, 'Pay into escrow', 'When the host accepts, you pay Kushi. The money is held — not sent to the host yet.'],
+										[Check, 'Confirm once you have your keys', 'Arrange the handover with your host, confirm in the app, and the host is paid.']
+									].map(([I, t, d]) => {
+										const Icon = I as typeof Check;
+										return (
+											<View key={t as string} style={{ flexDirection: 'row', gap: 12 }}>
+												<Icon size={18} color={color.amber} />
+												<View style={{ flex: 1 }}>
+													<KText v="smallStrong">{t as string}</KText>
+													<KText v="xs">{d as string}</KText>
+												</View>
+											</View>
+										);
+									})}
+								</Card>
+							) : null}
+
+							{/* Location */}
+							<View style={{ gap: 10 }}>
+								<KText v="heading">Where you’ll be</KText>
+								<KText v="small">
+									{where}
+									{h.landmarks ? ` · Near ${h.landmarks}` : ''}
+								</KText>
+								{h.latitude && h.longitude ? (
+									<View style={{ height: 200, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: color.surface }}>
+										<MapView
+											style={StyleSheet.absoluteFill}
+											userInterfaceStyle="dark"
+											scrollEnabled={false}
+											zoomEnabled={false}
+											pitchEnabled={false}
+											rotateEnabled={false}
+											initialRegion={{ latitude: Number(h.latitude), longitude: Number(h.longitude), latitudeDelta: 0.025, longitudeDelta: 0.025 }}
+										>
+											<Circle center={{ latitude: Number(h.latitude), longitude: Number(h.longitude) }} radius={450} strokeColor={color.amber} fillColor="rgba(245,158,11,0.18)" />
+										</MapView>
+									</View>
+								) : null}
+								<KText v="xs">The exact address is shared once your booking is paid.</KText>
+							</View>
+
+							{h.electricityBilling ? (
+								<View style={{ gap: 6 }}>
+									<KText v="heading">Electricity</KText>
+									<KText v="small">
+										{humanize(h.electricityBilling)}.{' '}
+										{Number(h.electricityOutstandingBalance) > 0 && !h.electricityBalanceCleared
+											? `The host declared an outstanding balance of ${naira(Number(h.electricityOutstandingBalance))} on this meter.`
+											: h.electricityBalanceCleared
+												? 'The host confirms there’s no outstanding balance.'
+												: ''}
+									</KText>
+								</View>
+							) : null}
+
+							{/* Reviews */}
+							<View style={{ gap: 12 }}>
+								<KText v="heading">Reviews</KText>
+								{bars.length ? (
+									<View style={{ gap: 6 }}>
+										{bars.map(([k, v]) => (
+											<View key={k} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+												<KText v="xs" style={{ width: 96 }}>
+													{k}
+												</KText>
+												<View style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: color.line2 }}>
+													<View style={{ width: `${((v ?? 0) / 5) * 100}%`, height: 3, borderRadius: 2, backgroundColor: color.amber }} />
+												</View>
+												<KText v="xs" c="fg">
+													{(v ?? 0).toFixed(1)}
+												</KText>
+											</View>
+										))}
+									</View>
+								) : null}
+								{(h.reviews ?? []).length ? (
+									(h.reviews ?? []).slice(0, 6).map((r) => (
+										<View key={r.id} style={{ gap: 6 }}>
+											<View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+												<Avatar name={r.user?.profile?.fullName} uri={r.user?.profile?.image?.publicUrl} size={34} />
+												<View>
+													<KText v="smallStrong">{r.user?.profile?.fullName ?? 'Kushi renter'}</KText>
+													<KText v="xs">
+														{date(r.lastUpdated)} · ★ {r.averageRating?.toFixed(1)}
+													</KText>
+												</View>
+											</View>
+											{r.description ? <KText v="small">{r.description}</KText> : null}
+										</View>
+									))
+								) : (
+									<KText v="small">No reviews yet — renters can review a home after moving in.</KText>
+								)}
+							</View>
+						</View>
+					</View>
+				)}
+			/>
+
+			{/* Price bar */}
+			{!isOwner ? (
+				<View style={[s.bar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+					<Pressable onPress={() => mode === 'book' && setQuoteOpen(true)} style={{ flex: 1, minWidth: 0 }}>
+						<KText style={{ fontFamily: font.display, fontSize: 18, color: color.fg, letterSpacing: -0.6 }} numberOfLines={1} adjustsFontSizeToFit>
+							{naira(mode === 'units' && h.priceFrom ? h.priceFrom : h.price)}
+						</KText>
+						<KText v="xs" numberOfLines={1}>
+							{mode === 'units' && h.priceFrom ? 'units from · ' : ''}
+							{h.listingType === 'SALE' ? 'asking price' : perInterval(interval).replace('/ ', 'per ')}
+							{mode === 'book' ? ' · see total' : ''}
+						</KText>
+					</Pressable>
+					<Button title={cta.title} onPress={cta.onPress} loading={opening && mode !== 'book'} testID="listing-cta" />
+				</View>
+			) : null}
+
+			{/* Price & apply */}
+			<Sheet open={quoteOpen} onClose={() => setQuoteOpen(false)} title="Your stay" footer={<Button title="Continue to apply" size="lg" block onPress={apply} testID="apply" />}>
+				<KText v="label">How long</KText>
+				<Stepper value={periods} onChange={setPeriods} max={MAX[interval] ?? 12} format={(n) => duration(n, interval)} />
+				<QuoteLines quote={quote} fetching={quoting} />
+				<KText v="xs">You won’t pay anything until the host accepts your application.</KText>
+			</Sheet>
+		</View>
+	);
+}
+
+function VideoTour({ uri, seconds }: { uri: string; seconds?: number | null }) {
+	const [play, setPlay] = useState(false);
+	const player = useVideoPlayer(play ? uri : null, (p) => {
+		p.loop = false;
+		p.play();
+	});
+	return (
+		<View style={{ gap: 10 }}>
+			<KText v="heading">Video tour</KText>
+			<View style={{ height: 210, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: color.surface }}>
+				{play ? (
+					<VideoView player={player} style={StyleSheet.absoluteFill} nativeControls contentFit="cover" allowsFullscreen />
+				) : (
+					<Pressable onPress={() => setPlay(true)} style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center', gap: 8 }]}>
+						<PlayCircle size={48} color={color.amber} strokeWidth={1.4} />
+						<KText v="small" c="fg">
+							Walk through on video{seconds ? ` · ${Math.round(seconds / 60) || 1} min` : ''}
+						</KText>
+						<KText v="micro">Recorded on site by the host</KText>
+					</Pressable>
+				)}
+			</View>
+		</View>
+	);
+}
+
+const s = StyleSheet.create({
+	galleryTop: { position: 'absolute', left: gutter, right: gutter, flexDirection: 'row', justifyContent: 'space-between' },
+	counter: { position: 'absolute', right: gutter, bottom: 14, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: 'rgba(7,8,11,0.65)' },
+	facts: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+	fact: { width: '48%', flexGrow: 1, gap: 4, padding: 12, borderRadius: radius.md, borderWidth: 1, borderColor: color.line, backgroundColor: color.bg2 },
+	host: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 16, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: color.line2 },
+	unit: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: radius.md, borderWidth: 1, borderColor: color.line, backgroundColor: color.bg2 },
+	bar: { position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: gutter, paddingTop: 12, backgroundColor: 'rgba(7,8,11,0.97)', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: color.line2 }
+});

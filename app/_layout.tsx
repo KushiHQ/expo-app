@@ -1,18 +1,11 @@
 import * as Sentry from '@sentry/react-native';
 import { MODAL_SCREEN_OPTIONS } from '@/lib/constants/navigation';
-import {
-  Inter_100Thin,
-  Inter_200ExtraLight,
-  Inter_300Light,
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  Inter_800ExtraBold,
-  Inter_900Black,
-  useFonts,
-} from '@expo-google-fonts/inter';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useFonts } from 'expo-font';
+import { Unbounded_500Medium, Unbounded_600SemiBold } from '@expo-google-fonts/unbounded';
+import { InterTight_400Regular, InterTight_500Medium, InterTight_600SemiBold, InterTight_700Bold } from '@expo-google-fonts/inter-tight';
+import { JetBrainsMono_400Regular, JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
+import { DarkTheme, ThemeProvider } from '@react-navigation/native';
+import { color as k } from '@/lib/k/theme';
 import { Stack, useLocalSearchParams, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { setAudioModeAsync } from 'expo-audio';
@@ -23,8 +16,6 @@ import UploadProgress from '@/components/organisms/o-upload-progress';
 import { NotificationProvider } from '@/components/contexts/notifications';
 import GraphqlClientProvider from '@/components/providers/graphql-client';
 import TansStackProvider from '@/components/providers/tanstack';
-import { Fonts } from '@/lib/constants/theme';
-import { useColorScheme } from '@/lib/hooks/use-color-scheme';
 import { useLockScreen } from '@/lib/hooks/use-lock-screen';
 import { initializeNotifications } from '@/lib/utils/notifications';
 import React from 'react';
@@ -61,8 +52,13 @@ LogBox.ignoreLogs([
 
 initializeNotifications();
 
+// Kushi is a night-first app: one theme, tuned for low-light reading and OLED.
+const NIGHT = {
+  ...DarkTheme,
+  colors: { ...DarkTheme.colors, background: k.bg, card: k.bg, border: k.line, text: k.fg, primary: k.amber, notification: k.amber },
+};
+
 function RootLayout() {
-  const colorScheme = useColorScheme();
   const pathname = usePathname();
   const params = useLocalSearchParams();
 
@@ -87,7 +83,7 @@ function RootLayout() {
 
       if (isMobile && isShared) {
         // Detect slugified hosting or reservation routes
-        const isHosting = pathname.startsWith('/guest/') && pathname.includes('___');
+        const isHosting = (pathname.startsWith('/homes/') || pathname.startsWith('/guest/')) && pathname.includes('___');
         const isReservation = pathname.includes('/reservation/');
 
         if (isHosting || isReservation) {
@@ -116,15 +112,14 @@ function RootLayout() {
     }
   }, [pathname, params]);
   const [loaded, error] = useFonts({
-    [Fonts.thin]: Inter_100Thin,
-    [Fonts.extralight]: Inter_200ExtraLight,
-    [Fonts.light]: Inter_300Light,
-    [Fonts.regular]: Inter_400Regular,
-    [Fonts.medium]: Inter_500Medium,
-    [Fonts.semibold]: Inter_600SemiBold,
-    [Fonts.bold]: Inter_700Bold,
-    [Fonts.extrabold]: Inter_800ExtraBold,
-    [Fonts.black]: Inter_900Black,
+    Unbounded_500Medium,
+    Unbounded_600SemiBold,
+    InterTight_400Regular,
+    InterTight_500Medium,
+    InterTight_600SemiBold,
+    InterTight_700Bold,
+    JetBrainsMono_400Regular,
+    JetBrainsMono_500Medium,
     TwemojiMozilla: require('react-native-country-select/lib/assets/fonts/TwemojiMozilla.woff2'),
   });
 
@@ -147,25 +142,13 @@ function RootLayout() {
               <PaperProvider>
                 <SafeAreaProvider>
                   <NotificationProvider>
-                    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                      <Stack screenOptions={{ animation: 'default' }}>
-                        <Stack.Screen name="index" options={{ headerShown: false }} />
-                        <Stack.Screen name="+not-found" options={{ headerShown: false }} />
-                        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-                        <Stack.Screen name="auth" options={{ headerShown: false }} />
-                        <Stack.Screen name="guest" options={{ headerShown: false }} />
-                        <Stack.Screen name="host" options={{ headerShown: false }} />
+                    <ThemeProvider value={NIGHT}>
+                      <Stack screenOptions={{ headerShown: false, animation: 'default', contentStyle: { backgroundColor: k.bg } }}>
                         <Stack.Screen name="camera" options={MODAL_SCREEN_OPTIONS} />
                         <Stack.Screen name="photo-gallery" options={MODAL_SCREEN_OPTIONS} />
-                        <Stack.Screen name="hostings" options={{ headerShown: false }} />
-                        <Stack.Screen name="kyc" options={{ headerShown: false }} />
-                        <Stack.Screen name="bookings" options={{ headerShown: false }} />
-                        <Stack.Screen name="chats" options={{ headerShown: false }} />
-                        <Stack.Screen name="users" options={{ headerShown: false }} />
-                        <Stack.Screen name="support" options={{ headerShown: false }} />
-                        <Stack.Screen name="logout" options={{ headerShown: false }} />
+                        <Stack.Screen name="welcome" options={{ animation: 'fade' }} />
                       </Stack>
-                      <StatusBar style="auto" />
+                      <StatusBar style="light" />
                       <UploadProgress />
                       <ToastContainer />
                     </ThemeProvider>

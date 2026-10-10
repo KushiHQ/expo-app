@@ -85,7 +85,7 @@ export default function NewHostingStep8() {
   const handleClose = () => {
     setSuccess(false);
     router.dismissAll();
-    router.replace('/host/analytics');
+    router.replace('/host');
   };
 
   function editStep(step: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 9): Href {

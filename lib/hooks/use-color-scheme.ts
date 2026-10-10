@@ -1,6 +1,4 @@
-import { useColorScheme as useRNColorScheme } from 'react-native';
-
+/** Kushi is night-first: one theme everywhere (see lib/k/theme.ts). */
 export function useColorScheme(): 'light' | 'dark' {
-  const scheme = useRNColorScheme();
-  return scheme ?? 'dark';
+	return 'dark';
 }

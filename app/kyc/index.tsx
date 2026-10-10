@@ -61,10 +61,10 @@ export default function KycHome() {
               else {
                 if (user.userType === UserType.Host) {
                   router.dismissAll();
-                  router.replace('/host/analytics');
+                  router.replace('/host');
                 } else {
                   router.dismissAll();
-                  router.replace('/guest/home');
+                  router.replace('/');
                 }
               }
             }}

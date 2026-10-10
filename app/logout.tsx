@@ -40,7 +40,7 @@ export default function Logout() {
       }
     });
     router.dismissAll();
-    router.replace('/onboarding');
+    router.replace('/');
   }, [setSecuritySettings, reset, logout]);
 
   return null;

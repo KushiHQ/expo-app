@@ -3,61 +3,55 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
+// Legacy palette, mapped onto the Kushi night tokens (lib/k/theme.ts) so screens
+// that still use useThemeColors() match the redesign. Both keys are night.
 const tintColorLight = '#F59E0B';
-const tintColorDark = '#fff';
+const tintColorDark = '#F2EEE6';
 
 const common = {
-  primary: '#F59E0B', // Lux Amber (Logo Primary)
-  'primary-01': '#FEF3C7',
-  'primary-04': '#FCD34D',
-  'primary-content': '#0A0A0A', // Dark ink on amber — crisp, high-contrast CTA (soft/cloudy spec)
-  secondary: '#1E3A8A', // Deep Sapphire (Logo Blue)
-  shade: '#0F172A', // Deep Navy Shade
-  'shade-content': '#fff',
-  accent: '#10B981', // Emerald for success/premium feel
-  warning: '#FBBF24',
-  error: '#EF4444',
-  success: '#22C55E',
-  'success-content': '#DCFCE7',
-  info: '#3B82F6',
-  'info-content': '#EFF6FF',
+  primary: '#F59E0B',
+  'primary-01': 'rgba(245,158,11,0.12)',
+  'primary-04': '#FFB627',
+  'primary-content': '#120C02',
+  secondary: '#266DD3',
+  shade: '#12151C',
+  'shade-content': '#F2EEE6',
+  accent: '#3CCB8E',
+  warning: '#F59E0B',
+  error: '#F0524F',
+  success: '#3CCB8E',
+  'success-content': 'rgba(60,203,142,0.12)',
+  info: '#4C8FF0',
+  'info-content': 'rgba(76,143,240,0.12)',
+};
+
+const night = {
+  ...common,
+  text: '#F2EEE6',
+  background: '#07080B',
+  surface: '#0C0E13',
+  'surface-01': '#12151C',
+  'surface-02': '#181C25',
+  tint: tintColorDark,
+  icon: '#8A867E',
+  tabIconDefault: '#55524D',
+  tabIconSelected: tintColorDark,
 };
 
 export const Colors = {
-  light: {
-    ...common,
-    text: '#0F172A', // Deep Navy Text
-    background: '#FFFFFF',
-    surface: '#F8FAFC', // Bone White
-    'surface-01': '#F1F5F9',
-    'surface-02': '#E2E8F0',
-    tint: tintColorLight,
-    icon: '#64748B',
-    tabIconDefault: '#94A3B8',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    ...common,
-    text: '#F8FAFC',
-    background: '#020617', // Rich Darker Navy
-    surface: '#0F172A', // Deep Navy Surface
-    'surface-01': '#1E293B', // Elevated Navy
-    'surface-02': '#334155', // High Elevation Navy
-    tint: tintColorDark,
-    icon: '#94A3B8',
-    tabIconDefault: '#475569',
-    tabIconSelected: tintColorDark,
-  },
+  light: night,
+  dark: night,
 };
 
+// Legacy font keys now resolve to the Kushi body face (Inter Tight).
 export const Fonts = {
-  thin: 'Inter_100',
-  extralight: 'Inter_200',
-  light: 'Inter_300',
-  regular: 'Inter_400',
-  medium: 'Inter_500',
-  semibold: 'Inter_600',
-  bold: 'Inter_700',
-  extrabold: 'Inter_800',
-  black: 'Inter_900',
+  thin: 'InterTight_400Regular',
+  extralight: 'InterTight_400Regular',
+  light: 'InterTight_400Regular',
+  regular: 'InterTight_400Regular',
+  medium: 'InterTight_500Medium',
+  semibold: 'InterTight_600SemiBold',
+  bold: 'InterTight_700Bold',
+  extrabold: 'InterTight_700Bold',
+  black: 'InterTight_700Bold',
 };

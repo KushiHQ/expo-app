@@ -50,10 +50,10 @@ export default function KycBVN() {
         });
         if (user.userType === UserType.Host) {
           router.dismissAll();
-          router.replace('/host/analytics');
+          router.replace('/host');
         } else {
           router.dismissAll();
-          router.replace('/guest/home');
+          router.replace('/');
         }
       }
     });
@@ -77,10 +77,10 @@ export default function KycBVN() {
                 if (user.user?.kyc.bvnVerified) {
                   if (user.userType === UserType.Host) {
                     router.dismissAll();
-                    router.replace('/host/analytics');
+                    router.replace('/host');
                   } else {
                     router.dismissAll();
-                    router.replace('/guest/home');
+                    router.replace('/');
                   }
                 } else {
                   handleVerify();

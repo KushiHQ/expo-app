@@ -138,7 +138,7 @@ const ProfileLayout: React.FC<Props> = ({ children, refreshControl, scrollable =
               <Pressable
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.push('/guest/profile');
+                  router.push('/you');
                 }}
                 className="h-11 w-11 overflow-hidden rounded-2xl"
               >
