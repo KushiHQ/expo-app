@@ -92,6 +92,14 @@ jobs:
         env:
           DEBUG: expo:*
 
+      # Keep the build so a failed store upload can be retried without rebuilding.
+      - name: Save build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: ${{ env.IPA_PATH }}
+          retention-days: 7
+
       - name: Extract build number
         run: |
           IPA_TMP=$(mktemp -d)
