@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { Image } from 'expo-image';
 import { color, font, radius } from '@/lib/k/theme';
 import { getAssetResizeUrl } from '@/lib/utils/urls';

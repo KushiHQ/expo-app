@@ -2,13 +2,8 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import { ChevronLeft } from 'lucide-react-native';
 import React from 'react';
-import {
-  Pressable,
-  PressableProps,
-  StyleProp,
-  ViewStyle,
-  GestureResponderEvent,
-} from 'react-native';
+import { PressableProps, StyleProp, ViewStyle, GestureResponderEvent } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { twMerge } from 'tailwind-merge';
 import * as Haptics from 'expo-haptics';
 

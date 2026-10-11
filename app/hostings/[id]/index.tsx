@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, Share, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { FlatList, Share, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { Circle } from 'react-native-maps';

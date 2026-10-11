@@ -1,4 +1,5 @@
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { ChevronRight } from 'lucide-react-native';
 import { color, radius } from '@/lib/k/theme';

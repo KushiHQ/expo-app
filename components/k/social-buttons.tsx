@@ -1,4 +1,5 @@
-import { ActivityIndicator, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import Svg, { Path } from 'react-native-svg';
 import { color, font, radius } from '@/lib/k/theme';
 import { useSocialAuth } from '@/lib/k/social-auth';

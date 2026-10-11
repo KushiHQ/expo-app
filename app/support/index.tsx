@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { router, useFocusEffect } from 'expo-router';
 import { Headset, MessageCirclePlus } from 'lucide-react-native';
 import { Button, Header, KText, Skeleton } from '@/components/k';

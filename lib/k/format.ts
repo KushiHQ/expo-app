@@ -3,24 +3,25 @@
  * payment-interval wording (the old app mislabelled every duration as "Years").
  */
 
-const NGN = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 });
-const NGN_COMPACT = new Intl.NumberFormat('en-NG', {
-	style: 'currency',
-	currency: 'NGN',
-	notation: 'compact',
-	maximumFractionDigits: 1
-});
+// Hand-rolled: Hermes' Intl has no compact notation and its currency symbol varies by
+// device locale ("NGN 1,000" vs "₦1,000"), so money is formatted without Intl.
+const group = (n: number) => String(Math.round(Math.abs(n))).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 /** ₦1,250,000 */
 export function naira(amount: number | null | undefined): string {
 	if (amount == null || Number.isNaN(Number(amount))) return '—';
-	return NGN.format(Number(amount));
+	const n = Number(amount);
+	return `${n < 0 ? '-' : ''}₦${group(n)}`;
 }
 
 /** ₦1.3M — for tight spaces (map pins, cards). */
 export function nairaCompact(amount: number | null | undefined): string {
 	if (amount == null || Number.isNaN(Number(amount))) return '—';
-	return NGN_COMPACT.format(Number(amount)).replace('NGN', '₦');
+	const n = Number(amount);
+	const abs = Math.abs(n);
+	const [div, suffix] = abs >= 1e12 ? [1e12, 'T'] : abs >= 1e9 ? [1e9, 'B'] : abs >= 1e6 ? [1e6, 'M'] : abs >= 1e3 ? [1e3, 'K'] : [1, ''];
+	const v = (abs / div).toFixed(div === 1 ? 0 : 1).replace(/\.0$/, '');
+	return `${n < 0 ? '-' : ''}₦${v}${suffix}`;
 }
 
 export type Interval = 'NIGHTLY' | 'WEEKLY' | 'MONTHLY' | 'ANUALLY' | 'ONE_TIME_PAYMENT' | string;
@@ -72,21 +73,28 @@ export function dateTime(value: string | Date | null | undefined): string {
 	return Number.isNaN(d.getTime()) ? '—' : DATE_TIME.format(d);
 }
 
-/** "in 3 days", "2 hours ago" */
+/** "in 3 days", "2 hours ago". No Intl.RelativeTimeFormat — Hermes doesn't have it. */
 export function relative(value: string | Date | null | undefined): string {
 	if (!value) return '';
 	const d = typeof value === 'string' ? new Date(value) : value;
+	if (Number.isNaN(d.getTime())) return '';
 	const diff = d.getTime() - Date.now();
-	const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 	const abs = Math.abs(diff);
-	const units: [Intl.RelativeTimeFormatUnit, number][] = [
+	const units: [string, number][] = [
 		['year', 31536e6],
 		['month', 2592e6],
+		['week', 6048e5],
 		['day', 864e5],
 		['hour', 36e5],
 		['minute', 6e4]
 	];
-	for (const [unit, ms] of units) if (abs >= ms) return rtf.format(Math.round(diff / ms), unit);
+	for (const [unit, ms] of units) {
+		if (abs < ms) continue;
+		const n = Math.round(abs / ms);
+		if (unit === 'day' && n === 1) return diff < 0 ? 'yesterday' : 'tomorrow';
+		const label = `${n} ${unit}${n === 1 ? '' : 's'}`;
+		return diff < 0 ? `${label} ago` : `in ${label}`;
+	}
 	return 'just now';
 }
 
