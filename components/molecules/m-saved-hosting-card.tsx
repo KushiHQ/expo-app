@@ -1,7 +1,8 @@
 import { FALLBACK_IMAGE, PROPERTY_BLURHASH } from '@/lib/constants/images';
 import { Image } from 'expo-image';
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import ThemedText from '../atoms/a-themed-text';
 import { MynauiStarSolid } from '../icons/i-star';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';

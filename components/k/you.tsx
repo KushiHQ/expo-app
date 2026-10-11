@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Linking, Pressable, View } from 'react-native';
+import { Linking, View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { router } from 'expo-router';
 import { BadgeCheck, Bell, Building2, CreditCard, FileText, Headset, LogOut, MessageSquareHeart, ShieldCheck, Trash2, UserRound } from 'lucide-react-native';
 import { Avatar, Button, Card, Divider, Eyebrow, KText, PageTitle, Row, Screen, Sheet } from '@/components/k';

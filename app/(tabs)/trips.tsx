@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { router } from 'expo-router';
 import { ChevronRight, Wallet } from 'lucide-react-native';
 import { Empty, KText, PageTitle, Photo, Pill, Screen, SignedOut, Skeleton } from '@/components/k';

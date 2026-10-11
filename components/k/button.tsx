@@ -1,4 +1,5 @@
-import { ActivityIndicator, Pressable, StyleSheet, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import * as Haptics from 'expo-haptics';
 import { color, font, glow, radius } from '@/lib/k/theme';
 import { KText } from './text';

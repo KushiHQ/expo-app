@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { router } from 'expo-router';
 import { ChevronRight, Inbox } from 'lucide-react-native';
 import { color, radius } from '@/lib/k/theme';

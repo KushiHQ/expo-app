@@ -1,4 +1,5 @@
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react-native';
 import { Empty, Header, KText, Pill, Skeleton } from '@/components/k';

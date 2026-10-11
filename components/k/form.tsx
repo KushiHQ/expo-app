@@ -1,5 +1,6 @@
 import { forwardRef, useRef, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
+import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { Eye, EyeOff, Minus, Plus } from 'lucide-react-native';
 import { color, font, radius } from '@/lib/k/theme';
 import { KText } from './text';

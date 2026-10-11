@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Pressable, SectionList, StyleSheet, View } from 'react-native';
+import { SectionList, StyleSheet, View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { router, type Href } from 'expo-router';
 import { Bell, CalendarCheck, Home, MessageCircle, PhoneMissed, Sparkles } from 'lucide-react-native';
 import { Button, Empty, Header, KText, Screen, Segmented, Skeleton } from '@/components/k';
