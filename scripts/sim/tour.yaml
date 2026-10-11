@@ -17,9 +17,7 @@ appId: com.kushicorp.kushi
 - tapOn:
     id: "password"
 - inputText: "KushiQA-2026!"
-- hideKeyboard
-- tapOn:
-    id: "sign-in"
+- pressKey: Enter
 - extendedWaitUntil:
     visible:
       id: "tab-index"
