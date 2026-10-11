@@ -1,281 +1,117 @@
-import Button from '@/components/atoms/a-button';
-import Centered from '@/components/atoms/a-centered';
-import FloatingLabelInput from '@/components/atoms/a-floating-label-input';
-import ThemedText from '@/components/atoms/a-themed-text';
-import { LogosApple, LogosGoogle } from '@/components/icons/i-logos';
-import AuthLayout from '@/components/layouts/auth';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import {
-  SignUpInput,
-  useAppleSignUpMutation,
-  useGoogleSignUpMutation,
-  useSignUpMutation,
-} from '@/lib/services/graphql/generated';
-import { cast } from '@/lib/types/utils';
-import { hexToRgba } from '@/lib/utils/colors';
-import { handleError } from '@/lib/utils/error';
-import { Link, useRouter } from 'expo-router';
-import React from 'react';
-import { Pressable, View, Platform } from 'react-native';
-import { toast } from '@/lib/hooks/use-toast';
-import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
-import { saveAuthTokens } from '@/lib/utils/auth';
-import { useUser } from '@/lib/hooks/user';
-import { UserType } from '@/lib/types/users';
-import { Fonts } from '@/lib/constants/theme';
-import * as AppleAuthentication from 'expo-apple-authentication';
+/**
+ * Create an account → enter the emailed code on the same screen → signed in.
+ * (No separate verify/sign-in screens to bounce between.)
+ */
+import { useEffect, useState } from 'react';
+import { Pressable, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Button, Check, Field, KText, Notice, OtpField, PasswordField } from '@/components/k';
+import { AuthShell } from '@/components/k/auth-shell';
+import { OrDivider, SocialButtons } from '@/components/k/social-buttons';
+import { color } from '@/lib/k/theme';
+import { startSession } from '@/lib/k/session';
+import { useLoginMutation, useResendEmailVerificationOtpMutation, useSignUpMutation, useVerifyEmailMutation } from '@/lib/services/graphql/generated';
+
+const clean = (m?: string) => (m ?? '').replace('[GraphQL] ', '');
+
 export default function SignUp() {
-  const colors = useThemeColors();
-  const [inputs, setInputs] = React.useState<Partial<SignUpInput>>({});
-  const [res, mutate] = useSignUpMutation();
-  const router = useRouter();
-  const { updateUser, user, returnUrl, setReturnUrl } = useUser();
-  const [, googleSignUp] = useGoogleSignUpMutation();
-  const [, appleSignUp] = useAppleSignUpMutation();
+	const params = useLocalSearchParams<{ email?: string; verify?: string }>();
+	const [step, setStep] = useState<'details' | 'code'>(params.verify ? 'code' : 'details');
+	const [name, setName] = useState('');
+	const [email, setEmail] = useState(params.email ?? '');
+	const [password, setPassword] = useState('');
+	const [agreed, setAgreed] = useState(false);
+	const [code, setCode] = useState('');
+	const [error, setError] = useState<string | null>(null);
+	const [cooldown, setCooldown] = useState(0);
+	const [{ fetching: creating }, signUp] = useSignUpMutation();
+	const [{ fetching: verifying }, verify] = useVerifyEmailMutation();
+	const [, resend] = useResendEmailVerificationOtpMutation();
+	const [{ fetching: loggingIn }, login] = useLoginMutation();
 
-  const handlePostLogin = (userType?: UserType) => {
-    router.dismissAll();
-    if (returnUrl) {
-      const destination = returnUrl;
-      setReturnUrl(null);
-      router.replace(destination as any);
-    } else if (userType === UserType.Host) {
-      router.replace('/host/analytics');
-    } else {
-      router.replace('/guest/home');
-    }
-  };
+	useEffect(() => {
+		if (cooldown <= 0) return;
+		const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+		return () => clearTimeout(t);
+	}, [cooldown]);
 
-  const signUpWithGoogle = async () => {
-    try {
-      if (Platform.OS === 'android') {
-        await GoogleSignin.hasPlayServices();
-      }
-      const userInfo = await GoogleSignin.signIn();
-      if (userInfo.data?.idToken)
-        googleSignUp({
-          idToken: userInfo.data?.idToken,
-        }).then(async (res) => {
-          if (res.error) {
-            handleError(res.error);
-          }
-          if (res.data?.googleSignUp.data) {
-            toast.show({
-              type: 'success',
-              text1: 'Success',
-              text2: res.data.googleSignUp.message,
-            });
-            await saveAuthTokens({
-              access: res.data.googleSignUp.data.token,
-              refresh: res.data.googleSignUp.data.refreshToken,
-            });
-            updateUser({
-              tokenData: { expiresAt: res.data.googleSignUp.data.expiresAt },
-              user: res.data?.googleSignUp.data?.user,
-              email: res.data?.googleSignUp.data?.user.email,
-            });
-            handlePostLogin(user.userType);
-          }
-        });
-    } catch (error: any) {
-      console.error('Something went wrong:', error);
-    }
-  };
-  const signUpWithApple = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const redirectUri = Linking.createURL('/auth/sign-up');
-        const authUrl = `https://kushicorp.com/api/auth/apple/authorize?redirect_uri=${encodeURIComponent(redirectUri)}`;
+	const strength = [password.length >= 8, password.length >= 12, /[A-Z]/.test(password) && /[a-z]/.test(password), /\d/.test(password) && /[^A-Za-z0-9]/.test(password)].filter(Boolean).length;
+	const valid = name.trim().split(/\s+/).length >= 2 && /.+@.+\..+/.test(email.trim()) && password.length >= 8 && agreed;
 
-        const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri, {
-          preferEphemeralSession: true,
-        });
+	async function create() {
+		setError(null);
+		const r = await signUp({ input: { fullName: name.trim(), email: email.trim(), password } });
+		if (r.error) return setError(clean(r.error.graphQLErrors[0]?.message ?? r.error.message));
+		setStep('code');
+		setCooldown(45);
+	}
 
-        if (result.type === 'success') {
-          const { url } = result;
-          const params = new URL(url).searchParams;
-          const identityToken = params.get('identityToken');
-          const fullName = params.get('fullName');
+	async function confirm(otp = code) {
+		if (otp.length !== 6) return;
+		setError(null);
+		const r = await verify({ input: { email: email.trim(), otp } });
+		if (r.error) {
+			setCode('');
+			return setError(clean(r.error.graphQLErrors[0]?.message ?? r.error.message));
+		}
+		// Verified. If we still have the password from this session, sign straight in.
+		if (password) {
+			const l = await login({ input: { email: email.trim(), password } });
+			if (l.data?.login.data) return startSession(l.data.login.data);
+		}
+		router.replace({ pathname: '/auth/sign-in', params: { email: email.trim() } });
+	}
 
-          if (identityToken) {
-            appleSignUp({
-              input: {
-                identityToken,
-                fullName: fullName ?? undefined,
-              },
-            }).then(async (res) => {
-              if (res.error) {
-                handleError(res.error);
-              }
-              if (res.data?.appleSignUp.data) {
-                toast.show({
-                  type: 'success',
-                  text1: 'Success',
-                  text2: res.data.appleSignUp.message,
-                });
-                await saveAuthTokens({
-                  access: res.data.appleSignUp.data.token,
-                  refresh: res.data.appleSignUp.data.refreshToken,
-                });
-                updateUser({
-                  tokenData: { expiresAt: res.data.appleSignUp.data.expiresAt },
-                  user: res.data?.appleSignUp.data?.user,
-                  email: res.data?.appleSignUp.data?.user.email,
-                });
-                handlePostLogin(user.userType);
-              }
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Apple Sign-Up Error:', error);
-      }
-      return;
-    }
+	async function again() {
+		if (cooldown > 0) return;
+		const r = await resend({ email: email.trim() });
+		if (r.error) setError(clean(r.error.graphQLErrors[0]?.message ?? r.error.message));
+		else setCooldown(45);
+	}
 
-    try {
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-      });
-      if (credential.identityToken) {
-        appleSignUp({
-          input: {
-            identityToken: credential.identityToken,
-            fullName: credential.fullName?.givenName
-              ? `${credential.fullName.givenName} ${credential.fullName.familyName || ''}`.trim()
-              : undefined,
-          },
-        }).then(async (res) => {
-          if (res.error) {
-            handleError(res.error);
-          }
-          if (res.data?.appleSignUp.data) {
-            toast.show({
-              type: 'success',
-              text1: 'Success',
-              text2: res.data.appleSignUp.message,
-            });
-            await saveAuthTokens({
-              access: res.data.appleSignUp.data.token,
-              refresh: res.data.appleSignUp.data.refreshToken,
-            });
-            updateUser({
-              tokenData: { expiresAt: res.data.appleSignUp.data.expiresAt },
-              user: res.data?.appleSignUp.data?.user,
-              email: res.data?.appleSignUp.data?.user.email,
-            });
-            handlePostLogin(user.userType);
-          }
-        });
-      }
-    } catch (error: any) {
-      console.error('Something went wrong:', error);
-    }
-  };
-  const handlePress = () => {
-    mutate({ input: cast(inputs) }).then((result) => {
-      if (result.error) {
-        handleError(result.error);
-      }
-      if (result.data) {
-        toast.show({
-          type: 'success',
-          text1: 'Success',
-          text2: result.data.signUp.message,
-        });
-        router.replace(`/auth/otp-verification?email=${inputs.email}`);
-      }
-    });
-  };
+	if (step === 'code')
+		return (
+			<AuthShell eyebrow="One last step" title="Check your email" sub={`Enter the 6-digit code we sent to ${email || 'your email'}.`}>
+				{!params.email && !email ? <Field label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" /> : null}
+				{error ? <Notice tone="danger">{error}</Notice> : null}
+				<OtpField value={code} onChange={setCode} onComplete={confirm} invalid={!!error} />
+				<Button title="Verify and continue" size="lg" block loading={verifying || loggingIn} disabled={code.length !== 6} onPress={() => confirm()} />
+				<Pressable onPress={again} style={{ alignSelf: 'center', padding: 8 }}>
+					<KText v="small">{cooldown > 0 ? `Resend a new code in ${cooldown}s` : 'Didn’t get it? Send a new code'}</KText>
+				</Pressable>
+				<Pressable onPress={() => setStep('details')} style={{ alignSelf: 'center', padding: 4 }}>
+					<KText v="xs">Change details</KText>
+				</Pressable>
+			</AuthShell>
+		);
 
-  return (
-    <AuthLayout
-      title="Create Account"
-      description="Sign up easily with your email or social accounts"
-    >
-      <View className="mt-10 flex-1 justify-between">
-        <View className="gap-4">
-          <View className="min-h-[300px] gap-4">
-            <FloatingLabelInput
-              focused
-              inputMode="text"
-              autoComplete="name"
-              placeholder="Enter your name"
-              label="Full Name"
-              onChangeText={(v) => setInputs((c) => ({ ...c, fullName: v }))}
-            />
-            <FloatingLabelInput
-              focused
-              inputMode="email"
-              autoComplete="email"
-              placeholder="@gmail.com"
-              label="Email"
-              onChangeText={(v) => setInputs((c) => ({ ...c, email: v }))}
-            />
-            <FloatingLabelInput
-              focused
-              secureTextEntry
-              inputMode="text"
-              autoComplete="password"
-              placeholder="**********"
-              label="Password"
-              onChangeText={(v) => setInputs((c) => ({ ...c, password: v }))}
-            />
-          </View>
-          <Button
-            onPress={handlePress}
-            loading={res.fetching}
-            type="primary"
-            disabled={
-              res.fetching ||
-              !inputs.fullName?.length ||
-              !inputs.email?.length ||
-              !inputs.password?.length
-            }
-          >
-            <ThemedText content="primary">Sign Up</ThemedText>
-          </Button>
-          <Centered className="mt-1">
-            <ThemedText>or continue with</ThemedText>
-          </Centered>
-          <View className="flex-row items-center justify-center gap-3">
-            <Pressable
-              onPress={signUpWithGoogle}
-              style={{
-                backgroundColor: hexToRgba(colors['text'], 0.08),
-              }}
-              className="h-12 w-full max-w-[144px] flex-row items-center justify-center gap-3 rounded-full"
-            >
-              <LogosGoogle />
-              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>Google</ThemedText>
-            </Pressable>
-            <Pressable
-              aria-label="Sign Up with Apple"
-              onPress={signUpWithApple}
-              style={{
-                backgroundColor: hexToRgba(colors['text'], 0.08),
-              }}
-              className="h-12 w-full max-w-[144px] flex-row items-center justify-center gap-3 rounded-full"
-            >
-              <LogosApple />
-              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>Apple</ThemedText>
-            </Pressable>
-          </View>
-        </View>
-        <View className="mt-20 flex-row items-center justify-center gap-1">
-          <ThemedText>Already a member?</ThemedText>
-          <Link href="/auth/sign-in">
-            <ThemedText content="tinted" className="underline">
-              Log in
-            </ThemedText>
-          </Link>
-        </View>
-      </View>
-    </AuthLayout>
-  );
+	return (
+		<AuthShell eyebrow="Join Kushi" title="Create your account" sub="Save homes, message hosts and apply in minutes. It’s free.">
+			<SocialButtons mode="signup" />
+			<OrDivider />
+			{error ? <Notice tone="danger">{error}</Notice> : null}
+			<Field label="Full name" hint="As it appears on your ID — it goes on your tenancy agreement." value={name} onChangeText={setName} autoComplete="name" textContentType="name" testID="name" />
+			<Field label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" testID="email" />
+			<View style={{ gap: 8 }}>
+				<PasswordField label="Password" value={password} onChangeText={setPassword} autoComplete="new-password" textContentType="newPassword" testID="password" />
+				{password ? (
+					<View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+						{[1, 2, 3, 4].map((i) => (
+							<View key={i} style={{ width: 28, height: 3, borderRadius: 2, backgroundColor: strength >= i ? color.amber : color.line2 }} />
+						))}
+						<KText v="xs">{password.length < 8 ? 'At least 8 characters' : ['Okay', 'Okay', 'Good', 'Strong', 'Excellent'][strength]}</KText>
+					</View>
+				) : null}
+			</View>
+			<Check on={agreed} onPress={() => setAgreed((a) => !a)}>
+				<KText v="small">I agree to Kushi’s Terms of Service and Privacy Policy.</KText>
+			</Check>
+			<Button title="Create account" size="lg" block loading={creating} disabled={!valid} onPress={create} testID="sign-up" />
+			<Pressable onPress={() => router.replace('/auth/sign-in')} style={{ alignSelf: 'center', padding: 8 }}>
+				<KText v="small">
+					Already on Kushi? <KText v="smallStrong" style={{ color: color.fg, textDecorationLine: 'underline', textDecorationColor: color.amber }}>Sign in</KText>
+				</KText>
+			</Pressable>
+		</AuthShell>
+	);
 }

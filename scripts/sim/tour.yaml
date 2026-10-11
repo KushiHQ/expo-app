@@ -1,0 +1,55 @@
+# Native iOS tour for CI: signs in as the QA guest and screenshots each tab.
+appId: com.kushicorp.kushi
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Start exploring"
+    timeout: 180000
+- takeScreenshot: shots/01-welcome
+- tapOn: "Sign in"
+- takeScreenshot: shots/02-sign-in-empty
+- tapOn:
+    id: "email"
+- inputText: "qa.guest@kushi.test"
+- tapOn:
+    id: "password"
+- inputText: "KushiQA-2026!"
+- pressKey: Enter
+- extendedWaitUntil:
+    visible:
+      id: "tab-index"
+    timeout: 90000
+- waitForAnimationToEnd
+- takeScreenshot: shots/03-explore
+- tapOn: "Filters"
+- waitForAnimationToEnd
+- takeScreenshot: shots/04-filters
+- tapOn:
+    point: "50%,25%"
+- tapOn:
+    id: "tab-saved"
+- waitForAnimationToEnd
+- takeScreenshot: shots/05-saved
+- tapOn:
+    id: "tab-trips"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/06-homes
+- tapOn:
+    id: "tab-inbox"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/07-inbox
+- tapOn:
+    id: "tab-you"
+- waitForAnimationToEnd
+- takeScreenshot: shots/08-you
+- tapOn:
+    id: "tab-inbox"
+- tapOn: "Ekwo.*"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/09-chat

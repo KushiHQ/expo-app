@@ -5,18 +5,8 @@ import { hexToRgba } from '@/lib/utils/colors';
 import { Image } from 'expo-image';
 import { PenLine, RotateCcw } from 'lucide-react-native';
 import React from 'react';
-import {
-  ActivityIndicator,
-  Modal,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Modal, Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { runOnJS, useAnimatedProps, useSharedValue } from 'react-native-reanimated';
 import { Path, Rect, Svg } from 'react-native-svg';

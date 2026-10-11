@@ -1,195 +1,87 @@
-import React from 'react';
-import { FlatList, Pressable, RefreshControl, View } from 'react-native';
-import ThemedText from '@/components/atoms/a-themed-text';
-import DetailsLayout from '@/components/layouts/details';
-import { Fonts } from '@/lib/constants/theme';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useMySupportChatsQuery } from '@/lib/services/graphql/generated';
-import { hexToRgba } from '@/lib/utils/colors';
-import { SURFACE } from '@/lib/constants/surface';
-import { useRouter } from '@/lib/hooks/use-router';
-import { useFocusEffect } from '@react-navigation/native';
-import moment from 'moment';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import Skeleton from '@/components/atoms/a-skeleton';
-import EmptyList from '@/components/molecules/m-empty-list';
-import { Support } from '@/components/icons/i-support';
+import { useCallback } from 'react';
+import { FlatList, StyleSheet, View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
+import { router, useFocusEffect } from 'expo-router';
+import { Headset, MessageCirclePlus } from 'lucide-react-native';
+import { Button, Header, KText, Skeleton } from '@/components/k';
+import { color, gutter, radius } from '@/lib/k/theme';
+import { humanize, relative } from '@/lib/k/format';
+import { toast } from '@/lib/hooks/use-toast';
+import { useInitiateSupportChatMutation, useMySupportChatsQuery } from '@/lib/services/graphql/generated';
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const TOPIC: Record<string, string> = { BOOKING: 'About a booking', HOSTING: 'About a listing', TRANSACTION: 'About a payment' };
 
-const SupportChatSkeleton = () => {
-  return (
-    <View className="flex-row gap-4 px-2">
-      <Skeleton style={{ height: 54, width: 54, borderRadius: 16 }} />
-      <View className="flex-1 gap-3 py-2">
-        <Skeleton style={{ height: 18, width: 120 }} />
-        <Skeleton style={{ height: 14, width: '100%' }} />
-      </View>
-      <View className="items-end gap-4 py-2">
-        <Skeleton style={{ height: 14, width: 50 }} />
-      </View>
-    </View>
-  );
-};
+export default function SupportInbox() {
+	const [{ data, fetching }, refetch] = useMySupportChatsQuery({ variables: { pagination: { limit: 50, offset: 0 } }, requestPolicy: 'cache-and-network' });
+	const [{ fetching: starting }, start] = useInitiateSupportChatMutation();
+	useFocusEffect(useCallback(() => refetch({ requestPolicy: 'network-only' }), [refetch]));
+	const chats = data?.mySupportChats ?? [];
 
-const SupportChatListItem = ({ chat, router, colors }: { chat: any; router: any; colors: any }) => {
-  const pressScale = useSharedValue(1);
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pressScale.value }],
-  }));
+	async function begin() {
+		const r = await start({});
+		const id = r.data?.initiateSupportChat?.id;
+		if (id) router.push(`/support/${id}`);
+		else toast.show({ type: 'error', text1: 'Couldn’t reach support', text2: (r.error?.message ?? '').replace('[GraphQL] ', '') });
+	}
 
-  const lastMessage = chat.messages?.[0];
-  const hasUnread = lastMessage && !lastMessage.isReadByUser;
-
-  return (
-    <AnimatedPressable
-      onPressIn={() => (pressScale.value = withSpring(0.97))}
-      onPressOut={() => (pressScale.value = withSpring(1))}
-      onPress={() => router.push(`/support/${chat.id}`)}
-      style={[
-        {
-          backgroundColor: hexToRgba(colors.text, hasUnread ? 0.08 : 0.05),
-          borderRadius: 18,
-          marginBottom: 10,
-          padding: 14,
-          flexDirection: 'row',
-          gap: 12,
-          alignItems: 'center',
-          boxShadow: hasUnread ? SURFACE.glow : SURFACE.shadow,
-          overflow: 'hidden',
-        },
-        animatedStyle,
-      ]}
-    >
-      {hasUnread && (
-        <View
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 10,
-            bottom: 10,
-            width: 3,
-            borderTopRightRadius: 3,
-            borderBottomRightRadius: 3,
-            backgroundColor: colors.primary,
-          }}
-        />
-      )}
-      <View
-        style={{
-          width: 52,
-          height: 52,
-          borderRadius: 14,
-          backgroundColor: hexToRgba(colors.primary, 0.1),
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Support size={24} color={colors.primary} />
-      </View>
-      <View style={{ flex: 1, gap: 4 }}>
-        <View
-          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
-        >
-          <ThemedText
-            numberOfLines={1}
-            style={{
-              fontFamily: hasUnread ? Fonts.semibold : Fonts.medium,
-              fontSize: 15,
-              flex: 1,
-              marginRight: 8,
-            }}
-          >
-            Kushi Support
-          </ThemedText>
-          <ThemedText
-            style={{
-              fontSize: 11,
-              fontFamily: Fonts.regular,
-              color: hexToRgba(colors.text, hasUnread ? 0.55 : 0.38),
-            }}
-          >
-            {moment(chat.lastUpdated).fromNow()}
-          </ThemedText>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <ThemedText
-            numberOfLines={1}
-            style={{
-              fontSize: 13,
-              color: hexToRgba(colors.text, hasUnread ? 0.65 : 0.45),
-              fontFamily: hasUnread ? Fonts.medium : Fonts.regular,
-              flex: 1,
-            }}
-          >
-            {lastMessage
-              ? lastMessage.text
-              : chat.status === 'OPEN'
-                ? 'New conversation'
-                : 'Closed conversation'}
-          </ThemedText>
-        </View>
-      </View>
-    </AnimatedPressable>
-  );
-};
-
-export default function SupportInboxScreen() {
-  const router = useRouter();
-  const colors = useThemeColors();
-
-  const [{ data, fetching }, refetch] = useMySupportChatsQuery({
-    variables: { pagination: { limit: 50, offset: 0 } },
-    requestPolicy: 'cache-and-network',
-  });
-
-  const [refreshing, setRefreshing] = React.useState(false);
-  React.useEffect(() => {
-    if (!fetching) setRefreshing(false);
-  }, [fetching]);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      refetch({ requestPolicy: 'network-only' });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []),
-  );
-
-  const chats = data?.mySupportChats || [];
-
-  return (
-    <DetailsLayout title="Support" scrollable={false}>
-      <FlatList
-        data={chats}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20, paddingTop: 10 }}
-        renderItem={({ item: chat }) => (
-          <SupportChatListItem chat={chat} router={router} colors={colors} />
-        )}
-        ListHeaderComponent={
-          <View className="mb-4">
-            {fetching && !chats.length && (
-              <View className="mt-4 gap-3">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <SupportChatSkeleton key={index} />
-                ))}
-              </View>
-            )}
-          </View>
-        }
-        ListEmptyComponent={
-          !fetching && !chats.length ? <EmptyList message="No support chats" /> : null
-        }
-        refreshControl={
-          <RefreshControl
-            onRefresh={() => {
-              setRefreshing(true);
-              refetch({ requestPolicy: 'network-only' });
-            }}
-            refreshing={refreshing}
-          />
-        }
-      />
-    </DetailsLayout>
-  );
+	return (
+		<View style={{ flex: 1, backgroundColor: color.bg }}>
+			<Header eyebrow="Help" title="Kushi Support" />
+			<FlatList
+				data={chats}
+				keyExtractor={(c) => c.id}
+				onRefresh={() => refetch({ requestPolicy: 'network-only' })}
+				refreshing={false}
+				contentContainerStyle={{ padding: gutter, gap: 10, paddingBottom: 48 }}
+				ListHeaderComponent={
+					<View style={{ gap: 16, paddingBottom: 14 }}>
+						<View style={s.hero}>
+							<Headset size={22} color={color.amber} />
+							<KText v="heading">Talk to a real person</KText>
+							<KText v="small">
+								Questions about a home, a payment or your keys? Our team answers right here. For anything about a specific booking, open it from Homes and tap Get help so we see the details.
+							</KText>
+							<Button title="Start a conversation" icon={<MessageCirclePlus size={16} color={color.onAmber} />} loading={starting} onPress={begin} />
+						</View>
+						{chats.length ? <KText v="label">Your conversations</KText> : null}
+					</View>
+				}
+				renderItem={({ item: c }) => {
+					const last = c.messages?.[0];
+					const unread = !!last && !last.isReadByUser;
+					return (
+						<Pressable onPress={() => router.push(`/support/${c.id}`)} style={({ pressed }) => [s.row, unread && { borderColor: color.amberLine }, pressed && { opacity: 0.8 }]}>
+							<View style={{ flex: 1, gap: 4 }}>
+								<View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+									<KText v="bodyStrong" numberOfLines={1} style={{ flex: 1 }}>
+										{c.itemType ? (TOPIC[c.itemType] ?? humanize(c.itemType)) : 'General question'}
+									</KText>
+									<KText v="xs">{relative(c.lastUpdated)}</KText>
+								</View>
+								<KText v="small" numberOfLines={1} style={unread ? { color: color.fg } : undefined}>
+									{last?.text ?? (c.status === 'OPEN' ? 'New conversation' : 'Closed')}
+								</KText>
+							</View>
+							{unread ? <View style={s.dot} /> : null}
+						</Pressable>
+					);
+				}}
+				ListEmptyComponent={
+					fetching && !data ? (
+						<View style={{ gap: 10 }}>
+							{[0, 1].map((i) => (
+								<Skeleton key={i} style={{ height: 72 }} />
+							))}
+						</View>
+					) : null
+				}
+			/>
+		</View>
+	);
 }
+
+const s = StyleSheet.create({
+	hero: { gap: 10, padding: 18, borderRadius: radius.lg, borderWidth: 1, borderColor: color.line, backgroundColor: color.bg2 },
+	row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: radius.lg, borderWidth: 1, borderColor: color.line, backgroundColor: color.bg2 },
+	dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: color.amber }
+});

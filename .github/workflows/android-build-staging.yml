@@ -56,6 +56,19 @@ jobs:
       - name: Create .env file
         run: echo '${{ secrets.ENV_FILE }}' > .env
 
+      # Temporary: staging points at the Render test backend, whatever ENV_FILE says.
+      - name: Point staging at Render backend
+        run: |
+          grep -vE '^(EXPO_PUBLIC_GRAPHQL_URL|EXPO_PUBLIC_GRAPHQL_SUBSCRIPTION_URL|EXPO_PUBLIC_SHARE_PROPERTY_URL|EXPO_PUBLIC_SHARE_HOST_URL)=' .env > .env.tmp || true
+          mv .env.tmp .env
+          cat >> .env <<'ENV'
+          EXPO_PUBLIC_GRAPHQL_URL=https://kushi-housing-api.onrender.com/graphql
+          EXPO_PUBLIC_GRAPHQL_SUBSCRIPTION_URL=wss://kushi-housing-api.onrender.com/ws
+          EXPO_PUBLIC_SHARE_PROPERTY_URL=https://kushi-housing-web.onrender.com/homes
+          EXPO_PUBLIC_SHARE_HOST_URL=https://kushi-housing-web.onrender.com/hosts
+          ENV
+          grep -E '^EXPO_PUBLIC_(GRAPHQL|SHARE)' .env
+
       - name: Decode Google Services JSON
         run: echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 --decode > google-services.json
 
@@ -89,6 +102,14 @@ jobs:
           echo "AAB_PATH=$AAB_PATH" >> "$GITHUB_ENV"
           echo "✅ Built AAB: $AAB_PATH"
 
+      # Keep the build so a failed store upload can be retried without rebuilding.
+      - name: Save build
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build
+          path: ${{ env.AAB_PATH }}
+          retention-days: 7
+
       - name: Extract build number
         run: |
           BUILD_NUMBER=$(grep -oE 'versionCode from [0-9]+ to ([0-9]+)' /tmp/eas-output.txt | grep -oE '[0-9]+$' | tail -1)
@@ -102,6 +123,7 @@ jobs:
 
       - name: Notify Discord
         if: always()
+        continue-on-error: true
         env:
           JOB_STATUS: ${{ job.status }}
           BRANCH: ${{ github.ref_name }}

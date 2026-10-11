@@ -1,10 +1,8 @@
 import ThemedText from '@/components/atoms/a-themed-text';
 import Logo from '@/components/icons/i-logo';
-import { Image } from 'expo-image';
 import DetailsLayout from '@/components/layouts/details';
 import ChatInput, { ChatInputData } from '@/components/organisms/o-chat-input';
 import ChatMessageBubble from '@/components/molecules/m-chat-message-bubble';
-import HostingChatSummaryCard from '@/components/molecules/m-hosting-chat-summary-card';
 import { Fonts } from '@/lib/constants/theme';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import {
@@ -23,18 +21,20 @@ import { CREATE_UPDATE_MESSAGE } from '@/lib/services/graphql/requests/mutations
 import { formMutation } from '@/lib/services/graphql/utils/fetch';
 import { cast } from '@/lib/types/utils';
 import { hexToRgba } from '@/lib/utils/colors';
-import { SURFACE } from '@/lib/constants/surface';
 import * as Sentry from '@sentry/react-native';
 import { handleError } from '@/lib/utils/error';
 import { generateRNFile } from '@/lib/utils/file';
-import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
 import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from '@/lib/hooks/use-router';
 import React from 'react';
-import { FlatList, View, ActivityIndicator, Pressable } from 'react-native';
+import { FlatList, View, ActivityIndicator } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
 import { useAudioPlayer } from 'expo-audio';
 import { useNotifications } from '@/components/contexts/notifications';
+import { Avatar, KText, Photo } from '@/components/k';
+import { color as k } from '@/lib/k/theme';
+import { naira, perInterval, place } from '@/lib/k/format';
 
 export default function ChatDetails() {
   const { id } = useLocalSearchParams();
@@ -242,9 +242,7 @@ export default function ChatDetails() {
     <DetailsLayout
       scrollable={false}
       avatar={{
-        image:
-          chatData?.hostingChat.recipientUser?.profile?.image?.publicUrl ??
-          getDefaultProfileImageUrl(chatData?.hostingChat.recipientUser?.profile.fullName ?? ''),
+        image: chatData?.hostingChat.recipientUser?.profile?.image?.publicUrl,
         online: onlineRecipient?.online,
         lastSeen: onlineRecipient?.lastSeen,
       }}
@@ -275,72 +273,59 @@ export default function ChatDetails() {
           justifyContent: 'flex-end',
         }}
         ListFooterComponent={
-          <View style={{ marginBottom: 32, marginTop: 16 }}>
+          <View style={{ marginBottom: 24, marginTop: 16, gap: 18 }}>
             <Pressable
-              style={{ alignItems: 'center', gap: 8, marginBottom: 24 }}
+              style={{ alignItems: 'center', gap: 8 }}
               onPress={() => {
                 const uid = chatData?.hostingChat.recipientUser?.id;
                 if (uid) router.push(`/users/${uid}`);
               }}
             >
-              <View
-                style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: 36,
-                  overflow: 'hidden',
-                  boxShadow: SURFACE.glow,
-                }}
-              >
-                <Image
-                  source={{
-                    uri:
-                      chatData?.hostingChat.recipientUser?.profile?.image?.publicUrl ??
-                      getDefaultProfileImageUrl(
-                        chatData?.hostingChat.recipientUser?.profile.fullName ?? '',
-                      ),
-                  }}
-                  style={{ width: '100%', height: '100%' }}
-                  contentFit="cover"
-                />
-              </View>
-              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 17 }}>
-                {chatData?.hostingChat.recipientUser?.profile.fullName}
-              </ThemedText>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <View
-                  style={{
-                    width: 7,
-                    height: 7,
-                    borderRadius: 4,
-                    backgroundColor: onlineRecipient?.online
-                      ? colors.success
-                      : hexToRgba(colors.text, 0.25),
-                  }}
-                />
-                <ThemedText
-                  style={{
-                    fontSize: 12,
-                    color: hexToRgba(colors.text, 0.5),
-                    fontFamily: Fonts.regular,
-                  }}
-                >
-                  {onlineRecipient?.online ? 'Active now' : 'Offline'}
-                </ThemedText>
-              </View>
-              <View
-                style={{
-                  width: 40,
-                  height: 1,
-                  backgroundColor: hexToRgba(colors.text, 0.12),
-                  marginTop: 4,
-                }}
+              <Avatar
+                size={72}
+                name={chatData?.hostingChat.recipientUser?.profile.fullName}
+                uri={chatData?.hostingChat.recipientUser?.profile?.image?.publicUrl}
               />
+              <KText v="heading">{chatData?.hostingChat.recipientUser?.profile.fullName}</KText>
+              <KText v="xs">Messages stay on Kushi so we can help if anything goes wrong.</KText>
             </Pressable>
-            <HostingChatSummaryCard hosting={chatData?.hostingChat.hosting} />
-            {messagesFetching && hasNextPage && (
-              <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} />
-            )}
+            {chatData?.hostingChat.hosting ? (
+              <Pressable
+                onPress={() => router.push(`/hostings/${chatData.hostingChat.hosting?.id}`)}
+                style={({ pressed }) => ({
+                  flexDirection: 'row',
+                  gap: 12,
+                  padding: 10,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: k.line2,
+                  backgroundColor: k.bg2,
+                  opacity: pressed ? 0.8 : 1,
+                })}
+              >
+                <Photo
+                  assetId={chatData.hostingChat.hosting.coverImage?.asset?.id}
+                  w={200}
+                  h={200}
+                  style={{ width: 60, height: 60 }}
+                />
+                <View style={{ flex: 1, justifyContent: 'center', gap: 2 }}>
+                  <KText v="micro" style={{ color: k.amber }}>
+                    About this home
+                  </KText>
+                  <KText v="bodyStrong" numberOfLines={1}>
+                    {chatData.hostingChat.hosting.title}
+                  </KText>
+                  <KText v="xs" numberOfLines={1}>
+                    {place(chatData.hostingChat.hosting.city, chatData.hostingChat.hosting.state)}
+                    {chatData.hostingChat.hosting.price
+                      ? ` · ${naira(chatData.hostingChat.hosting.price)} ${perInterval(chatData.hostingChat.hosting.paymentInterval)}`
+                      : ''}
+                  </KText>
+                </View>
+              </Pressable>
+            ) : null}
+            {messagesFetching && hasNextPage && <ActivityIndicator color={k.amber} />}
           </View>
         }
         ListEmptyComponent={
