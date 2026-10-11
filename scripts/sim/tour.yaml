@@ -30,7 +30,7 @@ appId: com.kushicorp.kushi
 - waitForAnimationToEnd
 - takeScreenshot: shots/04-filters
 - tapOn:
-    point: "50%,10%"
+    point: "50%,25%"
 - tapOn:
     id: "tab-saved"
 - waitForAnimationToEnd
@@ -49,3 +49,9 @@ appId: com.kushicorp.kushi
     id: "tab-you"
 - waitForAnimationToEnd
 - takeScreenshot: shots/08-you
+- tapOn:
+    id: "tab-inbox"
+- tapOn: "Ekwo.*"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/09-chat

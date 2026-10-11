@@ -93,6 +93,7 @@ jobs:
           mkdir -p sim-out/shots
           xcrun simctl spawn "$UDID" log stream --level debug --style compact --predicate 'process == "KushiHousing"' > sim-out/app.log 2>&1 &
           cd sim-out && maestro test ../scripts/sim/tour.yaml --format junit --output report.xml || echo "TOUR_FAILED=1" >> "$GITHUB_ENV"
+          cp -R ../scripts/sim/shots ./ 2>/dev/null || true
           sleep 5
           cp -R ~/Library/Logs/DiagnosticReports ./crashes 2>/dev/null || true
           cp -R ~/.maestro/tests ./maestro 2>/dev/null || true
@@ -105,3 +106,9 @@ jobs:
           name: sim
           path: sim-out
           retention-days: 7
+
+      - name: Fail if the tour failed
+        if: env.TOUR_FAILED == '1'
+        run: |
+          grep -o '<failure>[^<]*' sim-out/report.xml || true
+          exit 1
