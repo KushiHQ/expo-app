@@ -2,23 +2,21 @@
  * One home, end to end: where things stand, the single next action, and everything
  * after move-in (agreement, review, caution deposit — which had no UI before).
  */
-import { useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { WebView } from 'react-native-webview';
-import { FileText, Headset, KeyRound, Landmark, MapPin, MessageCircle, ShieldCheck, Star, Wallet } from 'lucide-react-native';
-import { Button, Card, Divider, Eyebrow, Header, KText, KV, Notice, OtpSheet, Photo, Pill, Screen, Sheet, Skeleton, Waypoint } from '@/components/k';
+import { FileText, Headset, KeyRound, MapPin, MessageCircle, Star, Wallet } from 'lucide-react-native';
+import { GuestCaution } from '@/components/k/caution';
+import { Button, Card, Divider, Header, KText, KV, Notice, OtpSheet, Photo, Pill, Screen, Sheet, Skeleton, Waypoint } from '@/components/k';
 import { color, font, radius } from '@/lib/k/theme';
 import { date, daysUntil, duration, humanize, naira, place } from '@/lib/k/format';
 import { JOURNEY, STAGE, endedReason, progress, stageOf } from '@/lib/k/journey';
 import { toast } from '@/lib/hooks/use-toast';
 import {
 	SupportItemType,
-	useBanksQuery,
 	useCancelBookingApplicationMutation,
 	useCancelBookingMutation,
-	useCautionClaimsForBookingQuery,
-	useCautionRefundForBookingQuery,
 	useCreateUpdateHostingReviewMutation,
 	useFinalizeBookingMutation,
 	useGuestBookingTenancyAgreementPreviewQuery,
@@ -27,10 +25,7 @@ import {
 	useInitiateHostingChatMutation,
 	useInitiateSupportChatMutation,
 	useKBookingApplicationQuery,
-	useKBookingQuery,
-	useRequestCautionRefundMutation,
-	useResolveBankAccountQuery,
-	useRespondToCautionClaimMutation
+	useKBookingQuery
 } from '@/lib/services/graphql/generated';
 
 const clean = (m?: string) => (m ?? '').replace('[GraphQL] ', '');
@@ -206,7 +201,7 @@ function TripBody({ a, b, refresh }: { a: NonNullable<A>; b: B | null; refresh: 
 			</Card>
 
 			{b && (stage === 'paid' || stage === 'completed') ? <ReviewCard hostingId={a.hosting.id} existing={b.userReview} /> : null}
-			{b && (b.cautionFee ?? 0) > 0 && (stage === 'paid' || stage === 'completed') ? <CautionCard bookingId={b.id} amount={b.cautionFee ?? 0} tenancyOver={tenancyOver} expiry={b.expiryDate} /> : null}
+			{b && (b.cautionFee ?? 0) > 0 && (stage === 'paid' || stage === 'completed') ? <GuestCaution booking={b} tenancyOver={tenancyOver} /> : null}
 
 			{fees.length ? (
 				<Card>
@@ -369,112 +364,6 @@ function ReviewCard({ hostingId, existing }: { hostingId: string; existing?: { i
 				}}
 			/>
 		</Card>
-	);
-}
-
-function CautionCard({ bookingId, amount, tenancyOver, expiry }: { bookingId: string; amount: number; tenancyOver: boolean; expiry?: string | null }) {
-	const [{ data: cd }, refetchClaims] = useCautionClaimsForBookingQuery({ variables: { bookingId }, requestPolicy: 'network-only' });
-	const [{ data: rd }, refetchRefund] = useCautionRefundForBookingQuery({ variables: { bookingId }, requestPolicy: 'network-only' });
-	const [, respond] = useRespondToCautionClaimMutation();
-	const [open, setOpen] = useState(false);
-	const claims = cd?.cautionClaimsForBooking ?? [];
-	const refund = rd?.cautionRefundForBooking;
-	return (
-		<Card>
-			<View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-				<ShieldCheck size={17} color={color.amber} />
-				<KText v="heading">Caution deposit · {naira(amount)}</KText>
-			</View>
-			<KText v="xs">Held by Kushi, not the host. It comes back to you after your tenancy, minus any approved damage claims.</KText>
-			{claims.map((c) => (
-				<View key={c.id} style={st.claim}>
-					<KText v="smallStrong">Host claim · {naira(c.amountRequested)}</KText>
-					{c.hostNotes ? <KText v="small">“{c.hostNotes}”</KText> : null}
-					<KText v="xs">
-						{humanize(c.status)} · {date(c.createdAt)}
-					</KText>
-					{c.status === 'PENDING_GUEST_RESPONSE' ? (
-						<View style={{ flexDirection: 'row', gap: 8 }}>
-							<Button title="Accept" size="sm" variant="ghost" onPress={async () => (await respond({ input: { claimId: c.id, approved: true } }), refetchClaims({ requestPolicy: 'network-only' }))} />
-							<Button title="Dispute" size="sm" variant="quiet" onPress={async () => (await respond({ input: { claimId: c.id, approved: false, notes: 'Disputed from the app' } }), refetchClaims({ requestPolicy: 'network-only' }))} />
-						</View>
-					) : null}
-				</View>
-			))}
-			{refund ? (
-				<View style={st.claim}>
-					<KText v="smallStrong">Refund · {naira(refund.amount)}</KText>
-					<KText v="xs">
-						{humanize(refund.status)} · to {refund.bankName} ····{refund.accountNumber?.slice(-4)}
-					</KText>
-					{refund.blockedReason ? <KText v="small">{refund.blockedReason}</KText> : null}
-				</View>
-			) : tenancyOver ? (
-				<Button title="Request my refund" variant="ghost" icon={<Landmark size={16} color={color.fg} />} onPress={() => setOpen(true)} />
-			) : (
-				<KText v="small">You can request your refund after {date(expiry)}.</KText>
-			)}
-			<RefundSheet open={open} onClose={() => setOpen(false)} bookingId={bookingId} onDone={() => refetchRefund({ requestPolicy: 'network-only' })} />
-		</Card>
-	);
-}
-
-function RefundSheet({ open, onClose, bookingId, onDone }: { open: boolean; onClose: () => void; bookingId: string; onDone: () => void }) {
-	const [{ data }] = useBanksQuery({ pause: !open });
-	const [q, setQ] = useState('');
-	const [bank, setBank] = useState<{ name: string; code: string } | null>(null);
-	const [acct, setAcct] = useState('');
-	const ready = !!bank && acct.length === 10;
-	const [{ data: rd, fetching: resolving }] = useResolveBankAccountQuery({ variables: { input: { accountNumber: acct, bankCode: bank?.code ?? '' } }, pause: !ready });
-	const name = ready ? rd?.resolveBankAccount : null;
-	const [{ fetching }, request] = useRequestCautionRefundMutation();
-	const banks = useMemo(() => {
-		const uniq = [...new Map((data?.banks ?? []).filter((x) => x.active !== false).map((x) => [x.code, x])).values()];
-		const t = q.trim().toLowerCase();
-		return uniq.filter((x) => !t || x.name.toLowerCase().includes(t)).sort((x, y) => x.name.localeCompare(y.name));
-	}, [data, q]);
-	return (
-		<Sheet open={open} onClose={onClose} title="Request your refund" scroll={false}>
-			{!bank ? (
-				<>
-					<TextInput value={q} onChangeText={setQ} placeholder="Search your bank" placeholderTextColor={color.dim} style={st.input} />
-					<FlatList
-						data={banks}
-						style={{ maxHeight: 360 }}
-						keyExtractor={(x) => x.code}
-						renderItem={({ item }) => (
-							<Pressable onPress={() => setBank(item)} style={{ paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: color.line }}>
-								<KText v="body">{item.name}</KText>
-							</Pressable>
-						)}
-					/>
-				</>
-			) : (
-				<View style={{ gap: 14 }}>
-					<Pressable onPress={() => setBank(null)}>
-						<KText v="label">Bank</KText>
-						<KText v="bodyStrong">{bank.name} · change</KText>
-					</Pressable>
-					<TextInput value={acct} onChangeText={(t) => setAcct(t.replace(/\D/g, '').slice(0, 10))} keyboardType="number-pad" placeholder="10-digit account number" placeholderTextColor={color.dim} style={[st.input, { fontFamily: font.mono }]} />
-					{ready ? <KText v="small" c={name ? 'success' : 'muted'}>{resolving ? 'Checking account…' : (name ?? 'We couldn’t verify that account.')}</KText> : null}
-					<Eyebrow>The account name must match your verified identity.</Eyebrow>
-					<Button
-						title="Request refund"
-						size="lg"
-						block
-						disabled={!name}
-						loading={fetching}
-						onPress={async () => {
-							const r = await request({ input: { bookingId, accountName: name!, accountNumber: acct, bankCode: bank.code, bankName: bank.name } });
-							if (r.error) return toast.show({ type: 'error', text1: 'Couldn’t request', text2: clean(r.error.message) });
-							toast.show({ type: 'success', text2: 'Refund requested.' });
-							onClose();
-							onDone();
-						}}
-					/>
-				</View>
-			)}
-		</Sheet>
 	);
 }
 

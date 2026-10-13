@@ -288,6 +288,7 @@ export const BOOKING_QUERY = gql`
         commencementDate
       }
       cautionFee
+      cautionCustodyFee
       serviceCharge
       legalFee
       stampDuty
