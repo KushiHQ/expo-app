@@ -88,10 +88,10 @@ export function ApplicationReview({ id, embedded, onChanged }: { id: string; emb
 				<Skeleton style={{ height: 150 }} />
 				<Skeleton style={{ height: 150 }} />
 			</View>
-		) : error ? (
+		) : error && !/uuid|not found|invalid/i.test(error.message) ? (
 			<View style={{ paddingTop: 20 }}>
 				<Notice tone="danger" title="Couldn’t load this application" action="Try again" onAction={() => refetch({ requestPolicy: 'network-only' })}>
-					{clean(error.message) || 'Check your connection and try again.'}
+					Check your connection and try again.
 				</Notice>
 			</View>
 		) : (
