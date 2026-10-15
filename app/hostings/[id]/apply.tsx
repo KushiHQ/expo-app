@@ -262,7 +262,7 @@ export default function Apply() {
 							</View>
 						</View>
 					))}
-					<Button title="Track your application" size="lg" block onPress={() => router.replace('/trips')} />
+					<Button title="Track your application" size="lg" block onPress={() => router.replace(app ? `/trips/${app.id}` : '/trips')} />
 					<Button title="Keep exploring" variant="ghost" size="lg" block onPress={() => router.replace('/')} />
 				</Animated.View>
 			</ScrollView>
@@ -303,7 +303,7 @@ export default function Apply() {
 						<Button title="Try again" variant="ghost" onPress={boot} />
 					</>
 				) : alreadyApplied ? (
-					<Empty eyebrow="Already applied" title="Your application is in" body="Follow its status, message the host and pay once you’re accepted." action="Go to your homes" onAction={() => router.replace('/trips')} />
+					<Empty eyebrow="Already applied" title="Your application is in" body="Follow its status, message the host and pay once you’re accepted." action="See where it stands" onAction={() => router.replace(app ? `/trips/${app.id}` : '/trips')} />
 				) : step === 'kyc' ? (
 					<Animated.View entering={FadeIn} style={{ gap: 14 }}>
 						<KText v="title">First, verify it’s you</KText>
