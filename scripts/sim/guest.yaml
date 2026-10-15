@@ -1,0 +1,149 @@
+# Guest booking journey for CI: signs in as the QA guest (seeded accepted + paid
+# bookings) and screenshots Homes, a paid home (cancel preview, agreement, receipt),
+# an accepted home and its pay screen, and the old /bookings links.
+# Nothing is paid, cancelled or confirmed — every sheet is closed before its code step.
+# iOS Maestro has no back: relaunch between paths.
+appId: com.kushicorp.kushi
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Start exploring"
+    timeout: 180000
+- tapOn: "Sign in"
+- tapOn:
+    id: "email"
+- inputText: "qa.guest@kushi.test"
+- tapOn:
+    id: "password"
+- inputText: "KushiQA-2026!"
+- pressKey: Enter
+- extendedWaitUntil:
+    visible:
+      id: "tab-index"
+    timeout: 90000
+
+# ── Homes ─────────────────────────────────────────────
+- tapOn:
+    id: "tab-trips"
+- extendedWaitUntil:
+    visible: "Applications & homes"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/01-homes
+- scroll
+- takeScreenshot: shots/02-homes-scrolled
+
+# ── A paid home ───────────────────────────────────────
+- scrollUntilVisible:
+    element:
+      id: "trip-paid"
+    direction: UP
+    timeout: 15000
+    optional: true
+- tapOn:
+    id: "trip-paid"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/03-paid-top
+- scroll
+- takeScreenshot: shots/04-paid-mid
+- scroll
+- takeScreenshot: shots/05-paid-lower
+- scroll
+- takeScreenshot: shots/06-paid-bottom
+- scrollUntilVisible:
+    element:
+      id: "cancel-booking"
+    direction: UP
+    timeout: 15000
+    optional: true
+- tapOn:
+    id: "cancel-booking"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: shots/07-cancel-preview
+- tapOn:
+    text: "Keep my booking"
+    optional: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      text: "Receipt"
+    timeout: 15000
+    optional: true
+- tapOn:
+    text: "Receipt"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: shots/08-receipt
+- tapOn:
+    text: "Close"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "Tenancy agreement"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/09-agreement
+
+# ── An accepted (unpaid) home → pay screen ────────────
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "tab-index"
+    timeout: 60000
+- tapOn:
+    id: "tab-trips"
+- waitForAnimationToEnd:
+    timeout: 8000
+- tapOn:
+    id: "trip-accepted"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/10-accepted
+- tapOn:
+    id: "pay-now"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/11-pay
+
+# ── Old links still land somewhere sensible ───────────
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "tab-index"
+    timeout: 60000
+- openLink: "kushi://bookings"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/12-old-bookings-link
+
+# ── An application under review ───────────────────────
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "tab-index"
+    timeout: 60000
+- tapOn:
+    id: "tab-trips"
+- waitForAnimationToEnd:
+    timeout: 8000
+- tapOn:
+    id: "trip-review"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/13-under-review
+- scroll
+- takeScreenshot: shots/14-under-review-lower

@@ -3,14 +3,15 @@ import { StyleSheet, View } from 'react-native';
 import { Pressable } from '@/components/k/pressable';
 import { router } from 'expo-router';
 import { ChevronRight, Wallet } from 'lucide-react-native';
-import { Empty, KText, PageTitle, Photo, Pill, Screen, SignedOut, Skeleton } from '@/components/k';
+import { Button, Empty, KText, Notice, PageTitle, Photo, Pill, Screen, SignedOut, Skeleton } from '@/components/k';
+import { itemWidth, maxWidth, useLayout } from '@/lib/k/layout';
 import { color, font, radius } from '@/lib/k/theme';
 import { date, duration, naira, place, relative } from '@/lib/k/format';
 import { JOURNEY, STAGE, progress, stageOf, type Stage } from '@/lib/k/journey';
 import { useUserStore } from '@/lib/stores/users';
 import { useKBookingApplicationsQuery, useKBookingsQuery } from '@/lib/services/graphql/generated';
 
-type Item = { id: string; title: string; where: string; assetId?: string | null; stage: Stage; start?: string | null; length: string; amount?: number | null; updated: string; pay?: { bkId: string; ref: string } };
+type Item = { id: string; title: string; where: string; assetId?: string | null; stage: Stage; start?: string | null; length: string; amount?: number | null; updated: string; pay?: { bkId: string; ref?: string }; failed?: boolean };
 
 export default function Trips() {
 	const signedIn = useUserStore((s) => !!s.user.user?.id);
@@ -33,7 +34,8 @@ export default function Trips() {
 					length: duration(a.intervalMultiplier ?? 1, a.hosting.paymentInterval ?? 'ANUALLY'),
 					amount: b?.amount,
 					updated: b?.createdAt ?? a.createdAt,
-					pay: stage === 'accepted' && b?.transaction?.reference ? { bkId: b.id, ref: b.transaction.reference } : undefined
+					pay: stage === 'accepted' && b && b.paymentStatus !== 'PAID' ? (b.transaction?.reference ? { bkId: b.id, ref: b.transaction.reference } : { bkId: b.id }) : undefined,
+					failed: b?.paymentStatus === 'FAILED'
 				};
 			})
 			.sort((x, y) => (y.updated ?? '').localeCompare(x.updated ?? ''));
@@ -44,6 +46,10 @@ export default function Trips() {
 	const homes = items.filter((i) => i.stage === 'completed');
 	const past = items.filter((i) => i.stage === 'ended');
 	const loading = (apps.fetching || bks.fetching) && !apps.data;
+	const failed = !apps.data && !!apps.error && !apps.fetching;
+	const layout = useLayout();
+	const cols = layout.expanded ? 2 : 1;
+	const refresh = () => (refetchApps({ requestPolicy: 'network-only' }), refetchBks({ requestPolicy: 'network-only' }));
 
 	if (!signedIn)
 		return (
@@ -58,16 +64,27 @@ export default function Trips() {
 				<KText v="label">
 					{label} · {list.length}
 				</KText>
-				{list.map((i) => (
-					<TripCard key={i.id} i={i} />
-				))}
+				<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+					{list.map((i) => (
+						<View key={i.id} style={{ width: cols > 1 ? itemWidth(Math.min(layout.width, maxWidth.content) - 40, cols, 12) : '100%' }}>
+							<TripCard i={i} />
+						</View>
+					))}
+				</View>
 			</View>
 		) : null;
 
 	return (
-		<Screen tabbed refreshing={false} onRefresh={() => (refetchApps({ requestPolicy: 'network-only' }), refetchBks({ requestPolicy: 'network-only' }))}>
-			<PageTitle eyebrow="Your homes" title="Applications & homes" />
-			{loading ? (
+		<Screen tabbed width={cols > 1 ? 'content' : 'reading'} refreshing={false} onRefresh={refresh}>
+			<PageTitle eyebrow="Your homes" title="Applications & homes" sub={items.length ? 'Every step from applying to getting your keys.' : undefined} />
+			{failed ? (
+				<View style={{ gap: 12 }}>
+					<Notice tone="danger" title="We couldn’t load your homes">
+						{apps.error?.message.includes('Network') ? 'You seem to be offline. Check your connection and pull to refresh.' : 'Something went wrong on our side. Try again in a moment.'}
+					</Notice>
+					<Button title="Try again" variant="ghost" onPress={refresh} />
+				</View>
+			) : loading ? (
 				<View style={{ gap: 12 }}>
 					{[0, 1].map((k) => (
 						<Skeleton key={k} style={{ height: 120, borderRadius: radius.lg }} />
@@ -90,7 +107,7 @@ function TripCard({ i }: { i: Item }) {
 	const hot = i.stage === 'accepted';
 	const p = progress(i.stage);
 	return (
-		<Pressable onPress={() => router.push(`/trips/${i.id}`)} style={({ pressed }) => [s.card, hot && s.hot, i.stage === 'ended' && { opacity: 0.65 }, pressed && { opacity: 0.85 }]}>
+		<Pressable testID={`trip-${i.stage}`} accessibilityRole="button" accessibilityLabel={`${i.title}, ${STAGE[i.stage].label}`} onPress={() => router.push(`/trips/${i.id}`)} style={({ pressed }) => [s.card, hot && s.hot, i.stage === 'ended' && { opacity: 0.65 }, pressed && { opacity: 0.85 }]}>
 			<View style={{ flexDirection: 'row', gap: 14 }}>
 				<Photo assetId={i.assetId} w={300} h={300} style={{ width: 84, height: 84 }} />
 				<View style={{ flex: 1, gap: 5 }}>
@@ -112,9 +129,9 @@ function TripCard({ i }: { i: Item }) {
 					))}
 				</View>
 			) : null}
-			<KText v="small">{STAGE[i.stage].next}</KText>
+			<KText v="small">{i.failed ? 'Your last payment attempt didn’t go through. Try again to secure the home.' : STAGE[i.stage].next}</KText>
 			{i.pay ? (
-				<Pressable onPress={() => router.push({ pathname: '/pay', params: i.pay })} style={s.pay}>
+				<Pressable accessibilityRole="button" testID="trip-pay" onPress={() => router.push({ pathname: '/pay', params: i.pay })} style={({ pressed }) => [s.pay, pressed && { opacity: 0.85 }]}>
 					<Wallet size={16} color={color.onAmber} />
 					<KText style={{ fontFamily: font.bodySemi, color: color.onAmber }}>Pay {i.amount ? naira(i.amount) : 'now'}</KText>
 				</Pressable>

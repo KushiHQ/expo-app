@@ -22,6 +22,18 @@ import { useAudioPlayer } from 'expo-audio';
 import { EventEmitter } from '@/lib/utils/event-emitter';
 import VoipPushNotification from 'react-native-voip-push-notification';
 
+/**
+ * Booking and application pushes carry { subject, id }. The old routes resolve
+ * which side you're on (guest → your home, host → the application).
+ */
+function journeyRoute(data?: Record<string, unknown>): string | null {
+  const id = typeof data?.id === 'string' ? data.id : null;
+  if (!id) return null;
+  if (data?.subject === 'booking') return `/trips/booking/${id}`;
+  if (data?.subject === 'booking_application') return `/users/booking-applications/${id}`;
+  return null;
+}
+
 interface NotificationContextType {
   token: string | null;
   error: Error | null;
@@ -236,6 +248,9 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
         router.push(`/chats/${remoteMessage.data.id}` as any);
       } else if (isAppUpdateIntent(remoteMessage?.data?.intent as string)) {
         openAppStore();
+      } else {
+        const journey = journeyRoute(remoteMessage?.data);
+        if (journey) router.push(journey as any);
       }
     });
 
@@ -245,6 +260,9 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
         router.push(`/chats/${remoteMessage.data.id}` as any);
       } else if (isAppUpdateIntent(remoteMessage?.data?.intent as string)) {
         openAppStore();
+      } else {
+        const journey = journeyRoute(remoteMessage?.data);
+        if (journey) router.push(journey as any);
       }
     });
 

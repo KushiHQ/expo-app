@@ -1,0 +1,131 @@
+name: iOS Simulator · Guest journey
+
+# Builds a Release app for the iOS simulator, signs in as the QA guest and walks the
+# booking journey (Homes, a home, pay, cancel preview, agreement, receipt, old links)
+# on an iPhone and an iPad.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/redesign-guest
+    paths-ignore:
+      - 'docs/**'
+
+jobs:
+  tour:
+    runs-on: macos-15
+    environment: staging
+    timeout-minutes: 90
+    env:
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+      APP_ENV: staging
+      SENTRY_DISABLE_AUTO_UPLOAD: 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env file
+        run: echo '${{ secrets.ENV_FILE }}' > .env
+
+      - name: Point at Render backend
+        run: |
+          grep -vE '^(EXPO_PUBLIC_GRAPHQL_URL|EXPO_PUBLIC_GRAPHQL_SUBSCRIPTION_URL|EXPO_PUBLIC_SHARE_PROPERTY_URL|EXPO_PUBLIC_SHARE_HOST_URL)=' .env > .env.tmp || true
+          mv .env.tmp .env
+          cat >> .env <<'ENV'
+          EXPO_PUBLIC_GRAPHQL_URL=https://kushi-housing-api.onrender.com/graphql
+          EXPO_PUBLIC_GRAPHQL_SUBSCRIPTION_URL=wss://kushi-housing-api.onrender.com/ws
+          EXPO_PUBLIC_SHARE_PROPERTY_URL=https://kushi-housing-web.onrender.com/homes
+          EXPO_PUBLIC_SHARE_HOST_URL=https://kushi-housing-web.onrender.com/hosts
+          ENV
+
+      - name: Decode Google Services Plist
+        run: echo "${{ secrets.GOOGLE_SERVICES_IOS_BASE64 }}" | base64 --decode > GoogleService-Info.plist
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/CocoaPods
+          key: sim-guest-cocoapods-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            sim-guest-cocoapods-
+            sim-cocoapods-
+
+      - name: Prebuild
+        run: npx expo prebuild --platform ios --clean
+
+      - name: Build for simulator
+        run: |
+          set -o pipefail
+          WS=$(ls -d ios/*.xcworkspace | head -1)
+          SCHEME=$(basename "$WS" .xcworkspace)
+          xcodebuild -workspace "$WS" -scheme "$SCHEME" -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO | tail -40
+          APP=$(find build/Build/Products/Release-iphonesimulator -maxdepth 1 -name '*.app' | head -1)
+          echo "APP=$APP" >> "$GITHUB_ENV"
+
+      - name: Boot simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j | jq -r '[.devices[] | .[] | select(.name | test("^iPhone 1[5-7]( Pro)?$"))][0].udid')
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" "$APP"
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Tour
+        run: |
+          mkdir -p sim-out/shots
+          xcrun simctl spawn "$UDID" log stream --level debug --style compact --predicate 'process == "KushiHousing"' > sim-out/app.log 2>&1 &
+          cd sim-out && maestro --device "$UDID" test ../scripts/sim/guest.yaml --format junit --output report.xml || echo "TOUR_FAILED=1" >> "$GITHUB_ENV"
+          cp -R ../scripts/sim/shots ./ 2>/dev/null || true
+          sleep 5
+          cp -R ~/Library/Logs/DiagnosticReports ./crashes 2>/dev/null || true
+          cp -R ~/.maestro/tests ./maestro 2>/dev/null || true
+          grep -nE "Terminating app|NSException|reason:|raised an exception" app.log | head -50 || true
+
+      - name: iPad tour
+        continue-on-error: true
+        run: |
+          PAD=$(xcrun simctl list devices available -j | jq -r '[.devices[] | .[] | select(.name | test("^iPad Pro 13"))][0].udid')
+          if [ -z "$PAD" ] || [ "$PAD" = "null" ]; then PAD=$(xcrun simctl list devices available -j | jq -r '[.devices[] | .[] | select(.name | test("^iPad"))][0].udid'); fi
+          xcrun simctl shutdown "$UDID" || true
+          xcrun simctl boot "$PAD"
+          xcrun simctl bootstatus "$PAD" -b
+          xcrun simctl install "$PAD" "$APP"
+          mkdir -p sim-out/ipad
+          cd sim-out/ipad && maestro --device "$PAD" test ../../scripts/sim/guest.yaml --format junit --output report.xml || true
+          cp -R ../../scripts/sim/shots ./ 2>/dev/null || true
+
+      - name: Upload
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sim-guest
+          path: sim-out
+          retention-days: 7
+
+      - name: Fail if the tour failed
+        if: env.TOUR_FAILED == '1'
+        run: |
+          grep -o '<failure>[^<]*' sim-out/report.xml || true
+          exit 1
