@@ -26,7 +26,7 @@ appId: com.kushicorp.kushi
     timeout: 90000
 - tapOn:
     id: "tab-you"
-- tapOn: "Switch to hosting"
+- tapOn: "Switch to hosting.*"
 - extendedWaitUntil:
     visible:
       id: "tab-listings"
@@ -54,7 +54,7 @@ appId: com.kushicorp.kushi
 
 # Hub
 - extendedWaitUntil:
-    visible: ".*(Set-up|Listing details).*"
+    visible: "(?i).*(set-up|listing details).*"
     timeout: 30000
 - waitForAnimationToEnd
 - takeScreenshot: shots/04-hub
@@ -163,11 +163,11 @@ appId: com.kushicorp.kushi
 # Verification
 - scrollUntilVisible:
     element:
-      text: "Verification"
+      text: "Verification.*"
     timeout: 10000
     optional: true
 - tapOn:
-    text: "Verification"
+    text: "Verification.*"
     optional: true
 - waitForAnimationToEnd:
     timeout: 8000
