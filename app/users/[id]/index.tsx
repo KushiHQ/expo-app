@@ -80,8 +80,8 @@ export default function PublicProfile() {
 			</View>
 
 			{self ? (
-				<Notice tone="info" title="This is how others see you" action="Edit personal details" onAction={() => router.push(`/users/${id}/profile/edit`)}>
-					{p.verified ? 'Your verified badge shows on your listings and applications.' : 'Verify your identity to show the verified badge here.'}
+				<Notice tone="info" title="This is how others see you" action={p.verified ? 'Edit personal details' : 'Check my verification'} onAction={() => router.push(p.verified ? `/users/${id}/profile/edit` : '/verify')}>
+					{p.verified ? 'Your verified badge shows on your listings and applications.' : 'The verified badge appears here once Kushi has confirmed your identity.'}
 				</Notice>
 			) : (
 				<Button title="Leave a review" variant="ghost" block icon={<Star size={16} color={color.fg} />} onPress={() => setReviewOpen(true)} />

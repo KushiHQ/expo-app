@@ -176,7 +176,9 @@ appId: com.kushicorp.kushi
     id: "you-feedback"
 - waitForAnimationToEnd
 - takeScreenshot: shots/a19-feedback
-- tapOn: "Back"
+- tapOn:
+    text: "Back"
+    optional: true
 
 # ── Legacy routes still land somewhere sensible ──
 - openLink: "kushi://kyc/nin"

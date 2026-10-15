@@ -144,6 +144,8 @@ const KIND: Record<string, { label: string; incoming: boolean }> = {
 	guest_cancellation_refund: { label: 'Refund', incoming: true },
 	host_booking_payment: { label: 'Payout', incoming: true },
 	host_cancellation_compensation: { label: 'Cancellation compensation', incoming: true },
+	guest_caution_refund: { label: 'Caution refund', incoming: true },
+	host_caution_claim: { label: 'Caution claim payout', incoming: true },
 	listing_tier_boost: { label: 'Listing boost', incoming: false }
 };
 
@@ -159,16 +161,16 @@ export function moneyState(t: Pick<Receipt, 'type' | 'status'> & { createdAt?: s
 	const type = String(t.type).toLowerCase();
 	// A checkout that never got the bank's confirmation stays PENDING for ever.
 	const stale = !!t.createdAt && Date.now() - new Date(t.createdAt).getTime() > 2 * 36e5;
-	if (st === 'PENDING' && stale && type !== 'host_booking_payment')
+	if (st === 'PENDING' && stale && !txKind(type).incoming)
 		return { key: 'failed', label: 'Not completed', tone: 'neutral', body: 'This payment was started but the bank never confirmed it, so no money moved to the host. If your account was debited, contact support with the reference below.' };
 	if (st === 'PENDING' || st === 'PROCESSING' || st === 'NEEDS_RECONCILIATION') {
-		if (type === 'host_booking_payment')
-			return { key: 'payout_pending', label: 'On its way', tone: 'info', body: 'Kushi has started this payout. Banks usually settle it within one working day.' };
+		if (txKind(type).incoming)
+			return { key: 'payout_pending', label: 'On its way', tone: 'info', body: 'Kushi has started sending this money to you. Banks usually settle it within one working day.' };
 		return { key: 'processing', label: 'Processing', tone: 'info', body: 'We’re confirming this payment with the bank. It usually takes a few minutes.' };
 	}
 	if (st === 'FAILED' || st === 'CANCELLED') {
-		if (type === 'host_booking_payment')
-			return { key: 'payout_failed', label: 'Payout failed', tone: 'danger', body: 'The bank didn’t accept this payout. Check your payout account in Hosting, then contact support so we can resend it.' };
+		if (txKind(type).incoming)
+			return { key: 'payout_failed', label: 'Payout failed', tone: 'danger', body: 'The bank didn’t accept this transfer. Check the account details you gave us, then contact support so we can resend it.' };
 		return { key: 'failed', label: st === 'FAILED' ? 'Didn’t go through' : 'Cancelled', tone: 'danger', body: 'No money moved to the host. If your account was debited anyway, your bank normally reverses it within 24 hours — contact support with the reference if it doesn’t.' };
 	}
 	if (st === 'REFUNDED') return { key: 'refunded', label: 'Refunded', tone: 'neutral', body: 'This money has been sent back to you.' };
