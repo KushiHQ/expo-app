@@ -46,9 +46,10 @@ export function useVerification() {
 	}, [refetchKyc, refetchMe]);
 
 	const k = kycData?.kycStatus;
-	const selfie = k?.hasLiveness ?? !!stored?.kyc?.image;
 	const nin = k?.ninVerified ?? !!stored?.kyc?.ninVerified;
 	const bvn = k?.bvnVerified ?? !!stored?.kyc?.bvnVerified;
+	// NIN/BVN can only pass with a selfie on file, so a verified ID implies the selfie step is done.
+	const selfie = (k?.hasLiveness ?? !!stored?.kyc?.image) || nin || bvn;
 	const phones = meData?.me?.phoneNumbers ?? stored?.phoneNumbers ?? [];
 	const phone = phones.some((p) => p.verificationStatus === PhoneNumberVerificationStatus.Verified);
 

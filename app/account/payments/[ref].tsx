@@ -5,7 +5,7 @@ import * as Clipboard from 'expo-clipboard';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { Copy, Headset, Share2 } from 'lucide-react-native';
-import { Button, Card, Divider, Empty, Eyebrow, Header, IconButton, KText, KV, Photo, Pill, Screen, Skeleton, Waypoint } from '@/components/k';
+import { Button, Card, Divider, Empty, Eyebrow, Header, IconButton, KText, KV, Photo, Screen, Skeleton, Waypoint } from '@/components/k';
 import { Pressable } from '@/components/k/pressable';
 import { MoneyBanner } from '@/components/k/settings';
 import { color, font } from '@/lib/k/theme';
@@ -91,7 +91,6 @@ export default function ReceiptScreen() {
 				<KText v="hero" style={{ fontSize: 38 }} adjustsFontSizeToFit numberOfLines={1} accessibilityLabel={`${kind.incoming ? 'Received' : 'Paid'} ${naira(Number(t.amount))}`}>
 					{naira(Number(t.amount))}
 				</KText>
-				<Pill tone={state.tone}>{state.label}</Pill>
 				<KText v="xs">{fullDate(t.createdAt)}</KText>
 			</View>
 

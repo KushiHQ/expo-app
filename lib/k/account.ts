@@ -6,6 +6,7 @@
  */
 import { gql, useQuery } from 'urql';
 import type { TransactionStatus, TransactionType } from '@/lib/services/graphql/generated';
+import { humanize } from './format';
 
 /* ───────────────────────── Receipt ───────────────────────── */
 
@@ -146,16 +147,20 @@ const KIND: Record<string, { label: string; incoming: boolean }> = {
 	listing_tier_boost: { label: 'Listing boost', incoming: false }
 };
 
-export const txKind = (type: string) => KIND[type] ?? { label: 'Payment', incoming: false };
+export const txKind = (type: string) => KIND[String(type).toLowerCase()] ?? { label: humanize(String(type)) || 'Payment', incoming: false };
 
 /**
  * Plain-English answer to "where is my money?" for one transaction. For a rent
  * payment the booking decides it: PAID = Kushi holds it in escrow, COMPLETED =
  * released to the host, CANCELED = refunded/cancelled.
  */
-export function moneyState(t: Pick<Receipt, 'type' | 'status'> & { booking?: { status?: string | null; autoFinalizeAt?: string | null; hostTransaction?: { id: string } | null } | null }): MoneyState {
+export function moneyState(t: Pick<Receipt, 'type' | 'status'> & { createdAt?: string | null } & { booking?: { status?: string | null; autoFinalizeAt?: string | null; hostTransaction?: { id: string } | null } | null }): MoneyState {
 	const st = String(t.status).toUpperCase();
-	const type = String(t.type);
+	const type = String(t.type).toLowerCase();
+	// A checkout that never got the bank's confirmation stays PENDING for ever.
+	const stale = !!t.createdAt && Date.now() - new Date(t.createdAt).getTime() > 2 * 36e5;
+	if (st === 'PENDING' && stale && type !== 'host_booking_payment')
+		return { key: 'failed', label: 'Not completed', tone: 'neutral', body: 'This payment was started but the bank never confirmed it, so no money moved to the host. If your account was debited, contact support with the reference below.' };
 	if (st === 'PENDING' || st === 'PROCESSING' || st === 'NEEDS_RECONCILIATION') {
 		if (type === 'host_booking_payment')
 			return { key: 'payout_pending', label: 'On its way', tone: 'info', body: 'Kushi has started this payout. Banks usually settle it within one working day.' };

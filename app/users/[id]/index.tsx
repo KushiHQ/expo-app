@@ -75,7 +75,7 @@ export default function PublicProfile() {
 				<KText v="title" center>
 					{p.fullName}
 				</KText>
-				{p.verified ? <Pill tone="success">Identity verified</Pill> : <Pill>Not yet verified</Pill>}
+				<View style={{ alignItems: 'center' }}>{p.verified ? <Pill tone="success">Identity verified</Pill> : <Pill>Not yet verified</Pill>}</View>
 				<KText v="xs">{[p.memberSince ? `On Kushi since ${monthOf(p.memberSince)}` : null, p.agentReviewCount ? `${rating.toFixed(1)} ★ · ${p.agentReviewCount} review${p.agentReviewCount === 1 ? '' : 's'}` : 'No reviews yet'].filter(Boolean).join(' · ')}</KText>
 			</View>
 

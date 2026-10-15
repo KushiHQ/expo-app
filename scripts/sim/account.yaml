@@ -179,10 +179,7 @@ appId: com.kushicorp.kushi
 - tapOn: "Back"
 
 # ── Legacy routes still land somewhere sensible ──
-- openLink: "kushi://kyc"
-- tapOn:
-    text: "Open"
-    optional: true
+- openLink: "kushi://kyc/nin"
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: shots/a20-legacy-kyc-redirect

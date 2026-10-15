@@ -114,7 +114,7 @@ function PaymentItem({ t }: { t: PaymentRow }) {
 					{t.booking?.hosting?.title ?? k.label}
 				</KText>
 				<KText v="xs" numberOfLines={1}>
-					{k.label} · {shortDate(t.createdAt)}
+					{t.booking?.hosting?.title ? `${k.label} · ${shortDate(t.createdAt)}` : shortDate(t.createdAt)}
 				</KText>
 			</View>
 			<View style={{ alignItems: 'flex-end', gap: 6 }}>
