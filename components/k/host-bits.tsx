@@ -85,11 +85,18 @@ type AppRow = {
 	guest?: { user?: { profile?: { fullName?: string | null; image?: { publicUrl?: string | null } | null } | null } | null } | null;
 };
 
-/** An application row → host review. */
-export function ApplicationRow({ a }: { a: AppRow }) {
+/** An application row → host review. `onPress`/`selected` let a tablet board show it in a side pane. */
+export function ApplicationRow({ a, onPress, selected }: { a: AppRow; onPress?: () => void; selected?: boolean }) {
 	const st = APP_STATUS[a.status] ?? { label: a.status, tone: 'neutral' as const };
 	return (
-		<Pressable onPress={() => router.push(`/applications/${a.id}`)} style={({ pressed }) => [s.row, pressed && { opacity: 0.8 }]}>
+		<Pressable
+			testID={`application-${a.id}`}
+			accessibilityRole="button"
+			accessibilityState={{ selected: !!selected }}
+			accessibilityLabel={`${a.fullName ?? a.guest?.user?.profile?.fullName ?? 'Applicant'}, ${st.label}, ${a.hosting.title ?? ''}`}
+			onPress={onPress ?? (() => router.push(`/applications/${a.id}`))}
+			style={({ pressed }) => [s.row, selected && { borderColor: color.amberLine, backgroundColor: 'rgba(245,158,11,0.06)' }, pressed && { opacity: 0.8 }]}
+		>
 			<Avatar name={a.fullName ?? a.guest?.user?.profile?.fullName} uri={a.guest?.user?.profile?.image?.publicUrl} size={46} />
 			<View style={{ flex: 1, gap: 3 }}>
 				<View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
