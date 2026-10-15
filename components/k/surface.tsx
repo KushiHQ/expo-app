@@ -111,7 +111,7 @@ export function Avatar({ name, uri, size = 40 }: { name?: string | null; uri?: s
 			{uri && !failed ? (
 				<Image source={{ uri }} style={{ width: size, height: size }} contentFit="cover" onError={() => setFailed(true)} />
 			) : (
-				<KText style={{ fontFamily: font.display, fontSize: size * 0.36, color: color.fg2 }}>{initials}</KText>
+				<KText style={{ fontFamily: font.display, fontSize: size * 0.36, lineHeight: Math.round(size * 0.5), color: color.fg2 }}>{initials}</KText>
 			)}
 		</View>
 	);
