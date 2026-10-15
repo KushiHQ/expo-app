@@ -7,6 +7,10 @@ appId: com.kushicorp.kushi
     permissions:
       all: allow
 - setOrientation: LANDSCAPE_LEFT
+# The notification permission alert can sit over the first screen.
+- tapOn:
+    text: "Allow"
+    optional: true
 - extendedWaitUntil:
     visible: "Start exploring"
     timeout: 180000
