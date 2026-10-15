@@ -9,9 +9,9 @@ export default ({ config }) => ({
 	...config,
 	name: "Kushi Housing",
 	slug: "kushi",
-	version: "1.3.3",
+	version: "1.4.0",
 	orientation: "default",
-	icon: "./assets/icons/adaptive-icon.png",
+	icon: "./assets/icons/icon.png",
 	scheme: "kushi",
 	userInterfaceStyle: "automatic",
 	jsEngine: "hermes",
@@ -46,9 +46,12 @@ export default ({ config }) => ({
 		package: "com.kushicorp.kushi",
 		googleServicesFile: "./google-services.json",
 		adaptiveIcon: {
-			backgroundColor: "#E6F4FE",
+			// Night tile behind the ivory mark; the mark sits inside the 66dp
+			// safe circle so no launcher mask clips it.
+			backgroundColor: "#0B0C10",
 			foregroundImage: "./assets/icons/adaptive-icon.png",
-			monochromeImage: "./assets/icons/ios-tinted.png",
+			// Android 13+ themed icons: a transparent single-colour silhouette.
+			monochromeImage: "./assets/icons/adaptive-monochrome.png",
 		},
 		permissions: [
 			"android.permission.ACCESS_COARSE_LOCATION",
@@ -86,7 +89,7 @@ export default ({ config }) => ({
 		bundler: "metro",
 		// CI web previews render a single-page build; everything else is unchanged.
 		output: process.env.WEB_PREVIEW ? "single" : "static",
-		favicon: "./assets/icons/adaptive-icon.png",
+		favicon: "./assets/icons/icon.png",
 	},
 	extra: {
 		router: {
@@ -174,17 +177,17 @@ export default ({ config }) => ({
 		[
 			"expo-splash-screen",
 			{
-				image: "./assets/images/logo-1.png",
+				image: "./assets/images/splash-logo.png",
 				imageWidth: 240,
 				resizeMode: "contain",
 				backgroundColor: "#050505",
 				dark: {
-					image: "./assets/images/logo-1.png",
+					image: "./assets/images/splash-logo.png",
 					backgroundColor: "#050505",
 				},
-				// Android 12+ masks the splash icon to a circle, which clips the
-				// wide wordmark — use a square asset padded so the mark fits the
-				// safe circle. iOS keeps the unpadded wordmark above.
+				// Android 12+ masks the splash icon to a circle, which would clip the
+				// wide wordmark, so Android shows the mark alone, sized for the safe
+				// circle. iOS keeps the wordmark above.
 				android: {
 					image: "./assets/images/splash-android.png",
 					imageWidth: 320,
