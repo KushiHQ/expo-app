@@ -1,5 +1,6 @@
 # Store screenshots: browse production signed out and capture the key screens.
-# Each screenshot lands next to the run's working directory as shots/NN-name.png.
+# iOS has no "back" in Maestro, so each screen starts from a fresh launch
+# (state is kept, so the welcome screen only shows once).
 appId: com.kushicorp.kushi
 ---
 - launchApp:
@@ -17,42 +18,91 @@ appId: com.kushicorp.kushi
     visible:
       id: "search"
     timeout: 90000
-# Let listing photos arrive from production.
 - waitForAnimationToEnd:
     timeout: 15000
 - takeScreenshot: shots/02-explore
-- scroll
+
+# Map of homes.
+- tapOn:
+    text: "Map"
+    optional: true
 - waitForAnimationToEnd:
-    timeout: 8000
-- takeScreenshot: shots/03-explore-scrolled
-- swipe:
+    timeout: 20000
+- takeScreenshot: shots/03-map
+
+# Filters.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "search"
+    timeout: 90000
+- waitForAnimationToEnd:
+    timeout: 10000
+- tapOn:
+    text: "Filters"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: shots/04-filters
+
+# A listing, opened by its title, and its sections.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "search"
+    timeout: 90000
+- waitForAnimationToEnd:
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      text: ".*6 Units of 3-Bedroom.*"
     direction: DOWN
-- waitForAnimationToEnd:
-    timeout: 4000
-# Open the search sheet.
+    timeout: 30000
 - tapOn:
-    id: "search"
+    text: ".*6 Units of 3-Bedroom.*"
 - waitForAnimationToEnd:
-    timeout: 5000
-- takeScreenshot: shots/04-search
-- back
-- waitForAnimationToEnd:
-    timeout: 4000
-# Open the first listing (the first card sits around the middle of the screen).
-- tapOn:
-    point: "50%,55%"
-- waitForAnimationToEnd:
-    timeout: 15000
+    timeout: 20000
 - takeScreenshot: shots/05-listing
 - scroll
 - waitForAnimationToEnd:
-    timeout: 6000
+    timeout: 8000
 - takeScreenshot: shots/06-listing-2
 - scroll
 - waitForAnimationToEnd:
-    timeout: 6000
+    timeout: 8000
 - takeScreenshot: shots/07-listing-3
 - scroll
 - waitForAnimationToEnd:
-    timeout: 6000
+    timeout: 8000
 - takeScreenshot: shots/08-listing-4
+- scroll
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/09-listing-5
+
+# Photo gallery from the listing's hero photo.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "search"
+    timeout: 90000
+- waitForAnimationToEnd:
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      text: ".*6 Units of 3-Bedroom.*"
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    text: ".*6 Units of 3-Bedroom.*"
+- waitForAnimationToEnd:
+    timeout: 20000
+- tapOn:
+    point: "50%,22%"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: shots/10-gallery
