@@ -150,7 +150,17 @@ Redirects (old URL → new):
 - Account deletion: the API has `deleteAccount` (soft delete). We use it, with an honest explanation and
   an email fallback to support@kushi.ng.
 
-## 4. Open questions for the owner
+## 4. Found while testing on the simulator (Render test API)
+- `kycStatus.hasLiveness` is false for the NIN-verified QA guest (no selfie image on record), which made the
+  hub ask a verified person for a selfie. The app now treats a verified NIN/BVN as proof the selfie step was done.
+- `userProfile.verified` is false for the same NIN-verified guest, so the public profile says "Not yet verified"
+  while verification says done. Server-side rule for the public badge probably differs (BVN? kycComplete?) — needs a decision.
+- Rent checkouts that the bank never confirmed stay `PENDING` for ever and used to read "Processing" for days;
+  after 2 hours they now read "Not completed". A server-side expiry for abandoned checkouts would be better.
+- The server returns transaction types the schema doesn't list (`guest_caution_refund`); they're now labelled.
+- Changing the password does not sign out other sessions on the server.
+
+## 5. Open questions for the owner
 - Biometric sign-in / pay-with-biometrics: build it properly or drop the setting for good?
 - There's no "signed-in devices / sessions" query; only "sign out of this device" is possible.
   `logout` with no token clears all sessions server-side — worth exposing as "Sign out everywhere"?

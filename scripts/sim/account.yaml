@@ -164,9 +164,8 @@ appId: com.kushicorp.kushi
 - stopApp
 - launchApp
 - extendedWaitUntil:
-    visible:
-      id: "tab-you"
-    timeout: 60000
+    visible: "You"
+    timeout: 120000
 - tapOn:
     id: "tab-you"
 - scrollUntilVisible:
@@ -195,9 +194,8 @@ appId: com.kushicorp.kushi
 - stopApp
 - launchApp
 - extendedWaitUntil:
-    visible:
-      id: "tab-you"
-    timeout: 60000
+    visible: "You"
+    timeout: 120000
 
 # ── Sign out (confirm sheet) ──
 - tapOn:
