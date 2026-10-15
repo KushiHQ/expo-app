@@ -1,307 +1,214 @@
-import { Platform, Pressable, Share, View } from 'react-native';
-import React from 'react';
-import { useLocalSearchParams } from 'expo-router';
-import { Image } from 'expo-image';
-import moment from 'moment';
-import { Star, Flag, MessageSquareText, BadgeCheck, ShieldCheck } from 'lucide-react-native';
-import DetailsLayout from '@/components/layouts/details';
-import ThemedText from '@/components/atoms/a-themed-text';
-import Button from '@/components/atoms/a-button';
-import TextArea from '@/components/atoms/a-textarea';
-import RatingInput from '@/components/atoms/a-rating-input';
-import BottomSheet from '@/components/atoms/a-bottom-sheet';
-import ManagementBadge from '@/components/atoms/a-management-badge';
-import { useRouter } from '@/lib/hooks/use-router';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { hexToRgba } from '@/lib/utils/colors';
-import { SURFACE } from '@/lib/constants/surface';
-import { Fonts } from '@/lib/constants/theme';
-import { useUser } from '@/lib/hooks/user';
+import { useState } from 'react';
+import { Platform, Share, StyleSheet, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { BadgeCheck, Flag, Share2, Star } from 'lucide-react-native';
+import { Avatar, Button, Card, Empty, Eyebrow, Field, Header, IconButton, KText, Notice, Photo, Pill, Screen, Sheet, Skeleton } from '@/components/k';
+import { Pressable } from '@/components/k/pressable';
+import { color, radius } from '@/lib/k/theme';
+import { naira, place, relative } from '@/lib/k/format';
+import { cleanError, monthOf } from '@/lib/k/account';
 import { toast } from '@/lib/hooks/use-toast';
-import { handleError } from '@/lib/utils/error';
-import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
 import { slugify } from '@/lib/utils/text';
-import { formatNaira } from '@/lib/utils/currency';
-import {
-  ManagementType,
-  useReportAgentReviewMutation,
-  useReviewAgentMutation,
-  useUserProfileQuery,
-} from '@/lib/services/graphql/generated';
+import { useUserStore } from '@/lib/stores/users';
+import { ManagementType, useReportAgentReviewMutation, useReviewAgentMutation, useUserProfileQuery } from '@/lib/services/graphql/generated';
 
-function Stars({ rating, size = 14 }: { rating: number; size?: number }) {
-  const colors = useThemeColors();
-  return (
-    <View className="flex-row items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((n) => {
-        const filled = n <= Math.round(rating);
-        return (
-          <Star
-            key={n}
-            size={size}
-            color={filled ? colors.primary : hexToRgba(colors.text, 0.3)}
-            fill={filled ? colors.primary : 'transparent'}
-          />
-        );
-      })}
-    </View>
-  );
+/** Public profile of a host or agent: trust signals, live listings and reviews. */
+export default function PublicProfile() {
+	const { id } = useLocalSearchParams<{ id: string }>();
+	const myId = useUserStore((s) => s.user.user?.id);
+	const [{ data, fetching, error }, refetch] = useUserProfileQuery({ variables: { userId: String(id) }, requestPolicy: 'cache-and-network' });
+	const p = data?.userProfile;
+	const self = !!myId && myId === id;
+	const [reviewOpen, setReviewOpen] = useState(false);
+	const [reportId, setReportId] = useState<string | null>(null);
+	const [, report] = useReportAgentReviewMutation();
+
+	async function share() {
+		if (!p) return;
+		const slug = `${slugify(p.fullName)}___${id}`;
+		const base = process.env.EXPO_PUBLIC_SHARE_HOST_URL || 'https://housing.kushi.ng/host/<slug>';
+		const url = base.includes('<slug>') ? base.replace('<slug>', slug) : `${base.replace(/\/$/, '')}/${slug}`;
+		const link = `${url}${url.includes('?') ? '&' : '?'}shared=true`;
+		const caption = `Check out ${p.fullName} on Kushi`;
+		await Share.share(Platform.OS === 'ios' ? { title: p.fullName, message: caption, url: link } : { title: p.fullName, message: `${caption}\n\n${link}` }).catch(() => {});
+	}
+
+	const header = (
+		<Header
+			title={p?.fullName ?? 'Profile'}
+			right={
+				p ? (
+					<IconButton label="Share profile" onPress={share}>
+						<Share2 size={17} color={color.fg} />
+					</IconButton>
+				) : undefined
+			}
+		/>
+	);
+
+	if (!p)
+		return (
+			<Screen header={header}>
+				{fetching ? (
+					<View style={{ gap: 14, paddingTop: 24, alignItems: 'center' }}>
+						<Skeleton style={{ width: 96, height: 96, borderRadius: 48 }} />
+						<Skeleton style={{ width: 200, height: 24 }} />
+						<Skeleton style={{ alignSelf: 'stretch', height: 160 }} />
+					</View>
+				) : (
+					<Empty
+						eyebrow={error ? 'Couldn’t load' : 'Not found'}
+						title={error ? 'We couldn’t open this profile' : 'This profile isn’t available'}
+						body={error ? cleanError(error.message) : 'The account may have been closed.'}
+						action={error ? 'Try again' : undefined}
+						onAction={error ? () => refetch({ requestPolicy: 'network-only' }) : undefined}
+					/>
+				)}
+			</Screen>
+		);
+
+	const rating = p.agentRatingAvg ?? 0;
+	return (
+		<Screen header={header} onRefresh={() => refetch({ requestPolicy: 'network-only' })} refreshing={false}>
+			<View style={{ alignItems: 'center', gap: 10, paddingTop: 24 }}>
+				<Avatar name={p.fullName} uri={p.avatar} size={96} />
+				<KText v="title" center>
+					{p.fullName}
+				</KText>
+				{p.verified ? <Pill tone="success">Identity verified</Pill> : <Pill>Not yet verified</Pill>}
+				<KText v="xs">{[p.memberSince ? `On Kushi since ${monthOf(p.memberSince)}` : null, p.agentReviewCount ? `${rating.toFixed(1)} ★ · ${p.agentReviewCount} review${p.agentReviewCount === 1 ? '' : 's'}` : 'No reviews yet'].filter(Boolean).join(' · ')}</KText>
+			</View>
+
+			{self ? (
+				<Notice tone="info" title="This is how others see you" action="Edit personal details" onAction={() => router.push(`/users/${id}/profile/edit`)}>
+					{p.verified ? 'Your verified badge shows on your listings and applications.' : 'Verify your identity to show the verified badge here.'}
+				</Notice>
+			) : (
+				<Button title="Leave a review" variant="ghost" block icon={<Star size={16} color={color.fg} />} onPress={() => setReviewOpen(true)} />
+			)}
+
+			{p.verified ? (
+				<Card>
+					<View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+						<BadgeCheck size={20} color={color.success} />
+						<KText v="small" c="fg" style={{ flex: 1 }}>
+							Kushi has checked {p.fullName.split(' ')[0]}’s identity against government records. Rent you pay through Kushi is held in escrow until you move in.
+						</KText>
+					</View>
+				</Card>
+			) : null}
+
+			{p.listings.length ? (
+				<View style={{ gap: 10 }}>
+					<Eyebrow>Live listings · {p.listings.length}</Eyebrow>
+					{p.listings.map((l) => (
+						<Pressable key={l.id} accessibilityRole="button" onPress={() => router.push(`/hostings/${l.id}`)} style={({ pressed }) => [s.listing, pressed && { opacity: 0.8 }]}>
+							<Photo uri={l.coverImage?.asset.publicUrl} style={{ width: 64, height: 64 }} />
+							<View style={{ flex: 1, gap: 3 }}>
+								<KText v="bodyStrong" numberOfLines={1}>
+									{l.title ?? 'Untitled listing'}
+								</KText>
+								<KText v="xs">{place(l.city, l.state)}</KText>
+								<View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+									{l.price != null ? <KText v="smallStrong">{naira(Number(l.price))}</KText> : null}
+									{l.managementType === ManagementType.AgentManaged ? <KText v="micro">Agent managed</KText> : null}
+								</View>
+							</View>
+						</Pressable>
+					))}
+				</View>
+			) : null}
+
+			<View style={{ gap: 10 }}>
+				<Eyebrow>Reviews{p.reviews.length ? ` · ${p.reviews.length}` : ''}</Eyebrow>
+				{p.reviews.length ? (
+					p.reviews.map((r) => (
+						<Card key={r.id}>
+							<View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+								<Avatar name={r.reviewerName} uri={r.reviewerAvatar} size={36} />
+								<View style={{ flex: 1, gap: 2 }}>
+									<KText v="smallStrong">{r.reviewerName}</KText>
+									<KText v="xs">
+										{'★'.repeat(Math.round(r.rating))}
+										{'☆'.repeat(5 - Math.round(r.rating))} · {relative(r.createdAt)}
+									</KText>
+								</View>
+								{!self ? (
+									<IconButton label={`Report review by ${r.reviewerName}`} size={34} onPress={() => setReportId(r.id)}>
+										<Flag size={14} color={color.muted} />
+									</IconButton>
+								) : null}
+							</View>
+							{r.comment ? <KText v="small">{r.comment}</KText> : null}
+						</Card>
+					))
+				) : (
+					<KText v="small">{self ? 'Reviews from renters you’ve hosted will appear here.' : 'No reviews yet. Renters can review after dealing with this host.'}</KText>
+				)}
+			</View>
+
+			<ReviewSheet open={reviewOpen} onClose={() => setReviewOpen(false)} agentId={String(id)} name={p.fullName} onDone={() => refetch({ requestPolicy: 'network-only' })} />
+			<Sheet open={!!reportId} onClose={() => setReportId(null)} eyebrow="Report" title="Report this review?">
+				<KText v="small">Our team will check it against the review rules — fake, abusive or off-topic reviews are removed. The reviewer isn’t told who reported it.</KText>
+				<Button
+					title="Report review"
+					variant="danger"
+					size="lg"
+					block
+					onPress={async () => {
+						const rid = reportId;
+						setReportId(null);
+						if (!rid) return;
+						const r = await report({ reviewId: rid });
+						toast.show(r.error ? { type: 'error', text1: 'Couldn’t report it', text2: cleanError(r.error.message) } : { type: 'success', text2: 'Thanks — our team will take a look.' });
+					}}
+				/>
+				<Button title="Cancel" variant="ghost" size="lg" block onPress={() => setReportId(null)} />
+			</Sheet>
+		</Screen>
+	);
 }
 
-export default function UserProfileScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
-  const colors = useThemeColors();
-  const { user } = useUser();
-  const myId = user.user?.id;
+const LABELS = ['', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'];
 
-  const [{ data, fetching }, refetch] = useUserProfileQuery({ variables: { userId: id } });
-  const profile = data?.userProfile;
+function ReviewSheet({ open, onClose, agentId, name, onDone }: { open: boolean; onClose: () => void; agentId: string; name: string; onDone: () => void }) {
+	const [rating, setRating] = useState(0);
+	const [comment, setComment] = useState('');
+	const [error, setError] = useState<string | null>(null);
+	const [{ fetching }, review] = useReviewAgentMutation();
 
-  const [, reviewAgent] = useReviewAgentMutation();
-  const [, reportReview] = useReportAgentReviewMutation();
+	async function submit() {
+		setError(null);
+		const r = await review({ agentId, rating, comment: comment.trim() || undefined });
+		if (r.error) return setError(cleanError(r.error.graphQLErrors[0]?.message ?? r.error.message));
+		toast.show({ type: 'success', text1: 'Review posted', text2: 'Thanks for helping other renters.' });
+		setRating(0);
+		setComment('');
+		onClose();
+		onDone();
+	}
 
-  const [sheetOpen, setSheetOpen] = React.useState(false);
-  const [rating, setRating] = React.useState(0);
-  const [comment, setComment] = React.useState('');
-  const [submitting, setSubmitting] = React.useState(false);
-
-  const isSelf = !!myId && myId === id;
-
-  const handleSubmit = async () => {
-    if (rating < 1) {
-      toast.show({ type: 'error', text2: 'Please select a rating' });
-      return;
-    }
-    setSubmitting(true);
-    const res = await reviewAgent({
-      agentId: id,
-      rating,
-      comment: comment.trim() || undefined,
-    });
-    setSubmitting(false);
-    if (res.error) return handleError(res.error);
-    toast.show({ type: 'success', text1: 'Thank you', text2: 'Your review has been submitted' });
-    setSheetOpen(false);
-    setComment('');
-    setRating(0);
-    refetch({ requestPolicy: 'network-only' });
-  };
-
-  const handleReport = async (reviewId: string) => {
-    const res = await reportReview({ reviewId });
-    if (res.error) return handleError(res.error);
-    toast.show({ type: 'success', text2: 'Review reported to our team' });
-  };
-
-  const handleShareProfile = async () => {
-    if (!profile) return;
-    const slug = `${slugify(profile.fullName)}___${id}`;
-    const base = process.env.EXPO_PUBLIC_SHARE_HOST_URL || 'https://housing.kushi.ng/host/<slug>';
-    // Accept either a template ("…/host/<slug>") or a plain base ("…/host").
-    const url = base.includes('<slug>') ? base.replace('<slug>', slug) : `${base.replace(/\/$/, '')}/${slug}`;
-    // Tag so the recipient's web page offers/attempts to open the Kushi app.
-    const shareUrl = `${url}${url.includes('?') ? '&' : '?'}shared=true`;
-    const caption = `Check out ${profile.fullName} on Kushi`;
-    try {
-      await Share.share(
-        Platform.OS === 'ios'
-          ? { title: profile.fullName, message: caption, url: shareUrl }
-          : { title: profile.fullName, message: `${caption}\n\n${shareUrl}` },
-      );
-    } catch (error: any) {
-      handleError(error);
-    }
-  };
-
-  const card = {
-    backgroundColor: hexToRgba(colors.text, 0.05),
-    boxShadow: SURFACE.shadow,
-  } as const;
-
-  return (
-    <DetailsLayout title="Profile" withShare onShare={handleShareProfile}>
-      <View className="gap-5 px-4 pb-10">
-        {/* Header */}
-        <View className="items-center gap-3 rounded-3xl p-6" style={card}>
-          <View className="h-20 w-20 overflow-hidden rounded-full">
-            <Image
-              style={{ height: '100%', width: '100%', objectFit: 'cover' }}
-              source={{
-                uri:
-                  profile?.avatar ??
-                  getDefaultProfileImageUrl(profile?.fullName ?? ''),
-              }}
-            />
-          </View>
-          <View className="flex-row items-center gap-1.5">
-            <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 18 }}>
-              {profile?.fullName ?? (fetching ? 'Loading…' : 'User')}
-            </ThemedText>
-            {profile?.verified && (
-              <BadgeCheck size={18} color={colors.primary} fill={hexToRgba(colors.primary, 0.15)} />
-            )}
-          </View>
-          {profile?.verified ? (
-            <View
-              className="flex-row items-center gap-1 rounded-full px-2.5 py-1"
-              style={{ backgroundColor: hexToRgba(colors.primary, 0.12) }}
-            >
-              <ShieldCheck size={12} color={colors.primary} />
-              <ThemedText style={{ color: colors.primary, fontSize: 11, fontFamily: Fonts.medium }}>
-                Identity verified
-              </ThemedText>
-            </View>
-          ) : (
-            <ThemedText style={{ color: hexToRgba(colors.text, 0.4), fontSize: 11 }}>
-              Identity not yet verified
-            </ThemedText>
-          )}
-          {profile?.memberSince && (
-            <ThemedText style={{ color: hexToRgba(colors.text, 0.5), fontSize: 12 }}>
-              Member since {moment(profile.memberSince).format('MMMM YYYY')}
-            </ThemedText>
-          )}
-          {(profile?.agentReviewCount ?? 0) > 0 ? (
-            <View className="flex-row items-center gap-2">
-              <Stars rating={profile?.agentRatingAvg ?? 0} />
-              <ThemedText style={{ color: hexToRgba(colors.text, 0.6), fontSize: 13 }}>
-                {(profile?.agentRatingAvg ?? 0).toFixed(1)} · {profile?.agentReviewCount}{' '}
-                review{profile?.agentReviewCount === 1 ? '' : 's'}
-              </ThemedText>
-            </View>
-          ) : (
-            <ThemedText style={{ color: hexToRgba(colors.text, 0.5), fontSize: 13 }}>
-              No reviews yet
-            </ThemedText>
-          )}
-          {!isSelf && (
-            <Button type="primary" className="mt-1" onPress={() => setSheetOpen(true)}>
-              <View className="flex-row items-center gap-2">
-                <MessageSquareText size={16} color="#050505" />
-                <ThemedText content="primary">Leave a review</ThemedText>
-              </View>
-            </Button>
-          )}
-        </View>
-
-        {/* Listings */}
-        {(profile?.listings.length ?? 0) > 0 && (
-          <View className="gap-3">
-            <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 15 }}>
-              Active listings ({profile?.listings.length})
-            </ThemedText>
-            {profile?.listings.map((l) => (
-              <Pressable
-                key={l.id}
-                className="flex-row items-center gap-3 rounded-2xl p-3"
-                style={card}
-                onPress={() => router.push(`/hostings/${l.id}`)}
-              >
-                <View className="h-16 w-16 overflow-hidden rounded-xl">
-                  <Image
-                    style={{ height: '100%', width: '100%', objectFit: 'cover' }}
-                    source={{ uri: l.coverImage?.asset.publicUrl }}
-                  />
-                </View>
-                <View className="flex-1 gap-1">
-                  <ThemedText numberOfLines={1} style={{ fontFamily: Fonts.medium, fontSize: 14 }}>
-                    {l.title ?? 'Untitled listing'}
-                  </ThemedText>
-                  <ThemedText style={{ color: hexToRgba(colors.text, 0.55), fontSize: 12 }}>
-                    {[l.city, l.state].filter(Boolean).join(', ')}
-                  </ThemedText>
-                  <View className="flex-row items-center gap-2">
-                    {l.price != null && (
-                      <ThemedText style={{ color: colors.primary, fontSize: 13, fontFamily: Fonts.semibold }}>
-                        {formatNaira(Number(l.price)).formated}
-                      </ThemedText>
-                    )}
-                    {l.managementType === ManagementType.AgentManaged && (
-                      <ManagementBadge managementType={l.managementType} />
-                    )}
-                  </View>
-                </View>
-              </Pressable>
-            ))}
-          </View>
-        )}
-
-        {/* Reviews */}
-        <View className="gap-3">
-          <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 15 }}>
-            Reviews {(profile?.reviews.length ?? 0) > 0 ? `(${profile?.reviews.length})` : ''}
-          </ThemedText>
-          {(profile?.reviews.length ?? 0) === 0 && !fetching && (
-            <ThemedText style={{ color: hexToRgba(colors.text, 0.5), fontSize: 13 }}>
-              This host has no reviews yet.
-            </ThemedText>
-          )}
-          {profile?.reviews.map((r) => (
-            <View key={r.id} className="gap-2 rounded-2xl p-4" style={card}>
-              <View className="flex-row items-center gap-3">
-                <View className="h-9 w-9 overflow-hidden rounded-full">
-                  <Image
-                    style={{ height: '100%', width: '100%', objectFit: 'cover' }}
-                    source={{
-                      uri: r.reviewerAvatar ?? getDefaultProfileImageUrl(r.reviewerName),
-                    }}
-                  />
-                </View>
-                <View className="flex-1">
-                  <ThemedText style={{ fontFamily: Fonts.medium, fontSize: 14 }}>
-                    {r.reviewerName}
-                  </ThemedText>
-                  <View className="flex-row items-center gap-2">
-                    <Stars rating={r.rating} size={12} />
-                    <ThemedText style={{ color: hexToRgba(colors.text, 0.45), fontSize: 11 }}>
-                      {moment(r.createdAt).fromNow()}
-                    </ThemedText>
-                  </View>
-                </View>
-                <Pressable hitSlop={10} onPress={() => handleReport(r.id)}>
-                  <Flag size={16} color={hexToRgba(colors.text, 0.4)} />
-                </Pressable>
-              </View>
-              {!!r.comment && (
-                <ThemedText style={{ color: hexToRgba(colors.text, 0.8), fontSize: 13, lineHeight: 19 }}>
-                  {r.comment}
-                </ThemedText>
-              )}
-            </View>
-          ))}
-        </View>
-      </View>
-
-      {/* Review sheet */}
-      <BottomSheet isVisible={sheetOpen} onClose={() => setSheetOpen(false)}>
-        <View className="gap-5 pb-4">
-          <View className="items-center gap-1">
-            <ThemedText type="semibold" style={{ fontSize: 16 }}>
-              Rate {profile?.fullName ?? 'this host'}
-            </ThemedText>
-            <ThemedText
-              className="text-center"
-              style={{ color: hexToRgba(colors.text, 0.6), fontSize: 13 }}
-            >
-              Share your experience dealing with this host.
-            </ThemedText>
-          </View>
-          <View className="items-center">
-            <RatingInput value={rating} onChange={setRating} />
-          </View>
-          <TextArea
-            placeholder="Add a comment (optional)"
-            value={comment}
-            onChangeText={setComment}
-          />
-          <Button type="primary" onPress={handleSubmit} disabled={submitting}>
-            <ThemedText content="primary">
-              {submitting ? 'Submitting…' : 'Submit review'}
-            </ThemedText>
-          </Button>
-        </View>
-      </BottomSheet>
-    </DetailsLayout>
-  );
+	return (
+		<Sheet open={open} onClose={onClose} eyebrow="Review" title={`How was ${name.split(' ')[0]}?`}>
+			<KText v="small">Rate how they handled viewings, communication and keeping their word.</KText>
+			<View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10 }} accessibilityRole="adjustable" accessibilityLabel="Rating" accessibilityValue={{ text: rating ? `${rating} of 5` : 'Not rated' }}>
+				{[1, 2, 3, 4, 5].map((n) => (
+					<Pressable key={n} accessibilityRole="button" accessibilityLabel={`${n} star${n > 1 ? 's' : ''}`} onPress={() => setRating(n)} hitSlop={6} style={s.star}>
+						<Star size={30} color={n <= rating ? color.amber : color.dim} fill={n <= rating ? color.amber : 'transparent'} />
+					</Pressable>
+				))}
+			</View>
+			<KText v="label" center>
+				{LABELS[rating] || 'Tap a star'}
+			</KText>
+			<Field label="Your review" optional multiline value={comment} onChangeText={setComment} maxLength={1000} placeholder="What should other renters know?" />
+			{error ? <Notice tone="danger">{error}</Notice> : null}
+			<Button title="Post review" size="lg" block loading={fetching} disabled={!rating} onPress={submit} />
+		</Sheet>
+	);
 }
+
+const s = StyleSheet.create({
+	listing: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.lg, borderWidth: 1, borderColor: color.line, backgroundColor: color.bg2 },
+	star: { padding: 4 }
+});

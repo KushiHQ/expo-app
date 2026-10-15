@@ -1,0 +1,259 @@
+# Account, verification, money history, notifications and support — CI walk-through.
+# Signs in as the NIN-verified QA guest, then as the unverified QA user for the
+# start of the verification journey. Never submits KYC or changes passwords.
+appId: com.kushicorp.kushi
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Start exploring"
+    timeout: 180000
+- extendedWaitUntil:
+    visible: "Allow"
+    timeout: 8000
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
+- tapOn: "Sign in"
+- tapOn:
+    id: "email"
+- inputText: "qa.guest@kushi.test"
+- tapOn:
+    id: "password"
+- inputText: "KushiQA-2026!"
+- pressKey: Enter
+- extendedWaitUntil:
+    visible:
+      id: "tab-index"
+    timeout: 90000
+- tapOn:
+    text: "Allow"
+    optional: true
+- waitForAnimationToEnd
+
+# ── You tab ──
+- tapOn:
+    id: "tab-you"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/a01-you
+- scroll
+- takeScreenshot: shots/a02-you-scrolled
+- scroll
+- takeScreenshot: shots/a03-you-bottom
+
+# ── Verification hub + steps ──
+- scrollUntilVisible:
+    element:
+      id: "you-verification"
+    direction: UP
+- tapOn:
+    id: "you-verification"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/a04-verify-hub
+- scroll
+- takeScreenshot: shots/a05-verify-hub-steps
+- tapOn:
+    id: "verify-step-nin"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: shots/a06-verify-nin
+- tapOn: "Back"
+- tapOn:
+    id: "verify-step-selfie"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: shots/a07-verify-selfie
+- tapOn: "Back"
+- tapOn:
+    id: "verify-step-phone"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/a08-verify-phone
+- tapOn: "Back"
+- tapOn:
+    id: "verify-step-bvn"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: shots/a09-verify-bvn
+- tapOn: "Back"
+- tapOn: "Back"
+
+# ── Security ──
+- scrollUntilVisible:
+    element:
+      id: "you-security"
+- tapOn:
+    id: "you-security"
+- waitForAnimationToEnd
+- takeScreenshot: shots/a10-security
+- tapOn:
+    id: "security-password"
+- waitForAnimationToEnd
+- takeScreenshot: shots/a11-change-password
+- tapOn: "Back"
+- tapOn: "Back"
+
+# ── Notification preferences ──
+- scrollUntilVisible:
+    element:
+      id: "you-notifications"
+- tapOn:
+    id: "you-notifications"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/a12-notification-prefs
+- tapOn: "Back"
+
+# ── Payments + a receipt ──
+- scrollUntilVisible:
+    element:
+      id: "you-payments"
+- tapOn:
+    id: "you-payments"
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: shots/a13-payments
+- tapOn:
+    id: "payment-row"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: shots/a14-receipt
+- scroll
+- takeScreenshot: shots/a15-receipt-scrolled
+- tapOn: "Back"
+- tapOn:
+    text: "Back"
+    optional: true
+
+# ── Public profile ──
+- scrollUntilVisible:
+    element:
+      id: "you-public-profile"
+- tapOn:
+    id: "you-public-profile"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/a16-public-profile
+- tapOn: "Back"
+
+# ── Support + feedback ──
+- scrollUntilVisible:
+    element:
+      id: "you-support"
+- tapOn:
+    id: "you-support"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/a17-support
+- tapOn:
+    text: "Your conversations"
+    optional: true
+- tapOn:
+    point: "50%,62%"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/a18-support-thread
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "tab-you"
+    timeout: 60000
+- tapOn:
+    id: "tab-you"
+- scrollUntilVisible:
+    element:
+      id: "you-feedback"
+- tapOn:
+    id: "you-feedback"
+- waitForAnimationToEnd
+- takeScreenshot: shots/a19-feedback
+- tapOn: "Back"
+
+# ── Legacy routes still land somewhere sensible ──
+- openLink: "kushi://kyc"
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/a20-legacy-kyc-redirect
+- openLink: "kushi://users/notifications"
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/a21-notifications
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "tab-you"
+    timeout: 60000
+
+# ── Sign out (confirm sheet) ──
+- tapOn:
+    id: "tab-you"
+- scrollUntilVisible:
+    element:
+      id: "you-sign-out"
+- tapOn:
+    id: "you-sign-out"
+- waitForAnimationToEnd
+- takeScreenshot: shots/a22-sign-out-sheet
+- tapOn:
+    id: "you-sign-out-confirm"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/a23-signed-out
+
+# ── Unverified user: start of the verification journey ──
+- tapOn:
+    id: "tab-you"
+    optional: true
+- tapOn:
+    id: "you-sign-in"
+- tapOn:
+    id: "email"
+- inputText: "qa.new@kushi.test"
+- tapOn:
+    id: "password"
+- inputText: "KushiQA-2026!"
+- pressKey: Enter
+- extendedWaitUntil:
+    visible:
+      id: "tab-index"
+    timeout: 90000
+- tapOn:
+    id: "tab-you"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/b01-you-unverified
+- tapOn:
+    id: "you-verification"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/b02-verify-start
+- scroll
+- takeScreenshot: shots/b03-verify-start-steps
+- tapOn:
+    id: "verify-continue"
+- waitForAnimationToEnd
+- takeScreenshot: shots/b04-selfie-intro
+- tapOn:
+    id: "verify-step-nin"
+    optional: true
+- tapOn: "Back"
+- tapOn:
+    id: "verify-step-nin"
+- waitForAnimationToEnd
+- takeScreenshot: shots/b05-nin-needs-selfie

@@ -56,9 +56,9 @@ export function Notice({ tone = 'info', title, children, action, onAction }: { t
 }
 
 /** Tappable list row with icon, title, detail and chevron. */
-export function Row({ icon, title, detail, right, onPress, danger }: { icon?: React.ReactNode; title: string; detail?: string; right?: React.ReactNode; onPress?: () => void; danger?: boolean }) {
+export function Row({ icon, title, detail, right, onPress, danger, testID }: { icon?: React.ReactNode; title: string; detail?: string; right?: React.ReactNode; onPress?: () => void; danger?: boolean; testID?: string }) {
 	return (
-		<Pressable accessibilityRole={onPress ? 'button' : undefined} onPress={onPress} style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14 }, pressed && onPress && { opacity: 0.7 }]}>
+		<Pressable testID={testID} accessibilityRole={onPress ? 'button' : undefined} onPress={onPress} style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14 }, pressed && onPress && { opacity: 0.7 }]}>
 			{icon ? <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: color.surface, alignItems: 'center', justifyContent: 'center' }}>{icon}</View> : null}
 			<View style={{ flex: 1, gap: 2 }}>
 				<KText v="bodyStrong" c={danger ? 'danger' : undefined}>

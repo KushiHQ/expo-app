@@ -1,364 +1,203 @@
-import React from 'react';
-import { View, FlatList, ActivityIndicator, Modal } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import DetailsLayout from '@/components/layouts/details';
-import ChatMessageBubble from '@/components/molecules/m-chat-message-bubble';
-import ChatInput from '@/components/organisms/o-chat-input';
-import SupportChatContextCard from '@/components/molecules/m-support-chat-context-card';
-import SupportRatingPrompt from '@/components/molecules/m-support-rating-prompt';
-import ThemedText from '@/components/atoms/a-themed-text';
-import Logo from '@/components/icons/i-logo';
-import {
-  SupportChatMessagesQuery,
-  SupportChatStatus,
-  useSupportChatQuery,
-  useSupportChatMessagesQuery,
-  useSendSupportMessageMutation,
-  useSupportChatMessageAddedSubscription,
-  SupportChatMessageAddedSubscription,
-} from '@/lib/services/graphql/generated';
-import { useUser } from '@/lib/hooks/user';
-import { hexToRgba } from '@/lib/utils/colors';
-import { SURFACE } from '@/lib/constants/surface';
-import { Fonts } from '@/lib/constants/theme';
-import { getDefaultProfileImageUrl } from '@/lib/utils/urls';
-import { Image } from 'expo-image';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { FlatList, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { cast } from '@/lib/types/utils';
+import { Headset } from 'lucide-react-native';
+import { Button, Card, Header, KText, Notice, Photo, Pill, Screen, Spinner } from '@/components/k';
+import { Composer, MessageBubble, RatingSheet, type Bubble } from '@/components/k/support';
+import { color } from '@/lib/k/theme';
+import { centered, useLayout } from '@/lib/k/layout';
+import { humanize, naira, place } from '@/lib/k/format';
+import { cleanError, shortDate } from '@/lib/k/account';
+import { useUserStore } from '@/lib/stores/users';
+import {
+	SupportChatStatus,
+	useInitiateSupportChatMutation,
+	useSendSupportMessageMutation,
+	useSupportChatMessageAddedSubscription,
+	useSupportChatMessagesQuery,
+	useSupportChatQuery,
+	type SupportChatMessagesQuery
+} from '@/lib/services/graphql/generated';
 
-const LIMIT = 20;
+const LIMIT = 30;
+const GROUP_MS = 5 * 60 * 1000;
+type Raw = SupportChatMessagesQuery['supportChat']['messages'][number];
+type Local = { id: string; text: string; createdAt: string; state: 'sending' | 'failed' };
 
-type MessageItem = SupportChatMessagesQuery['supportChat']['messages'][0] & {
-  sending?: boolean;
-};
+/** A conversation with Kushi Support. */
+export default function SupportChat() {
+	const { id } = useLocalSearchParams<{ id: string }>();
+	const chatId = String(id);
+	const me = useUserStore((s) => s.user.user?.id);
+	const layout = useLayout();
+	const column = centered(layout.max('reading'));
+	const list = useRef<FlatList<Bubble>>(null);
 
-export default function SupportChatScreen() {
-  const { id } = useLocalSearchParams();
-  const colors = useThemeColors();
-  const { user } = useUser();
-  const chatId = String(id);
-  const flatListRef = React.useRef<FlatList>(null);
-  const isNearBottomRef = React.useRef(true);
+	const [{ data: chatData, error: chatError }, refetchChat] = useSupportChatQuery({ variables: { id: chatId }, requestPolicy: 'cache-and-network' });
+	const [offset, setOffset] = useState(0);
+	const [{ data: page, fetching }] = useSupportChatMessagesQuery({ variables: { id: chatId, pagination: { limit: LIMIT, offset } }, requestPolicy: 'network-only' });
+	const [server, setServer] = useState<Record<string, Raw>>({});
+	const [more, setMore] = useState(true);
+	const [local, setLocal] = useState<Local[]>([]);
+	const [rateOpen, setRateOpen] = useState(false);
+	const [rated, setRated] = useState(false);
+	const [, send] = useSendSupportMessageMutation();
+	const [{ fetching: starting }, start] = useInitiateSupportChatMutation();
 
-  // ─── Pagination state ─────────────────────────────────────────────────────
-  const [offset, setOffset] = React.useState(0);
-  const [messages, setMessages] = React.useState<MessageItem[]>([]);
-  const [hasNextPage, setHasNextPage] = React.useState(true);
+	useEffect(() => {
+		const rows = page?.supportChat?.messages;
+		if (!rows) return;
+		if (rows.length < LIMIT) setMore(false);
+		setServer((prev) => ({ ...prev, ...Object.fromEntries(rows.map((m) => [m.id, m])) }));
+	}, [page]);
 
-  // ─── Chat metadata ────────────────────────────────────────────────────────
-  const [{ data: chatData }] = useSupportChatQuery({
-    variables: { id: chatId },
-    requestPolicy: 'cache-and-network',
-  });
+	useSupportChatMessageAddedSubscription({ variables: { chatId } }, (_prev, curr) => {
+		const m = curr.supportChatMessageAdded as unknown as Raw;
+		setServer((prev) => ({ ...prev, [m.id]: m }));
+		setLocal((l) => l.filter((x) => !(x.state === 'sending' && x.text === m.text && m.sender?.id === me)));
+		return curr;
+	});
 
-  // ─── Paginated messages ────────────────────────────────────────────────────
-  const [{ data: messagesData, fetching: messagesFetching }] = useSupportChatMessagesQuery({
-    variables: { id: chatId, pagination: { limit: LIMIT, offset } },
-    requestPolicy: 'network-only',
-  });
+	const chat = chatData?.supportChat;
+	const closed = chat?.status === SupportChatStatus.Closed || chat?.status === SupportChatStatus.Resolved;
+	useEffect(() => {
+		if (closed && !chat?.supportChatRating && !rated) setRateOpen(true);
+	}, [closed, chat?.supportChatRating, rated]);
 
-  React.useEffect(() => {
-    const incoming = messagesData?.supportChat?.messages ?? [];
-    if (incoming.length === 0 && offset > 0) {
-      setHasNextPage(false);
-      return;
-    }
-    if (incoming.length < LIMIT) {
-      setHasNextPage(false);
-    }
-    setMessages((prev) => {
-      if (offset === 0) {
-        const optimistic = prev.filter((m) => m.sending);
-        const merged = [...optimistic, ...incoming].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        );
-        return merged;
-      }
-      const existingIds = new Set(prev.map((m) => m.id));
-      const unique = incoming.filter((m) => !existingIds.has(m.id));
-      return [...prev, ...unique].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-    });
-  }, [messagesData, offset]);
+	const bubbles = useMemo<Bubble[]>(() => {
+		const all: Bubble[] = [
+			...Object.values(server).map((m) => ({
+				id: m.id,
+				text: m.text,
+				createdAt: m.createdAt,
+				mine: m.sender?.id === me,
+				staff: !!m.sender?.isStaff,
+				name: m.sender?.profile?.fullName,
+				assets: m.assets
+			})),
+			...local.map((m) => ({ id: m.id, text: m.text, createdAt: m.createdAt, mine: true, staff: false, state: m.state }))
+		];
+		return all.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+	}, [server, local, me]);
 
-  // ─── Mutation ─────────────────────────────────────────────────────────────
-  const [, sendMessage] = useSendSupportMessageMutation();
+	async function deliver(text: string, tempId = `tmp-${Date.now()}`) {
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+		setLocal((l) => [{ id: tempId, text, createdAt: new Date().toISOString(), state: 'sending' as const }, ...l.filter((x) => x.id !== tempId)]);
+		list.current?.scrollToOffset({ offset: 0, animated: true });
+		const r = await send({ chatId, text });
+		const m = r.data?.sendSupportMessage;
+		if (r.error || !m) return setLocal((l) => l.map((x) => (x.id === tempId ? { ...x, state: 'failed' as const } : x)));
+		setServer((prev) => ({ ...prev, [m.id]: { ...(m as unknown as Raw), assets: [] } }));
+		setLocal((l) => l.filter((x) => x.id !== tempId));
+	}
 
-  // ─── Subscription ─────────────────────────────────────────────────────────
-  useSupportChatMessageAddedSubscription(
-    { variables: { chatId } },
-    (prev: SupportChatMessageAddedSubscription['supportChatMessageAdded'][] = [], curr) => {
-      const msg = curr.supportChatMessageAdded;
-      setMessages((prevMsgs) => {
-        const items = [...prevMsgs];
-        const idx = items.findIndex((v) => v.id === msg.id || (v.sending && v.text === msg.text));
-        if (idx >= 0) {
-          items[idx] = cast({ ...msg });
-        } else {
-          items.unshift(cast({ ...msg }));
-          if (isNearBottomRef.current) {
-            flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-          }
-        }
-        return items;
-      });
-      return [msg, ...(prev ?? [])];
-    },
-  );
+	async function newConversation() {
+		const r = await start({});
+		const nid = r.data?.initiateSupportChat?.id;
+		if (nid) router.replace(`/support/${nid}`);
+	}
 
-  // ─── Support rating prompt ─────────────────────────────────────────────────
-  const [showRatingPrompt, setShowRatingPrompt] = React.useState(false);
-  const [hasRated, setHasRated] = React.useState(false);
+	const context = chat ? <Context chat={chat} /> : null;
 
-  const chat = chatData?.supportChat;
+	return (
+		<Screen
+			scroll={false}
+			padded={false}
+			keyboard
+			header={<Header eyebrow={closed ? 'Closed' : 'Kushi Support'} title={chat?.itemType ? `About a ${humanize(chat.itemType).toLowerCase()}` : 'Support'} />}
+		>
+			<FlatList
+				ref={list}
+				data={bubbles}
+				inverted
+				keyExtractor={(m) => m.id}
+				contentContainerStyle={[{ paddingHorizontal: layout.gutter, paddingVertical: 16, flexGrow: 1 }, column]}
+				renderItem={({ item, index }) => {
+					const older = bubbles[index + 1];
+					const first = !older || older.mine !== item.mine || new Date(item.createdAt).getTime() - new Date(older.createdAt).getTime() > GROUP_MS;
+					return <MessageBubble m={item} first={first} onRetry={item.state === 'failed' ? () => deliver(item.text ?? '', item.id) : undefined} />;
+				}}
+				onEndReached={() => more && !fetching && setOffset((o) => o + LIMIT)}
+				onEndReachedThreshold={0.4}
+				ListFooterComponent={
+					<View style={{ gap: 14, paddingBottom: 8 }}>
+						<View style={{ alignItems: 'center', gap: 8, paddingTop: 8 }}>
+							<View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: color.amberSoft, alignItems: 'center', justifyContent: 'center' }}>
+								<Headset size={24} color={color.amber} />
+							</View>
+							<KText v="heading">Kushi Support</KText>
+							<KText v="xs" center style={{ maxWidth: 300 }}>
+								Real people from the Kushi team. We’ll send you a notification when we reply.
+							</KText>
+						</View>
+						{context}
+						{fetching && more ? <Spinner /> : null}
+						{chatError && !chat ? <Notice tone="danger" title="Couldn’t load this conversation" action="Try again" onAction={() => refetchChat({ requestPolicy: 'network-only' })}>{cleanError(chatError.message)}</Notice> : null}
+					</View>
+				}
+				ListEmptyComponent={
+					!fetching ? (
+						<View style={{ transform: [{ scaleY: -1 }], paddingVertical: 24 }}>
+							<KText v="small" center>
+								Say hello and tell us what you need help with. Include any booking or payment reference you have.
+							</KText>
+						</View>
+					) : null
+				}
+			/>
+			{closed ? (
+				<View style={{ padding: 16, gap: 10, borderTopWidth: 1, borderTopColor: color.line }}>
+					<KText v="small" center>
+						This conversation is closed. Need more help? Start a new one.
+					</KText>
+					<Button title="Start a new conversation" block loading={starting} onPress={newConversation} />
+				</View>
+			) : (
+				<Composer onSend={(t) => deliver(t)} />
+			)}
+			<RatingSheet
+				open={rateOpen && !rated}
+				chatId={chatId}
+				onClose={() => setRateOpen(false)}
+				onRated={() => {
+					setRated(true);
+					setRateOpen(false);
+				}}
+			/>
+		</Screen>
+	);
+}
 
-  React.useEffect(() => {
-    if (chat?.status === SupportChatStatus.Resolved || chat?.status === SupportChatStatus.Closed) {
-      if (chat.supportChatRating) {
-        setHasRated(true);
-      } else {
-        setShowRatingPrompt(true);
-      }
-    }
-  }, [chat?.status, chat?.supportChatRating]);
+type ChatData = NonNullable<ReturnType<typeof useSupportChatQuery>[0]['data']>['supportChat'];
 
-  // ─── Send ──────────────────────────────────────────────────────────────────
-  const handleSendMessage = async (text: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    const tempId = `temp-${Date.now()}`;
-    const optimistic = {
-      id: tempId,
-      text,
-      createdAt: new Date().toISOString(),
-      isReadByUser: true,
-      sending: true,
-      sender: {
-        id: user.user?.id ?? '',
-        isStaff: false,
-        profile: { fullName: user.user?.profile?.fullName ?? 'Me' },
-      } as any,
-    } as any as MessageItem;
-
-    setMessages((prev) => [optimistic, ...prev]);
-    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-
-    const result = await sendMessage({ chatId, text });
-    if (result.error) {
-      setMessages((prev) => prev.filter((m) => m.id !== tempId));
-    } else if (result.data?.sendSupportMessage) {
-      const msg = result.data.sendSupportMessage;
-      setMessages((prev) => {
-        const items = [...prev];
-        const idx = items.findIndex((v) => v.id === tempId);
-        if (idx >= 0) {
-          items[idx] = { ...msg } as any as MessageItem;
-        }
-        return items;
-      });
-    }
-  };
-
-  // ─── Group threshold ───────────────────────────────────────────────────────
-  const GROUP_THRESHOLD_MS = 5 * 60 * 1000;
-
-  const renderItem = ({ item, index }: { item: MessageItem; index: number }) => {
-    const isMe = item.sender?.id === user.user?.id;
-    const above = messages[index + 1];
-    const below = messages[index - 1];
-
-    const isFirstInGroup =
-      !above ||
-      above.sender?.id !== item.sender?.id ||
-      new Date(item.createdAt).getTime() - new Date(above.createdAt).getTime() > GROUP_THRESHOLD_MS;
-
-    const isLastInGroup =
-      !below ||
-      below.sender?.id !== item.sender?.id ||
-      new Date(below.createdAt).getTime() - new Date(item.createdAt).getTime() > GROUP_THRESHOLD_MS;
-
-    const isStaff = item.sender?.isStaff === true;
-
-    return (
-      <ChatMessageBubble
-        message={
-          {
-            id: item.id,
-            text: item.text ?? '',
-            createdAt: item.createdAt,
-            lastUpdated: item.createdAt,
-            isSender: isMe,
-            isDeleted: false,
-            assets: item.assets ?? [],
-            sender: {
-              id: item.sender?.id ?? '',
-              isStaff: isStaff,
-              profile: {
-                id: '',
-                fullName: isMe ? 'Me' : (item.sender?.profile.fullName ?? 'Kushi Support'),
-              },
-            },
-          } as any
-        }
-        isFirstInGroup={isFirstInGroup}
-        isLastInGroup={isLastInGroup}
-        isStaffMessage={isStaff}
-        senderName={
-          isMe ? 'You' : (item.sender?.profile?.fullName ?? (isStaff ? 'Kushi Support' : undefined))
-        }
-      />
-    );
-  };
-
-  const userProfile = chat?.user?.profile;
-  const userImageUrl =
-    userProfile?.image?.publicUrl ?? getDefaultProfileImageUrl(userProfile?.fullName ?? '');
-
-  return (
-    <DetailsLayout
-      title="Kushi Support"
-      scrollable={false}
-      footer={<ChatInput onSend={(data) => handleSendMessage(data.text)} />}
-    >
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        inverted
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        onScroll={(e) => {
-          isNearBottomRef.current = e.nativeEvent.contentOffset.y < 120;
-        }}
-        scrollEventThrottle={100}
-        onEndReached={() => {
-          if (hasNextPage && !messagesFetching) {
-            setOffset((prev) => prev + LIMIT);
-          }
-        }}
-        onEndReachedThreshold={0.5}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingBottom: 20,
-          flexGrow: 1,
-          justifyContent: 'flex-end',
-        }}
-        ListFooterComponent={
-          <View style={{ marginBottom: 32, marginTop: 16 }}>
-            <View style={{ alignItems: 'center', gap: 8, marginBottom: 24 }}>
-              <View
-                style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: 36,
-                  overflow: 'hidden',
-                  boxShadow: SURFACE.glow,
-                }}
-              >
-                <Image
-                  source={{ uri: userImageUrl }}
-                  style={{ width: '100%', height: '100%' }}
-                  contentFit="cover"
-                />
-              </View>
-              <ThemedText style={{ fontFamily: Fonts.semibold, fontSize: 17 }}>
-                {userProfile?.fullName ?? 'You'}
-              </ThemedText>
-              <View
-                style={{
-                  width: 40,
-                  height: 1,
-                  backgroundColor: hexToRgba(colors.text, 0.12),
-                  marginTop: 4,
-                }}
-              />
-            </View>
-
-            {chat && (chat.hosting || chat.booking || chat.transaction) && (
-              <SupportChatContextCard
-                itemType={chat.itemType}
-                hosting={chat.hosting}
-                booking={chat.booking}
-                transaction={chat.transaction}
-              />
-            )}
-
-            {messagesFetching && hasNextPage && (
-              <ActivityIndicator style={{ marginTop: 20 }} color={colors.primary} />
-            )}
-          </View>
-        }
-        ListEmptyComponent={
-          !messagesFetching && !messages.length ? (
-            <View
-              style={{
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingTop: 40,
-                gap: 10,
-              }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <View
-                  style={{
-                    flex: 1,
-                    height: 0.5,
-                    backgroundColor: hexToRgba(colors.text, 0.1),
-                  }}
-                />
-                <Logo width={28} height={32} style={{ opacity: 0.2 }} />
-                <View
-                  style={{
-                    flex: 1,
-                    height: 0.5,
-                    backgroundColor: hexToRgba(colors.text, 0.1),
-                  }}
-                />
-              </View>
-              <ThemedText
-                style={{
-                  fontSize: 13,
-                  color: hexToRgba(colors.text, 0.3),
-                  fontFamily: Fonts.regular,
-                  letterSpacing: 0.3,
-                }}
-              >
-                Start the conversation
-              </ThemedText>
-            </View>
-          ) : null
-        }
-      />
-
-      {/* Support Rating Modal */}
-      <Modal
-        visible={showRatingPrompt && !hasRated}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowRatingPrompt(false)}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: hexToRgba(colors.background, 0.8),
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 24,
-          }}
-        >
-          <SupportRatingPrompt
-            chatId={chatId}
-            onDismiss={() => setShowRatingPrompt(false)}
-            onSubmit={() => {
-              setHasRated(true);
-              setShowRatingPrompt(false);
-            }}
-          />
-        </View>
-      </Modal>
-    </DetailsLayout>
-  );
+/** What this conversation is about (home, booking or payment). */
+function Context({ chat }: { chat: ChatData }) {
+	const h = chat.booking?.hosting ?? chat.hosting;
+	if (!h && !chat.transaction) return null;
+	return (
+		<Card>
+			<KText v="label">This conversation is about</KText>
+			{h ? (
+				<View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+					<Photo uri={h.coverImage?.asset?.publicUrl} style={{ width: 52, height: 52 }} />
+					<View style={{ flex: 1, gap: 2 }}>
+						<KText v="smallStrong" numberOfLines={1}>
+							{h.title ?? 'A home'}
+						</KText>
+						<KText v="xs">{[place(h.city, h.state), chat.booking?.bookingReference ? `Booking ${chat.booking.bookingReference}` : null].filter(Boolean).join(' · ')}</KText>
+					</View>
+				</View>
+			) : null}
+			{chat.transaction ? (
+				<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+					<View style={{ gap: 2 }}>
+						<KText v="smallStrong">Payment of {naira(Number(chat.transaction.amount))}</KText>
+						<KText v="xs">{shortDate(chat.transaction.createdAt)}</KText>
+					</View>
+					<Pill tone={chat.transaction.status === 'SUCCESS' ? 'success' : chat.transaction.status === 'FAILED' ? 'danger' : 'info'}>{humanize(chat.transaction.status)}</Pill>
+				</View>
+			) : null}
+		</Card>
+	);
 }
