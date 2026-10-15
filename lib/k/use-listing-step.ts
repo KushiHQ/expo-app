@@ -61,9 +61,17 @@ export function useListingStep(rawId: string | string[] | undefined, key: StepKe
 		if (saved) return toHub();
 		Alert.alert('Leave without saving?', 'Your latest changes on this step weren’t saved.', [
 			{ text: 'Stay', style: 'cancel' },
-			{ text: 'Leave', style: 'destructive', onPress: () => toHub() }
+			{
+				text: 'Leave',
+				style: 'destructive',
+				// Drop the unsaved edits so the next step doesn't send them (the server rejects a half-filled agreement on every save).
+				onPress: () => {
+					form.clearInput();
+					toHub();
+				}
+			}
 		]);
-	}, [dirty, id, save, toHub]);
+	}, [dirty, id, save, toHub, form]);
 
 	/** Move on to the next step that applies (or back to the hub when this was the last). */
 	const advance = useCallback(
