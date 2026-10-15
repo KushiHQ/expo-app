@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Empty, PageTitle, Segmented, SignedOut, Skeleton } from '@/components/k';
 import { ListingCard, type CardHosting } from '@/components/k/listing-card';
 import { color, gutter, radius } from '@/lib/k/theme';
+import { centered, itemWidth, useLayout } from '@/lib/k/layout';
 import { useUserStore } from '@/lib/stores/users';
 import { useKSavedQuery } from '@/lib/services/graphql/generated';
 
@@ -13,6 +14,11 @@ export default function Saved() {
 	const signedIn = useUserStore((s) => !!s.user.user?.id);
 	const [{ data, fetching }, refetch] = useKSavedQuery({ variables: { pagination: { limit: 200, offset: 0 } }, pause: !signedIn, requestPolicy: 'cache-and-network' });
 	const [sort, setSort] = useState<'recent' | 'low' | 'high'>('recent');
+	// Tablets: the same grid as Explore. Phones keep one card per row.
+	const layout = useLayout();
+	const cols = layout.columns;
+	const colGap = 24;
+	const cardWidth = layout.compact ? undefined : itemWidth(layout.contentWidth - layout.gutter * 2, cols, colGap);
 	const items = useMemo(
 		() =>
 			[...(data?.savedHostings ?? [])]
@@ -24,16 +30,19 @@ export default function Saved() {
 	return (
 		<View style={{ flex: 1, backgroundColor: color.bg, paddingTop: insets.top }}>
 			{!signedIn ? (
-				<View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: gutter }}>
+				<View style={[{ flex: 1, justifyContent: 'center', paddingHorizontal: gutter }, centered(layout.max('form'))]}>
 					<SignedOut eyebrow="Saved" title="Keep homes on your map" body="Tap the heart on any home to save it. Sign in so your saved homes follow you everywhere." />
 				</View>
 			) : (
 				<FlatList
+					key={`grid-${cols}`}
+					numColumns={cols}
+					columnWrapperStyle={cols > 1 ? { gap: colGap } : undefined}
 					data={fetching && !data ? [] : items}
 					keyExtractor={(s) => s.id}
-					renderItem={({ item }) => <ListingCard h={item.hosting as unknown as CardHosting} />}
-					ItemSeparatorComponent={() => <View style={{ height: 28 }} />}
-					contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: 40 }}
+					renderItem={({ item }) => <ListingCard h={item.hosting as unknown as CardHosting} width={cardWidth} />}
+					ItemSeparatorComponent={() => <View style={{ height: layout.compact ? 28 : 36 }} />}
+					contentContainerStyle={layout.compact ? { paddingHorizontal: gutter, paddingBottom: 40 } : [{ paddingHorizontal: layout.gutter, paddingBottom: 40 }, centered(layout.contentWidth)]}
 					onRefresh={() => refetch({ requestPolicy: 'network-only' })}
 					refreshing={false}
 					ListHeaderComponent={

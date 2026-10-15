@@ -1,0 +1,55 @@
+# iPad landscape pass for the tablet layouts (two-column welcome, grid, listing).
+# iOS has no "back" in Maestro, so each screen starts from a fresh launch.
+appId: com.kushicorp.kushi
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- setOrientation: LANDSCAPE_LEFT
+- extendedWaitUntil:
+    visible: "Start exploring"
+    timeout: 180000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: shots-landscape/01-welcome
+- tapOn: "Start exploring"
+- extendedWaitUntil:
+    visible:
+      id: "search"
+    timeout: 90000
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: shots-landscape/02-explore
+
+# Filters as a centered panel.
+- tapOn:
+    text: "Filters"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: shots-landscape/03-filters
+
+# A listing: gallery + story on the left, price card on the right.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "search"
+    timeout: 90000
+- waitForAnimationToEnd:
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      text: ".*6 Units of 3-Bedroom.*"
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    text: ".*6 Units of 3-Bedroom.*"
+- waitForAnimationToEnd:
+    timeout: 20000
+- takeScreenshot: shots-landscape/04-listing
+- scroll
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots-landscape/05-listing-2

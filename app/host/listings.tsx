@@ -6,11 +6,13 @@ import { Plus } from 'lucide-react-native';
 import { HostListingRow } from '@/components/k/host-bits';
 import { Button, Empty, PageTitle, Segmented, Skeleton } from '@/components/k';
 import { color, gutter } from '@/lib/k/theme';
+import { centered, useLayout } from '@/lib/k/layout';
 import { useUserStore } from '@/lib/stores/users';
 import { useHostListingsQuery } from '@/lib/services/graphql/generated';
 
 export default function Listings() {
 	const insets = useSafeAreaInsets();
+	const layout = useLayout();
 	const me = useUserStore((s) => s.user.user?.id);
 	const [{ data, fetching }, refetch] = useHostListingsQuery({ variables: { filters: { creatorId: me }, pagination: { limit: 200, offset: 0 } }, pause: !me, requestPolicy: 'cache-and-network' });
 	const [tab, setTab] = useState<'all' | 'LIVE' | 'INREVIEW' | 'DRAFT'>('all');
@@ -25,7 +27,7 @@ export default function Listings() {
 				keyExtractor={(l) => l.id}
 				renderItem={({ item }) => <HostListingRow l={item} />}
 				ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-				contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: 40 }}
+				contentContainerStyle={[{ paddingHorizontal: gutter, paddingBottom: 40 }, centered(layout.max('reading'))]}
 				onRefresh={() => refetch({ requestPolicy: 'network-only' })}
 				refreshing={false}
 				ListHeaderComponent={

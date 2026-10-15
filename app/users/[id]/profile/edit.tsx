@@ -41,7 +41,7 @@ export default function ProfileEdit() {
 	}
 
 	return (
-		<Screen keyboard header={<Header eyebrow="You" title="Personal details" />} footer={<Button title="Save changes" size="lg" block loading={saving} disabled={!changed} onPress={save} />}>
+		<Screen keyboard width="form" header={<Header eyebrow="You" title="Personal details" />} footer={<Button title="Save changes" size="lg" block loading={saving} disabled={!changed} onPress={save} />}>
 			<View style={{ alignItems: 'center', gap: 10, paddingTop: 20 }}>
 				<Pressable onPress={pick} accessibilityRole="button" accessibilityLabel="Change photo">
 					<Avatar name={name || me?.profile?.fullName} uri={photo ?? me?.profile?.image?.publicUrl} size={104} />

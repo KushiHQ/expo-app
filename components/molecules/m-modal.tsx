@@ -13,6 +13,7 @@ import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import { SURFACE } from '@/lib/constants/surface';
 import { X } from 'lucide-react-native';
+import { maxWidth, useLayout } from '@/lib/k/layout';
 
 type ModalSize = 'small' | 'medium' | 'large' | 'full';
 
@@ -36,6 +37,7 @@ const ThemedModal: React.FC<Props> = ({
   transparent = true,
 }) => {
   const colors = useThemeColors();
+  const { compact, isTablet } = useLayout();
 
   const getSizeStyles = (): ViewStyle => {
     switch (size) {
@@ -59,6 +61,7 @@ const ThemedModal: React.FC<Props> = ({
       transparent={transparent}
       onRequestClose={onClose}
       statusBarTranslucent
+      supportedOrientations={isTablet ? ['portrait', 'landscape'] : undefined}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -80,6 +83,7 @@ const ThemedModal: React.FC<Props> = ({
               backgroundColor: colors.background,
               boxShadow: SURFACE.shadowHigh,
               ...getSizeStyles(),
+              ...(!compact && size !== 'full' ? { maxWidth: maxWidth.panel } : null),
             },
           ]}
         >

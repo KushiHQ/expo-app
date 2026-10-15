@@ -32,7 +32,7 @@ export function You({ mode = 'guest' }: { mode?: 'guest' | 'host' }) {
 
 	if (!me?.id)
 		return (
-			<Screen tabbed>
+			<Screen tabbed width="form">
 				<PageTitle eyebrow="You" title="Welcome to Kushi" sub="Sign in to apply for homes, message hosts and keep track of everything in one place." />
 				<Button title="Sign in" size="lg" block onPress={() => router.push('/auth/sign-in')} testID="you-sign-in" />
 				<Button title="Create an account" variant="ghost" size="lg" block onPress={() => router.push('/auth/sign-up')} />
@@ -43,7 +43,7 @@ export function You({ mode = 'guest' }: { mode?: 'guest' | 'host' }) {
 
 	const verified = !!me.kyc?.ninVerified;
 	return (
-		<Screen tabbed>
+		<Screen tabbed width="form">
 			<View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, paddingTop: 16 }}>
 				<Avatar name={me.profile?.fullName} uri={me.profile?.image?.publicUrl} size={72} />
 				<View style={{ flex: 1, gap: 4 }}>

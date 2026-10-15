@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
+import { maxWidth as kMax, useLayout } from '@/lib/k/layout';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { ArrowLeft, Bell, Headset, Phone, Share2Icon, Video } from 'lucide-react-native';
 import { Avatar, IconButton, KText } from '../k';
@@ -99,6 +100,7 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
     const insets = useSafeAreaInsets();
     const scrollViewRef = useRef<ScrollView>(null);
     const { isTablet } = useBreakpoint();
+    const layout = useLayout();
     // Under a tab bar, the bar already reserves the bottom inset — don't add it
     // again here (it would stop content an inset above the nav).
     const inTabs = React.useContext(BottomTabBarHeightContext) != null;
@@ -229,8 +231,9 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
             style={{
               flex: 1,
               width: '100%',
-              maxWidth: isTablet ? 840 : undefined,
-              alignSelf: isTablet ? 'flex-start' : 'center',
+              // Tablet windows: a centered column (forms narrower). Phones keep their layout.
+              maxWidth: !layout.compact ? (isFormStep || path.startsWith('/kyc') ? kMax.form : kMax.reading) : isTablet ? 840 : undefined,
+              alignSelf: !layout.compact ? 'center' : isTablet ? 'flex-start' : 'center',
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 8, paddingBottom: 12 }}>
