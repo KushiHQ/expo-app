@@ -179,6 +179,11 @@ const AreaChart: React.FC<Props> = ({ data = [], title, color }) => {
               fontFamily: Fonts.medium,
             }}
             hideDataPoints
+            // Draw the line in when the chart appears and glide to new data.
+            isAnimated
+            animationDuration={900}
+            animateOnDataChange
+            onDataChangeAnimationDuration={600}
           />
         </View>
       ) : (

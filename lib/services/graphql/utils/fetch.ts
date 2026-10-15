@@ -3,6 +3,8 @@ import { CombinedError } from 'urql';
 import { DocumentNode } from 'graphql';
 import { print } from 'graphql/language/printer';
 import { getAuthTokens } from '@/lib/utils/auth';
+import { findUpgradeRequired } from '@/lib/k/app-version';
+import { APP_VERSION_HEADERS, reportUpgradeRequired } from '@/lib/k/app-version-store';
 
 /** Hard ceiling so a half-open connection can never hang an upload forever. */
 const DEFAULT_TIMEOUT_MS = 75_000;
@@ -104,6 +106,7 @@ export async function formMutation<R, V>(
         headers: {
           'Content-Type': 'application/json',
           Authorization: authTokens?.access ? `Bearer ${authTokens.access}` : '',
+          ...APP_VERSION_HEADERS,
           ...options.headers,
         },
         body: operations,
@@ -133,6 +136,7 @@ export async function formMutation<R, V>(
         method: 'POST',
         headers: {
           Authorization: authTokens?.access ? `Bearer ${authTokens.access}` : '',
+          ...APP_VERSION_HEADERS,
           ...options.headers,
         },
         body: formData,
@@ -144,7 +148,14 @@ export async function formMutation<R, V>(
   }
 
   if (!response.ok) {
-    console.error(await response.text());
+    const text = await response.text();
+    console.error(text);
+    try {
+      const upgrade = findUpgradeRequired(JSON.parse(text)?.errors);
+      if (upgrade) reportUpgradeRequired(upgrade);
+    } catch {
+      // not JSON — nothing to inspect
+    }
     throw new Error(`HTTP error! Status: ${response.status}`);
   }
 
@@ -152,6 +163,8 @@ export async function formMutation<R, V>(
 
   if (result.errors) {
     console.error('GraphQL errors:', result.errors);
+    const upgrade = findUpgradeRequired(result.errors);
+    if (upgrade) reportUpgradeRequired(upgrade);
   }
 
   // Surface GraphQL errors as a real `error` so callers' `res.error` checks work

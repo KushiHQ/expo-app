@@ -459,7 +459,7 @@ export default function NewHostingStep8() {
               <ThemedText style={{ fontSize: 13, lineHeight: 20, flex: 1 }}>
                 I agree to Kushi&apos;s hosting{' '}
                 <Link
-                  href="https://kushicorp.com/legal/terms-of-service"
+                  href="https://housing.kushi.ng/legal/terms-of-service"
                   style={{
                     color: colors.primary,
                     textDecorationLine: 'underline',

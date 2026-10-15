@@ -97,8 +97,9 @@ export default function UserProfileScreen() {
   const handleShareProfile = async () => {
     if (!profile) return;
     const slug = `${slugify(profile.fullName)}___${id}`;
-    const base = process.env.EXPO_PUBLIC_SHARE_HOST_URL || 'https://kushicorp.com/host/<slug>';
-    const url = base.replace('<slug>', slug);
+    const base = process.env.EXPO_PUBLIC_SHARE_HOST_URL || 'https://housing.kushi.ng/host/<slug>';
+    // Accept either a template ("…/host/<slug>") or a plain base ("…/host").
+    const url = base.includes('<slug>') ? base.replace('<slug>', slug) : `${base.replace(/\/$/, '')}/${slug}`;
     // Tag so the recipient's web page offers/attempts to open the Kushi app.
     const shareUrl = `${url}${url.includes('?') ? '&' : '?'}shared=true`;
     const caption = `Check out ${profile.fullName} on Kushi`;

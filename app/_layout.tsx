@@ -16,6 +16,7 @@ import UploadProgress from '@/components/organisms/o-upload-progress';
 import { NotificationProvider } from '@/components/contexts/notifications';
 import GraphqlClientProvider from '@/components/providers/graphql-client';
 import TansStackProvider from '@/components/providers/tanstack';
+import { AppUpdate } from '@/components/k/app-update';
 import { useLockScreen } from '@/lib/hooks/use-lock-screen';
 import { initializeNotifications } from '@/lib/utils/notifications';
 import React from 'react';
@@ -151,6 +152,8 @@ function RootLayout() {
                       <StatusBar style="light" />
                       <UploadProgress />
                       <ToastContainer />
+                      {/* Forced/optional update — above every screen, signed in or out. */}
+                      <AppUpdate />
                     </ThemeProvider>
                   </NotificationProvider>
                 </SafeAreaProvider>

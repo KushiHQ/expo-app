@@ -1,7 +1,7 @@
 /**
  * Continue with Google / Apple — one hook for both sign-in and sign-up.
  * Google: native SDK id token. Apple: native on iOS; on Android the web flow via
- * kushicorp.com which hands the identity token back to the app.
+ * the Housing web app (housing.kushi.ng) which hands the identity token back to the app.
  */
 import { useState } from 'react';
 import { Platform } from 'react-native';
@@ -56,7 +56,7 @@ export function useSocialAuth(mode: Mode) {
 				if (c.fullName?.givenName) fullName = `${c.fullName.givenName} ${c.fullName.familyName ?? ''}`.trim();
 			} else {
 				const redirectUri = Linking.createURL('/auth/sign-in');
-				const res = await WebBrowser.openAuthSessionAsync(`https://kushicorp.com/api/auth/apple/authorize?redirect_uri=${encodeURIComponent(redirectUri)}`, redirectUri, {
+				const res = await WebBrowser.openAuthSessionAsync(`https://housing.kushi.ng/api/auth/apple/authorize?redirect_uri=${encodeURIComponent(redirectUri)}`, redirectUri, {
 					preferEphemeralSession: true
 				});
 				if (res.type === 'success') {

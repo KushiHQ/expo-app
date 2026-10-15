@@ -7,10 +7,12 @@ import {
 } from '@/lib/services/graphql/generated';
 import { REFRESH_TOKEN_MUTATION } from '@/lib/services/graphql/requests/mutations/auth';
 import { useUserStore } from '@/lib/stores/users';
-import { Client, fetchExchange, Provider, subscriptionExchange } from 'urql';
+import { Client, fetchExchange, mapExchange, Provider, subscriptionExchange } from 'urql';
 import { graphcacheExchange } from '@/lib/services/graphql/cache';
 import { createClient as createWSClient } from 'graphql-ws';
 import { router } from 'expo-router';
+import { findUpgradeRequired } from '@/lib/k/app-version';
+import { APP_VERSION_HEADERS, reportUpgradeRequired } from '@/lib/k/app-version-store';
 
 type Props = {
   children?: React.ReactNode;
@@ -31,6 +33,9 @@ const createWSClientInstance = () =>
       console.info(WS_TAG, 'connectionParams — has token:', Boolean(tokens?.access));
       return {
         authorization: tokens?.access ? `Bearer ${tokens.access}` : null,
+        // WebSockets can't carry custom headers everywhere, so the app
+        // version rides in the connection_init payload too.
+        ...APP_VERSION_HEADERS,
       };
     },
     on: {
@@ -47,7 +52,18 @@ const createClient = (ws: ReturnType<typeof createWSClientInstance>) => {
   return new Client({
     url: process.env.EXPO_PUBLIC_GRAPHQL_URL ?? '',
     preferGetMethod: false,
+    // x-kushi-app-platform / x-kushi-app-version on every request. authExchange's
+    // appendHeaders merges into these, so Authorization is added on top.
+    fetchOptions: { headers: { ...APP_VERSION_HEADERS } },
     exchanges: [
+      // Outermost, so it sees every result: an UPGRADE_REQUIRED error from the
+      // API raises the full-screen update gate (components/k/app-update.tsx).
+      mapExchange({
+        onError(error) {
+          const upgrade = findUpgradeRequired(error.graphQLErrors);
+          if (upgrade) reportUpgradeRequired(upgrade);
+        },
+      }),
       graphcacheExchange,
       authExchange(async (utils) => {
         // Mutable reference so addAuthToOperation always uses the latest token

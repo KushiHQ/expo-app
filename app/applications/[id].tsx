@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BadgeCheck, Check, MessageCircle, ShieldAlert, Users, X } from 'lucide-react-native';
 import { Agreement } from '@/components/k/agreement';
+import { HostCaution } from '@/components/k/caution';
 import { APP_STATUS, DECIDABLE } from '@/components/k/host-bits';
 import { Avatar, Button, Card, Header, KText, KV, Notice, OtpSheet, Pill, Screen, Sheet, Skeleton } from '@/components/k';
 import { color } from '@/lib/k/theme';
@@ -102,6 +103,7 @@ export default function Review() {
 					{g.guarantorPhone ? <KV k="Phone" v={g.guarantorPhone} /> : null}
 				</Card>
 			) : null}
+			<HostCaution applicationId={a.id} guestName={a.fullName ?? ''} />
 			<Card>
 				<KText v="heading">Agreement</KText>
 				<KText v="small">{first} has read and signed the tenancy agreement. It takes effect once you accept and they pay.</KText>
