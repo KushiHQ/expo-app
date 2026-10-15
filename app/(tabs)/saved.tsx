@@ -63,7 +63,7 @@ export default function Saved() {
 				ListHeaderComponent={
 					<View style={{ gap: 16, paddingBottom: 20 }}>
 						<PageTitle eyebrow="Saved" title="Homes on your map" sub={items.length ? `${items.length} home${items.length === 1 ? '' : 's'}` : undefined} />
-						{items.length || collections.length ? (
+						{loaded ? (
 							<View style={{ gap: 10 }}>
 								<KText v="label">Collections</KText>
 								<CollectionsStrip collections={collections} onNew={() => setCreating(true)} />

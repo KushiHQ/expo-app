@@ -4,7 +4,8 @@
  * sending / failed states, day dividers, and the composer with attachments.
  */
 import { memo, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';

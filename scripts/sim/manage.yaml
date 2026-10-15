@@ -63,8 +63,10 @@ appId: com.kushicorp.kushi
 - tapOn:
     text: "Open"
     optional: true
-- waitForAnimationToEnd:
-    timeout: 10000
+- extendedWaitUntil:
+    visible: "Collection not found"
+    timeout: 20000
+    optional: true
 - takeScreenshot: shots/05-collection-missing
 
 # ── Listing photos: viewer and grid ───────────────────
@@ -72,16 +74,13 @@ appId: com.kushicorp.kushi
 - launchApp
 - extendedWaitUntil:
     visible:
-      id: "tab-saved"
+      id: "tab-index"
     timeout: 90000
-- tapOn:
-    id: "tab-saved"
 - waitForAnimationToEnd:
-    timeout: 8000
+    timeout: 10000
 - tapOn:
     text: "Open .*"
     index: 0
-    optional: true
 - waitForAnimationToEnd:
     timeout: 15000
 - tapOn:
@@ -114,8 +113,12 @@ appId: com.kushicorp.kushi
     timeout: 8000
 - takeScreenshot: shots/09-inbox
 - tapOn: "Ekwo.*"
+- extendedWaitUntil:
+    visible:
+      id: "chat-input"
+    timeout: 30000
 - waitForAnimationToEnd:
-    timeout: 12000
+    timeout: 8000
 - takeScreenshot: shots/10-chat
 - scroll
 - waitForAnimationToEnd:
@@ -147,15 +150,20 @@ appId: com.kushicorp.kushi
     timeout: 90000
 - tapOn:
     id: "tab-you"
+- waitForAnimationToEnd:
+    timeout: 6000
 - scrollUntilVisible:
     element:
       text: "Switch to hosting"
     direction: DOWN
-    timeout: 20000
-    optional: true
-- tapOn:
-    text: "Switch to hosting"
-    optional: true
+    centerElement: true
+    speed: 20
+    timeout: 30000
+- tapOn: "Switch to hosting"
+- extendedWaitUntil:
+    visible:
+      id: "tab-applications"
+    timeout: 30000
 - waitForAnimationToEnd:
     timeout: 12000
 - takeScreenshot: shots/14-host-today
@@ -188,13 +196,19 @@ appId: com.kushicorp.kushi
 - tapOn:
     text: "Open"
     optional: true
-- waitForAnimationToEnd:
-    timeout: 10000
+- extendedWaitUntil:
+    visible: "Application not found|Couldn’t load this application"
+    timeout: 20000
+    optional: true
 - takeScreenshot: shots/20-old-review-link
 - openLink: "kushi://hostings/does-not-exist/booking-applications"
 - tapOn:
     text: "Open"
     optional: true
+- extendedWaitUntil:
+    visible: "Applications"
+    timeout: 20000
+    optional: true
 - waitForAnimationToEnd:
-    timeout: 10000
+    timeout: 6000
 - takeScreenshot: shots/21-listing-applications

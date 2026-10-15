@@ -4,7 +4,8 @@
  * the overview (2 columns on phones, 3–4 on tablets).
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, Pressable, ScrollView, SectionList, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { FlatList, ScrollView, SectionList, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Image } from 'expo-image';

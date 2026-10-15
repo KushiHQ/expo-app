@@ -4,7 +4,8 @@
  * moved into one.
  */
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable } from '@/components/k/pressable';
 import { router } from 'expo-router';
 import { useQuery } from 'urql';
 import { FolderHeart, FolderPlus, Plus, Trash2 } from 'lucide-react-native';
