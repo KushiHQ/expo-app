@@ -1,0 +1,200 @@
+# Host management, saved collections, chat and media — CI walk-through.
+# Signs in as the QA guest. Read-only: no collection is created, no message is
+# sent, no application is accepted or declined (every sheet is closed unused).
+# iOS Maestro has no back: relaunch between paths.
+appId: com.kushicorp.kushi
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Start exploring"
+    timeout: 180000
+- tapOn: "Sign in"
+- tapOn:
+    id: "email"
+- inputText: "qa.guest@kushi.test"
+- tapOn:
+    id: "password"
+- inputText: "KushiQA-2026!"
+- pressKey: Enter
+- extendedWaitUntil:
+    visible:
+      id: "tab-index"
+    timeout: 90000
+- tapOn:
+    text: "Allow"
+    optional: true
+
+# ── Saved + collections ───────────────────────────────
+- tapOn:
+    id: "tab-saved"
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: shots/01-saved
+- tapOn:
+    id: "collection-new"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: shots/02-new-collection-sheet
+- tapOn:
+    text: "Close"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    text: "Add to a collection|Move to another collection"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: shots/03-move-sheet
+- tapOn:
+    text: "Close"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- scroll
+- takeScreenshot: shots/04-saved-scrolled
+
+# ── A collection that doesn't exist (error state) ─────
+- openLink: "kushi://hostings/folders/does-not-exist"
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: shots/05-collection-missing
+
+# ── Listing photos: viewer and grid ───────────────────
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "tab-saved"
+    timeout: 90000
+- tapOn:
+    id: "tab-saved"
+- waitForAnimationToEnd:
+    timeout: 8000
+- tapOn:
+    text: "Open .*"
+    index: 0
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 15000
+- tapOn:
+    point: "50%,22%"
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: shots/06-gallery
+- swipe:
+    direction: LEFT
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: shots/07-gallery-next
+- tapOn:
+    text: "All photos"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: shots/08-gallery-grid
+
+# ── Chat ──────────────────────────────────────────────
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "tab-inbox"
+    timeout: 90000
+- tapOn:
+    id: "tab-inbox"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/09-inbox
+- tapOn: "Ekwo.*"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: shots/10-chat
+- scroll
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: shots/11-chat-older
+- tapOn:
+    text: "Add photo or file"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: shots/12-chat-attach
+- tapOn:
+    text: "Close"
+    optional: true
+- tapOn:
+    id: "chat-input"
+    optional: true
+- inputText: "Is it still available?"
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: shots/13-chat-typing
+
+# ── Host: applications board and review ───────────────
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "tab-you"
+    timeout: 90000
+- tapOn:
+    id: "tab-you"
+- scrollUntilVisible:
+    element:
+      text: "Switch to hosting"
+    direction: DOWN
+    timeout: 20000
+    optional: true
+- tapOn:
+    text: "Switch to hosting"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: shots/14-host-today
+- tapOn:
+    id: "tab-applications"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: shots/15-host-applications
+- tapOn:
+    text: "Accepted.*"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: shots/16-host-applications-accepted
+- tapOn:
+    id: "application-.*"
+    index: 0
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: shots/17-application-review
+- scroll
+- takeScreenshot: shots/18-application-review-2
+- scroll
+- takeScreenshot: shots/19-application-review-3
+
+# ── Old routes redirect to the new screens ────────────
+- openLink: "kushi://hostings/does-not-exist/booking-applications/does-not-exist"
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: shots/20-old-review-link
+- openLink: "kushi://hostings/does-not-exist/booking-applications"
+- tapOn:
+    text: "Open"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: shots/21-listing-applications
