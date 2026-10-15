@@ -203,7 +203,7 @@ export default function Conversation() {
 				onVoice={() => router.push(buildCallURL(id, 'voice', true))}
 				onVideo={() => router.push(buildCallURL(id, 'video', true))}
 			/>
-			<KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+			<KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
 				{subError ? (
 					<View style={{ paddingHorizontal: gutter, paddingTop: 8 }}>
 						<Notice tone="warn" action="Refresh" onAction={refresh}>

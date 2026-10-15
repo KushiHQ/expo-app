@@ -93,10 +93,14 @@ jobs:
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
       - name: Tour
+        env:
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: '300000'
         run: |
           mkdir -p sim-out/shots
           xcrun simctl spawn "$UDID" log stream --level debug --style compact --predicate 'process == "KushiHousing"' > sim-out/app.log 2>&1 &
-          cd sim-out && maestro test ../scripts/sim/manage.yaml --format junit --output report.xml || echo "TOUR_FAILED=1" >> "$GITHUB_ENV"
+          cd sim-out
+          # The XCUITest driver sometimes misses its start window on a cold runner: allow longer, retry once.
+          maestro test ../scripts/sim/manage.yaml --format junit --output report.xml || { [ -f report.xml ] || maestro test ../scripts/sim/manage.yaml --format junit --output report.xml; } || echo "TOUR_FAILED=1" >> "$GITHUB_ENV"
           cp -R ../scripts/sim/shots ./ 2>/dev/null || true
           sleep 5
           cp -R ~/Library/Logs/DiagnosticReports ./crashes 2>/dev/null || true
