@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft } from 'lucide-react-native';
 import { color, gutter } from '@/lib/k/theme';
+import { centered, useLayout, type maxWidth } from '@/lib/k/layout';
 import { IconButton } from './button';
 import { KText, Eyebrow } from './text';
 
@@ -21,17 +22,21 @@ type ScreenProps = {
 	/** Screen sits inside a tab navigator (no bottom safe-area padding needed). */
 	tabbed?: boolean;
 	keyboard?: boolean;
+	/** Column width on tablets: reading (default, 720) or form (560). Phones always use the full width. */
+	width?: Exclude<keyof typeof maxWidth, 'panel'>;
 };
 
 /** Night canvas with safe areas, optional header, scroll and pinned footer. */
-export function Screen({ children, scroll = true, header, footer, padded = true, refreshing, onRefresh, contentStyle, scrollProps, tabbed, keyboard }: ScreenProps) {
+export function Screen({ children, scroll = true, header, footer, padded = true, refreshing, onRefresh, contentStyle, scrollProps, tabbed, keyboard, width = 'reading' }: ScreenProps) {
 	const insets = useSafeAreaInsets();
+	const layout = useLayout();
+	const column = centered(layout.max(width));
 	const pad = padded ? { paddingHorizontal: gutter } : null;
 	const bottom = footer ? 24 : tabbed ? 28 : insets.bottom + 28;
 	const body = scroll ? (
 		<ScrollView
 			style={{ flex: 1 }}
-			contentContainerStyle={[pad, { paddingBottom: bottom, gap: 20 }, contentStyle]}
+			contentContainerStyle={[pad, { paddingBottom: bottom, gap: 20 }, column, contentStyle]}
 			keyboardShouldPersistTaps="handled"
 			showsVerticalScrollIndicator={false}
 			refreshControl={onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={color.amber} colors={[color.amber]} progressBackgroundColor={color.surface} /> : undefined}
@@ -40,13 +45,17 @@ export function Screen({ children, scroll = true, header, footer, padded = true,
 			{children}
 		</ScrollView>
 	) : (
-		<View style={[{ flex: 1 }, pad, contentStyle]}>{children}</View>
+		<View style={[{ flex: 1 }, pad, column, contentStyle]}>{children}</View>
 	);
 	const inner = (
 		<>
 			{header}
 			{body}
-			{footer ? <View style={[s.footer, { paddingBottom: tabbed ? 12 : Math.max(insets.bottom, 12) }]}>{footer}</View> : null}
+			{footer ? (
+				<View style={[s.footer, { paddingBottom: tabbed ? 12 : Math.max(insets.bottom, 12) }]}>
+					{column ? <View style={column}>{footer}</View> : footer}
+				</View>
+			) : null}
 		</>
 	);
 	return (

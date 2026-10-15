@@ -3,19 +3,33 @@ import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleShee
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 import { color, gutter, radius } from '@/lib/k/theme';
+import { useLayout } from '@/lib/k/layout';
 import { IconButton, Button } from './button';
 import { KText, Eyebrow } from './text';
 import { OtpField } from './form';
 
-/** Bottom sheet (Modal-based so it works everywhere, including web previews). */
+const ORIENTATIONS = ['portrait', 'portrait-upside-down', 'landscape', 'landscape-left', 'landscape-right'] as const;
+
+/**
+ * Bottom sheet (Modal-based so it works everywhere, including web previews).
+ * On tablet-sized windows it is presented as a centered panel instead.
+ */
 export function Sheet({ open, onClose, title, eyebrow, children, footer, scroll = true, dismissible = true }: { open: boolean; onClose: () => void; title?: string; eyebrow?: string; children: React.ReactNode; footer?: React.ReactNode; scroll?: boolean; dismissible?: boolean }) {
 	const insets = useSafeAreaInsets();
+	const { compact, isTablet } = useLayout();
 	return (
-		<Modal visible={open} transparent animationType="slide" onRequestClose={() => dismissible && onClose()} statusBarTranslucent>
+		<Modal
+			visible={open}
+			transparent
+			animationType={compact ? 'slide' : 'fade'}
+			onRequestClose={() => dismissible && onClose()}
+			statusBarTranslucent
+			supportedOrientations={isTablet ? [...ORIENTATIONS] : undefined}
+		>
 			<Pressable style={s.scrim} onPress={() => dismissible && onClose()} accessibilityLabel="Close" />
-			<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={s.wrap} pointerEvents="box-none">
-				<View style={[s.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-					<View style={s.grab} />
+			<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={compact ? s.wrap : [s.wrapPanel, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }]} pointerEvents="box-none">
+				<View style={compact ? [s.sheet, { paddingBottom: Math.max(insets.bottom, 16) }] : s.panel}>
+					{compact ? <View style={s.grab} /> : null}
 					{title || eyebrow ? (
 						<View style={s.head}>
 							<View style={{ flex: 1, gap: 4 }}>
@@ -85,6 +99,8 @@ export function OtpSheet({ open, onClose, title, body, action = 'Confirm', dange
 const s = StyleSheet.create({
 	scrim: { ...StyleSheet.absoluteFillObject, backgroundColor: color.scrim },
 	wrap: { flex: 1, justifyContent: 'flex-end' },
+	wrapPanel: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 },
+	panel: { width: '100%', maxWidth: 600, maxHeight: '100%', backgroundColor: color.bg2, borderRadius: radius.xl, borderWidth: 1, borderColor: color.line2, gap: 12, paddingTop: 18, paddingBottom: 20 },
 	sheet: { maxHeight: '92%', backgroundColor: color.bg2, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, borderWidth: 1, borderColor: color.line2, borderBottomWidth: 0, gap: 12 },
 	grab: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: color.line2, marginTop: 10 },
 	head: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: gutter, paddingTop: 4 }

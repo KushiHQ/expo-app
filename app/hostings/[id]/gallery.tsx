@@ -9,6 +9,7 @@ import { IconButton, KText, Spinner } from '@/components/k';
 import { color, radius } from '@/lib/k/theme';
 import { listingPhotos, type Listing } from '@/lib/k/listing';
 import { getAssetResizeUrl } from '@/lib/utils/urls';
+import { useLayout } from '@/lib/k/layout';
 import { useHostingQuery } from '@/lib/services/graphql/generated';
 
 /** Full-screen photo viewer, grouped by room, opened at `start`. */
@@ -16,6 +17,8 @@ export default function Gallery() {
 	const { id, start } = useLocalSearchParams<{ id: string; start?: string }>();
 	const { width, height } = useWindowDimensions();
 	const insets = useSafeAreaInsets();
+	// Tablets show photos much larger: ask the resizer for more pixels so they stay sharp.
+	const big = !useLayout().compact;
 	const [{ data }] = useHostingQuery({ variables: { hostingId: id, pagination: { limit: 1, offset: 0 } } });
 	const h = data?.hosting as Listing | undefined;
 	const photos = useMemo(() => (h ? listingPhotos(h) : []), [h]);
@@ -63,7 +66,7 @@ export default function Gallery() {
 					renderItem={({ item }) => (
 						<View style={{ width, height, justifyContent: 'center' }}>
 							<Image
-								source={{ uri: getAssetResizeUrl(item.id, 1600, 1200, 85) }}
+								source={{ uri: big ? getAssetResizeUrl(item.id, 2400, 1800, 85) : getAssetResizeUrl(item.id, 1600, 1200, 85) }}
 								placeholder={{ uri: getAssetResizeUrl(item.id, 800, 600, 80) }}
 								style={{ width, height: height * 0.72 }}
 								contentFit="contain"

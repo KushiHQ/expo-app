@@ -4,10 +4,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ApplicationRow, DECIDABLE } from '@/components/k/host-bits';
 import { Empty, PageTitle, Segmented, Skeleton } from '@/components/k';
 import { color, gutter } from '@/lib/k/theme';
+import { centered, useLayout } from '@/lib/k/layout';
 import { BookingApplicationStatus as S, useKBookingApplicationsQuery } from '@/lib/services/graphql/generated';
 
 export default function Applications() {
 	const insets = useSafeAreaInsets();
+	const layout = useLayout();
 	const [{ data, fetching }, refetch] = useKBookingApplicationsQuery({ variables: { filter: { authHost: true, excludeStatuses: [S.InProgress] }, pagination: { limit: 200, offset: 0 } }, requestPolicy: 'cache-and-network' });
 	const [tab, setTab] = useState<'todo' | 'accepted' | 'closed'>('todo');
 	const all = data?.bookingApplications ?? [];
@@ -26,7 +28,7 @@ export default function Applications() {
 				keyExtractor={(a) => a.id}
 				renderItem={({ item }) => <ApplicationRow a={item} />}
 				ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-				contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: 40 }}
+				contentContainerStyle={[{ paddingHorizontal: gutter, paddingBottom: 40 }, centered(layout.max('reading'))]}
 				onRefresh={() => refetch({ requestPolicy: 'network-only' })}
 				refreshing={false}
 				ListHeaderComponent={

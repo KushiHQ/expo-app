@@ -65,7 +65,7 @@ export default function Pay() {
 
 	const tripId = b?.bookingApplication?.id;
 	return (
-		<Screen header={<Header eyebrow="Secure your home" title="Pay into escrow" />}>
+		<Screen width="form" header={<Header eyebrow="Secure your home" title="Pay into escrow" />}>
 			{!b ? (
 				<View style={{ gap: 12, paddingTop: 20 }}>
 					<Skeleton style={{ height: 90 }} />

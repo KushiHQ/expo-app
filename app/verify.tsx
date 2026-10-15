@@ -19,7 +19,7 @@ export default function Verify() {
 	const done = () => (next ? router.replace(next as never) : router.back());
 
 	return (
-		<Screen header={<Header title="Verification" />} keyboard>
+		<Screen header={<Header title="Verification" />} keyboard width="form">
 			<View style={{ gap: 8, paddingTop: 20 }}>
 				<Eyebrow>Verify once</Eyebrow>
 				<KText v="display">Then apply anywhere in minutes.</KText>

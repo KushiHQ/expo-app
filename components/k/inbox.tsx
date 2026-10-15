@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Headset, Search } from 'lucide-react-native';
 import { color, font, gutter, radius } from '@/lib/k/theme';
+import { centered, useLayout } from '@/lib/k/layout';
 import { relative } from '@/lib/k/format';
 import { useUserStore } from '@/lib/stores/users';
 import { useUserChatsQuery } from '@/lib/services/graphql/generated';
@@ -17,6 +18,7 @@ import { SignedOut } from './signed-out';
 /** Conversations list — shared by guest and host modes. */
 export function Inbox() {
 	const insets = useSafeAreaInsets();
+	const layout = useLayout();
 	const signedIn = useUserStore((s) => !!s.user.user?.id);
 	const [{ data, fetching }, refetch] = useUserChatsQuery({ variables: { pagination: { limit: 100, offset: 0 } }, pause: !signedIn, requestPolicy: 'cache-and-network' });
 	const [q, setQ] = useState('');
@@ -30,7 +32,9 @@ export function Inbox() {
 	if (!signedIn)
 		return (
 			<View style={{ flex: 1, backgroundColor: color.bg, justifyContent: 'center', paddingHorizontal: gutter }}>
-				<SignedOut eyebrow="Inbox" title="Talk to hosts directly" body="Ask about a home, arrange viewings and the key handover — sign in to start a conversation." />
+				<View style={centered(layout.max('form'))}>
+					<SignedOut eyebrow="Inbox" title="Talk to hosts directly" body="Ask about a home, arrange viewings and the key handover — sign in to start a conversation." />
+				</View>
 			</View>
 		);
 
@@ -41,7 +45,7 @@ export function Inbox() {
 				keyExtractor={(c) => c.id}
 				onRefresh={() => refetch({ requestPolicy: 'network-only' })}
 				refreshing={false}
-				contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: 40 }}
+				contentContainerStyle={[{ paddingHorizontal: gutter, paddingBottom: 40 }, centered(layout.max('reading'))]}
 				ListHeaderComponent={
 					<View style={{ gap: 16, paddingBottom: 8 }}>
 						<PageTitle eyebrow="Inbox" title="Messages" />
