@@ -4,9 +4,9 @@ import React from 'react';
 
 export default function Layout() {
   return (
-    <Stack screenOptions={STACK_SCREEN_OPTIONS}>
-      <Stack.Screen name="overview" options={{ headerShown: false }} />
-      <Stack.Screen name="request" options={{ headerShown: false }} />
+    <Stack screenOptions={{ ...STACK_SCREEN_OPTIONS, contentStyle: { backgroundColor: '#07080B' } }}>
+      <Stack.Screen name="overview" />
+      <Stack.Screen name="request" />
     </Stack>
   );
 }

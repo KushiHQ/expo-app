@@ -44,10 +44,10 @@ type L = {
 };
 
 /** A host's listing row → listing management. */
-export function HostListingRow({ l }: { l: L }) {
+export function HostListingRow({ l, testID }: { l: L; testID?: string }) {
 	const st = PUBLISH[l.publishStatus ?? 'DRAFT'] ?? PUBLISH.DRAFT;
 	return (
-		<Pressable onPress={() => router.push({ pathname: '/hostings/form/onboarding', params: { id: l.id } })} style={({ pressed }) => [s.row, pressed && { opacity: 0.8 }]}>
+		<Pressable testID={testID} accessibilityRole="button" onPress={() => router.push({ pathname: '/hostings/form/onboarding', params: { id: l.id } })} style={({ pressed }) => [s.row, pressed && { opacity: 0.8 }]}>
 			<Photo assetId={l.coverImage?.asset?.id} w={260} h={200} style={{ width: 88, height: 70 }} />
 			<View style={{ flex: 1, gap: 4 }}>
 				<KText v="smallStrong" numberOfLines={1}>
