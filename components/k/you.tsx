@@ -11,7 +11,7 @@ import { UserType } from '@/lib/types/users';
 import { toast } from '@/lib/hooks/use-toast';
 import { useDeleteAccountMutation } from '@/lib/services/graphql/generated';
 
-const WEB = 'https://kushi-housing-web.onrender.com';
+const WEB = 'https://housing.kushi.ng';
 
 export function You({ mode = 'guest' }: { mode?: 'guest' | 'host' }) {
 	const { user, updateUser } = useUserStore();

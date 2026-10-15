@@ -25,7 +25,7 @@ export function slugify(title?: string | null, id?: string) {
 
 /** Public web link for sharing (opens the app if installed). */
 export function shareUrl(h: { id: string; title?: string | null }) {
-	const base = process.env.EXPO_PUBLIC_SHARE_PROPERTY_URL ?? 'https://kushi-housing-web.onrender.com/homes';
+	const base = process.env.EXPO_PUBLIC_SHARE_PROPERTY_URL ?? 'https://housing.kushi.ng/homes';
 	return `${base.replace(/\/$/, '')}/${slugify(h.title, h.id)}`;
 }
 
