@@ -1,0 +1,28 @@
+# After a relaunch: get back to the QA guest's draft listing hub.
+appId: com.kushicorp.kushi
+---
+- extendedWaitUntil:
+    visible:
+      id: "tab-listings"
+    timeout: 90000
+    optional: true
+- runFlow:
+    when:
+      notVisible:
+        id: "tab-listings"
+    commands:
+      - tapOn:
+          id: "tab-you"
+      - tapOn: "Switch to hosting"
+- tapOn:
+    id: "tab-listings"
+- tapOn: "New"
+- extendedWaitUntil:
+    visible:
+      id: "draft-0"
+    timeout: 30000
+- tapOn:
+    id: "draft-0"
+- extendedWaitUntil:
+    visible: ".*(Set-up|Listing details).*"
+    timeout: 30000

@@ -1,341 +1,188 @@
-import ThemedText from '@/components/atoms/a-themed-text';
-import { FluentFormMultiple24Regular } from '@/components/icons/i-document';
-import DetailsLayout from '@/components/layouts/details';
-import HostingFormOnboardingAction from '@/components/molecules/m-hosting-form-onboarding-action';
-import ListingListItem from '@/components/organisms/o-listing-list-item';
-import TopListingCard from '@/components/molecules/m-top-listing-card';
-import { getVisibleSteps } from '@/lib/constants/hosting/onboarding';
-import { Fonts } from '@/lib/constants/theme';
+import { useEffect, useRef, useState } from 'react';
+import { View } from 'react-native';
+import { router, useLocalSearchParams, type Href } from 'expo-router';
+import { BarChart3, Copy, ExternalLink, Inbox, MoreHorizontal, Plus, Rocket, ShieldCheck, Trash2 } from 'lucide-react-native';
+import { Button, Card, Divider, Empty, Eyebrow, Header, IconButton, KText, Notice, Photo, Pill, Row, Screen, Sheet, Skeleton } from '@/components/k';
+import { HostListingRow, PUBLISH } from '@/components/k/host-bits';
+import { Progress, StepRow } from '@/components/k/listing-form';
+import { color } from '@/lib/k/theme';
+import { naira, perInterval, place } from '@/lib/k/format';
+import { TIERS } from '@/lib/k/tiers';
+import { agentManaged, stepHref, stepsFor, type Hosting, type StepKey } from '@/lib/k/listing-steps';
+import { cleanError } from '@/lib/k/use-listing-step';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import {
-  HostingKind,
-  PublishStatus,
-  useBookingApplicationsCountQuery,
-} from '@/lib/services/graphql/generated';
-import { hexToRgba } from '@/lib/utils/colors';
-import { Href, useLocalSearchParams } from 'expo-router';
-import { useRouter } from '@/lib/hooks/use-router';
-import { Building2, CircleQuestionMark, ListChecks, LucideIcon } from 'lucide-react-native';
-import React from 'react';
-import { RefreshControl, View } from 'react-native';
+import { toast } from '@/lib/hooks/use-toast';
+import { HostingKind, HostingVerificationTier, PublishStatus, useDeleteHostingMutation, useDuplicateHostingMutation } from '@/lib/services/graphql/generated';
 
-type Action = {
-  filled: boolean;
-  disabled: boolean;
-  link: Href;
-  /** optional steps never gate the steps after them, even when not filled */
-  optional?: boolean;
-};
+/** The listing hub: where set-up resumes, what's left, and everything to manage once it's live. */
+export default function ListingHub() {
+	const params = useLocalSearchParams<{ id?: string; next?: string }>();
+	const [id] = useState(() => (Array.isArray(params.id) ? params.id[0] : params.id) ?? '');
+	const { hosting: stored, fetching, refetch } = useHostingForm(id);
+	const h = stored && stored.id === id ? (stored as Hosting) : undefined;
+	const [menu, setMenu] = useState(false);
+	const [confirmDelete, setConfirmDelete] = useState(false);
+	const [{ fetching: deleting }, del] = useDeleteHostingMutation();
+	const [{ fetching: duplicating }, duplicate] = useDuplicateHostingMutation();
 
-/** A consistent, premium section header: a soft primary icon chip + title,
- *  with an optional count pill. */
-const SectionHeader: React.FC<{
-  icon: LucideIcon;
-  title: string;
-  count?: number;
-}> = ({ icon: Icon, title, count }) => {
-  const colors = useThemeColors();
-  return (
-    <View className="mb-3 flex-row items-center gap-2.5">
-      <View
-        className="h-7 w-7 items-center justify-center rounded-full"
-        style={{ backgroundColor: hexToRgba(colors.primary, 0.12) }}
-      >
-        <Icon size={14} color={colors.primary} />
-      </View>
-      <ThemedText style={{ fontFamily: Fonts.bold, fontSize: 16, letterSpacing: -0.3 }}>
-        {title}
-      </ThemedText>
-      {count != null ? (
-        <View
-          className="rounded-full px-2 py-0.5"
-          style={{ backgroundColor: hexToRgba(colors.text, 0.08) }}
-        >
-          <ThemedText
-            style={{
-              fontSize: 12,
-              fontFamily: Fonts.semibold,
-              color: hexToRgba(colors.text, 0.7),
-            }}
-          >
-            {count}
-          </ThemedText>
-        </View>
-      ) : null}
-    </View>
-  );
-};
+	// A brand-new listing arrives with ?next=photos: carry straight on to that step, once.
+	const jumped = useRef(false);
+	useEffect(() => {
+		if (jumped.current || !params.next || !id) return;
+		jumped.current = true;
+		router.setParams({ next: undefined });
+		router.push(stepHref(params.next as StepKey, id));
+	}, [params.next, id]);
 
-export default function HostingOnboarding() {
-  const router = useRouter();
-  const colors = useThemeColors();
-  const { id } = useLocalSearchParams();
-  const { hosting, refetch, fetching } = useHostingForm(id);
-  const [{ data: countData }] = useBookingApplicationsCountQuery({
-    variables: {
-      filter: {
-        hostingId: hosting?.id,
-        authHost: true,
-      },
-    },
-  });
+	if (!h)
+		return (
+			<Screen header={<Header eyebrow="Listing" title="Your listing" onBack={() => (router.canGoBack() ? router.back() : router.replace('/host/listings' as Href))} />} onRefresh={refetch} refreshing={false} contentStyle={{ paddingTop: 20 }}>
+				{fetching || !stored ? (
+					<View style={{ gap: 14 }}>
+						<Skeleton style={{ height: 110 }} />
+						<Skeleton style={{ height: 60 }} />
+						<Skeleton style={{ height: 300 }} />
+					</View>
+				) : (
+					<Empty eyebrow="Off the map" title="We couldn’t load this listing" body="Check your connection and pull down to try again." action="Try again" onAction={refetch} />
+				)}
+			</Screen>
+		);
 
-  const [refreshing, setRefreshing] = React.useState(false);
-  React.useEffect(() => {
-    if (!fetching) setRefreshing(false);
-  }, [fetching]);
+	const steps = stepsFor(h);
+	const left = steps.filter((s) => !s.done);
+	const status = h.publishStatus ?? PublishStatus.Draft;
+	const st = PUBLISH[status] ?? PUBLISH.DRAFT;
+	const live = status === PublishStatus.Live;
+	const parent = h.kind === HostingKind.Parent;
+	const units = (h.children ?? []).filter((u) => u.publishStatus !== PublishStatus.Archived);
+	const tier = h.verification?.verificationTier ?? HostingVerificationTier.Unverified;
+	const agent = agentManaged(h);
+	const nextUp = left.find((s) => s.key !== 'publish') ?? left[0];
+	const go = (key: StepKey) => router.push(stepHref(key, id));
 
-  // A deleted unit must simply vanish from the host's view. The server archives
-  // (rather than hard-deletes) a unit that has bookings, so we also hide archived
-  // units and always speak of it as "deleted" — the host never sees "archived".
-  const units = (hosting?.children ?? []).filter((u) => u.publishStatus !== PublishStatus.Archived);
+	async function onDuplicate() {
+		const r = await duplicate({ sourceHostingId: id });
+		setMenu(false);
+		if (r.error) return toast.show({ type: 'error', text2: cleanError(r.error.message) });
+		toast.show({ type: 'success', text1: 'Copied', text2: 'A draft copy is in your listings.' });
+	}
+	async function onDelete() {
+		const r = await del({ hostingId: id });
+		if (r.error) return toast.show({ type: 'error', text2: cleanError(r.error.message) });
+		setConfirmDelete(false);
+		toast.show({ type: 'success', text2: 'Listing deleted.' });
+		if (router.canGoBack()) router.back();
+		else router.replace('/host/listings' as Href);
+	}
 
-  const { steps: visibleSteps, indexMap } = React.useMemo(
-    () => getVisibleSteps(hosting?.listingType, hosting?.propertyType),
-    [hosting?.listingType, hosting?.propertyType],
-  );
+	return (
+		<Screen
+			header={
+				<Header
+					eyebrow={parent ? 'Property with units' : h.kind === HostingKind.Child ? `Unit · ${h.parent?.title ?? 'property'}` : 'Listing'}
+					title={h.title || 'Untitled listing'}
+					onBack={() => (router.canGoBack() ? router.back() : router.replace('/host/listings' as Href))}
+					right={
+						<IconButton label="More options" onPress={() => setMenu(true)}>
+							<MoreHorizontal size={18} color={color.fg} />
+						</IconButton>
+					}
+				/>
+			}
+			onRefresh={refetch}
+			refreshing={false}
+			contentStyle={{ paddingTop: 20 }}
+		>
+			<Card style={{ padding: 12 }}>
+				<View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
+					<Photo assetId={h.coverImage?.asset?.id} w={300} h={240} style={{ width: 104, height: 84 }} />
+					<View style={{ flex: 1, gap: 5 }}>
+						<Pill tone={st.tone}>{st.label}</Pill>
+						<KText v="xs" numberOfLines={1}>
+							{place(h.city, h.state) || 'No location yet'}
+						</KText>
+						<KText v="smallStrong">{Number(h.price) ? `${naira(Number(h.price))} ${h.listingType === 'SALE' ? '' : perInterval(h.paymentInterval)}` : 'No price yet'}</KText>
+					</View>
+				</View>
+				<View style={{ gap: 6 }}>
+					<KText v="xs">{left.length ? `${steps.length - left.length} of ${steps.length} steps done` : 'Every step is done'}</KText>
+					<Progress steps={steps} />
+				</View>
+			</Card>
 
-  const actions = React.useMemo(() => {
-    const actions: Record<number, Action> = {};
-    visibleSteps.forEach((_, filteredIndex) => {
-      const originalIndex = indexMap[filteredIndex];
-      const isLast = filteredIndex === visibleSteps.length - 1;
-      actions[filteredIndex] = {
-        filled: false,
-        disabled: true,
-        link: isLast
-          ? `/hostings/form/verification/overview?id=${id}`
-          : `/hostings/form/${
-              originalIndex === 2
-                ? 'step-2-video'
-                : originalIndex < 2
-                  ? `step-${originalIndex + 1}`
-                  : `step-${originalIndex}`
-            }?id=${id}`,
-      };
-    });
+			{live ? (
+				<Card tone="signal">
+					<KText v="bodyStrong">Live on Kushi</KText>
+					<KText v="small">{agent ? 'Renters can find it and contact you.' : 'Renters can find it and apply. You decide who gets it.'}</KText>
+					<Button title="See it as renters do" variant="ghost" size="sm" icon={<ExternalLink size={14} color={color.fg} />} onPress={() => router.push(`/hostings/${id}` as Href)} style={{ alignSelf: 'flex-start' }} />
+				</Card>
+			) : status === PublishStatus.Rejected ? (
+				<Notice tone="danger" title="Kushi asked for changes">Check each step, update what’s wrong, then publish again. Contact support if you’re not sure what to change.</Notice>
+			) : status === PublishStatus.Inreview ? (
+				<Notice tone="info" title="Being reviewed">Kushi is checking this listing. You’ll get a notification when it’s done.</Notice>
+			) : nextUp && nextUp.key !== 'publish' ? (
+				<Card tone="amber">
+					<Eyebrow c="amber">Next up</Eyebrow>
+					<KText v="bodyStrong">{nextUp.title}</KText>
+					<KText v="small">{nextUp.left.join(' · ')}</KText>
+					<Button title={`Continue: ${nextUp.title.toLowerCase()}`} onPress={() => go(nextUp.key)} style={{ alignSelf: 'flex-start' }} testID="hub-continue" />
+				</Card>
+			) : (
+				<Card tone="amber">
+					<Eyebrow c="amber">Almost there</Eyebrow>
+					<KText v="bodyStrong">Name it and publish</KText>
+					<KText v="small">Everything else is done. Add a title and description, then go live.</KText>
+					<Button title="Name and publish" onPress={() => go('publish')} style={{ alignSelf: 'flex-start' }} testID="hub-continue" />
+				</Card>
+			)}
 
-    if (hosting) {
-      // Find filteredIndex for each original step
-      const idx = (original: number) => indexMap.indexOf(original);
+			<View>
+				<Eyebrow>{live ? 'Listing details' : 'Set-up'}</Eyebrow>
+				{steps.map((s) => (
+					<StepRow key={s.key} step={s} onPress={() => go(s.key)} testID={`hub-step-${s.key}`} />
+				))}
+			</View>
 
-      // Step 0: Property Details
-      const i0 = idx(0);
-      if (i0 >= 0) {
-        actions[i0].filled = !!hosting.title && !!hosting.propertyType && !!hosting.listingType;
-        actions[i0].disabled = false;
-      }
+			{parent ? (
+				<View style={{ gap: 10 }}>
+					<View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+						<Eyebrow>{`Units · ${units.length}`}</Eyebrow>
+						<Button title="Add a unit" size="sm" variant="ghost" icon={<Plus size={14} color={color.fg} />} onPress={() => router.push(`/hostings/form?parent=${id}` as Href)} />
+					</View>
+					{units.length ? units.map((u) => <HostListingRow key={u.id} l={u} />) : <KText v="small">No units yet. Add each flat or shop so renters can pick one.</KText>}
+				</View>
+			) : null}
 
-      // Step 1: Photos — posters count as listing imagery too, mirroring the
-      // photo step's own gate (step-2). Without this a land listing with only
-      // posters read "not done" and, because an unfilled required step blocks
-      // the ones after it, greyed out the whole rest of the wizard.
-      const i1 = idx(1);
-      if (i1 >= 0) {
-        actions[i1].filled =
-          !!hosting.rooms?.some((room) => room?.images && room.images.length > 0) ||
-          !!hosting.hostingImages?.length;
-      }
+			<View>
+				<Eyebrow>Manage</Eyebrow>
+				{!parent ? <Row icon={<Inbox size={17} color={color.fg} />} title="Applications" detail={h.bookingApplicationsCount ? `${h.bookingApplicationsCount} so far` : 'None yet'} onPress={() => router.push(`/hostings/${id}/booking-applications` as Href)} /> : null}
+				{!agent ? (
+					<>
+						<Divider />
+						<Row icon={<ShieldCheck size={17} color={color.fg} />} title="Verification" detail={`${TIERS[tier].label} · ${tier === HostingVerificationTier.KushiVetted ? 'top level' : 'get a higher badge'}`} onPress={() => router.push(`/hostings/form/verification/overview?id=${id}` as Href)} />
+					</>
+				) : null}
+				<Divider />
+				<Row icon={<BarChart3 size={17} color={color.fg} />} title="Insights" detail="Views, saves and messages" onPress={() => router.push(`/hostings/${id}/insights` as Href)} />
+				{live ? (
+					<>
+						<Divider />
+						<Row icon={<Rocket size={17} color={color.fg} />} title="Boost" detail="Show up higher in search for a while" onPress={() => router.push(`/hostings/${id}/boost` as Href)} />
+					</>
+				) : null}
+			</View>
 
-      // Step 2: Video Walkthrough — optional: reflect whether a video exists,
-      // but mark optional so an empty one never blocks the steps after it.
-      const iVideo = idx(2);
-      if (iVideo >= 0) {
-        actions[iVideo].filled = !!hosting.video;
-        actions[iVideo].optional = true;
-      }
-
-      // Step 3: Location
-      const iLocation = idx(3);
-      if (iLocation >= 0) {
-        // The GPS pin (coords) is the real signal; a postal code is unrealistic
-        // for most Nigerian addresses and a state/city can be missing in remote
-        // areas — so require the coords + contact + at least one locality label,
-        // not every field.
-        actions[iLocation].filled = !!(
-          hosting.longitude &&
-          hosting.latitude &&
-          hosting.country &&
-          hosting.contact &&
-          (hosting.state || hosting.city)
-        );
-      }
-
-      // Step 4: Amenities
-      const iAmenities = idx(4);
-      if (iAmenities >= 0) {
-        actions[iAmenities].filled = !!hosting.facilities?.length;
-      }
-
-      // Step 5: Pricing
-      const iPricing = idx(5);
-      if (iPricing >= 0) {
-        actions[iPricing].filled = !!(
-          hosting.paymentInterval &&
-          hosting.price &&
-          hosting.paymentDetails
-        );
-      }
-
-      // Step 6: Mandate
-      const iMandate = idx(6);
-      if (iMandate >= 0) {
-        const v = hosting.verification;
-        actions[iMandate].filled = !!(
-          v?.landlordFullName &&
-          v?.landlordAddress &&
-          v?.propertyRelationship &&
-          v?.declOwnership &&
-          v?.declLitigation &&
-          v?.declIndemnity
-        );
-      }
-
-      // Step 7: Tenancy Terms
-      const iTenancy = idx(7);
-      if (iTenancy >= 0) {
-        actions[iTenancy].filled = !!(
-          hosting.tenancyAgreementTemplate?.sections &&
-          hosting.tenancyAgreementTemplate.sections?.length > 0 &&
-          hosting.host?.signature?.publicUrl
-        );
-      }
-
-      // Step 8: Review & Publish
-      const iReview = idx(8);
-      if (iReview >= 0) {
-        actions[iReview].filled =
-          hosting.publishStatus === PublishStatus.Inreview ||
-          hosting.publishStatus === PublishStatus.Live;
-      }
-
-      // Step 9: Get Verified
-      const iVerified = idx(9);
-      if (iVerified >= 0) {
-        actions[iVerified].filled = hosting.publishStatus === PublishStatus.Live;
-      }
-    }
-
-    visibleSteps.forEach((_, filteredIndex) => {
-      if (filteredIndex !== 0) {
-        const prev = actions[filteredIndex - 1];
-        // An optional previous step (e.g. the video walkthrough) never blocks
-        // the next step, even if it hasn't been filled.
-        actions[filteredIndex]['disabled'] = prev.disabled || (!prev.filled && !prev.optional);
-      }
-    });
-
-    return actions;
-  }, [hosting, visibleSteps, indexMap]);
-
-  return (
-    <DetailsLayout
-      title="Hosting"
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => {
-            setRefreshing(true);
-            refetch();
-          }}
-        />
-      }
-    >
-      <View>
-        <ThemedText className="mb-4" style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
-          <CircleQuestionMark color={hexToRgba(colors.text, 0.7)} size={12} />
-          {'  '}
-          Resume your setup, edit your property details, or preview your listing before it reaches
-          future tenants.
-        </ThemedText>
-        <TopListingCard onPress={() => router.push(`/hostings/${hosting?.id}`)} hosting={hosting} />
-        {/* A parent property isn't booked directly — applications belong to its
-            units — so the booking-applications section is hidden for parents. */}
-        {hosting?.kind !== HostingKind.Parent ? (
-          <View className="py-4">
-            <HostingFormOnboardingAction
-              icon={FluentFormMultiple24Regular}
-              color="accent"
-              onPress={() => router.push(`/hostings/${hosting?.id}/booking-applications/`)}
-            >
-              <View className="flex-1">
-                <ThemedText style={{ fontFamily: Fonts.bold }}>
-                  Booking Applications (
-                  {Number(countData?.bookingApplicationsCount ?? '0').toLocaleString()})
-                </ThemedText>
-                <ThemedText
-                  style={{
-                    fontSize: 12,
-                    color: hexToRgba(colors.text, 0.6),
-                  }}
-                >
-                  Review and manage pending tenant applications for this property.
-                </ThemedText>
-              </View>
-            </HostingFormOnboardingAction>
-          </View>
-        ) : null}
-
-        {/* Units — only for a parent property. Lists its child units; tap to
-            manage one (drills into that unit's own onboarding). */}
-        {hosting && hosting.kind === HostingKind.Parent ? (
-          <View className="py-4">
-            <SectionHeader icon={Building2} title="Units" count={units.length} />
-            {units.length === 0 ? (
-              <ThemedText style={{ fontSize: 12, color: hexToRgba(colors.text, 0.6) }}>
-                No units yet. Add one with the + button and choose this property as its parent.
-              </ThemedText>
-            ) : (
-              // Units are just listings — render them with the same row as the
-              // host's listings (tap to manage, ⋯ menu to view/delete).
-              <View className="gap-3">
-                {units.map((unit) => (
-                  <ListingListItem
-                    key={unit.id}
-                    hosting={unit}
-                    onDelete={refetch}
-                    onDuplicate={refetch}
-                  />
-                ))}
-              </View>
-            )}
-          </View>
-        ) : null}
-
-        <View className="mt-8">
-          <SectionHeader icon={ListChecks} title="Complete your listing" />
-          <View className="gap-4">
-            {visibleSteps.map((step, filteredIndex) => {
-              return (
-                <HostingFormOnboardingAction
-                  key={filteredIndex}
-                  onPress={() => {
-                    if (actions[filteredIndex]?.link) {
-                      router.push(actions[filteredIndex]!.link);
-                    }
-                  }}
-                  disabled={!actions[filteredIndex]?.link || actions[filteredIndex]?.disabled}
-                  color={actions[filteredIndex]?.filled ? 'primary' : 'default'}
-                  icon={step.icon}
-                >
-                  <View className="flex-1">
-                    <ThemedText style={{ fontFamily: Fonts.bold }}>{step.title}</ThemedText>
-                    <ThemedText
-                      style={{
-                        fontSize: 12,
-                        color: hexToRgba(colors.text, 0.6),
-                      }}
-                    >
-                      {step.description}
-                    </ThemedText>
-                  </View>
-                </HostingFormOnboardingAction>
-              );
-            })}
-          </View>
-        </View>
-      </View>
-    </DetailsLayout>
-  );
+			<Sheet open={menu} onClose={() => setMenu(false)} title="Listing options">
+				<Row icon={<ExternalLink size={17} color={color.fg} />} title="View as renters see it" onPress={() => { setMenu(false); router.push(`/hostings/${id}` as Href); }} />
+				<Row icon={<Copy size={17} color={color.fg} />} title={duplicating ? 'Copying…' : 'Make a copy'} detail="Starts a new draft with the same details" onPress={onDuplicate} />
+				<Row icon={<Trash2 size={17} color={color.danger} />} title="Delete listing" danger onPress={() => { setMenu(false); setTimeout(() => setConfirmDelete(true), 380); }} />
+			</Sheet>
+			<Sheet open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Delete this listing?">
+				<KText v="small">It disappears from Kushi and your listings. This can’t be undone.</KText>
+				<Button title="Delete" variant="danger" block loading={deleting} onPress={onDelete} />
+				<Button title="Keep it" variant="ghost" block onPress={() => setConfirmDelete(false)} />
+			</Sheet>
+		</Screen>
+	);
 }

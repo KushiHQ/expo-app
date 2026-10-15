@@ -2,21 +2,18 @@ import { Stack } from 'expo-router';
 import { STACK_SCREEN_OPTIONS } from '@/lib/constants/navigation';
 import React from 'react';
 
+const SCREENS = ['index', 'onboarding', 'basics', 'photos', 'location', 'features', 'price', 'agreement', 'publish', 'verification'];
+const OLD = ['step-1', 'step-2', 'step-2-video', 'step-3', 'step-4', 'step-5', 'step-6', 'step-7', 'step-8'];
+
 export default function Layout() {
   return (
-    <Stack screenOptions={STACK_SCREEN_OPTIONS}>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-      <Stack.Screen name="step-1" options={{ headerShown: false }} />
-      <Stack.Screen name="step-2" options={{ headerShown: false }} />
-      <Stack.Screen name="step-2-video" options={{ headerShown: false }} />
-      <Stack.Screen name="step-3" options={{ headerShown: false }} />
-      <Stack.Screen name="step-4" options={{ headerShown: false }} />
-      <Stack.Screen name="step-5" options={{ headerShown: false }} />
-      <Stack.Screen name="step-6" options={{ headerShown: false }} />
-      <Stack.Screen name="step-7" options={{ headerShown: false }} />
-      <Stack.Screen name="step-8" options={{ headerShown: false }} />
-      <Stack.Screen name="verification" options={{ headerShown: false }} />
+    <Stack screenOptions={{ ...STACK_SCREEN_OPTIONS, headerShown: false, contentStyle: { backgroundColor: '#07080B' } }}>
+      {SCREENS.map((name) => (
+        <Stack.Screen key={name} name={name} />
+      ))}
+      {OLD.map((name) => (
+        <Stack.Screen key={name} name={name} options={{ animation: 'none' }} />
+      ))}
     </Stack>
   );
 }
