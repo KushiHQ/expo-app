@@ -77,9 +77,9 @@ export function StepScreen({
 }
 
 /** Segmented progress strip: done steps amber, current outlined. */
-export function Progress({ steps, current }: { steps: StepState[]; current?: StepKey }) {
+export function Progress({ steps, current, inset }: { steps: StepState[]; current?: StepKey; inset?: boolean }) {
 	return (
-		<View style={s.progress} accessibilityRole="progressbar" accessibilityLabel={`${steps.filter((x) => x.done).length} of ${steps.length} steps done`}>
+		<View style={[s.progress, inset && { paddingHorizontal: 0, paddingVertical: 0, backgroundColor: 'transparent' }]} accessibilityRole="progressbar" accessibilityLabel={`${steps.filter((x) => x.done).length} of ${steps.length} steps done`}>
 			{steps.map((st) => (
 				<View key={st.key} style={[s.seg, st.done && { backgroundColor: color.amber }, st.key === current && !st.done && { backgroundColor: color.amberLine }]} />
 			))}

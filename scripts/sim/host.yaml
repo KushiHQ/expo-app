@@ -47,6 +47,8 @@ appId: com.kushicorp.kushi
 - scrollUntilVisible:
     element:
       id: "draft-0"
+    centerElement: true
+    visibilityPercentage: 100
     direction: UP
     timeout: 10000
 - tapOn:
@@ -67,6 +69,8 @@ appId: com.kushicorp.kushi
 - scrollUntilVisible:
     element:
       id: "hub-step-basics"
+    centerElement: true
+    visibilityPercentage: 100
     direction: UP
     timeout: 10000
 - tapOn:
@@ -81,13 +85,17 @@ appId: com.kushicorp.kushi
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: shots/12-type-picker
-- tapOn: "Close"
+- tapOn:
+    text: "Close"
+    optional: true
 - tapOn: "Back"
 
 # Step 2 — photos and video
 - scrollUntilVisible:
     element:
       id: "hub-step-photos"
+    centerElement: true
+    visibilityPercentage: 100
     timeout: 10000
 - tapOn:
     id: "hub-step-photos"
@@ -103,13 +111,17 @@ appId: com.kushicorp.kushi
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: shots/23-add-space
-- tapOn: "Close"
+- tapOn:
+    text: "Close"
+    optional: true
 - tapOn: "Back"
 
 # Step 4 — features (not for land)
 - scrollUntilVisible:
     element:
       id: "hub-step-features"
+    centerElement: true
+    visibilityPercentage: 100
     timeout: 10000
     optional: true
 - tapOn:
@@ -128,6 +140,8 @@ appId: com.kushicorp.kushi
 - scrollUntilVisible:
     element:
       id: "hub-step-price"
+    centerElement: true
+    visibilityPercentage: 100
     timeout: 10000
 - tapOn:
     id: "hub-step-price"
@@ -141,13 +155,17 @@ appId: com.kushicorp.kushi
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: shots/52-add-bank
-- tapOn: "Close"
+- tapOn:
+    text: "Close"
+    optional: true
 - tapOn: "Back"
 
 # Step 7 — name and publish (not pressed)
 - scrollUntilVisible:
     element:
       id: "hub-step-publish"
+    centerElement: true
+    visibilityPercentage: 100
     timeout: 10000
 - tapOn:
     id: "hub-step-publish"
@@ -164,6 +182,8 @@ appId: com.kushicorp.kushi
 - scrollUntilVisible:
     element:
       text: "Verification.*"
+    centerElement: true
+    visibilityPercentage: 100
     timeout: 10000
     optional: true
 - tapOn:
@@ -183,6 +203,8 @@ appId: com.kushicorp.kushi
 - scrollUntilVisible:
     element:
       id: "hub-step-location"
+    centerElement: true
+    visibilityPercentage: 100
     timeout: 10000
 - tapOn:
     id: "hub-step-location"
@@ -200,6 +222,8 @@ appId: com.kushicorp.kushi
 - scrollUntilVisible:
     element:
       id: "hub-step-agreement"
+    centerElement: true
+    visibilityPercentage: 100
     timeout: 10000
     optional: true
 - tapOn:
@@ -223,6 +247,8 @@ appId: com.kushicorp.kushi
 - scrollUntilVisible:
     element:
       id: "hub-step-photos"
+    centerElement: true
+    visibilityPercentage: 100
     timeout: 10000
 - tapOn:
     id: "hub-step-photos"

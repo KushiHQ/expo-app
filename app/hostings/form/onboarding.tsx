@@ -107,7 +107,7 @@ export default function ListingHub() {
 				</View>
 				<View style={{ gap: 6 }}>
 					<KText v="xs">{left.length ? `${steps.length - left.length} of ${steps.length} steps done` : 'Every step is done'}</KText>
-					<Progress steps={steps} />
+					<Progress steps={steps} inset />
 				</View>
 			</Card>
 
