@@ -147,8 +147,8 @@ function Detail({ h }: { h: Listing }) {
 	const inner = layout.contentWidth - g * 2;
 	const sideW = Math.round(Math.min(440, Math.max(340, inner * 0.38)));
 	const leftW = inner - sideW - 40;
-	const photoW = layout.compact ? 1200 : 1800;
-	const photoH = layout.compact ? 1100 : 1300;
+	const photoW = layout.compact ? 1200 : 1600;
+	const photoH = layout.compact ? 1100 : 1200;
 
 	const gallery = (gw: number, gh: number, overlay: boolean, rounded?: boolean) => (
 		<View style={[{ height: gh, backgroundColor: color.surface }, rounded && { borderRadius: radius.lg, overflow: 'hidden' }]}>

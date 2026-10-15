@@ -10,6 +10,14 @@ appId: com.kushicorp.kushi
 - extendedWaitUntil:
     visible: "Start exploring"
     timeout: 180000
+# The notification permission alert can appear a moment after launch; dismiss it.
+- extendedWaitUntil:
+    visible: "Allow"
+    timeout: 8000
+    optional: true
+- tapOn:
+    text: "Allow"
+    optional: true
 - waitForAnimationToEnd:
     timeout: 5000
 - takeScreenshot: shots/01-welcome

@@ -106,6 +106,7 @@ jobs:
               ;;
             esac
             cp -R ~/.maestro/tests "out/$SLUG/maestro" 2>/dev/null || true
+            rm -rf ~/.maestro/tests
             xcrun simctl shutdown "$UDID" || true
           done
           find out -name '*.png' | sort
