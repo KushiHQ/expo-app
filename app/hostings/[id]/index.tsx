@@ -23,7 +23,7 @@ import {
 	Users,
 	Zap
 } from 'lucide-react-native';
-import { Avatar, Button, Card, Divider, Empty, Eyebrow, IconButton, KText, Photo, Pill, Sheet, Skeleton, Stepper, Waypoint } from '@/components/k';
+import { Avatar, Button, Card, Divider, Empty, Eyebrow, IconButton, KText, Notice, Photo, Pill, Sheet, Skeleton, Stepper, Waypoint } from '@/components/k';
 import { QuoteLines, useQuote } from '@/components/k/quote';
 import { useSaveToggle } from '@/components/k/listing-card';
 import { color, font, gutter, radius } from '@/lib/k/theme';
@@ -356,6 +356,12 @@ function Detail({ h }: { h: Listing }) {
 					);
 				})}
 			</View>
+
+			{mode === 'agent' ? (
+				<Notice tone="warn" title="Kushi doesn’t hold payment for this listing">
+					This home is advertised by an agent, and you arrange it with them directly. Inspect the property and check the paperwork before you pay anything — Kushi can’t protect or refund payments made outside the app.
+				</Notice>
+			) : null}
 
 			{mode === 'book' ? (
 				<Card>
