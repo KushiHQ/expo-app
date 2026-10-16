@@ -1,282 +1,241 @@
-import DetailsLayout from '@/components/layouts/details';
-import { View, StyleSheet, Pressable, Image, Alert } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Alert, Linking, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { CameraView, CameraType, FlashMode, useCameraPermissions } from 'expo-camera';
-import { Zap, ZapOff } from 'lucide-react-native';
-import React, { useState, useRef } from 'react';
-import ThemedText from '@/components/atoms/a-themed-text';
-import Button from '@/components/atoms/a-button';
-import { GravityUiArrowsRotateRight } from '@/components/icons/i-rotate';
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { CameraView, type CameraType, type FlashMode, useCameraPermissions } from 'expo-camera';
+import * as Location from 'expo-location';
+import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Camera, MapPin, MapPinOff, RefreshCcw, X, Zap, ZapOff } from 'lucide-react-native';
+import { Button, KText, Spinner } from '@/components/k';
+import { Pressable } from '@/components/k/pressable';
+import { color, font, radius } from '@/lib/k/theme';
 import { useGalleryStore } from '@/lib/stores/gallery';
-import { getLocationAsync } from '@/lib/utils/locations';
-import { LocationObject } from 'expo-location';
 import { usePhotoGalleryScreen } from '@/lib/hooks/camera';
 import { cast } from '@/lib/types/utils';
-import * as Haptics from 'expo-haptics';
+import { rememberCapture } from '@/lib/k/photo-capture';
 
-export default function CameraPage() {
-  const { images, multiple, redirect } = useLocalSearchParams();
-  const cameraRef = useRef<CameraView>(null);
-  const [facing, setFacing] = useState<CameraType>('back');
-  const [flash, setFlash] = useState<FlashMode>('off');
-  const { redirect: galleryRedirect } = usePhotoGalleryScreen();
-  const [permission, requestPermission] = useCameraPermissions();
-  const { gallery, append, setGallery, setActiveIndex } = useGalleryStore();
-  const [location, setLocation] = React.useState<LocationObject>();
+type Fix = { coords: Location.LocationObjectCoords } | null;
+type Gps = 'finding' | 'on' | 'off' | 'blocked';
 
-  const imagesParamString = JSON.stringify(images);
+/**
+ * The Kushi camera. Every photo is stamped with where it was taken (EXIF GPS,
+ * and the same coordinates are kept for the upload — see lib/k/photo-capture),
+ * which is how listing photos are shown to be real. With `requireLocation`
+ * (listing room photos) it won't shoot without a location fix, because the
+ * server refuses room photos without one. Hands the shots to the photo review
+ * screen, which returns them to `redirect`.
+ */
+export default function CameraScreen() {
+	const { images, multiple, redirect, requireLocation } = useLocalSearchParams();
+	const needsLocation = requireLocation === 'true';
+	const insets = useSafeAreaInsets();
+	const cam = useRef<CameraView>(null);
+	const [perm, requestPerm] = useCameraPermissions();
+	const [facing, setFacing] = useState<CameraType>('back');
+	const [flash, setFlash] = useState<FlashMode>('off');
+	const [fix, setFix] = useState<Fix>(null);
+	const [gps, setGps] = useState<Gps>('finding');
+	const [busy, setBusy] = useState(false);
+	const { gallery, append, setGallery, setActiveIndex } = useGalleryStore();
+	const { redirect: review } = usePhotoGalleryScreen();
+	const start = useRef(0);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      const parsedImages = imagesParamString ? JSON.parse(imagesParamString) : null;
+	const imagesParam = JSON.stringify(images);
+	useFocusEffect(
+		useCallback(() => {
+			const parsed = imagesParam ? JSON.parse(imagesParam) : null;
+			if (Array.isArray(parsed)) {
+				setGallery(parsed.map((i) => (typeof i === 'string' ? i.replaceAll(',', '') : i)));
+				setActiveIndex(0);
+				start.current = parsed.length;
+			} else if (parsed) {
+				append(String(parsed).replaceAll(',', ''));
+				setActiveIndex(0);
+				start.current = 1;
+			}
+		}, [imagesParam, setActiveIndex, append, setGallery])
+	);
 
-      if (Array.isArray(parsedImages)) {
-        setGallery(parsedImages.map((i) => (typeof i === 'string' ? i.replaceAll(',', '') : i)));
-        setActiveIndex(0);
-      } else if (parsedImages) {
-        append(String(parsedImages).replaceAll(',', ''));
-        setActiveIndex(0);
-      }
-    }, [imagesParamString, setActiveIndex, append, setGallery]),
-  );
+	// Keep the fix fresh while the host walks round the property.
+	const watch = useRef<Location.LocationSubscription | null>(null);
+	const locate = useCallback(async () => {
+		setGps('finding');
+		try {
+			let p = await Location.getForegroundPermissionsAsync();
+			if (p.status !== 'granted' && p.canAskAgain) p = await Location.requestForegroundPermissionsAsync();
+			if (p.status !== 'granted') return setGps(p.canAskAgain ? 'off' : 'blocked');
+			const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+			setFix({ coords: pos.coords });
+			setGps('on');
+			watch.current?.remove();
+			watch.current = await Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 5000, distanceInterval: 5 }, (next) => setFix({ coords: next.coords }));
+		} catch {
+			setGps('off');
+		}
+	}, []);
+	useEffect(() => {
+		locate();
+		return () => {
+			watch.current?.remove();
+			watch.current = null;
+		};
+	}, [locate]);
 
-  React.useEffect(() => {
-    (async () => {
-      const locationCoords = await getLocationAsync();
-      if (locationCoords) {
-        setLocation(locationCoords);
-      }
-    })();
-  }, []);
+	const taken = Math.max(0, gallery.length - start.current);
 
-  if (!permission) {
-    return <View style={styles.container} />;
-  }
+	async function shoot() {
+		if (!cam.current || busy) return;
+		if (needsLocation && !fix) {
+			Alert.alert('Turn on location', 'Room photos must be taken with location on, so renters can trust they were taken at the property.', [
+				{ text: 'Not now', style: 'cancel' },
+				gps === 'blocked' ? { text: 'Open Settings', onPress: () => Linking.openSettings() } : { text: 'Try again', onPress: () => locate() }
+			]);
+			return;
+		}
+		setBusy(true);
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+		try {
+			const c = fix?.coords;
+			const photo = await cam.current.takePictureAsync({
+				// JPEG quality only — 0.7 keeps uploads to 1–2 MB on Nigerian networks; resolution and EXIF are untouched.
+				quality: 0.7,
+				exif: true,
+				additionalExif: c
+					? {
+							GPSLatitude: Math.abs(c.latitude),
+							GPSLongitude: Math.abs(c.longitude),
+							GPSLatitudeRef: c.latitude >= 0 ? 'N' : 'S',
+							GPSLongitudeRef: c.longitude >= 0 ? 'E' : 'W',
+							GPSAltitude: c.altitude || 0,
+							GPSSpeed: c.speed || 0,
+							GPSTimeStamp: new Date().toISOString()
+						}
+					: {}
+			});
+			if (photo?.uri) {
+				if (c) rememberCapture(photo.uri, { latitude: c.latitude, longitude: c.longitude, accuracyM: c.accuracy ?? undefined, capturedAt: new Date().toISOString() });
+				append(photo.uri);
+				if (multiple === 'false') review({ redirect: cast(redirect), fromCamera: true });
+			}
+		} catch {
+			Alert.alert('That photo didn’t save', 'Try again.');
+		} finally {
+			setBusy(false);
+		}
+	}
 
-  if (!permission.granted) {
-    return (
-      <DetailsLayout
-        backgroundStyles={{
-          backgroundColor: '#000000',
-        }}
-        background="transparent"
-        backButton="solid"
-      >
-        <View style={styles.permissionContainer}>
-          <ThemedText style={{ textAlign: 'center', marginBottom: 20, color: 'white' }}>
-            We need camera permission to take photos
-          </ThemedText>
-          <Button onPress={requestPermission} type="primary">
-            <ThemedText content="primary">Grant Permission</ThemedText>
-          </Button>
-        </View>
-      </DetailsLayout>
-    );
-  }
+	function close() {
+		if (taken === 0) return router.back();
+		Alert.alert(`Discard ${taken} new photo${taken === 1 ? '' : 's'}?`, 'They haven’t been added to your listing yet.', [
+			{ text: 'Keep shooting', style: 'cancel' },
+			{ text: 'Discard', style: 'destructive', onPress: () => router.back() }
+		]);
+	}
 
-  const toggleCameraFacing = () => {
-    setFacing((current) => (current === 'back' ? 'front' : 'back'));
-  };
+	if (!perm)
+		return (
+			<View style={[s.fill, s.center]}>
+				<Spinner />
+			</View>
+		);
 
-  const toggleFlash = () => {
-    setFlash((current) => (current === 'off' ? 'on' : current === 'on' ? 'auto' : 'off'));
-  };
+	if (!perm.granted)
+		return (
+			<View style={[s.fill, { paddingTop: insets.top + 12, paddingHorizontal: 24 }]}>
+				<StatusBar style="light" />
+				<Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} style={s.round}>
+					<X size={20} color="#fff" />
+				</Pressable>
+				<View style={[s.center, { flex: 1, gap: 14 }]}>
+					<Camera size={36} color={color.amber} />
+					<KText v="title" center>
+						Allow the camera
+					</KText>
+					<KText v="small" center style={{ maxWidth: 320 }}>
+						Listing photos are taken in the app, at the property, so renters can trust they’re real.
+					</KText>
+					<Button title={perm.canAskAgain ? 'Allow camera' : 'Open Settings'} onPress={() => (perm.canAskAgain ? requestPerm() : Linking.openSettings())} />
+				</View>
+			</View>
+		);
 
-  const takePicture = async () => {
-    if (cameraRef.current) {
-      try {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        const photo = await cameraRef.current?.takePictureAsync({
-          // JPEG encoding quality only — resolution and the EXIF/GPS block below
-          // are untouched. 1.0 produced 3-8MB captures that time out on 3G; 0.7
-          // is visually near-identical at 1-2MB.
-          quality: 0.7,
-          exif: true,
-          additionalExif: location
-            ? {
-                GPSLatitude: Math.abs(location.coords.latitude),
-                GPSLongitude: Math.abs(location.coords.longitude),
-                GPSLatitudeRef: location.coords.latitude >= 0 ? 'N' : 'S',
-                GPSLongitudeRef: location.coords.longitude >= 0 ? 'E' : 'W',
-                GPSAltitude: location.coords.altitude || 0,
-                GPSSpeed: location.coords.speed || 0,
-                GPSTimeStamp: new Date().toISOString(),
-              }
-            : {},
-        });
+	const last = gallery[gallery.length - 1];
+	return (
+		<View style={s.fill}>
+			<StatusBar style="light" />
+			<CameraView ref={cam} style={StyleSheet.absoluteFill} facing={facing} flash={flash} />
 
-        if (photo) {
-          append(photo.uri);
-          if (multiple === 'false') {
-            galleryRedirect({ redirect: cast(redirect), fromCamera: true });
-          }
-        }
-      } catch (error) {
-        console.error('Error taking picture:', error);
-        Alert.alert('Error', 'Failed to take picture');
-      }
-    }
-  };
+			<View style={[s.top, { paddingTop: insets.top + 8 }]}>
+				<Pressable accessibilityRole="button" accessibilityLabel="Close camera" onPress={close} style={s.round}>
+					<X size={20} color="#fff" />
+				</Pressable>
+				<Pressable
+					accessibilityRole="button"
+					accessibilityLabel={gps === 'on' ? 'Location is on' : 'Location is off. Tap to fix'}
+					onPress={() => (gps === 'blocked' ? Linking.openSettings() : gps !== 'on' ? locate() : undefined)}
+					style={[s.chip, gps === 'on' ? { borderColor: 'rgba(60,203,142,0.5)' } : gps === 'finding' ? null : { borderColor: color.amberLine }]}
+				>
+					{gps === 'on' ? <MapPin size={13} color={color.success} /> : gps === 'finding' ? <Spinner /> : <MapPinOff size={13} color={color.amber} />}
+					<KText style={s.chipText}>{gps === 'on' ? `Location on${fix?.coords.accuracy ? ` · ±${Math.round(fix.coords.accuracy)} m` : ''}` : gps === 'finding' ? 'Finding location…' : 'No location — tap to fix'}</KText>
+				</Pressable>
+				{facing === 'back' ? (
+					<Pressable accessibilityRole="button" accessibilityLabel={`Flash ${flash}`} onPress={() => setFlash((f) => (f === 'off' ? 'on' : f === 'on' ? 'auto' : 'off'))} style={s.round}>
+						{flash === 'off' ? <ZapOff size={19} color="#fff" /> : <Zap size={19} color={color.amber} fill={flash === 'on' ? color.amber : 'none'} />}
+						{flash === 'auto' ? <KText style={s.auto}>A</KText> : null}
+					</Pressable>
+				) : (
+					<View style={{ width: 44 }} />
+				)}
+			</View>
 
-  const openGallery = () => {
-    if (gallery.length === 0) return;
+			{gps !== 'on' && gps !== 'finding' ? (
+				<View style={[s.warn, { top: insets.top + 64 }]}>
+					<KText v="xs" style={{ color: '#fff' }} center>
+						{needsLocation ? 'Room photos need your location. Turn it on to take photos.' : 'Photos taken without location can’t be checked, which can hold up verification.'}
+					</KText>
+				</View>
+			) : null}
 
-    galleryRedirect({ redirect: cast(redirect), fromCamera: true });
-  };
-
-  return (
-    <>
-      <StatusBar style="light" />
-      <DetailsLayout
-        contentStyles={{ paddingInline: 0 }}
-        backgroundStyles={{
-          backgroundColor: '#000000',
-        }}
-        background="transparent"
-        backButton="solid"
-      >
-        <View style={styles.cameraWrapper}>
-          <CameraView ref={cameraRef} style={styles.camera} facing={facing} flash={flash} />
-
-          <View style={styles.controlsOverlay} pointerEvents="box-none">
-            {facing === 'back' ? (
-              <Pressable
-                onPress={toggleFlash}
-                style={[styles.flipButton, { position: 'absolute', top: 60, right: 20 }]}
-                aria-label={`Flash ${flash}`}
-              >
-                {flash === 'off' ? (
-                  <ZapOff color="white" size={26} />
-                ) : (
-                  // Brand amber = active state; 'auto' shows an A badge.
-                  <>
-                    <Zap color="#FFA500" size={26} fill={flash === 'on' ? '#FFA500' : 'none'} />
-                    {flash === 'auto' ? (
-                      <ThemedText
-                        style={{
-                          position: 'absolute',
-                          top: 8,
-                          right: 10,
-                          fontSize: 11,
-                          color: '#FFA500',
-                        }}
-                      >
-                        A
-                      </ThemedText>
-                    ) : null}
-                  </>
-                )}
-              </Pressable>
-            ) : null}
-            <View style={styles.controls}>
-              <Pressable style={styles.galleryPreview} onPress={openGallery}>
-                <Image
-                  source={
-                    gallery.length > 0
-                      ? { uri: gallery[gallery.length - 1] }
-                      : require('@/assets/images/image-placeholder.jpg')
-                  }
-                  style={styles.galleryImage}
-                />
-              </Pressable>
-
-              <Pressable onPress={takePicture} style={styles.captureButtonOuter}>
-                <View style={styles.captureButtonInner} />
-              </Pressable>
-
-              <Pressable onPress={toggleCameraFacing} style={styles.flipButton}>
-                <GravityUiArrowsRotateRight color="white" size={32} />
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </DetailsLayout>
-    </>
-  );
+			<View style={[s.bottom, { paddingBottom: Math.max(insets.bottom, 16) + 12 }]}>
+				<Pressable accessibilityRole="button" accessibilityLabel={gallery.length ? `Review ${gallery.length} photos` : 'No photos yet'} disabled={!gallery.length} onPress={() => review({ redirect: cast(redirect), fromCamera: true })} style={s.thumb}>
+					{last ? <Image source={{ uri: last }} style={StyleSheet.absoluteFill} contentFit="cover" /> : null}
+					{gallery.length ? (
+						<View style={s.count}>
+							<KText style={{ fontFamily: font.bodyBold, fontSize: 11, color: color.onAmber }}>{gallery.length}</KText>
+						</View>
+					) : null}
+				</Pressable>
+				<Pressable accessibilityRole="button" accessibilityLabel="Take photo" onPress={shoot} disabled={busy} style={s.shutter} testID="shutter">
+					<View style={[s.shutterIn, busy && { opacity: 0.6 }]} />
+				</Pressable>
+				<Pressable accessibilityRole="button" accessibilityLabel="Switch camera" onPress={() => setFacing((f) => (f === 'back' ? 'front' : 'back'))} style={[s.round, { width: 56, height: 56, borderRadius: 28 }]}>
+					<RefreshCcw size={22} color="#fff" />
+				</Pressable>
+			</View>
+			{taken ? (
+				<View style={[s.done, { bottom: Math.max(insets.bottom, 16) + 112 }]}>
+					<Button title={`Review ${gallery.length} photo${gallery.length === 1 ? '' : 's'}`} size="sm" onPress={() => review({ redirect: cast(redirect), fromCamera: true })} />
+				</View>
+			) : null}
+		</View>
+	);
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  permissionContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  cameraWrapper: {
-    flex: 1,
-    position: 'relative',
-  },
-  camera: {
-    flex: 1,
-    width: '100%',
-  },
-  controlsOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end',
-  },
-  controls: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 30,
-    paddingBlock: 40,
-    backgroundColor: '#000',
-  },
-  galleryPreview: {
-    width: 60,
-    height: 60,
-    borderRadius: 999,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: 'white',
-  },
-  galleryImage: {
-    width: '100%',
-    height: '100%',
-  },
-  captureButtonOuter: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 4,
-    borderColor: 'white',
-  },
-  captureButtonInner: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: 'white',
-  },
-  flipButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  previewContainer: {
-    flex: 1,
-    position: 'relative',
-  },
-  preview: {
-    flex: 1,
-    width: '100%',
-  },
-  previewActions: {
-    position: 'absolute',
-    bottom: 40,
-    left: 20,
-    right: 20,
-    flexDirection: 'row',
-    gap: 16,
-  },
+const s = StyleSheet.create({
+	fill: { flex: 1, backgroundColor: '#000' },
+	center: { alignItems: 'center', justifyContent: 'center' },
+	top: { position: 'absolute', left: 0, right: 0, top: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
+	round: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' },
+	chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 32, borderRadius: radius.pill, backgroundColor: 'rgba(0,0,0,0.55)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' },
+	chipText: { fontFamily: font.bodyMedium, fontSize: 12, color: '#fff' },
+	auto: { position: 'absolute', right: 8, top: 6, fontSize: 10, color: color.amber, fontFamily: font.bodyBold },
+	warn: { position: 'absolute', left: 24, right: 24, padding: 10, borderRadius: radius.md, backgroundColor: 'rgba(0,0,0,0.6)' },
+	bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 32, paddingTop: 20, backgroundColor: 'rgba(0,0,0,0.55)' },
+	thumb: { width: 56, height: 56, borderRadius: radius.md, overflow: 'hidden', borderWidth: 2, borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.08)' },
+	count: { position: 'absolute', right: 3, top: 3, minWidth: 18, height: 18, paddingHorizontal: 4, borderRadius: 9, backgroundColor: color.amber, alignItems: 'center', justifyContent: 'center' },
+	shutter: { width: 80, height: 80, borderRadius: 40, borderWidth: 4, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+	shutterIn: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#fff' },
+	done: { position: 'absolute', alignSelf: 'center' }
 });

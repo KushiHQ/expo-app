@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { CheckCircle, RotateCcw, X, AlertTriangle, ChevronRight } from 'lucide-react-native';
 import { useShallow } from 'zustand/react/shallow';
+import { maxWidth, useLayout } from '@/lib/k/layout';
 import { Fonts } from '@/lib/constants/theme';
 import { useUploadStore, type ImageUploadStatus } from '@/lib/stores/uploads';
 
@@ -113,6 +114,8 @@ function UploadTaskList({
 
 export default function UploadProgress() {
   const insets = useSafeAreaInsets();
+  const layout = useLayout();
+  const side = layout.compact ? 0 : Math.max(24, (layout.width - maxWidth.panel) / 2);
 
   // Derived counts (useShallow): the toast re-renders only when a DISPLAYED
   // number changes — the previous whole-map subscription re-rendered this
@@ -234,9 +237,9 @@ export default function UploadProgress() {
         </Animated.View>
       </View>
 
-      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)} supportedOrientations={layout.isTablet ? ['portrait', 'landscape'] : undefined}>
         <Pressable style={styles.backdrop} onPress={() => setOpen(false)} />
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
+        <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }, !layout.compact && { left: side, right: side, bottom: insets.bottom + 24, paddingBottom: 20, borderRadius: 28 }]}>
           <View style={styles.handle} />
           <View style={styles.sheetHead}>
             <Text style={styles.sheetTitle}>Photo uploads</Text>

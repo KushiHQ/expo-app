@@ -55,6 +55,17 @@ jobs:
       - name: Create .env file
         run: echo '${{ secrets.ENV_FILE }}' > .env
 
+      - name: Point at the kushi.ng production API
+        run: |
+          grep -vE '^(EXPO_PUBLIC_GRAPHQL_URL|EXPO_PUBLIC_GRAPHQL_SUBSCRIPTION_URL|EXPO_PUBLIC_SHARE_PROPERTY_URL|EXPO_PUBLIC_SHARE_HOST_URL)=' .env > .env.tmp || true
+          mv .env.tmp .env
+          cat >> .env <<'ENV'
+          EXPO_PUBLIC_GRAPHQL_URL=https://housing.api.kushi.ng/graphql
+          EXPO_PUBLIC_GRAPHQL_SUBSCRIPTION_URL=wss://housing.api.kushi.ng/ws
+          EXPO_PUBLIC_SHARE_PROPERTY_URL=https://housing.kushi.ng/homes
+          EXPO_PUBLIC_SHARE_HOST_URL=https://housing.kushi.ng/host/<slug>
+          ENV
+
       - name: Decode Google Services JSON
         run: echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 --decode > google-services.json
 

@@ -6,6 +6,7 @@ import { Bell, Map, Search, SlidersHorizontal, X } from 'lucide-react-native';
 import { Button, Chip, Choice, Empty, Eyebrow, IconButton, KText, Logo, Sheet, Skeleton, Spinner } from '@/components/k';
 import { ListingCard } from '@/components/k/listing-card';
 import { color, font, gutter, radius } from '@/lib/k/theme';
+import { centered, itemWidth, useLayout } from '@/lib/k/layout';
 import { naira } from '@/lib/k/format';
 import { TIERS, TIER_ORDER } from '@/lib/k/tiers';
 import { useHostingFilterStore } from '@/lib/stores/hostings';
@@ -32,6 +33,12 @@ export default function Explore() {
 	const [searchOpen, setSearchOpen] = useState(false);
 	const [filtersOpen, setFiltersOpen] = useState(false);
 	const list = useRef<FlatList>(null);
+	// Tablets: a 2–3 column grid inside a centered max-width column. Phones keep one card per row.
+	const layout = useLayout();
+	const g = layout.compact ? gutter : layout.gutter;
+	const cols = layout.columns;
+	const colGap = 24;
+	const cardWidth = layout.compact ? undefined : itemWidth(layout.contentWidth - g * 2, cols, colGap);
 
 	const vars = useMemo(() => ({ filters: { ...filter, publishStatus: PublishStatus.Live, onSale: true } }), [filter]);
 	const { items, fetching, loadMore, hasNextPage, refresh, setVariables, showInitialSkeleton, showEmpty } = useInfiniteQuery(useHostingsQuery, {
@@ -69,7 +76,7 @@ export default function Explore() {
 					Find a home you can <KText v="display" c="amber">trust.</KText>
 				</KText>
 			</View>
-			<Pressable onPress={() => setSearchOpen(true)} style={s.search} accessibilityRole="search" testID="search">
+			<Pressable onPress={() => setSearchOpen(true)} style={[s.search, !layout.compact && { maxWidth: 720 }]} accessibilityRole="search" testID="search">
 				<Search size={18} color={color.muted} />
 				<View style={{ flex: 1 }}>
 					<KText v="bodyStrong" numberOfLines={1}>
@@ -85,8 +92,8 @@ export default function Explore() {
 					</Pressable>
 				) : null}
 			</Pressable>
-			<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: gutter }} style={{ marginHorizontal: -gutter }} contentInset={{ left: gutter }}>
-				<View style={{ width: gutter - 8 }} />
+			<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: g }} style={{ marginHorizontal: -g }} contentInset={{ left: g }}>
+				<View style={{ width: g - 8 }} />
 				<Chip
 					label={active ? `Filters · ${active}` : 'Filters'}
 					on={!!active}
@@ -106,12 +113,15 @@ export default function Explore() {
 		<View style={{ flex: 1, backgroundColor: color.bg, paddingTop: insets.top }}>
 			<FlatList
 				ref={list}
+				key={`grid-${cols}`}
+				numColumns={cols}
+				columnWrapperStyle={cols > 1 ? { gap: colGap } : undefined}
 				data={showInitialSkeleton ? [] : items}
 				keyExtractor={(h) => h.id}
-				renderItem={({ item }) => <ListingCard h={item} />}
+				renderItem={({ item }) => <ListingCard h={item} width={cardWidth} />}
 				ListHeaderComponent={header}
-				ItemSeparatorComponent={() => <View style={{ height: 28 }} />}
-				contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: 110, gap: 0 }}
+				ItemSeparatorComponent={() => <View style={{ height: layout.compact ? 28 : 36 }} />}
+				contentContainerStyle={layout.compact ? { paddingHorizontal: gutter, paddingBottom: 110, gap: 0 } : [{ paddingHorizontal: g, paddingBottom: 110, paddingTop: 8 }, centered(layout.contentWidth)]}
 				onEndReached={() => hasNextPage && loadMore()}
 				onEndReachedThreshold={0.6}
 				refreshing={false}
@@ -119,10 +129,10 @@ export default function Explore() {
 				showsVerticalScrollIndicator={false}
 				ListEmptyComponent={
 					showInitialSkeleton ? (
-						<View style={{ gap: 28 }}>
-							{[0, 1].map((i) => (
-								<View key={i} style={{ gap: 10 }}>
-									<Skeleton style={{ height: 250, borderRadius: radius.lg }} />
+						<View style={layout.compact ? { gap: 28 } : { flexDirection: 'row', flexWrap: 'wrap', gap: colGap, rowGap: 36 }}>
+							{(layout.compact ? [0, 1] : Array.from({ length: cols * 2 }, (_, i) => i)).map((i) => (
+								<View key={i} style={[{ gap: 10 }, cardWidth ? { width: cardWidth } : null]}>
+									<Skeleton style={{ height: cardWidth ? Math.round(cardWidth * 0.72) : 250, borderRadius: radius.lg }} />
 									<Skeleton style={{ height: 16, width: '60%' }} />
 									<Skeleton style={{ height: 14, width: '40%' }} />
 								</View>

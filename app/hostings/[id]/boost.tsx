@@ -1,214 +1,115 @@
+import { useEffect, useRef, useState } from 'react';
+import { View } from 'react-native';
 import { PayWithFlutterwave } from 'flutterwave-react-native';
-import { Pressable, View } from 'react-native';
-import React from 'react';
-import { useLocalSearchParams } from 'expo-router';
-import { useRouter } from '@/lib/hooks/use-router';
-import DetailsLayout from '@/components/layouts/details';
-import SectionCard from '@/components/molecules/m-section-card';
-import ThemedText from '@/components/atoms/a-themed-text';
-import Button from '@/components/atoms/a-button';
-import LoadingModal from '@/components/atoms/a-loading-modal';
-import SuccessModal from '@/components/organisms/o-success-modal';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { hexToRgba } from '@/lib/utils/colors';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Rocket, TrendingUp } from 'lucide-react-native';
+import { Button, Choice, Empty, Header, KText, Notice, Screen, Sheet, Skeleton } from '@/components/k';
+import { color } from '@/lib/k/theme';
+import { naira } from '@/lib/k/format';
+import { cleanError } from '@/lib/k/use-listing-step';
 import { useUser } from '@/lib/hooks/user';
 import { toast } from '@/lib/hooks/use-toast';
-import { handleError } from '@/lib/utils/error';
-import { Check, Rocket } from 'lucide-react-native';
-import {
-  ListingTier,
-  TransactionStatus,
-  useInitiateListingBoostMutation,
-  useListingBoostCatalogueQuery,
-  useVerifyListingBoostMutation,
-} from '@/lib/services/graphql/generated';
+import { ListingTier, TransactionStatus, useHostingQuery, useInitiateListingBoostMutation, useListingBoostCatalogueQuery, useVerifyListingBoostMutation } from '@/lib/services/graphql/generated';
 
-export default function BoostListing() {
-  const { id } = useLocalSearchParams();
-  const router = useRouter();
-  const colors = useThemeColors();
-  const user = useUser();
+/** Pay to rank a listing higher in search and the feed for a set number of days. */
+export default function Boost() {
+	const { id } = useLocalSearchParams<{ id: string }>();
+	const user = useUser();
+	const [{ data, fetching, error }, refetch] = useListingBoostCatalogueQuery();
+	const [{ data: hd }] = useHostingQuery({ variables: { hostingId: String(id) } });
+	const options = data?.listingBoostCatalogue ?? [];
+	const [tier, setTier] = useState<ListingTier | null>(null);
+	const [ref, setRef] = useState('');
+	const [amount, setAmount] = useState(0);
+	const [pendingOpen, setPendingOpen] = useState(false);
+	const [success, setSuccess] = useState(false);
+	const openPay = useRef<(() => void) | null>(null);
+	const [{ fetching: starting }, initiate] = useInitiateListingBoostMutation();
+	const [{ fetching: verifying }, verify] = useVerifyListingBoostMutation();
+	const chosen = options.find((o) => o.tier === tier);
+	const live = hd?.hosting?.publishStatus === 'LIVE';
 
-  const [{ data: catalogueData }] = useListingBoostCatalogueQuery();
-  const options = catalogueData?.listingBoostCatalogue ?? [];
+	// Open Flutterwave once `initiate` has minted a fresh reference.
+	useEffect(() => {
+		if (pendingOpen && openPay.current) {
+			openPay.current();
+			setPendingOpen(false);
+		}
+	}, [ref, pendingOpen]);
 
-  const [selectedTier, setSelectedTier] = React.useState<ListingTier | null>(null);
-  const [activeRef, setActiveRef] = React.useState('');
-  const [amount, setAmount] = React.useState(0);
-  const [pendingOpen, setPendingOpen] = React.useState(false);
-  const [success, setSuccess] = React.useState(false);
-  const flutterwaveOpen = React.useRef<(() => void) | null>(null);
+	function onRedirect(r: { status: string; tx_ref: string }) {
+		if (r.status === 'cancelled') return toast.show({ type: 'info', text2: 'Payment cancelled. You haven’t been charged.' });
+		verify({ reference: ref }).then((res) => {
+			if (res.error) return toast.show({ type: 'error', text1: 'We couldn’t confirm the payment', text2: cleanError(res.error.message) });
+			const tx = res.data?.verifyListingBoost;
+			if (tx?.data?.status === TransactionStatus.Success) setSuccess(true);
+			else toast.show({ type: 'info', text1: 'Payment pending', text2: tx?.message ?? 'We’ll apply the boost once the payment clears.' });
+		});
+	}
 
-  const [{ fetching: initiating }, initiateBoost] = useInitiateListingBoostMutation();
-  const [{ fetching: verifying }, verifyBoost] = useVerifyListingBoostMutation();
+	function pay() {
+		if (!tier) return;
+		initiate({ hostingId: String(id), tier }).then((res) => {
+			if (res.error) return toast.show({ type: 'error', text1: 'Couldn’t start the payment', text2: cleanError(res.error.message) });
+			const tx = res.data?.initiateListingBoost?.data;
+			if (!tx?.reference) return;
+			setRef(tx.reference);
+			setAmount(Number(tx.amount));
+			setPendingOpen(true);
+		});
+	}
 
-  const selectedOption = options.find((o) => o.tier === selectedTier);
+	return (
+		<Screen
+			width="form"
+			header={<Header eyebrow={hd?.hosting?.title ?? 'Listing'} title="Boost" />}
+			contentStyle={{ paddingTop: 20 }}
+			footer={
+				<PayWithFlutterwave
+					onRedirect={onRedirect}
+					options={{
+						authorization: process.env.EXPO_PUBLIC_FLUTTERWAVE_PUBLIC_KEY ?? '',
+						amount,
+						tx_ref: ref,
+						currency: 'NGN',
+						customer: { email: user.user.email ?? '', name: user.user.user?.profile.fullName },
+						customizations: { title: 'Kushi Listing Boost', description: chosen ? `${chosen.label} boost` : 'Boost your listing', logo: 'https://res.cloudinary.com/dev-media/image/upload/v1772369352/logo_miq5eq.png' }
+					}}
+					customButton={(p) => {
+						openPay.current = p.onPress;
+						return <Button title={chosen ? `Pay ${naira(Number(chosen.price))}` : 'Choose a boost'} size="lg" block disabled={!tier || !live || p.disabled} loading={starting || verifying} onPress={pay} />;
+					}}
+				/>
+			}
+		>
+			<View style={{ gap: 8 }}>
+				<Rocket size={26} color={color.amber} />
+				<KText v="title">Get seen by more renters</KText>
+				<KText v="small">A boost puts this listing nearer the top of search and the home feed for the days you choose. It doesn’t change your price or verification.</KText>
+			</View>
+			{!live && hd ? <Notice tone="warn" title="Publish first">Only live listings can be boosted.</Notice> : null}
+			{fetching && !data ? (
+				<View style={{ gap: 10 }}>
+					<Skeleton style={{ height: 72 }} />
+					<Skeleton style={{ height: 72 }} />
+				</View>
+			) : error ? (
+				<Empty eyebrow="Offline" title="Boosts didn’t load" body={cleanError(error.message)} action="Try again" onAction={() => refetch({ requestPolicy: 'network-only' })} />
+			) : (
+				options.map((o) => <Choice key={o.tier} title={`${o.label} · ${naira(Number(o.price))}`} detail={`${o.durationDays} days${o.description ? ` — ${o.description}` : ''}`} on={tier === o.tier} onPress={() => setTier(o.tier)} />)
+			)}
+			<KText v="xs">Payment is handled securely by Flutterwave.</KText>
 
-  // Open Flutterwave once a fresh reference has been minted by `initiate`.
-  React.useEffect(() => {
-    if (pendingOpen && flutterwaveOpen.current) {
-      flutterwaveOpen.current();
-      setPendingOpen(false);
-    }
-  }, [activeRef, pendingOpen]);
-
-  function handleVerify(data: { status: string; tx_ref: string }) {
-    if (data.status === 'cancelled') return;
-    verifyBoost({ reference: activeRef }).then((res) => {
-      if (res.error) return handleError(res.error);
-      const tx = res.data?.verifyListingBoost;
-      if (tx) {
-        toast.show({ type: 'success', text1: 'Success', text2: tx.message });
-        if (tx.data?.status === TransactionStatus.Success) setSuccess(true);
-      }
-    });
-  }
-
-  function handlePay() {
-    if (!selectedTier) return;
-    initiateBoost({ hostingId: String(id), tier: selectedTier }).then((res) => {
-      if (res.error) return handleError(res.error);
-      const tx = res.data?.initiateListingBoost?.data;
-      if (!tx?.reference) return;
-      setActiveRef(tx.reference);
-      setAmount(Number(tx.amount));
-      setPendingOpen(true);
-    });
-  }
-
-  return (
-    <>
-      <DetailsLayout
-        title="Boost Listing"
-        footer={
-          <View style={{ padding: 16 }}>
-            <PayWithFlutterwave
-              onRedirect={handleVerify}
-              options={{
-                authorization: process.env.EXPO_PUBLIC_FLUTTERWAVE_PUBLIC_KEY ?? '',
-                amount,
-                tx_ref: activeRef,
-                currency: 'NGN',
-                customer: {
-                  email: user.user.email ?? '',
-                  name: user.user.user?.profile.fullName,
-                },
-                customizations: {
-                  title: 'Kushi Listing Boost',
-                  description: selectedOption ? `${selectedOption.label} boost` : 'Boost your listing',
-                  logo: 'https://res.cloudinary.com/dev-media/image/upload/v1772369352/logo_miq5eq.png',
-                },
-              }}
-              customButton={(props) => {
-                flutterwaveOpen.current = props.onPress;
-                return (
-                  <Button
-                    onPress={handlePay}
-                    disabled={!selectedTier || initiating || props.disabled}
-                    type="primary"
-                  >
-                    <ThemedText content="primary">
-                      {initiating
-                        ? 'Preparing…'
-                        : selectedOption
-                          ? `Boost for ₦${Number(selectedOption.price).toLocaleString()}`
-                          : 'Select a tier'}
-                    </ThemedText>
-                  </Button>
-                );
-              }}
-            />
-          </View>
-        }
-      >
-        <View style={{ gap: 20, paddingBottom: 24 }}>
-          <SectionCard
-            icon={<Rocket size={16} color={colors.primary} />}
-            title="Boost your listing"
-            subtitle="Rank higher in search and the feed for a set period"
-          >
-            <View style={{ gap: 10 }}>
-              {options.map((opt) => {
-                const isSel = selectedTier === opt.tier;
-                return (
-                  <Pressable
-                    key={opt.tier}
-                    onPress={() => setSelectedTier(opt.tier)}
-                    style={{
-                      borderRadius: 16,
-                      padding: 14,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 12,
-                      backgroundColor: isSel
-                        ? hexToRgba(colors.primary, 0.1)
-                        : hexToRgba(colors.text, 0.04),
-                      boxShadow: isSel ? `0 0 0 1.5px ${colors.primary}` : undefined,
-                    }}
-                  >
-                    {/* Left: the tier's text content. */}
-                    <View style={{ flex: 1, gap: 4 }}>
-                      <ThemedText type="semibold" style={{ fontSize: 15 }}>
-                        {opt.label}
-                      </ThemedText>
-                      {opt.description ? (
-                        <ThemedText
-                          style={{
-                            fontSize: 12,
-                            lineHeight: 18,
-                            color: hexToRgba(colors.text, 0.55),
-                          }}
-                        >
-                          {opt.description}
-                        </ThemedText>
-                      ) : null}
-                      <ThemedText style={{ fontSize: 11, color: hexToRgba(colors.text, 0.4) }}>
-                        {opt.durationDays} days
-                      </ThemedText>
-                    </View>
-
-                    {/* Right: price sits flush to the edge with the circular
-                        selection indicator (matches SelectOption) directly below
-                        it — the whole group vertically centered on the card. */}
-                    <View style={{ alignItems: 'flex-end', gap: 10 }}>
-                      <ThemedText type="semibold" style={{ fontSize: 15, color: colors.primary }}>
-                        ₦{Number(opt.price).toLocaleString()}
-                      </ThemedText>
-                      <View
-                        style={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: 12,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          backgroundColor: isSel ? colors.primary : hexToRgba(colors.text, 0.08),
-                        }}
-                      >
-                        {isSel ? (
-                          <Check size={13} color={colors['primary-content']} strokeWidth={3} />
-                        ) : null}
-                      </View>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </SectionCard>
-        </View>
-      </DetailsLayout>
-
-      <SuccessModal
-        open={success}
-        onClose={() => setSuccess(false)}
-        title="Listing Boosted"
-        description={`Your listing now has a ${selectedOption?.label ?? ''} boost and will rank higher for ${selectedOption?.durationDays ?? 30} days.`}
-        action={
-          <Button onPress={() => router.back()} type="primary" className="w-60">
-            <ThemedText content="primary">Done</ThemedText>
-          </Button>
-        }
-      />
-      <LoadingModal visible={initiating || verifying} />
-    </>
-  );
+			<Sheet open={success} onClose={() => setSuccess(false)} title="Boost is on" eyebrow="Paid">
+				<View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+					<TrendingUp size={18} color={color.success} />
+					<KText v="small" style={{ flex: 1 }}>
+						Your {chosen?.label ?? ''} boost runs for {chosen?.durationDays ?? 30} days. Check Insights to see the difference.
+					</KText>
+				</View>
+				<Button title="See insights" block onPress={() => { setSuccess(false); router.replace(`/hostings/${id}/insights`); }} />
+				<Button title="Done" variant="ghost" block onPress={() => { setSuccess(false); router.back(); }} />
+			</Sheet>
+		</Screen>
+	);
 }
