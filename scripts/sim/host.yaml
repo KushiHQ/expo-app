@@ -1,0 +1,262 @@
+# Native iOS walk through the listing set-up flow for CI (sim-host.yml).
+# Signs in as the QA guest (who has a draft listing), switches to hosting and
+# screenshots each screen. Never publishes or sends a verification request.
+# iOS Maestro has no "back": screens are left with the in-app Back button, or by
+# relaunching where leaving would save (location pins itself; terms seed themselves).
+appId: com.kushicorp.kushi
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Start exploring"
+    timeout: 180000
+- tapOn: "Sign in"
+- tapOn:
+    id: "email"
+- inputText: "qa.guest@kushi.test"
+- tapOn:
+    id: "password"
+- inputText: "KushiQA-2026!"
+- pressKey: Enter
+- extendedWaitUntil:
+    visible:
+      id: "tab-index"
+    timeout: 90000
+- tapOn:
+    id: "tab-you"
+- tapOn: "Switch to hosting.*"
+- extendedWaitUntil:
+    visible:
+      id: "tab-listings"
+    timeout: 30000
+- tapOn:
+    id: "tab-listings"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/01-listings
+
+# Start screen (KYC, drafts, what you need)
+- tapOn: "New"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/02-start
+- scroll
+- takeScreenshot: shots/03-start-scrolled
+- scrollUntilVisible:
+    element:
+      id: "draft-0"
+    centerElement: true
+    visibilityPercentage: 100
+    direction: UP
+    timeout: 10000
+- tapOn:
+    id: "draft-0"
+
+# Hub
+- extendedWaitUntil:
+    visible: "(?i).*(set-up|listing details).*"
+    timeout: 30000
+- waitForAnimationToEnd
+- takeScreenshot: shots/04-hub
+- scroll
+- takeScreenshot: shots/05-hub-scrolled
+- scroll
+- takeScreenshot: shots/06-hub-bottom
+
+# Step 1 — basics
+- scrollUntilVisible:
+    element:
+      id: "hub-step-basics"
+    centerElement: true
+    visibilityPercentage: 100
+    direction: UP
+    timeout: 10000
+- tapOn:
+    id: "hub-step-basics"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/10-basics
+- scroll
+- takeScreenshot: shots/11-basics-scrolled
+- tapOn:
+    id: "field-property-type"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: shots/12-type-picker
+- tapOn:
+    text: "Close"
+    optional: true
+- tapOn: "Back"
+
+# Step 2 — photos and video
+- scrollUntilVisible:
+    element:
+      id: "hub-step-photos"
+    centerElement: true
+    visibilityPercentage: 100
+    timeout: 10000
+- tapOn:
+    id: "hub-step-photos"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/20-photos
+- scroll
+- takeScreenshot: shots/21-photos-scrolled
+- scroll
+- takeScreenshot: shots/22-photos-video
+- tapOn:
+    id: "add-space"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: shots/23-add-space
+- tapOn:
+    text: "Close"
+    optional: true
+- tapOn: "Back"
+
+# Step 4 — features (not for land)
+- scrollUntilVisible:
+    element:
+      id: "hub-step-features"
+    centerElement: true
+    visibilityPercentage: 100
+    timeout: 10000
+    optional: true
+- tapOn:
+    id: "hub-step-features"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/40-features
+- scroll
+- takeScreenshot: shots/41-features-scrolled
+- tapOn:
+    text: "Back"
+    optional: true
+
+# Step 5 — price
+- scrollUntilVisible:
+    element:
+      id: "hub-step-price"
+    centerElement: true
+    visibilityPercentage: 100
+    timeout: 10000
+- tapOn:
+    id: "hub-step-price"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/50-price
+- scroll
+- takeScreenshot: shots/51-price-scrolled
+- tapOn:
+    id: "add-bank"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: shots/52-add-bank
+- tapOn:
+    text: "Close"
+    optional: true
+- tapOn: "Back"
+
+# Step 7 — name and publish (not pressed)
+- scrollUntilVisible:
+    element:
+      id: "hub-step-publish"
+    centerElement: true
+    visibilityPercentage: 100
+    timeout: 10000
+- tapOn:
+    id: "hub-step-publish"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/70-publish
+- scroll
+- takeScreenshot: shots/71-publish-scrolled
+- scroll
+- takeScreenshot: shots/72-publish-bottom
+- tapOn: "Back"
+
+# Verification
+- scrollUntilVisible:
+    element:
+      text: "Verification.*"
+    centerElement: true
+    visibilityPercentage: 100
+    timeout: 10000
+    optional: true
+- tapOn:
+    text: "Verification.*"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/80-verification
+- scroll
+- takeScreenshot: shots/81-verification-scrolled
+
+# Step 3 — location (relaunch afterwards so the auto-pin isn't saved)
+- stopApp
+- launchApp
+- runFlow:
+    file: host-open-draft.yaml
+- scrollUntilVisible:
+    element:
+      id: "hub-step-location"
+    centerElement: true
+    visibilityPercentage: 100
+    timeout: 10000
+- tapOn:
+    id: "hub-step-location"
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: shots/30-location
+- scroll
+- takeScreenshot: shots/31-location-scrolled
+
+# Step 6 — ownership and agreement (rent, Kushi-managed only)
+- stopApp
+- launchApp
+- runFlow:
+    file: host-open-draft.yaml
+- scrollUntilVisible:
+    element:
+      id: "hub-step-agreement"
+    centerElement: true
+    visibilityPercentage: 100
+    timeout: 10000
+    optional: true
+- tapOn:
+    id: "hub-step-agreement"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: shots/60-agreement
+- scroll
+- takeScreenshot: shots/61-agreement-scrolled
+- scroll
+- takeScreenshot: shots/62-agreement-terms
+- scroll
+- takeScreenshot: shots/63-agreement-bottom
+
+# Camera (permission granted at launch)
+- stopApp
+- launchApp
+- runFlow:
+    file: host-open-draft.yaml
+- scrollUntilVisible:
+    element:
+      id: "hub-step-photos"
+    centerElement: true
+    visibilityPercentage: 100
+    timeout: 10000
+- tapOn:
+    id: "hub-step-photos"
+- waitForAnimationToEnd:
+    timeout: 8000
+- tapOn:
+    id: "add-photos"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/90-camera

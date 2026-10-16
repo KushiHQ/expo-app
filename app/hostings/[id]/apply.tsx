@@ -4,7 +4,7 @@
  * Collects guestFormData, which the backend requires before it accepts a submission.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -15,7 +15,10 @@ import { DateField } from '@/components/k/date-field';
 import { QuoteLines, useQuote } from '@/components/k/quote';
 import { IdentityCheck } from '@/components/k/verify/identity';
 import { PhoneStep } from '@/components/k/verify/nin-phone';
-import SignaturePad from '@/components/molecules/m-signature-pad';
+import { SignaturePad } from '@/components/k/signature';
+import { NEEDS_GUARANTOR } from '@/lib/k/booking';
+import { centered, useLayout } from '@/lib/k/layout';
+import { usePropertyTypeConfig } from '@/lib/hooks/use-property-type-config';
 import { color, gutter, radius } from '@/lib/k/theme';
 import { date, duration, naira, perInterval, place } from '@/lib/k/format';
 import { sortGuestTenancyAggreement } from '@/lib/k/agreement/application';
@@ -83,10 +86,15 @@ const REL = [
 export default function Apply() {
 	const { id, periods: p0 } = useLocalSearchParams<{ id: string; periods?: string }>();
 	const insets = useSafeAreaInsets();
+	const layout = useLayout();
+	const column = centered(layout.max('form'));
 	const me = useUserStore((s) => s.user.user);
 	const [{ data: hd }] = useHostingQuery({ variables: { hostingId: id, pagination: { limit: 1, offset: 0 } } });
 	const h = hd?.hosting;
 	const interval = h?.paymentInterval ?? 'ANUALLY';
+	// Commercial tenants have no "household"; the server accepts it missing for them.
+	const { useClassFor } = usePropertyTypeConfig();
+	const commercial = useClassFor(h?.propertyType) === 'commercial';
 	const needsKyc = !me?.kyc?.ninVerified;
 	const STEPS: Step[] = needsKyc ? ['kyc', 'details', 'about', 'sign', 'review'] : ['details', 'about', 'sign', 'review'];
 	const LABEL: Record<Step, string> = { kyc: 'Verify', details: 'Details', about: 'About you', sign: 'Sign', review: 'Submit', done: 'Done' };
@@ -120,6 +128,7 @@ export default function Apply() {
 	const [gRel, setGRel] = useState<Rel | null>(null);
 	const [gName, setGName] = useState('');
 	const [gPhone, setGPhone] = useState('');
+	const [gAddress, setGAddress] = useState('');
 	const [consent, setConsent] = useState(false);
 	const [consentData, setConsentData] = useState(false);
 	const [otpOpen, setOtpOpen] = useState(false);
@@ -145,6 +154,7 @@ export default function Apply() {
 			setGRel(g.guarantorRelationships ?? null);
 			setGName(g.guarantorName ?? '');
 			setGPhone(g.guarantorPhone ?? '');
+			setGAddress(g.guarantorAddress ?? '');
 			setGuar(!!g.guarantorRelationships);
 		}
 		if (g && a.fullName && a.phoneNumber && a.correspondenceAddress) setStep('sign');
@@ -166,10 +176,11 @@ export default function Apply() {
 		? {
 				employmentStatus: emp,
 				incomeRanges: needsIncome ? inc : null,
-				occupancyTypes: occ,
+				occupancyTypes: commercial ? null : occ,
 				guarantorRelationships: guar ? gRel : null,
 				guarantorName: guar ? gName || null : null,
-				guarantorPhone: guar ? gPhone || null : null
+				guarantorPhone: guar ? gPhone || null : null,
+				guarantorAddress: guar ? gAddress.trim() || null : null
 			}
 		: null;
 	const appView = { ...(app ?? {}), fullName, email, correspondenceAddress: address, commencementDate: start, intervalMultiplier: periods, guestFormData };
@@ -218,15 +229,17 @@ export default function Apply() {
 	}
 
 	const detailsOk = fullName.trim().split(/\s+/).length >= 2 && /.+@.+\..+/.test(email) && !!phone && address.trim().length >= 8 && !!start;
-	const aboutOk = !!emp && (!needsIncome || !!inc) && !!occ && (!guar || (!!gRel && gName.trim().length > 2 && gPhone.replace(/\D/g, '').length >= 10));
+	// Kushi's risk check declines students, corps members and people between jobs who have no guarantor.
+	const mustGuarantee = !!emp && NEEDS_GUARANTOR.includes(emp);
+	const aboutOk = !!emp && (!needsIncome || !!inc) && (commercial || !!occ) && (!mustGuarantee || guar) && (!guar || (!!gRel && gName.trim().length > 2 && gPhone.replace(/\D/g, '').length >= 10));
 	const signature = guest?.authGuest?.signature?.secureUrl ?? guest?.authGuest?.signature?.publicUrl;
 	const signOk = !!signature && consent && consentData && !!agreement;
 	const alreadyApplied = !!app && app.status !== 'IN_PROGRESS' && app.status !== 'CANCELLED';
 
 	if (step === 'done')
 		return (
-			<View style={{ flex: 1, backgroundColor: color.bg, paddingTop: insets.top + 40, paddingHorizontal: gutter, gap: 18 }}>
-				<Animated.View entering={FadeIn.duration(500)} style={{ gap: 16 }}>
+			<ScrollView style={{ flex: 1, backgroundColor: color.bg }} contentContainerStyle={{ paddingTop: insets.top + 40, paddingBottom: insets.bottom + 24, paddingHorizontal: gutter }}>
+				<Animated.View entering={FadeIn.duration(500)} style={[{ gap: 16 }, column]} testID="apply-done">
 					<View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: color.amberSoft, alignItems: 'center', justifyContent: 'center' }}>
 						<PartyPopper size={28} color={color.amber} />
 					</View>
@@ -249,17 +262,17 @@ export default function Apply() {
 							</View>
 						</View>
 					))}
-					<Button title="Track your application" size="lg" block onPress={() => router.replace('/trips')} />
+					<Button title="Track your application" size="lg" block onPress={() => router.replace(app ? `/trips/${app.id}` : '/trips')} />
 					<Button title="Keep exploring" variant="ghost" size="lg" block onPress={() => router.replace('/')} />
 				</Animated.View>
-			</View>
+			</ScrollView>
 		);
 
 	return (
-		<View style={{ flex: 1, backgroundColor: color.bg }}>
+		<KeyboardAvoidingView style={{ flex: 1, backgroundColor: color.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
 			<Header eyebrow="Apply to rent" title={h?.title ?? 'Application'} />
 			{/* progress */}
-			<View style={{ flexDirection: 'row', gap: 6, paddingHorizontal: gutter, paddingVertical: 12 }}>
+			<View style={[{ flexDirection: 'row', gap: 6, paddingHorizontal: gutter, paddingVertical: 12 }, column]} accessibilityLabel={`Step ${idx + 1} of ${STEPS.length}: ${LABEL[step]}`}>
 				{STEPS.map((s, i) => (
 					<View key={s} style={{ flex: 1, gap: 6 }}>
 						<View style={{ height: 3, borderRadius: 2, backgroundColor: i <= idx ? color.amber : color.line2 }} />
@@ -269,7 +282,7 @@ export default function Apply() {
 					</View>
 				))}
 			</View>
-			<ScrollView ref={scroll} contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: 140, gap: 20 }} keyboardShouldPersistTaps="handled">
+			<ScrollView ref={scroll} contentContainerStyle={[{ paddingHorizontal: gutter, paddingBottom: 40, gap: 20 }, column]} keyboardShouldPersistTaps="handled">
 				{h ? (
 					<View style={{ flexDirection: 'row', gap: 12, alignItems: 'center', padding: 10, borderRadius: radius.md, borderWidth: 1, borderColor: color.line, backgroundColor: color.bg2 }}>
 						<Photo assetId={h.coverImage?.asset?.id} w={200} h={200} style={{ width: 56, height: 56 }} />
@@ -290,7 +303,7 @@ export default function Apply() {
 						<Button title="Try again" variant="ghost" onPress={boot} />
 					</>
 				) : alreadyApplied ? (
-					<Empty eyebrow="Already applied" title="Your application is in" body="Follow its status, message the host and pay once you’re accepted." action="Go to your homes" onAction={() => router.replace('/trips')} />
+					<Empty eyebrow="Already applied" title="Your application is in" body="Follow its status, message the host and pay once you’re accepted." action="See where it stands" onAction={() => router.replace(app ? `/trips/${app.id}` : '/trips')} />
 				) : step === 'kyc' ? (
 					<Animated.View entering={FadeIn} style={{ gap: 14 }}>
 						<KText v="title">First, verify it’s you</KText>
@@ -330,7 +343,7 @@ export default function Apply() {
 						</View>
 						<KText v="label">What do you do?</KText>
 						{EMP.map((o) => (
-							<Choice key={o.v} title={o.l} detail={o.d} on={emp === o.v} onPress={() => setEmp(o.v)} />
+							<Choice key={o.v} title={o.l} detail={o.d} on={emp === o.v} onPress={() => (setEmp(o.v), NEEDS_GUARANTOR.includes(o.v) && setGuar(true))} />
 						))}
 						{needsIncome ? (
 							<>
@@ -342,18 +355,27 @@ export default function Apply() {
 								</View>
 							</>
 						) : null}
-						<KText v="label">Who’ll live here?</KText>
-						<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-							{OCC.map((o) => (
-								<Chip key={o.v} label={o.l} on={occ === o.v} onPress={() => setOcc(o.v)} />
-							))}
-						</View>
-						{h?.maxOccupants ? <KText v="xs">This home allows up to {h.maxOccupants} people.</KText> : null}
-						<Check on={guar} onPress={() => setGuar((g) => !g)}>
-							<KText v="smallStrong">Add a guarantor</KText>
-							<KText v="xs">Optional, but it strengthens your application.</KText>
+						{commercial ? null : (
+							<>
+								<KText v="label">Who’ll live here?</KText>
+								<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+									{OCC.map((o) => (
+										<Chip key={o.v} label={o.l} on={occ === o.v} onPress={() => setOcc(o.v)} />
+									))}
+								</View>
+								{h?.maxOccupants ? <KText v="xs">This home allows up to {h.maxOccupants} people.</KText> : null}
+							</>
+						)}
+						{mustGuarantee ? (
+							<Notice tone="warn" title="You’ll need a guarantor">
+								Students, corps members and people between jobs need a guarantor on Kushi — someone (ideally a parent or employer) who agrees to cover the rent if you can’t. Applications without one are declined automatically.
+							</Notice>
+						) : null}
+						<Check on={guar || mustGuarantee} onPress={() => !mustGuarantee && setGuar((g) => !g)}>
+							<KText v="smallStrong">{mustGuarantee ? 'Your guarantor' : 'Add a guarantor'}</KText>
+							<KText v="xs">{mustGuarantee ? 'Required for your situation.' : 'Optional, but it strengthens your application. Parents and employers count most.'}</KText>
 						</Check>
-						{guar ? (
+						{guar || mustGuarantee ? (
 							<Card>
 								<KText v="label">Relationship</KText>
 								<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -362,7 +384,8 @@ export default function Apply() {
 									))}
 								</View>
 								<Field label="Guarantor’s full name" value={gName} onChangeText={setGName} />
-								<Field label="Guarantor’s phone" value={gPhone} onChangeText={setGPhone} keyboardType="phone-pad" />
+								<Field label="Guarantor’s phone" value={gPhone} onChangeText={setGPhone} keyboardType="phone-pad" textContentType="telephoneNumber" />
+								<Field label="Guarantor’s address" optional value={gAddress} onChangeText={setGAddress} placeholder="e.g. 12 Admiralty Way, Lekki" />
 							</Card>
 						) : null}
 					</Animated.View>
@@ -434,10 +457,11 @@ export default function Apply() {
 			</ScrollView>
 
 			{app && !alreadyApplied && step !== 'kyc' ? (
-				<View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', gap: 10, paddingHorizontal: gutter, paddingTop: 12, paddingBottom: Math.max(insets.bottom, 12), backgroundColor: 'rgba(7,8,11,0.97)', borderTopWidth: 1, borderTopColor: color.line }}>
+				<View style={{ paddingHorizontal: gutter, paddingTop: 12, paddingBottom: Math.max(insets.bottom, 12), backgroundColor: color.bg, borderTopWidth: 1, borderTopColor: color.line }}>
+				<View style={[{ flexDirection: 'row', gap: 10 }, column]}>
 					{idx > 0 && STEPS[idx - 1] !== 'kyc' ? <Button title="Back" variant="ghost" onPress={() => go(STEPS[idx - 1])} /> : null}
 					{step === 'review' ? (
-						<Button title="Submit application" size="lg" loading={saving} style={{ flex: 1 }} onPress={sendCode} />
+						<Button title="Submit application" size="lg" loading={saving} style={{ flex: 1 }} onPress={sendCode} testID="apply-submit" />
 					) : (
 						<Button
 							title={step === 'sign' ? 'Sign and continue' : 'Continue'}
@@ -447,8 +471,10 @@ export default function Apply() {
 							disabled={(step === 'details' && !detailsOk) || (step === 'about' && !aboutOk) || (step === 'sign' && !signOk)}
 							trailing={<ArrowRight size={18} color={color.onAmber} />}
 							onPress={next}
+							testID="apply-next"
 						/>
 					)}
+				</View>
 				</View>
 			) : null}
 
@@ -466,6 +492,6 @@ export default function Apply() {
 					return null;
 				}}
 			/>
-		</View>
+		</KeyboardAvoidingView>
 	);
 }

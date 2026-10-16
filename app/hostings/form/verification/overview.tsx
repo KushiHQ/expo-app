@@ -1,390 +1,173 @@
-import Button from '@/components/atoms/a-button';
-import ThemedText from '@/components/atoms/a-themed-text';
-import DetailsLayout from '@/components/layouts/details';
-import RequestCard from '@/components/molecules/m-verification-request-card';
-import TierLadder from '@/components/molecules/m-verification-tier-ladder';
-import { Fonts } from '@/lib/constants/theme';
-import { useThemeColors } from '@/lib/hooks/use-theme-color';
-import { useRouter } from '@/lib/hooks/use-router';
+import { useEffect, useState } from 'react';
+import { View } from 'react-native';
+import { router, useLocalSearchParams, type Href } from 'expo-router';
+import { Clock, FileText, ShieldCheck } from 'lucide-react-native';
+import { Button, Card, Empty, Eyebrow, Header, KText, Notice, Pill, Screen, Skeleton, Waypoint } from '@/components/k';
+import { MandateFields, mandateComplete } from '@/components/k/listing-mandate';
+import { color } from '@/lib/k/theme';
+import { date } from '@/lib/k/format';
+import { TIERS, TIER_ORDER, tierRank } from '@/lib/k/tiers';
+import { cleanError } from '@/lib/k/use-listing-step';
+import { toast } from '@/lib/hooks/use-toast';
 import {
-  HostingVerificationRequestStatus,
-  HostingVerificationTier,
-  useHostingQuery,
-  useHostingVerificationRequestsQuery,
+	HostingVerificationRequestStatus as S,
+	HostingVerificationTier as T,
+	useHostingQuery,
+	useHostingVerificationRequestsQuery,
+	useInitiateHostingVerificationMutation,
+	type HostingVerificationInput
 } from '@/lib/services/graphql/generated';
-import { handleError } from '@/lib/utils/error';
-import { hexToRgba } from '@/lib/utils/colors';
-import { SURFACE } from '@/lib/constants/surface';
-import { formatTierLabel, nextTier, TIER_TAGLINES } from '@/lib/utils/verification/tier';
-import { ArrowRight, Award, ShieldCheck, Sparkles } from 'lucide-react-native';
-import { useLocalSearchParams } from 'expo-router';
-import { RefreshControl, View } from 'react-native';
-import React from 'react';
 
+/** What each level asks for (mirrors the server's tier seed). */
+const TIER_NEEDS: Record<T, string> = {
+	[T.Unverified]: '',
+	[T.IdentityVerified]: 'A clear photo of your government ID.',
+	[T.AddressVerified]: 'A recent utility bill for the property.',
+	[T.TitleChecked]: 'The title document (C of O, R of O or deed) and the survey plan. Kushi searches the land registry.',
+	[T.KushiVetted]: 'Building plan approval, then an on-site inspection by the Kushi team.'
+};
+
+const STATUS: Record<S, { label: string; tone: 'info' | 'success' | 'danger' | 'neutral' }> = {
+	[S.Pending]: { label: 'Waiting', tone: 'info' },
+	[S.UnderReview]: { label: 'Being reviewed', tone: 'info' },
+	[S.Verified]: { label: 'Approved', tone: 'success' },
+	[S.Rejected]: { label: 'Not approved', tone: 'danger' }
+};
+
+/** Trust badges for one listing: where it stands, what each level needs, and every request so far. */
 export default function VerificationOverview() {
-  const { id: hostingId } = useLocalSearchParams<{ id?: string }>();
-  const colors = useThemeColors();
-  const router = useRouter();
-  const hostingIdStr = Array.isArray(hostingId) ? hostingId[0] : (hostingId ?? '');
+	const { id: raw } = useLocalSearchParams<{ id?: string }>();
+	const id = (Array.isArray(raw) ? raw[0] : raw) ?? '';
+	const [{ data: hd, fetching: hf, error: he }, refetchHosting] = useHostingQuery({ variables: { hostingId: id }, pause: !id });
+	const [{ data: rd, fetching: rf }, refetchRequests] = useHostingVerificationRequestsQuery({ variables: { hostingId: id }, pause: !id, requestPolicy: 'cache-and-network' });
+	const h = hd?.hosting;
+	const requests = rd?.hostingVerificationRequests ?? [];
+	const tier = h?.verification?.verificationTier ?? T.Unverified;
+	const rank = tierRank(tier);
+	const inFlight = requests.find((r) => r.status === S.Pending || r.status === S.UnderReview);
+	const refresh = () => {
+		refetchHosting({ requestPolicy: 'network-only' });
+		refetchRequests({ requestPolicy: 'network-only' });
+	};
+	const request = (t: T) => router.push(`/hostings/form/verification/request?id=${id}&tier=${t}` as Href);
 
-  const [{ data, fetching, error }, refetchVerification] = useHostingVerificationRequestsQuery({
-    variables: { hostingId: hostingIdStr },
-  });
-  const [{ data: hostingData, fetching: hostingFetching }, refetchHosting] = useHostingQuery({
-    variables: { hostingId: hostingIdStr },
-  });
+	return (
+		<Screen header={<Header eyebrow={h?.title ?? 'Listing'} title="Verification" />} onRefresh={refresh} refreshing={false} contentStyle={{ paddingTop: 20 }}>
+			{!h ? (
+				hf || rf ? (
+					<View style={{ gap: 14 }}>
+						<Skeleton style={{ height: 130 }} />
+						<Skeleton style={{ height: 300 }} />
+					</View>
+				) : (
+					<Empty eyebrow="Off the map" title="We couldn’t load this" body={he ? cleanError(he.message) : 'Pull down to try again.'} action="Try again" onAction={refresh} />
+				)
+			) : (
+				<>
+					<Card tone={rank >= 3 ? 'amber' : 'signal'}>
+						<View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+							<ShieldCheck size={26} color={rank ? color.amber : color.muted} />
+							<View style={{ flex: 1, gap: 2 }}>
+								<KText v="label">Current level</KText>
+								<KText v="title">{TIERS[tier].label}</KText>
+							</View>
+						</View>
+						<KText v="small">{TIERS[tier].what}</KText>
+						<KText v="xs">Higher levels show a stronger badge on your listing and rank it higher in search.</KText>
+					</Card>
 
-  React.useEffect(() => {
-    if (error) handleError(error);
-  }, [error]);
+					{!h.verification ? <MandateFirst hostingId={id} onDone={refresh} /> : null}
 
-  const [refreshing, setRefreshing] = React.useState(false);
-  React.useEffect(() => {
-    if (!fetching && !hostingFetching) setRefreshing(false);
-  }, [fetching, hostingFetching]);
+					{inFlight ? (
+						<Notice tone="info" title={`${TIERS[inFlight.tier].label}: ${STATUS[inFlight.status].label.toLowerCase()}`}>
+							Sent {date(inFlight.createdAt)}. Kushi reviews requests within 3–5 business days and will notify you. You can ask for the next level once this one is decided.
+						</Notice>
+					) : null}
 
-  const handleRefresh = () => {
-    setRefreshing(true);
-    refetchVerification({ requestPolicy: 'network-only' });
-    refetchHosting({ requestPolicy: 'network-only' });
-  };
+					<View style={{ gap: 4 }}>
+						<Eyebrow>The levels</Eyebrow>
+						{TIER_ORDER.filter((t) => t !== T.Unverified).map((t, i, list) => {
+							const r = tierRank(t);
+							const done = r <= rank;
+							const last = requests.find((q) => q.tier === t);
+							const canAsk = !done && !inFlight && !!h.verification;
+							return (
+								<View key={t} style={{ flexDirection: 'row', gap: 14 }}>
+									<View style={{ alignItems: 'center', width: 18, paddingTop: 6 }}>
+										<Waypoint done={done} active={!done && r === rank + 1} />
+										{i < list.length - 1 ? <View style={{ flex: 1, width: 1, backgroundColor: done ? color.amberLine : color.line2, marginTop: 6 }} /> : null}
+									</View>
+									<View style={{ flex: 1, gap: 6, paddingBottom: 18 }}>
+										<View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+											<KText v="bodyStrong">{TIERS[t].label}</KText>
+											{done ? <Pill tone="success">Done</Pill> : last && last.status !== S.Verified ? <Pill tone={STATUS[last.status].tone}>{STATUS[last.status].label}</Pill> : null}
+										</View>
+										<KText v="xs">{TIERS[t].what}</KText>
+										{!done ? (
+											<View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
+												<FileText size={13} color={color.muted} style={{ marginTop: 2 }} />
+												<KText v="xs" style={{ flex: 1, color: color.fg2 }}>
+													{TIER_NEEDS[t]}
+												</KText>
+											</View>
+										) : null}
+										{canAsk ? <Button title={last?.status === S.Rejected ? 'Try again' : 'Request this level'} size="sm" variant={r === rank + 1 ? 'amber' : 'ghost'} onPress={() => request(t)} style={{ alignSelf: 'flex-start' }} testID={`request-${t}`} /> : null}
+									</View>
+								</View>
+							);
+						})}
+					</View>
 
-  const requests = data?.hostingVerificationRequests ?? [];
-  const currentTier =
-    hostingData?.hosting?.verification?.verificationTier ?? HostingVerificationTier.Unverified;
-  const isTopTier = currentTier === HostingVerificationTier.KushiVetted;
-  const next = nextTier(currentTier);
-
-  const handleRequestAgain = (tier: HostingVerificationTier) => {
-    router.push(`/hostings/form/verification/request?id=${hostingIdStr}&tier=${tier}`);
-  };
-
-  const hasInFlightRequest = requests.some(
-    (r) =>
-      r.status === HostingVerificationRequestStatus.Pending ||
-      r.status === HostingVerificationRequestStatus.UnderReview,
-  );
-
-  return (
-    <DetailsLayout
-      title="Verification"
-      backButton="translucent"
-      scrollable
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          tintColor={colors.primary}
-        />
-      }
-    >
-      <View className="gap-6 pb-8">
-        <CurrentTierHero
-          currentTier={currentTier}
-          isTopTier={isTopTier}
-          nextTier={next}
-          inFlight={hasInFlightRequest}
-          onUpgrade={() => next && handleRequestAgain(next)}
-        />
-
-        {!isTopTier ? (
-          <View
-            className="rounded-2xl p-4"
-            style={{
-              backgroundColor: hexToRgba(colors.surface, 0.5),
-              boxShadow: SURFACE.shadow,
-            }}
-          >
-            <View className="mb-3 flex-row items-center gap-2">
-              <Award size={14} color={hexToRgba(colors.text, 0.6)} />
-              <ThemedText
-                style={{
-                  fontSize: 11,
-                  color: hexToRgba(colors.text, 0.6),
-                  fontFamily: Fonts.semibold,
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.5,
-                }}
-              >
-                Tier progression
-              </ThemedText>
-            </View>
-            <TierLadder currentTier={currentTier} isTopTier={isTopTier} />
-          </View>
-        ) : null}
-
-        <View>
-          <ThemedText
-            style={{
-              fontSize: 13,
-              color: hexToRgba(colors.text, 0.7),
-              fontFamily: Fonts.bold,
-              marginBottom: 10,
-            }}
-          >
-            {requests.length > 0
-              ? `History · ${requests.length} request${requests.length === 1 ? '' : 's'}`
-              : 'History'}
-          </ThemedText>
-
-          {requests.length === 0 ? (
-            <EmptyHistory />
-          ) : (
-            <View className="gap-3">
-              {requests.map((request) => (
-                <RequestCard
-                  key={request.id}
-                  id={request.id}
-                  tier={request.tier}
-                  status={request.status}
-                  statusDetails={request.statusDetails}
-                  documents={request.documents}
-                  logs={request.logs}
-                  createdAt={request.createdAt}
-                  onRequestAgain={() => handleRequestAgain(request.tier)}
-                />
-              ))}
-            </View>
-          )}
-        </View>
-      </View>
-    </DetailsLayout>
-  );
+					<View style={{ gap: 10 }}>
+						<Eyebrow>{requests.length ? `Requests · ${requests.length}` : 'Requests'}</Eyebrow>
+						{!requests.length ? <KText v="small">Nothing sent yet. Each request you send shows here with Kushi’s decision.</KText> : null}
+						{requests.map((q) => (
+							<Card key={q.id}>
+								<View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+									<KText v="smallStrong" style={{ flex: 1 }}>
+										{TIERS[q.tier].label}
+									</KText>
+									<Pill tone={STATUS[q.status].tone}>{STATUS[q.status].label}</Pill>
+								</View>
+								<View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+									<Clock size={12} color={color.muted} />
+									<KText v="xs">Sent {date(q.createdAt)}{q.lastUpdated !== q.createdAt ? ` · updated ${date(q.lastUpdated)}` : ''}</KText>
+								</View>
+								{q.statusDetails ? (
+									<Notice tone={q.status === S.Rejected ? 'danger' : 'info'} title="Note from Kushi">
+										{q.statusDetails}
+									</Notice>
+								) : null}
+								{q.documents.length ? <KText v="xs">Sent: {q.documents.map((d) => d.name).join(', ')}</KText> : null}
+							</Card>
+						))}
+					</View>
+				</>
+			)}
+		</Screen>
+	);
 }
 
-type HeroProps = {
-  currentTier: HostingVerificationTier;
-  isTopTier: boolean;
-  nextTier: HostingVerificationTier | null;
-  inFlight: boolean;
-  onUpgrade: () => void;
-};
-
-const CurrentTierHero: React.FC<HeroProps> = ({
-  currentTier,
-  isTopTier,
-  nextTier: next,
-  inFlight,
-  onUpgrade,
-}) => {
-  const colors = useThemeColors();
-
-  if (isTopTier) {
-    return (
-      <View
-        className="overflow-hidden rounded-3xl p-5"
-        style={{
-          backgroundColor: '#1E293B',
-        }}
-      >
-        <View
-          style={{
-            position: 'absolute',
-            right: -30,
-            top: -30,
-            width: 160,
-            height: 160,
-            borderRadius: 80,
-            backgroundColor: '#F59E0B',
-            opacity: 0.18,
-          }}
-        />
-        <View
-          style={{
-            position: 'absolute',
-            right: 20,
-            bottom: -40,
-            width: 120,
-            height: 120,
-            borderRadius: 60,
-            backgroundColor: '#F59E0B',
-            opacity: 0.1,
-          }}
-        />
-        <View className="flex-row items-center gap-3">
-          <View
-            className="h-12 w-12 items-center justify-center rounded-2xl"
-            style={{ backgroundColor: '#F59E0B' }}
-          >
-            <Award size={24} color="#FFFFFF" />
-          </View>
-          <View className="flex-1">
-            <ThemedText
-              style={{
-                fontSize: 11,
-                color: hexToRgba('#FFFFFF', 0.6),
-                fontFamily: Fonts.semibold,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-              }}
-            >
-              Top tier reached
-            </ThemedText>
-            <ThemedText
-              style={{
-                fontSize: 20,
-                color: '#FFFFFF',
-                fontFamily: Fonts.bold,
-                marginTop: 2,
-              }}
-            >
-              {formatTierLabel(currentTier)}
-            </ThemedText>
-          </View>
-        </View>
-        <ThemedText
-          style={{
-            fontSize: 13,
-            color: hexToRgba('#FFFFFF', 0.75),
-            marginTop: 12,
-            lineHeight: 19,
-          }}
-        >
-          Your hosting displays the Kushi Vetted badge. Guests see a fully-verified property and
-          rank it higher in search.
-        </ThemedText>
-      </View>
-    );
-  }
-
-  return (
-    <View
-      className="gap-3 rounded-3xl p-5"
-      style={{
-        backgroundColor: hexToRgba(colors.primary, 0.1),
-      }}
-    >
-      <View className="flex-row items-center gap-3">
-        <View
-          className="h-12 w-12 items-center justify-center rounded-2xl"
-          style={{ backgroundColor: hexToRgba(colors.primary, 0.15) }}
-        >
-          <ShieldCheck size={24} color={colors.primary} />
-        </View>
-        <View className="flex-1">
-          <ThemedText
-            style={{
-              fontSize: 11,
-              color: hexToRgba(colors.text, 0.6),
-              fontFamily: Fonts.semibold,
-              textTransform: 'uppercase',
-              letterSpacing: 0.5,
-            }}
-          >
-            Current tier
-          </ThemedText>
-          <ThemedText
-            style={{
-              fontSize: 20,
-              color: colors.text,
-              fontFamily: Fonts.bold,
-              marginTop: 2,
-            }}
-          >
-            {formatTierLabel(currentTier)}
-          </ThemedText>
-        </View>
-      </View>
-      <ThemedText
-        style={{
-          fontSize: 13,
-          color: hexToRgba(colors.text, 0.7),
-          lineHeight: 19,
-        }}
-      >
-        {TIER_TAGLINES[currentTier]}
-      </ThemedText>
-
-      {next ? (
-        <View
-          className="mt-1 flex-row items-center justify-between gap-3 rounded-2xl p-3.5"
-          style={{
-            backgroundColor: hexToRgba(colors.primary, 0.1),
-          }}
-        >
-          <View className="flex-1 flex-row items-center gap-3">
-            <View
-              className="h-9 w-9 items-center justify-center rounded-xl"
-              style={{ backgroundColor: colors.primary }}
-            >
-              <Sparkles size={16} color={colors['primary-content']} />
-            </View>
-            <View className="flex-1">
-              <ThemedText
-                style={{
-                  fontSize: 10,
-                  color: colors.primary,
-                  fontFamily: Fonts.semibold,
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.5,
-                }}
-              >
-                Up next
-              </ThemedText>
-              <ThemedText
-                style={{
-                  fontSize: 14,
-                  color: colors.text,
-                  fontFamily: Fonts.bold,
-                  marginTop: 1,
-                }}
-              >
-                {formatTierLabel(next)}
-              </ThemedText>
-            </View>
-          </View>
-          <Button type="primary" onPress={onUpgrade} disabled={inFlight} className="flex-row gap-2">
-            <ThemedText content="primary" style={{ fontFamily: Fonts.semibold }}>
-              {inFlight ? 'In progress' : 'Upgrade'}
-            </ThemedText>
-            {!inFlight ? <ArrowRight size={14} color={colors['primary-content']} /> : null}
-          </Button>
-        </View>
-      ) : null}
-    </View>
-  );
-};
-
-const EmptyHistory = () => {
-  const colors = useThemeColors();
-  return (
-    <View
-      className="items-center gap-3 rounded-2xl p-8"
-      style={{
-        backgroundColor: hexToRgba(colors.text, 0.03),
-        borderWidth: 1,
-        borderColor: hexToRgba(colors.text, 0.06),
-        borderStyle: 'dashed',
-      }}
-    >
-      <View
-        className="h-14 w-14 items-center justify-center rounded-full"
-        style={{ backgroundColor: hexToRgba(colors.primary, 0.1) }}
-      >
-        <ShieldCheck size={26} color={colors.primary} />
-      </View>
-      <ThemedText
-        style={{
-          fontSize: 15,
-          color: colors.text,
-          fontFamily: Fonts.bold,
-          textAlign: 'center',
-        }}
-      >
-        No verification requests yet
-      </ThemedText>
-      <ThemedText
-        style={{
-          fontSize: 12,
-          color: hexToRgba(colors.text, 0.6),
-          textAlign: 'center',
-          lineHeight: 18,
-          maxWidth: 280,
-        }}
-      >
-        When you submit your first request, you’ll see it tracked here with status updates, admin
-        feedback, and the documents you uploaded.
-      </ThemedText>
-    </View>
-  );
-};
+function MandateFirst({ hostingId, onDone }: { hostingId: string; onDone: () => void }) {
+	const [v, setV] = useState<Partial<HostingVerificationInput>>({ hostingId });
+	const [tried, setTried] = useState(false);
+	const [{ fetching }, initiate] = useInitiateHostingVerificationMutation();
+	useEffect(() => setV((x) => ({ ...x, hostingId })), [hostingId]);
+	async function save() {
+		setTried(true);
+		if (!mandateComplete(v)) return;
+		const r = await initiate({ input: v as HostingVerificationInput });
+		if (r.error) return toast.show({ type: 'error', text1: 'Couldn’t save', text2: cleanError(r.error.message) });
+		toast.show({ type: 'success', text2: 'Saved. You can now request a level.' });
+		onDone();
+	}
+	return (
+		<Card tone="amber">
+			<Eyebrow c="amber">First</Eyebrow>
+			<KText v="bodyStrong">Confirm your right to list it</KText>
+			<KText v="small">Kushi needs the owner’s details before it can verify this listing.</KText>
+			<MandateFields v={v} update={(p) => setV((x) => ({ ...x, ...p }))} tried={tried} />
+			<Button title="Save and continue" loading={fetching} onPress={save} />
+		</Card>
+	);
+}

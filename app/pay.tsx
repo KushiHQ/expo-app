@@ -7,7 +7,8 @@ import { View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { PayWithFlutterwave } from 'flutterwave-react-native';
 import { BadgeCheck, KeyRound, Landmark, Lock, ShieldCheck } from 'lucide-react-native';
-import { Button, Card, Eyebrow, Header, KText, KV, Notice, Photo, Screen, Skeleton } from '@/components/k';
+import { Button, Card, Empty, Eyebrow, Header, KText, KV, Notice, Photo, Screen, Skeleton } from '@/components/k';
+import { GRACE_DAYS } from '@/lib/k/booking';
 import { color, font } from '@/lib/k/theme';
 import { date, naira, place } from '@/lib/k/format';
 import { useUserStore } from '@/lib/stores/users';
@@ -21,7 +22,7 @@ export default function Pay() {
 	const [activeRef, setActiveRef] = useState(String(ref ?? ''));
 	const [pending, setPending] = useState(false);
 	const open = useRef<(() => void) | null>(null);
-	const [{ data: bd }, refetch] = useKBookingQuery({ variables: { bookingId: String(bkId) }, pause: !bkId });
+	const [{ data: bd, error: loadError, fetching: loading }, refetch] = useKBookingQuery({ variables: { bookingId: String(bkId) }, pause: !bkId });
 	const [{ data: tx }] = useTransactionByReferenceQuery({ variables: { reference: activeRef }, pause: !activeRef });
 	const [{ fetching: refreshing }, retry] = useRetryBookingPaymentMutation();
 	const [{ fetching: verifying }, verify] = useVerifyBookingPaymentMutation();
@@ -30,6 +31,7 @@ export default function Pay() {
 	const b = bd?.booking;
 	const amount = Number(tx?.transactionByReference?.amount ?? b?.amount ?? 0);
 	const already = paid || b?.paymentStatus === PaymentStatus.Paid;
+	const closed = !already && (b?.status === 'CANCELED' || b?.status === 'COMPLETED');
 
 	useEffect(() => {
 		if (pending && open.current) {
@@ -66,18 +68,35 @@ export default function Pay() {
 	const tripId = b?.bookingApplication?.id;
 	return (
 		<Screen width="form" header={<Header eyebrow="Secure your home" title="Pay into escrow" />}>
-			{!b ? (
+			{!bkId ? (
+				<Empty eyebrow="Nothing to pay" title="We couldn’t find that payment" body="Open the home from Homes to pay." action="Go to Homes" onAction={() => router.replace('/trips')} />
+			) : !b && loadError && !loading ? (
+				<View style={{ gap: 12, paddingTop: 24 }}>
+					<Notice tone="danger" title="We couldn’t load your booking">
+						{loadError.message.includes('Network') ? 'You seem to be offline. Check your connection and try again.' : clean(loadError.message)}
+					</Notice>
+					<Button title="Try again" variant="ghost" onPress={() => refetch({ requestPolicy: 'network-only' })} />
+				</View>
+			) : !b ? (
 				<View style={{ gap: 12, paddingTop: 20 }}>
 					<Skeleton style={{ height: 90 }} />
+					<Skeleton style={{ height: 60 }} />
 					<Skeleton style={{ height: 160 }} />
 				</View>
+			) : closed ? (
+				<Empty eyebrow="Nothing to pay" title={b.status === 'CANCELED' ? 'This booking was cancelled' : 'This booking is already complete'} body="There’s nothing to pay here." action="Go to your home" onAction={() => router.replace(tripId ? `/trips/${tripId}` : '/trips')} />
 			) : already ? (
 				<View style={{ gap: 16, paddingTop: 30 }}>
 					<BadgeCheck size={40} color={color.success} />
 					<Eyebrow>Payment secured</Eyebrow>
 					<KText v="display">{paid ? 'Paid. Your home is secured.' : 'This booking is already paid.'}</KText>
 					<KText v="lead">{naira(amount)} is held in Kushi escrow. Message your host to arrange the handover, then confirm in Kushi once you have your keys.</KText>
-					<Button title="Go to your home" size="lg" block onPress={() => router.replace(tripId ? `/trips/${tripId}` : '/trips')} />
+					<Card>
+						<KText v="smallStrong">The next {GRACE_DAYS} days</KText>
+						<KText v="small">You can confirm the handover or cancel until the booking completes. If you do neither, it completes automatically {GRACE_DAYS} days after payment and the host is paid. Once it completes, your signed tenancy agreement is emailed to you.</KText>
+						<KText v="xs">If you cancel, the Kushi platform fee and 10% of the rent aren’t refunded; the rest comes back to your card.</KText>
+					</Card>
+					<Button title="Go to your home" size="lg" block testID="pay-done" onPress={() => router.replace(tripId ? `/trips/${tripId}` : '/trips')} />
 				</View>
 			) : (
 				<>
@@ -98,9 +117,10 @@ export default function Pay() {
 						{b.cautionFee ? <KText v="xs">Includes a refundable caution deposit of {naira(b.cautionFee)}.</KText> : null}
 					</View>
 					<Card>
-						<KV k="Rent & charges" v={naira(amount - (b.cautionFee ?? 0))} />
+						<KV k="Rent & charges" v={naira(amount - Number(b.cautionFee ?? 0) - Number(b.guestServiceCharge ?? 0))} />
+						{Number(b.guestServiceCharge) > 0 ? <KV k="Kushi platform fee" v={naira(Number(b.guestServiceCharge))} /> : null}
 						{b.cautionFee ? <KV k="Caution deposit (refundable)" v={naira(b.cautionFee)} /> : null}
-						<KV k="Reference" v={activeRef || '—'} />
+						<KV k="Reference" v={activeRef || 'Created when you pay'} />
 					</Card>
 					<View style={{ gap: 12 }}>
 						{[
