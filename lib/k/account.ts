@@ -146,7 +146,8 @@ const KIND: Record<string, { label: string; incoming: boolean }> = {
 	host_cancellation_compensation: { label: 'Cancellation compensation', incoming: true },
 	guest_caution_refund: { label: 'Caution refund', incoming: true },
 	host_caution_claim: { label: 'Caution claim payout', incoming: true },
-	listing_tier_boost: { label: 'Listing boost', incoming: false }
+	listing_tier_boost: { label: 'Listing boost', incoming: false },
+	verification_fee: { label: 'Verification fee', incoming: false }
 };
 
 export const txKind = (type: string) => KIND[String(type).toLowerCase()] ?? { label: humanize(String(type)) || 'Payment', incoming: false };

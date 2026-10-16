@@ -15,6 +15,7 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  DateTime: { input: any; output: any; }
   Decimal: { input: any; output: any; }
   JSON: { input: any; output: any; }
   Upload: { input: any; output: any; }
@@ -61,6 +62,20 @@ export type AdminBookingAssistFilters = {
   /** Only assists that currently have no handler (need pickup). */
   unhandledOnly?: InputMaybe<Scalars['Boolean']['input']>;
 };
+
+/** Who caused a staff cancellation; decides the guest's refund. */
+export enum AdminCancelFault {
+  /**
+   * The guest's choice or fault: the normal cancellation policy (10% of the
+   * rent kept, 5% of the rent to the host, the rest refunded).
+   */
+  Guest = 'GUEST',
+  /**
+   * The host or the listing caused it: everything the guest paid is
+   * refunded and the host gets nothing.
+   */
+  Host = 'HOST'
+}
 
 export type AdminCompleteFieldInteractionInput = {
   interactionId: Scalars['String']['input'];
@@ -127,6 +142,14 @@ export type AdminDashboardStats = {
   disputedClaims: Scalars['Int']['output'];
   pendingVerifications: Scalars['Int']['output'];
 };
+
+/** What can be exported as CSV. */
+export enum AdminExportKind {
+  Bookings = 'BOOKINGS',
+  Listings = 'LISTINGS',
+  Transactions = 'TRANSACTIONS',
+  Users = 'USERS'
+}
 
 export type AdminFeeConfig = {
   __typename?: 'AdminFeeConfig';
@@ -208,6 +231,25 @@ export type AdminInviteStaffInput = {
   roleLabel?: InputMaybe<Scalars['String']['input']>;
 };
 
+/**
+ * The latest state of one background job (payouts, auto-finalize, caution
+ * reminders, booking payment window), from `job_run`.
+ */
+export type AdminJobStatus = {
+  __typename?: 'AdminJobStatus';
+  /** URL name of the job, e.g. `host-payout`. */
+  job: Scalars['String']['output'];
+  lastError?: Maybe<Scalars['String']['output']>;
+  lastFinishedAt?: Maybe<Scalars['String']['output']>;
+  /** Whether the latest finished run succeeded. */
+  lastOk?: Maybe<Scalars['Boolean']['output']>;
+  lastStartedAt?: Maybe<Scalars['String']['output']>;
+  /** When the job last finished without an error. */
+  lastSuccessAt?: Maybe<Scalars['String']['output']>;
+  /** What started the latest run: `timer` or `scheduler`. */
+  lastTrigger?: Maybe<Scalars['String']['output']>;
+};
+
 export type AdminKyc = {
   __typename?: 'AdminKyc';
   bvnVerified?: Maybe<Scalars['Boolean']['output']>;
@@ -277,6 +319,14 @@ export type AdminMonthlyGrowthPoint = {
    * cancellation refunds, by transaction month.
    */
   volume: Scalars['Decimal']['output'];
+};
+
+/** One note or action on a payout, newest first. */
+export type AdminPayoutNote = {
+  __typename?: 'AdminPayoutNote';
+  createdAt: Scalars['String']['output'];
+  staffName?: Maybe<Scalars['String']['output']>;
+  title: Scalars['String']['output'];
 };
 
 export type AdminPhoneNumber = {
@@ -353,6 +403,18 @@ export type AdminReviewHostingVerificationRequestInput = {
   status: HostingVerificationRequestStatus;
 };
 
+/** A staff invitation that hasn't been accepted yet. */
+export type AdminStaffInvitation = {
+  __typename?: 'AdminStaffInvitation';
+  createdAt: Scalars['String']['output'];
+  email: Scalars['String']['output'];
+  expired: Scalars['Boolean']['output'];
+  expiresAt: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  permissions: Array<Scalars['String']['output']>;
+  roleId?: Maybe<Scalars['String']['output']>;
+};
+
 export type AdminStartFieldInteractionInput = {
   /** Inline contact details, used when `contact_id` is not provided. */
   contact?: InputMaybe<AdminCreateContactInput>;
@@ -360,6 +422,31 @@ export type AdminStartFieldInteractionInput = {
   contactId?: InputMaybe<Scalars['String']['input']>;
   /** One of `onboarding_call` | `in_person_meeting` | `host_booking_call`. */
   interactionType: Scalars['String']['input'];
+};
+
+/**
+ * What needs a staff member's attention now, counted on the server (the
+ * admin used to count loaded rows, capped at 50–500).
+ */
+export type AdminTodayCounts = {
+  __typename?: 'AdminTodayCounts';
+  applicationsToReview: Scalars['Int']['output'];
+  /** Booking Assist cases not completed, rejected or abandoned. */
+  assistsActive: Scalars['Int']['output'];
+  cautionDisputes: Scalars['Int']['output'];
+  cautionRefundsToApprove: Scalars['Int']['output'];
+  /** Payouts that failed or need reconciliation. */
+  payoutsFailed: Scalars['Int']['output'];
+  /** Payouts queued or being sent. */
+  payoutsInFlight: Scalars['Int']['output'];
+  supportChatsOpen: Scalars['Int']['output'];
+  verificationRequestsWaiting: Scalars['Int']['output'];
+};
+
+export type AdminTransactionTotals = {
+  __typename?: 'AdminTransactionTotals';
+  amount: Scalars['Decimal']['output'];
+  count: Scalars['Int']['output'];
 };
 
 /**
@@ -412,6 +499,21 @@ export type AdminUpdateHostingVerificationRequestDetailsInput = {
   requestId: Scalars['String']['input'];
 };
 
+/** Fields of the legal terms that staff may change; leave one out to keep it. */
+export type AdminUpdateLegalConfigInput = {
+  breakNoticePeriod?: InputMaybe<Scalars['String']['input']>;
+  cautionRefundDays?: InputMaybe<Scalars['Int']['input']>;
+  forfeitureGracePeriodDays?: InputMaybe<Scalars['Int']['input']>;
+  gracePeriodDays?: InputMaybe<Scalars['Int']['input']>;
+  guestStayDays?: InputMaybe<Scalars['Int']['input']>;
+  inspectionNoticeDays?: InputMaybe<Scalars['Int']['input']>;
+  latePaymentInterestRate?: InputMaybe<Scalars['Decimal']['input']>;
+  legalFeePercentage?: InputMaybe<Scalars['Decimal']['input']>;
+  mesneProfitRate?: InputMaybe<Scalars['Decimal']['input']>;
+  minimumOccupationPeriod?: InputMaybe<Scalars['String']['input']>;
+  renewalNoticeMonths?: InputMaybe<Scalars['Int']['input']>;
+};
+
 export type AdminUpdateRoleInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['String']['input'];
@@ -442,6 +544,17 @@ export type AdminUser = {
   kyc?: Maybe<AdminKyc>;
   phoneNumbers: Array<AdminPhoneNumber>;
   profile?: Maybe<AdminUserProfile>;
+};
+
+/**
+ * Everything a user has done as a guest and as a host, newest first (up to
+ * 50 of each).
+ */
+export type AdminUserActivity = {
+  __typename?: 'AdminUserActivity';
+  bookings: Array<Booking>;
+  hostings: Array<Hosting>;
+  payments: Array<Transaction>;
 };
 
 export type AdminUserProfile = {
@@ -522,6 +635,24 @@ export type AnalyticsDataPoint = {
   __typename?: 'AnalyticsDataPoint';
   amount: Scalars['Decimal']['output'];
   label: Scalars['String']['output'];
+};
+
+export enum AppPlatform {
+  Android = 'ANDROID',
+  Ios = 'IOS'
+}
+
+export type AppVersionPolicy = {
+  __typename?: 'AppVersionPolicy';
+  /** The newest version in the stores; older builds may show a soft prompt. */
+  latestVersion: Scalars['String']['output'];
+  /** Optional note shown on the update screen. */
+  message?: Maybe<Scalars['String']['output']>;
+  /** Builds below this version are refused until they update. */
+  minimumVersion: Scalars['String']['output'];
+  platform: AppPlatform;
+  storeUrl: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
 };
 
 export type AppleAuthInput = {
@@ -807,12 +938,16 @@ export type CautionClaim = {
   bookingId: Scalars['String']['output'];
   createdAt: Scalars['String']['output'];
   disputeFeeApplied: Scalars['Boolean']['output'];
+  /** When an unanswered claim was sent to staff. */
+  escalatedAt?: Maybe<Scalars['String']['output']>;
   guestResponseNotes?: Maybe<Scalars['String']['output']>;
   hostNotes?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
   resolvedAt?: Maybe<Scalars['String']['output']>;
   status: CautionClaimStatus;
+  /** The host payout for this claim, once approved. */
+  transactionId?: Maybe<Scalars['String']['output']>;
 };
 
 export type CautionClaimResponse = {
@@ -835,6 +970,7 @@ export type CautionRefund = {
   accountName: Scalars['String']['output'];
   accountNumber: Scalars['String']['output'];
   amount: Scalars['Decimal']['output'];
+  approvedAt?: Maybe<Scalars['String']['output']>;
   bankCode: Scalars['String']['output'];
   bankName: Scalars['String']['output'];
   blockedReason?: Maybe<Scalars['String']['output']>;
@@ -843,6 +979,8 @@ export type CautionRefund = {
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
   status: CautionRefundStatus;
+  /** The payout to the guest, once staff approve the refund. */
+  transactionId?: Maybe<Scalars['String']['output']>;
 };
 
 export type CautionRefundResponse = {
@@ -854,6 +992,8 @@ export type CautionRefundResponse = {
 export enum CautionRefundStatus {
   Blocked = 'BLOCKED',
   Completed = 'COMPLETED',
+  /** The bank rejected the account; the guest needs to enter new details. */
+  Failed = 'FAILED',
   Processing = 'PROCESSING',
   Requested = 'REQUESTED'
 }
@@ -1248,11 +1388,15 @@ export type Hosting = {
    * host's listing cards without opening the detail screen.
    */
   pendingBookingApplicationsCount: Scalars['Int']['output'];
+  photoLocationChecks: Array<PhotoLocationCheck>;
+  photoLocationSummary?: Maybe<PhotoLocationSummary>;
   postalCode?: Maybe<Scalars['String']['output']>;
   price?: Maybe<Scalars['Decimal']['output']>;
   /** Lowest price among this plaza's available shops — the card's "from ₦X". */
   priceFrom?: Maybe<Scalars['Decimal']['output']>;
   propertyType?: Maybe<Scalars['String']['output']>;
+  /** What this listing still needs before it can be LIVE (host / staff only). */
+  publishMissing: Array<Scalars['String']['output']>;
   publishStatus?: Maybe<PublishStatus>;
   reviewAverage: HostingReviewAverage;
   reviews: Array<HostingReview>;
@@ -1597,6 +1741,7 @@ export type HostingRoomImage = {
 
 export type HostingRoomImageInput = {
   asset: Scalars['Upload']['input'];
+  capture?: InputMaybe<PhotoCaptureInput>;
   id?: InputMaybe<Scalars['String']['input']>;
   roomId: Scalars['String']['input'];
 };
@@ -1857,11 +2002,22 @@ export type Mutations = {
   /** Accept a staff invitation (public, no auth required) */
   adminAcceptStaffInvitation: Scalars['Boolean']['output'];
   /**
+   * Add a note to a payout (what was tried, who was contacted). Notes are
+   * kept in the audit log; read them with `adminPayoutNotes`. Needs
+   * `payouts.update`.
+   */
+  adminAddPayoutNote: Scalars['Boolean']['output'];
+  /**
    * AI pre-screen a title document: downloads the asset, runs multimodal OCR
    * via OpenRouter (Gemini Flash), saves structured results to
    * `hosting_title_metadata`. Returns the extracted metadata.
    */
   adminAiPreScreenTitleDocuments: TitleMetadataResponse;
+  /**
+   * Approve a guest's caution refund. The amount is worked out again from
+   * the claims as they stand, and a payout to the guest's account is queued.
+   */
+  adminApproveCautionRefund: CautionRefundResponse;
   /**
    * Enact the host's decision on their behalf — accept or reject. Wraps
    * `BookingApplicationQueries::update_booking_application_status` (the same
@@ -1878,6 +2034,21 @@ export type Mutations = {
    * action that opens the device's app store.
    */
   adminBroadcastAppUpdate: Scalars['Int']['output'];
+  /**
+   * Cancel a paid booking for the guest and refund them through
+   * Flutterwave. `fault` decides the refund; `reason` is shown to the guest
+   * and host. Needs `bookings.update`.
+   */
+  adminCancelBooking: Booking;
+  /**
+   * Stop a payout that should not be sent. Only for cancellation
+   * compensation and caution payouts, and only once Flutterwave confirms
+   * no money left (no transfer, or a transfer that failed). A cancelled
+   * caution claim can be paid again from the claim; a cancelled guest
+   * refund returns to the guest to send new details. A host's rent payout
+   * can't be cancelled: fix their account and retry. Needs `payouts.update`.
+   */
+  adminCancelPayout: Scalars['Boolean']['output'];
   /** Complete an interaction with a structured outcome + summary note. */
   adminCompleteFieldInteraction: FieldInteractionResponse;
   /** Create a standalone contact (lead). */
@@ -1909,6 +2080,17 @@ export type Mutations = {
   /** Delete a role (only if not assigned to any staff) */
   adminDeleteRole: Scalars['Boolean']['output'];
   /**
+   * Confirm move-in for the guest (they have their keys but can't or won't
+   * confirm): issues the tenancy agreement and queues the host's payout.
+   * Needs `bookings.update`.
+   */
+  adminFinalizeBooking: Booking;
+  /**
+   * Sign a user out of every device (their tokens are deleted). Needs
+   * `users.suspend`.
+   */
+  adminForceSignOut: Scalars['Boolean']['output'];
+  /**
    * Idempotent get-or-create for the assist tied to an application. Returns
    * the existing assist when one is already present (never duplicated).
    */
@@ -1926,14 +2108,47 @@ export type Mutations = {
   adminRecordInteractionResponse: InteractionResponseResponse;
   /** Release the soft lock (only the current handler may). Publishes presence. */
   adminReleaseBookingAssist: BookingAssistResponse;
-  /** Mark an admin-approved claim as Released (triggers payout logic externally). */
+  /**
+   * Pay out an approved claim that has no payout yet (claims approved before
+   * payouts were automatic). The claim becomes Released once Flutterwave
+   * confirms the transfer.
+   */
   adminReleaseCautionClaim: CautionClaimResponse;
   /** Reorder a script's steps by array position, in one transaction. */
   adminReorderFieldScriptSteps: FieldScriptResponse;
   adminReorderPropertyTypes: MessageResponse;
-  /** Approve or decline a disputed caution claim after mediation. */
+  /**
+   * Send an invitation again with a fresh link valid for 7 days (the old
+   * link stops working). Needs `staff.invite`.
+   */
+  adminResendStaffInvitation: Scalars['Boolean']['output'];
+  /**
+   * Decide a disputed caution claim (or one the guest never answered).
+   * Approving pays the host from the deposit straight away; either way the
+   * guest's refund request is brought up to date and both sides are told.
+   */
   adminResolveCautionClaim: CautionClaimResponse;
+  /**
+   * Send a failed payout again (after the host or guest fixed their bank
+   * details, or the balance was topped up). If Flutterwave already has a
+   * transfer for it, the worker checks that transfer's status instead of
+   * sending a second one. Needs `payouts.update`.
+   */
+  adminRetryPayout: Scalars['Boolean']['output'];
   adminReviewHostingVerificationRequest: HostingVerificationRequestResponse;
+  /** Withdraw an invitation that hasn't been accepted. Needs `staff.invite`. */
+  adminRevokeStaffInvitation: Scalars['Boolean']['output'];
+  /**
+   * Email the user a one-time code to set a new password (the same email
+   * as "Forgot password"). Kushi never sees or sets the password. Needs
+   * `users.update`.
+   */
+  adminSendPasswordReset: Scalars['Boolean']['output'];
+  /**
+   * Sets the forced update policy for one platform. Takes effect on this
+   * server at once and on other instances within a minute.
+   */
+  adminSetAppVersionPolicy: AppVersionPolicy;
   /**
    * Start a field interaction. Creates the contact inline when no
    * `contactId` is supplied, then snapshots the active script's question
@@ -1945,6 +2160,13 @@ export type Mutations = {
    * else currently holds it. Publishes the new presence to live subscribers.
    */
   adminTakeBookingAssist: BookingAssistResponse;
+  /**
+   * Move an application to another status. Only valid moves are allowed
+   * (`BookingApplicationQueries::can_move`). `reason` is saved as the
+   * status note and shown to the guest on a rejection. Accepting on the
+   * host's behalf opens payment and tells the guest, like the host's own
+   * accept.
+   */
   adminUpdateBookingApplicationStatus: BookingApplicationResponse;
   /**
    * Capture guest/host fields + key date. Setting a key date also relays it
@@ -1970,10 +2192,22 @@ export type Mutations = {
    * request without changing its status. Push + email the host.
    */
   adminUpdateHostingVerificationRequestDetails: HostingVerificationRequestResponse;
+  /**
+   * Change the legal terms used to fill new tenancy agreements. Existing
+   * agreements keep the terms they were signed with. Needs
+   * `legal_config.update`.
+   */
+  adminUpdateLegalConfig: AdminLegalConfig;
   /** Update an existing role */
   adminUpdateRole: Role;
   /** Update staff member permissions/role */
   adminUpdateStaff: StaffMember;
+  /**
+   * Change a user's account status: `suspend`, `activate` (lift a
+   * suspension), `archive` or `unarchive`. Needs `users.suspend`. A reason
+   * is recorded in the audit log. Staff accounts can only be changed by a
+   * super admin, and nobody can change their own account here.
+   */
   adminUpdateUserStatus: Scalars['Boolean']['output'];
   adminUpdateVerificationTier: AdminVerificationTierResponse;
   appleLogin: AuthTokenResponse;
@@ -2058,6 +2292,7 @@ export type Mutations = {
   initiateListingBoost: TransactionResponse;
   initiatePhoneNumberVerification: MessageResponse;
   initiateSupportChat: SupportChat;
+  initiateVerificationFee: TransactionResponse;
   login: AuthTokenResponse;
   logout: MessageResponse;
   markAllNotificationsAsRead: MessageResponse;
@@ -2156,6 +2391,7 @@ export type Mutations = {
   /** Verify a boost payment; on success the listing's tier + expiry are set. */
   verifyListingBoost: TransactionResponse;
   verifyTransactionByReference: TransactionResponse;
+  verifyVerificationFee: TransactionResponse;
 };
 
 
@@ -2176,8 +2412,19 @@ export type MutationsAdminAcceptStaffInvitationArgs = {
 };
 
 
+export type MutationsAdminAddPayoutNoteArgs = {
+  note: Scalars['String']['input'];
+  transactionId: Scalars['String']['input'];
+};
+
+
 export type MutationsAdminAiPreScreenTitleDocumentsArgs = {
   documentId: Scalars['String']['input'];
+};
+
+
+export type MutationsAdminApproveCautionRefundArgs = {
+  refundId: Scalars['String']['input'];
 };
 
 
@@ -2189,6 +2436,19 @@ export type MutationsAdminBookingAssistDecisionArgs = {
 export type MutationsAdminBroadcastAppUpdateArgs = {
   message: Scalars['String']['input'];
   title: Scalars['String']['input'];
+};
+
+
+export type MutationsAdminCancelBookingArgs = {
+  bookingId: Scalars['String']['input'];
+  fault: AdminCancelFault;
+  reason: Scalars['String']['input'];
+};
+
+
+export type MutationsAdminCancelPayoutArgs = {
+  reason: Scalars['String']['input'];
+  transactionId: Scalars['String']['input'];
 };
 
 
@@ -2252,6 +2512,18 @@ export type MutationsAdminDeleteRoleArgs = {
 };
 
 
+export type MutationsAdminFinalizeBookingArgs = {
+  bookingId: Scalars['String']['input'];
+  reason: Scalars['String']['input'];
+};
+
+
+export type MutationsAdminForceSignOutArgs = {
+  reason: Scalars['String']['input'];
+  userId: Scalars['String']['input'];
+};
+
+
 export type MutationsAdminGetOrCreateBookingAssistArgs = {
   applicationId: Scalars['String']['input'];
 };
@@ -2297,6 +2569,11 @@ export type MutationsAdminReorderPropertyTypesArgs = {
 };
 
 
+export type MutationsAdminResendStaffInvitationArgs = {
+  invitationId: Scalars['String']['input'];
+};
+
+
 export type MutationsAdminResolveCautionClaimArgs = {
   adminNotes?: InputMaybe<Scalars['String']['input']>;
   approved: Scalars['Boolean']['input'];
@@ -2304,8 +2581,29 @@ export type MutationsAdminResolveCautionClaimArgs = {
 };
 
 
+export type MutationsAdminRetryPayoutArgs = {
+  note?: InputMaybe<Scalars['String']['input']>;
+  transactionId: Scalars['String']['input'];
+};
+
+
 export type MutationsAdminReviewHostingVerificationRequestArgs = {
   input: AdminReviewHostingVerificationRequestInput;
+};
+
+
+export type MutationsAdminRevokeStaffInvitationArgs = {
+  invitationId: Scalars['String']['input'];
+};
+
+
+export type MutationsAdminSendPasswordResetArgs = {
+  userId: Scalars['String']['input'];
+};
+
+
+export type MutationsAdminSetAppVersionPolicyArgs = {
+  input: SetAppVersionPolicyInput;
 };
 
 
@@ -2321,6 +2619,7 @@ export type MutationsAdminTakeBookingAssistArgs = {
 
 export type MutationsAdminUpdateBookingApplicationStatusArgs = {
   input: BookingApplicationStatusUpdateInput;
+  reason?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -2360,6 +2659,11 @@ export type MutationsAdminUpdateHostingVerificationRequestDetailsArgs = {
 };
 
 
+export type MutationsAdminUpdateLegalConfigArgs = {
+  input: AdminUpdateLegalConfigInput;
+};
+
+
 export type MutationsAdminUpdateRoleArgs = {
   input: AdminUpdateRoleInput;
 };
@@ -2372,6 +2676,7 @@ export type MutationsAdminUpdateStaffArgs = {
 
 export type MutationsAdminUpdateUserStatusArgs = {
   action: Scalars['String']['input'];
+  reason?: InputMaybe<Scalars['String']['input']>;
   userId: Scalars['String']['input'];
 };
 
@@ -2606,6 +2911,12 @@ export type MutationsInitiateSupportChatArgs = {
 };
 
 
+export type MutationsInitiateVerificationFeeArgs = {
+  hostingId: Scalars['String']['input'];
+  tier: HostingVerificationTier;
+};
+
+
 export type MutationsLoginArgs = {
   input: LoginInput;
 };
@@ -2836,6 +3147,11 @@ export type MutationsVerifyTransactionByReferenceArgs = {
   reference: Scalars['String']['input'];
 };
 
+
+export type MutationsVerifyVerificationFeeArgs = {
+  reference: Scalars['String']['input'];
+};
+
 export type Notification = {
   __typename?: 'Notification';
   createdAt: Scalars['String']['output'];
@@ -2984,6 +3300,54 @@ export enum PhoneNumberVerificationStatus {
   Verified = 'VERIFIED'
 }
 
+/** Location the app recorded when a photo was taken. */
+export type PhotoCaptureInput = {
+  accuracyM?: InputMaybe<Scalars['Float']['input']>;
+  capturedAt: Scalars['String']['input'];
+  latitude: Scalars['Float']['input'];
+  longitude: Scalars['Float']['input'];
+};
+
+export type PhotoLocationCheck = {
+  __typename?: 'PhotoLocationCheck';
+  accuracyM?: Maybe<Scalars['Float']['output']>;
+  assetId: Scalars['String']['output'];
+  cameraModel?: Maybe<Scalars['String']['output']>;
+  capturedAt?: Maybe<Scalars['String']['output']>;
+  checkedAt?: Maybe<Scalars['String']['output']>;
+  distanceM?: Maybe<Scalars['Float']['output']>;
+  duplicateCount?: Maybe<Scalars['Int']['output']>;
+  imageId: Scalars['String']['output'];
+  latitude?: Maybe<Scalars['Float']['output']>;
+  longitude?: Maybe<Scalars['Float']['output']>;
+  roomId: Scalars['String']['output'];
+  roomName: Scalars['String']['output'];
+  source?: Maybe<Scalars['String']['output']>;
+  status: PhotoLocationStatus;
+};
+
+export enum PhotoLocationStatus {
+  AtProperty = 'AT_PROPERTY',
+  AwayFromProperty = 'AWAY_FROM_PROPERTY',
+  NotChecked = 'NOT_CHECKED',
+  NoLocation = 'NO_LOCATION',
+  NoPropertyPin = 'NO_PROPERTY_PIN',
+  Pending = 'PENDING'
+}
+
+export type PhotoLocationSummary = {
+  __typename?: 'PhotoLocationSummary';
+  atProperty: Scalars['Int']['output'];
+  awayFromProperty: Scalars['Int']['output'];
+  duplicates: Scalars['Int']['output'];
+  maxDistanceM?: Maybe<Scalars['Float']['output']>;
+  noLocation: Scalars['Int']['output'];
+  noPropertyPin: Scalars['Int']['output'];
+  notChecked: Scalars['Int']['output'];
+  pending: Scalars['Int']['output'];
+  total: Scalars['Int']['output'];
+};
+
 export type Profile = {
   __typename?: 'Profile';
   createdAt: Scalars['String']['output'];
@@ -3058,11 +3422,15 @@ export type Query = {
   __typename?: 'Query';
   /** The active script for an interaction type, with its ordered steps. */
   adminActiveFieldScript: FieldScript;
+  /** The forced update policy for every mobile platform (iOS first). */
+  adminAppVersionPolicies: Array<AppVersionPolicy>;
   adminAsset: Asset;
   adminAuditLogs: AdminAuditLogConnection;
   adminBooking: Booking;
   adminBookingApplication: BookingApplication;
+  /** Applications, newest first. `search` matches name, email or phone. */
   adminBookingApplications: Array<BookingApplication>;
+  adminBookingApplicationsCount: Scalars['Int']['output'];
   /**
    * The full case: assist + application/guest/host/hosting context + events +
    * the live current handler. Lookup by assist id or by application id.
@@ -3073,10 +3441,26 @@ export type Query = {
    * the list can render the current-handler badge and the case summary.
    */
   adminBookingAssists: Array<BookingAssist>;
+  /**
+   * Bookings, newest first. `paymentStatus`: PAID, PENDING (awaiting
+   * payment) or FAILED. `search`: guest name, email, phone or reference.
+   */
   adminBookings: Array<Booking>;
+  adminBookingsCount: Scalars['Int']['output'];
   adminCautionClaim: CautionClaim;
   adminCautionClaims: Array<CautionClaim>;
+  /**
+   * Guest caution refund requests, newest first. Filter by status, e.g.
+   * `REQUESTED` for the queue waiting on staff approval.
+   */
+  adminCautionRefunds: Array<CautionRefund>;
   adminDashboardStats: AdminDashboardStats;
+  /**
+   * A CSV of users, bookings, transactions (with the ledger filters) or
+   * listings, newest first, up to 5,000 rows. Needs the matching read
+   * permission; every export is written to the audit log.
+   */
+  adminExportCsv: Scalars['String']['output'];
   adminFeeConfig: AdminFeeConfig;
   adminFeedback: Array<Feedback>;
   /** Full record with nested responses. */
@@ -3099,12 +3483,21 @@ export type Query = {
   adminHosting: Hosting;
   adminHostingVerificationRequest: HostingVerificationRequest;
   adminHostingVerificationRequests: Array<HostingVerificationRequest>;
+  /** How many verification requests match (optionally for one listing). */
+  adminHostingVerificationRequestsCount: Scalars['Int']['output'];
   adminHostings: Array<Hosting>;
+  /** How many listings match the same filters as `adminHostings`. */
+  adminHostingsCount: Scalars['Int']['output'];
   /**
    * AI-suggested customer answers (favourable / medium / bad) for the next
    * question, conditioned on the transcript built from prior responses.
    */
   adminInteractionAnswerSuggestions: InteractionAnswerSuggestions;
+  /**
+   * Whether the background jobs are running, one row per job that has ever
+   * run. Any staff member may read it.
+   */
+  adminJobStatus: Array<AdminJobStatus>;
   /**
    * Returns the platform-wide legal configuration defaults used to
    * pre-populate tenancy agreement fields.
@@ -3113,12 +3506,21 @@ export type Query = {
   adminNpsAverage?: Maybe<Scalars['Float']['output']>;
   adminNpsScores: Array<Npsscore>;
   /**
+   * Notes and staff actions on one payout (from the audit log). Needs
+   * `financials.read`.
+   */
+  adminPayoutNotes: Array<AdminPayoutNote>;
+  /**
    * Host payouts not yet confirmed paid — for ops reconciliation. Surfaces
    * retry metadata (attempts, last_error, next_attempt_at) and flags the
    * `NeedsReconciliation` dead-letter rows that need manual attention.
    */
   adminPendingDisbursements: Array<Transaction>;
-  /** Get all available permissions as enum values */
+  /**
+   * Every permission name the server checks (was a hand-kept list missing
+   * booking_assist, field_interactions, field_scripts, host_leads,
+   * app_config and payouts).
+   */
   adminPermissions: Array<Scalars['String']['output']>;
   /** Every property type (including inactive) for the admin editor. */
   adminPropertyTypes: Array<AdminPropertyType>;
@@ -3128,11 +3530,26 @@ export type Query = {
   /** List all roles (already available via adminRoles in staff queries) */
   adminRolesList: Array<Role>;
   adminStaff: Array<StaffMember>;
+  /** Staff invitations not yet accepted, newest first. Needs `staff.read`. */
+  adminStaffInvitations: Array<AdminStaffInvitation>;
   adminSupportChats: Array<SupportChat>;
   adminSupportRatings: Array<SupportChatRating>;
+  /** Counts for the Today page. Any staff member may read them. */
+  adminTodayCounts: AdminTodayCounts;
+  /** The ledger, newest first, with optional filters. */
   adminTransactions: Array<Transaction>;
+  /** How many transactions match the filters and what they add up to (₦). */
+  adminTransactionsTotals: AdminTransactionTotals;
   adminUser: AdminUser;
+  /**
+   * A user's bookings (as a guest), listings (as a host) and payments.
+   * Needs `users.read`.
+   */
+  adminUserActivity: AdminUserActivity;
+  /** Users, newest first. `search` matches email, Kushi ID or name. */
   adminUsers: Array<AdminUser>;
+  /** How many users match `search` (for "of N" in the admin). */
+  adminUsersCount: Scalars['Int']['output'];
   adminVerificationTier?: Maybe<AdminVerificationTier>;
   adminVerificationTiers: Array<AdminVerificationTier>;
   /**
@@ -3143,6 +3560,11 @@ export type Query = {
    */
   aiHostingContentSuggestion: HostingContentSuggestion;
   aiHostingSearchPredictions: Array<AiSearchPrediction>;
+  /**
+   * The update policy for a platform. Needs no sign-in, and is never
+   * refused by the forced update check.
+   */
+  appVersionPolicy: AppVersionPolicy;
   authGuest: Guest;
   authHost: Host;
   banks: Array<Bank>;
@@ -3174,6 +3596,7 @@ export type Query = {
   hostingAnalytics: HostingAnalytics;
   hostingChat: HostingChat;
   hostingCounts: HostingCounts;
+  hostingVerificationFee: VerificationFeeStatus;
   /**
    * All verification requests for a hosting, newest-first.
    * Used by the Expo UI to display request history.
@@ -3263,7 +3686,10 @@ export type QueryAdminAssetArgs = {
 
 
 export type QueryAdminAuditLogsArgs = {
+  itemId?: InputMaybe<Scalars['String']['input']>;
+  itemType?: InputMaybe<Scalars['String']['input']>;
   pagination?: InputMaybe<PaginationInput>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -3279,6 +3705,13 @@ export type QueryAdminBookingApplicationArgs = {
 
 export type QueryAdminBookingApplicationsArgs = {
   pagination?: InputMaybe<PaginationInput>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<BookingApplicationStatus>;
+};
+
+
+export type QueryAdminBookingApplicationsCountArgs = {
+  search?: InputMaybe<Scalars['String']['input']>;
   status?: InputMaybe<BookingApplicationStatus>;
 };
 
@@ -3296,6 +3729,15 @@ export type QueryAdminBookingAssistsArgs = {
 
 export type QueryAdminBookingsArgs = {
   pagination?: InputMaybe<PaginationInput>;
+  paymentStatus?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryAdminBookingsCountArgs = {
+  paymentStatus?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
   status?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -3308,6 +3750,18 @@ export type QueryAdminCautionClaimArgs = {
 export type QueryAdminCautionClaimsArgs = {
   pagination?: InputMaybe<PaginationInput>;
   status?: InputMaybe<CautionClaimStatus>;
+};
+
+
+export type QueryAdminCautionRefundsArgs = {
+  pagination?: InputMaybe<PaginationInput>;
+  status?: InputMaybe<CautionRefundStatus>;
+};
+
+
+export type QueryAdminExportCsvArgs = {
+  filters?: InputMaybe<TransactionFilters>;
+  kind: AdminExportKind;
 };
 
 
@@ -3360,13 +3814,29 @@ export type QueryAdminHostingVerificationRequestArgs = {
 
 
 export type QueryAdminHostingVerificationRequestsArgs = {
+  hostingId?: InputMaybe<Scalars['String']['input']>;
   pagination?: InputMaybe<PaginationInput>;
+  status?: InputMaybe<HostingVerificationRequestStatus>;
+};
+
+
+export type QueryAdminHostingVerificationRequestsCountArgs = {
+  hostingId?: InputMaybe<Scalars['String']['input']>;
   status?: InputMaybe<HostingVerificationRequestStatus>;
 };
 
 
 export type QueryAdminHostingsArgs = {
   pagination?: InputMaybe<PaginationInput>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  source?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<Scalars['String']['input']>;
+  verificationTier?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryAdminHostingsCountArgs = {
+  search?: InputMaybe<Scalars['String']['input']>;
   source?: InputMaybe<Scalars['String']['input']>;
   status?: InputMaybe<Scalars['String']['input']>;
   verificationTier?: InputMaybe<Scalars['String']['input']>;
@@ -3381,6 +3851,11 @@ export type QueryAdminInteractionAnswerSuggestionsArgs = {
 
 export type QueryAdminNpsScoresArgs = {
   pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QueryAdminPayoutNotesArgs = {
+  transactionId: Scalars['String']['input'];
 };
 
 
@@ -3411,7 +3886,13 @@ export type QueryAdminSupportRatingsArgs = {
 
 
 export type QueryAdminTransactionsArgs = {
+  filters?: InputMaybe<TransactionFilters>;
   pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QueryAdminTransactionsTotalsArgs = {
+  filters?: InputMaybe<TransactionFilters>;
 };
 
 
@@ -3420,8 +3901,19 @@ export type QueryAdminUserArgs = {
 };
 
 
+export type QueryAdminUserActivityArgs = {
+  userId: Scalars['String']['input'];
+};
+
+
 export type QueryAdminUsersArgs = {
   pagination?: InputMaybe<PaginationInput>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryAdminUsersCountArgs = {
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -3437,6 +3929,11 @@ export type QueryAiHostingContentSuggestionArgs = {
 
 export type QueryAiHostingSearchPredictionsArgs = {
   userInput: Scalars['String']['input'];
+};
+
+
+export type QueryAppVersionPolicyArgs = {
+  platform: AppPlatform;
 };
 
 
@@ -3516,6 +4013,12 @@ export type QueryHostingAnalyticsArgs = {
 
 export type QueryHostingChatArgs = {
   chatId: Scalars['String']['input'];
+};
+
+
+export type QueryHostingVerificationFeeArgs = {
+  hostingId: Scalars['String']['input'];
+  tier: HostingVerificationTier;
 };
 
 
@@ -3697,6 +4200,20 @@ export type SavedHostingResponse = {
   __typename?: 'SavedHostingResponse';
   data?: Maybe<SavedHosting>;
   message: Scalars['String']['output'];
+};
+
+export type SetAppVersionPolicyInput = {
+  /** The newest version in the stores. MAJOR.MINOR.PATCH. */
+  latestVersion: Scalars['String']['input'];
+  /** Optional note shown on the update screen (up to 280 characters). */
+  message?: InputMaybe<Scalars['String']['input']>;
+  /** Builds below this are refused until they update. MAJOR.MINOR.PATCH. */
+  minimumVersion: Scalars['String']['input'];
+  platform: AppPlatform;
+  /** Why the policy changed; kept in the audit log. */
+  reason: Scalars['String']['input'];
+  /** Store page the update screen opens. Must be https. */
+  storeUrl: Scalars['String']['input'];
 };
 
 export type SignUpInput = {
@@ -4060,6 +4577,20 @@ export type TransactionFilter = {
   userId?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** Admin ledger filters (all optional). */
+export type TransactionFilters = {
+  /** First Lagos day included, `YYYY-MM-DD`. */
+  from?: InputMaybe<Scalars['String']['input']>;
+  /** Transaction type, e.g. `booking_payment`, `host_booking_payment`. */
+  kind?: InputMaybe<Scalars['String']['input']>;
+  /** Matches the payment reference. */
+  search?: InputMaybe<Scalars['String']['input']>;
+  /** e.g. `Success`, `Pending`, `Failed`, `NeedsReconciliation`. */
+  status?: InputMaybe<Scalars['String']['input']>;
+  /** Last Lagos day included, `YYYY-MM-DD`. */
+  to?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type TransactionResponse = {
   __typename?: 'TransactionResponse';
   data?: Maybe<Transaction>;
@@ -4083,9 +4614,15 @@ export enum TransactionStatus {
 export enum TransactionType {
   BookingPayment = 'booking_payment',
   GuestCancellationRefund = 'guest_cancellation_refund',
+  /** The rest of a guest's caution deposit paid back to them. */
+  GuestCautionRefund = 'guest_caution_refund',
   HostBookingPayment = 'host_booking_payment',
   HostCancellationCompensation = 'host_cancellation_compensation',
-  ListingTierBoost = 'listing_tier_boost'
+  /** An approved caution claim paid to the host from the guest's deposit. */
+  HostCautionClaim = 'host_caution_claim',
+  ListingTierBoost = 'listing_tier_boost',
+  /** A host's fee for a priced listing verification level. */
+  VerificationFee = 'verification_fee'
 }
 
 /** How a parent transacts its units: individually (default) or as one group. */
@@ -4147,6 +4684,16 @@ export enum VariableType {
   Number = 'NUMBER',
   String = 'STRING'
 }
+
+export type VerificationFeeStatus = {
+  __typename?: 'VerificationFeeStatus';
+  paid: Scalars['Boolean']['output'];
+  paidAt?: Maybe<Scalars['String']['output']>;
+  price?: Maybe<Scalars['Decimal']['output']>;
+  reference?: Maybe<Scalars['String']['output']>;
+  required: Scalars['Boolean']['output'];
+  tier: HostingVerificationTier;
+};
 
 export type VerificationLogEntry = {
   __typename?: 'VerificationLogEntry';
@@ -4656,6 +5203,21 @@ export type VerifyListingBoostMutationVariables = Exact<{
 
 export type VerifyListingBoostMutation = { __typename?: 'Mutations', verifyListingBoost: { __typename?: 'TransactionResponse', message: string, data?: { __typename?: 'Transaction', id: string, amount: any, reference?: string | null, status: TransactionStatus } | null } };
 
+export type InitiateVerificationFeeMutationVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+  tier: HostingVerificationTier;
+}>;
+
+
+export type InitiateVerificationFeeMutation = { __typename?: 'Mutations', initiateVerificationFee: { __typename?: 'TransactionResponse', message: string, data?: { __typename?: 'Transaction', id: string, amount: any, reference?: string | null, status: TransactionStatus } | null } };
+
+export type VerifyVerificationFeeMutationVariables = Exact<{
+  reference: Scalars['String']['input'];
+}>;
+
+
+export type VerifyVerificationFeeMutation = { __typename?: 'Mutations', verifyVerificationFee: { __typename?: 'TransactionResponse', message: string, data?: { __typename?: 'Transaction', id: string, amount: any, reference?: string | null, status: TransactionStatus } | null } };
+
 export type RecordListingEventMutationVariables = Exact<{
   hostingId: Scalars['String']['input'];
   kind: ListingEventKind;
@@ -4898,7 +5460,7 @@ export type BookingQueryVariables = Exact<{
 }>;
 
 
-export type BookingQuery = { __typename?: 'Query', booking: { __typename?: 'Booking', id: string, bookingReference: string, expiresAt?: string | null, paymentStatus: PaymentStatus, createdAt: string, autoFinalizeAt?: string | null, commencementDate?: string | null, expiryDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, fullName: string, email: string, paymentMethod?: string | null, status?: BookingStatus | null, cautionFee?: any | null, serviceCharge?: any | null, legalFee?: any | null, stampDuty?: any | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, propertyType?: string | null, street?: string | null, landmarks?: string | null, averageRating?: number | null, totalRatings?: number | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string, status: TransactionStatus, reference?: string | null } | null, tenancyAgreementAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string } }, userReview?: { __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, checkIn?: number | null, accuracy?: number | null, cleanliness?: number | null, communication?: number | null, value?: number | null, location?: number | null, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } } | null, bookingApplication: { __typename?: 'BookingApplication', id: string, intervalMultiplier?: number | null, commencementDate?: string | null }, feeLineItems: Array<{ __typename?: 'FeeLineItem', key: string, label: string, description: string, amount: any }> } };
+export type BookingQuery = { __typename?: 'Query', booking: { __typename?: 'Booking', id: string, bookingReference: string, expiresAt?: string | null, paymentStatus: PaymentStatus, createdAt: string, autoFinalizeAt?: string | null, commencementDate?: string | null, expiryDate?: string | null, guestServiceCharge: any, amount: any, phoneNumber: string, fullName: string, email: string, paymentMethod?: string | null, status?: BookingStatus | null, cautionFee?: any | null, cautionCustodyFee?: any | null, serviceCharge?: any | null, legalFee?: any | null, stampDuty?: any | null, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, country?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, propertyType?: string | null, street?: string | null, landmarks?: string | null, averageRating?: number | null, totalRatings?: number | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, transaction?: { __typename?: 'Transaction', id: string, status: TransactionStatus, reference?: string | null } | null, tenancyAgreementAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null, guest: { __typename?: 'Guest', id: string, user: { __typename?: 'User', id: string } }, userReview?: { __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, checkIn?: number | null, accuracy?: number | null, cleanliness?: number | null, communication?: number | null, value?: number | null, location?: number | null, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null } } } | null, bookingApplication: { __typename?: 'BookingApplication', id: string, intervalMultiplier?: number | null, commencementDate?: string | null }, feeLineItems: Array<{ __typename?: 'FeeLineItem', key: string, label: string, description: string, amount: any }> } };
 
 export type GuestBookingTenancyAgreementPreviewQueryVariables = Exact<{
   bookingId: Scalars['String']['input'];
@@ -4969,6 +5531,14 @@ export type HostingVerificationTierQueryVariables = Exact<{
 
 
 export type HostingVerificationTierQuery = { __typename?: 'Query', hostingVerificationTier?: { __typename?: 'AdminVerificationTier', id: string, tier: string, description: string, color: string, price?: any | null, documentRequirements: Array<{ __typename?: 'AdminVerificationTierDocumentRequirement', title: string, description: string }> } | null };
+
+export type HostingVerificationFeeQueryVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+  tier: HostingVerificationTier;
+}>;
+
+
+export type HostingVerificationFeeQuery = { __typename?: 'Query', hostingVerificationFee: { __typename?: 'VerificationFeeStatus', tier: HostingVerificationTier, price?: any | null, required: boolean, paid: boolean, paidAt?: string | null, reference?: string | null } };
 
 export type PropertyTypesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -5075,6 +5645,42 @@ export type UserProfileQueryVariables = Exact<{
 
 
 export type UserProfileQuery = { __typename?: 'Query', userProfile: { __typename?: 'PublicUserProfile', id: string, fullName: string, avatar?: string | null, memberSince: string, verified: boolean, agentRatingAvg?: number | null, agentReviewCount: number, reviews: Array<{ __typename?: 'AgentReview', id: string, rating: number, comment?: string | null, reviewerName: string, reviewerAvatar?: string | null, hostingId?: string | null, createdAt: string }>, listings: Array<{ __typename?: 'Hosting', id: string, title?: string | null, state?: string | null, city?: string | null, price?: any | null, listingType?: ListingType | null, managementType: ManagementType, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }> } };
+
+export type KApplicantTrustQueryVariables = Exact<{
+  bookingApplicationId: Scalars['String']['input'];
+}>;
+
+
+export type KApplicantTrustQuery = { __typename?: 'Query', bookingApplication: { __typename?: 'BookingApplication', id: string, guest: { __typename?: 'Guest', id: string, signature?: { __typename?: 'Asset', id: string } | null, user: { __typename?: 'User', id: string, phoneNumberVerified: boolean, createdAt: string, kyc: { __typename?: 'Kyc', id: string, ninVerified?: boolean | null, bvnVerified?: boolean | null, idDocumentType?: string | null } } } } };
+
+export type KHostTenancyQueryVariables = Exact<{
+  bookingApplicationId: Scalars['String']['input'];
+}>;
+
+
+export type KHostTenancyQuery = { __typename?: 'Query', bookingApplication: { __typename?: 'BookingApplication', id: string, booking?: { __typename?: 'Booking', id: string, status?: BookingStatus | null, paymentStatus: PaymentStatus, amount: any, hostServiceCharge: any, cautionFee?: any | null, commencementDate?: string | null, expiryDate?: string | null, expiresAt?: string | null, autoFinalizeAt?: string | null, createdAt: string, hostTransaction?: { __typename?: 'Transaction', id: string, status: TransactionStatus, amount: any, disbursementAmount?: any | null, createdAt: string } | null } | null } };
+
+export type KSavedCollectedQueryVariables = Exact<{
+  filters?: InputMaybe<SavedHostingFilterInput>;
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type KSavedCollectedQuery = { __typename?: 'Query', savedHostings: Array<{ __typename?: 'SavedHosting', id: string, createdAt: string, folder?: { __typename?: 'SavedHostingFolder', id: string, folderName: string } | null, hosting: { __typename?: 'Hosting', id: string, kind: HostingKind, childCount: number, priceFrom?: any | null, isBookable: boolean, price?: any | null, listingType?: ListingType | null, managementType: ManagementType, totalRatings?: number | null, averageRating?: number | null, state?: string | null, title?: string | null, city?: string | null, saved: boolean, publishStatus?: PublishStatus | null, latitude?: string | null, longitude?: string | null, paymentInterval?: PaymentInterval | null, verification?: { __typename?: 'HostingVerificationData', id: string, verificationTier: HostingVerificationTier, tierTooltip: string } | null, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } } | null, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } }> } }> };
+
+export type KCollectionsQueryVariables = Exact<{
+  pagination?: InputMaybe<PaginationInput>;
+}>;
+
+
+export type KCollectionsQuery = { __typename?: 'Query', savedHostingFolders: Array<{ __typename?: 'SavedHostingFolder', id: string, folderName: string, itemCount: number, lastUpdated: string }> };
+
+export type KChatQueryVariables = Exact<{
+  chatId: Scalars['String']['input'];
+}>;
+
+
+export type KChatQuery = { __typename?: 'Query', hostingChat: { __typename?: 'HostingChat', id: string, hosting: { __typename?: 'Hosting', id: string, title?: string | null, city?: string | null, state?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }, recipientUser: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null }, onlineUser: { __typename?: 'OnlineUser', id: string, online: boolean, lastSeen: string } } } };
 
 export type KSavedQueryVariables = Exact<{
   pagination?: InputMaybe<PaginationInput>;
@@ -6645,6 +7251,40 @@ export const VerifyListingBoostDocument = gql`
 export function useVerifyListingBoostMutation() {
   return Urql.useMutation<VerifyListingBoostMutation, VerifyListingBoostMutationVariables>(VerifyListingBoostDocument);
 };
+export const InitiateVerificationFeeDocument = gql`
+    mutation InitiateVerificationFee($hostingId: String!, $tier: HostingVerificationTier!) {
+  initiateVerificationFee(hostingId: $hostingId, tier: $tier) {
+    message
+    data {
+      id
+      amount
+      reference
+      status
+    }
+  }
+}
+    `;
+
+export function useInitiateVerificationFeeMutation() {
+  return Urql.useMutation<InitiateVerificationFeeMutation, InitiateVerificationFeeMutationVariables>(InitiateVerificationFeeDocument);
+};
+export const VerifyVerificationFeeDocument = gql`
+    mutation VerifyVerificationFee($reference: String!) {
+  verifyVerificationFee(reference: $reference) {
+    message
+    data {
+      id
+      amount
+      reference
+      status
+    }
+  }
+}
+    `;
+
+export function useVerifyVerificationFeeMutation() {
+  return Urql.useMutation<VerifyVerificationFeeMutation, VerifyVerificationFeeMutationVariables>(VerifyVerificationFeeDocument);
+};
 export const RecordListingEventDocument = gql`
     mutation RecordListingEvent($hostingId: String!, $kind: ListingEventKind!) {
   recordListingEvent(hostingId: $hostingId, kind: $kind)
@@ -7476,6 +8116,7 @@ export const BookingDocument = gql`
       commencementDate
     }
     cautionFee
+    cautionCustodyFee
     serviceCharge
     legalFee
     stampDuty
@@ -7761,6 +8402,22 @@ export const HostingVerificationTierDocument = gql`
 
 export function useHostingVerificationTierQuery(options: Omit<Urql.UseQueryArgs<HostingVerificationTierQueryVariables>, 'query'>) {
   return Urql.useQuery<HostingVerificationTierQuery, HostingVerificationTierQueryVariables>({ query: HostingVerificationTierDocument, ...options });
+};
+export const HostingVerificationFeeDocument = gql`
+    query HostingVerificationFee($hostingId: String!, $tier: HostingVerificationTier!) {
+  hostingVerificationFee(hostingId: $hostingId, tier: $tier) {
+    tier
+    price
+    required
+    paid
+    paidAt
+    reference
+  }
+}
+    `;
+
+export function useHostingVerificationFeeQuery(options: Omit<Urql.UseQueryArgs<HostingVerificationFeeQueryVariables>, 'query'>) {
+  return Urql.useQuery<HostingVerificationFeeQuery, HostingVerificationFeeQueryVariables>({ query: HostingVerificationFeeDocument, ...options });
 };
 export const PropertyTypesDocument = gql`
     query PropertyTypes {
@@ -8381,6 +9038,177 @@ export const UserProfileDocument = gql`
 
 export function useUserProfileQuery(options: Omit<Urql.UseQueryArgs<UserProfileQueryVariables>, 'query'>) {
   return Urql.useQuery<UserProfileQuery, UserProfileQueryVariables>({ query: UserProfileDocument, ...options });
+};
+export const KApplicantTrustDocument = gql`
+    query KApplicantTrust($bookingApplicationId: String!) {
+  bookingApplication(bookingApplicationId: $bookingApplicationId) {
+    id
+    guest {
+      id
+      signature {
+        id
+      }
+      user {
+        id
+        phoneNumberVerified
+        createdAt
+        kyc {
+          id
+          ninVerified
+          bvnVerified
+          idDocumentType
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useKApplicantTrustQuery(options: Omit<Urql.UseQueryArgs<KApplicantTrustQueryVariables>, 'query'>) {
+  return Urql.useQuery<KApplicantTrustQuery, KApplicantTrustQueryVariables>({ query: KApplicantTrustDocument, ...options });
+};
+export const KHostTenancyDocument = gql`
+    query KHostTenancy($bookingApplicationId: String!) {
+  bookingApplication(bookingApplicationId: $bookingApplicationId) {
+    id
+    booking {
+      id
+      status
+      paymentStatus
+      amount
+      hostServiceCharge
+      cautionFee
+      commencementDate
+      expiryDate
+      expiresAt
+      autoFinalizeAt
+      createdAt
+      hostTransaction {
+        id
+        status
+        amount
+        disbursementAmount
+        createdAt
+      }
+    }
+  }
+}
+    `;
+
+export function useKHostTenancyQuery(options: Omit<Urql.UseQueryArgs<KHostTenancyQueryVariables>, 'query'>) {
+  return Urql.useQuery<KHostTenancyQuery, KHostTenancyQueryVariables>({ query: KHostTenancyDocument, ...options });
+};
+export const KSavedCollectedDocument = gql`
+    query KSavedCollected($filters: SavedHostingFilterInput, $pagination: PaginationInput) {
+  savedHostings(filters: $filters, pagination: $pagination) {
+    id
+    createdAt
+    folder {
+      id
+      folderName
+    }
+    hosting {
+      id
+      kind
+      childCount
+      priceFrom
+      isBookable
+      price
+      listingType
+      managementType
+      totalRatings
+      averageRating
+      state
+      title
+      city
+      saved
+      publishStatus
+      latitude
+      longitude
+      paymentInterval
+      verification {
+        id
+        verificationTier
+        tierTooltip
+      }
+      coverImage {
+        asset {
+          id
+          publicUrl
+          lastUpdated
+        }
+      }
+      images(limit: 4) {
+        id
+        asset {
+          id
+          publicUrl
+          lastUpdated
+          originalFilename
+        }
+      }
+    }
+  }
+}
+    `;
+
+export function useKSavedCollectedQuery(options?: Omit<Urql.UseQueryArgs<KSavedCollectedQueryVariables>, 'query'>) {
+  return Urql.useQuery<KSavedCollectedQuery, KSavedCollectedQueryVariables>({ query: KSavedCollectedDocument, ...options });
+};
+export const KCollectionsDocument = gql`
+    query KCollections($pagination: PaginationInput) {
+  savedHostingFolders(pagination: $pagination) {
+    id
+    folderName
+    itemCount
+    lastUpdated
+  }
+}
+    `;
+
+export function useKCollectionsQuery(options?: Omit<Urql.UseQueryArgs<KCollectionsQueryVariables>, 'query'>) {
+  return Urql.useQuery<KCollectionsQuery, KCollectionsQueryVariables>({ query: KCollectionsDocument, ...options });
+};
+export const KChatDocument = gql`
+    query KChat($chatId: String!) {
+  hostingChat(chatId: $chatId) {
+    id
+    hosting {
+      id
+      title
+      city
+      state
+      price
+      paymentInterval
+      coverImage {
+        id
+        asset {
+          id
+          publicUrl
+        }
+      }
+    }
+    recipientUser {
+      id
+      profile {
+        id
+        fullName
+        image {
+          publicUrl
+        }
+      }
+      onlineUser {
+        id
+        online
+        lastSeen
+      }
+    }
+  }
+}
+    `;
+
+export function useKChatQuery(options: Omit<Urql.UseQueryArgs<KChatQueryVariables>, 'query'>) {
+  return Urql.useQuery<KChatQuery, KChatQueryVariables>({ query: KChatDocument, ...options });
 };
 export const KSavedDocument = gql`
     query KSaved($pagination: PaginationInput) {
@@ -9254,4 +10082,4 @@ export const SupportChatMessageAddedDocument = gql`
 
 export function useSupportChatMessageAddedSubscription<TData = SupportChatMessageAddedSubscription>(options: Omit<Urql.UseSubscriptionArgs<SupportChatMessageAddedSubscriptionVariables>, 'query'>, handler?: Urql.SubscriptionHandler<SupportChatMessageAddedSubscription, TData>) {
   return Urql.useSubscription<SupportChatMessageAddedSubscription, TData, SupportChatMessageAddedSubscriptionVariables>({ query: SupportChatMessageAddedDocument, ...options }, handler);
-};
+};

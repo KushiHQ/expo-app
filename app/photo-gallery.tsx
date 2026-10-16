@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import ImagePicker from 'react-native-image-crop-picker';
+import { carryCapture } from '@/lib/k/photo-capture';
 import * as FileSystem from 'expo-file-system/legacy';
 import { Check, Crop } from 'lucide-react-native';
 import { PhotoViewer, type ViewerPhoto } from '@/components/k/gallery';
@@ -65,6 +66,8 @@ export default function PhotoGalleryScreen() {
 			// Remember which uploaded image this replaces so it's updated in place, not duplicated.
 			const original = useGalleryStore.getState().replacements[current] ?? (isRemote ? current : undefined);
 			if (original) setReplacement(edited, original);
+			// The crop drops EXIF; the edit was taken where the original was.
+			carryCapture(current, edited);
 			updateActiveImage(edited);
 		} catch (e: unknown) {
 			if ((e as { code?: string })?.code !== 'E_PICKER_CANCELLED') toast.show({ type: 'error', text1: 'Couldn’t edit that photo', text2: 'Please try again.' });
