@@ -45,3 +45,16 @@ export const HOSTING_VERIFICATION_TIER = gql`
     }
   }
 `;
+
+export const HOSTING_VERIFICATION_FEE = gql`
+  query HostingVerificationFee($hostingId: String!, $tier: HostingVerificationTier!) {
+    hostingVerificationFee(hostingId: $hostingId, tier: $tier) {
+      tier
+      price
+      required
+      paid
+      paidAt
+      reference
+    }
+  }
+`;

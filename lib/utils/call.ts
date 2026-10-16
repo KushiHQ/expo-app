@@ -6,7 +6,6 @@ import notifee, {
   AndroidCategory,
   EventType,
   AndroidVisibility,
-  AndroidForegroundServiceType,
 } from '@notifee/react-native';
 import { createAudioPlayer } from 'expo-audio';
 import { CALL_TYPE_VALUE } from '../types/enums/hoting-chat';
@@ -57,10 +56,9 @@ export const handleIncomingCall = async (remoteMessage: any) => {
         visibility: AndroidVisibility.PUBLIC,
         pressAction: { id: 'default', launchActivity: 'default' },
         fullScreenAction: { id: 'full_screen', launchActivity: 'default' },
-        asForegroundService: true,
-        foregroundServiceTypes: [
-          AndroidForegroundServiceType.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING,
-        ],
+        // A ringing call is a full-screen, high-priority call notification. It
+        // doesn't need a foreground service (Google Play rejects one here).
+        ongoing: true,
         color: '#266DD3',
         actions: [
           {

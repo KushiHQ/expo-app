@@ -2,9 +2,10 @@
  * The listing set-up flow, as one model shared by the hub, every step's
  * progress bar and the publish gate.
  *
- * The server enforces almost nothing at publish (a LIVE save goes live at
- * once; only land needs one on-site photo), so the rules a listing must meet
- * before it reaches renters live here, in one place.
+ * A LIVE save goes live at once (no review queue). The server enforces these
+ * same rules (server_v2 `housing/utils/publish_rules.rs`, same wording) and
+ * refuses a LIVE save that misses any — error code LISTING_INCOMPLETE with the
+ * `missing` list — so keep the two in step when a rule changes.
  */
 import type { Href } from 'expo-router';
 import type { HostingQuery } from '@/lib/services/graphql/generated';

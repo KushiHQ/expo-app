@@ -22,6 +22,7 @@ import { useToast } from '@/lib/hooks/use-toast';
 import { cast } from '@/lib/types/utils';
 import { useCameraScreen, usePhotoGalleryScreen } from '../camera';
 import { getAssetResizeUrl } from '@/lib/utils/urls';
+import { captureFor } from '@/lib/k/photo-capture';
 
 export const useHostingFormRoomUtils = (hostingId: string) => {
   const { redirect } = useCameraScreen();
@@ -172,7 +173,8 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
         const replaceImageId = originalUrl
           ? serverImages.find((i) => i.asset.publicUrl === originalUrl)?.id
           : undefined;
-        return { uri, replaceImageId };
+        // Send where it was taken — the server refuses room photos without a location.
+        return { uri, replaceImageId, capture: captureFor(uri) };
       });
 
       useUploadStore.getState().enqueue(roomId, items);
@@ -438,6 +440,7 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
     redirect({
       clear: true,
       images,
+      requireLocation: true,
     });
   };
 

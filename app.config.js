@@ -9,7 +9,7 @@ export default ({ config }) => ({
 	...config,
 	name: "Kushi Housing",
 	slug: "kushi",
-	version: "1.4.0",
+	version: "1.4.1",
 	orientation: "default",
 	icon: "./assets/icons/icon.png",
 	scheme: "kushi",
@@ -64,7 +64,6 @@ export default ({ config }) => ({
 			
 			"android.permission.FOREGROUND_SERVICE_CAMERA",
 			"android.permission.FOREGROUND_SERVICE_MICROPHONE",
-			"android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING",
 			"android.permission.MANAGE_OWN_CALLS",
 			"android.permission.READ_PHONE_STATE",
 			"android.permission.VIBRATE",
