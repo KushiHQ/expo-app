@@ -5,6 +5,12 @@ on:
     branches:
       - main
 
+# Staging and production upload to the same Play app; two uploads at once
+# delete each other's edit ("This Edit has been deleted"). Run one at a time.
+concurrency:
+  group: play-store-upload
+  cancel-in-progress: false
+
 jobs:
   build:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[android]')
@@ -98,6 +104,14 @@ jobs:
           fi
           echo "AAB_PATH=$AAB_PATH" >> "$GITHUB_ENV"
           echo "✅ Built AAB: $AAB_PATH"
+
+      # Keep the build so a failed store upload can be retried without rebuilding.
+      - name: Save build
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build
+          path: ${{ env.AAB_PATH }}
+          retention-days: 7
 
       - name: Extract build number
         run: |
