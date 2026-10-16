@@ -59,7 +59,9 @@ export const handleIncomingCall = async (remoteMessage: any) => {
         // A ringing call is a full-screen, high-priority call notification. It
         // doesn't need a foreground service (Google Play rejects one here).
         ongoing: true,
-        color: '#266DD3',
+        // White Kushi mark (Android tints it); see lib/plugins/withNotificationIcon.js
+        smallIcon: 'ic_notification',
+        color: '#F59E0B',
         actions: [
           {
             title: '<b>Accept</b>',

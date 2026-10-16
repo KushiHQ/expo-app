@@ -43,7 +43,9 @@ export const handleIncomingAppUpdate = async (remoteMessage: any) => {
       channelId,
       importance: AndroidImportance.HIGH,
       pressAction: { id: 'default', launchActivity: 'default' },
-      color: '#FFA500',
+      // White Kushi mark (Android tints it); see lib/plugins/withNotificationIcon.js
+      smallIcon: 'ic_notification',
+      color: '#F59E0B',
     },
     ios: {
       sound: 'default',
@@ -84,7 +86,9 @@ export const handleIncomingChatMessage = async (remoteMessage: any) => {
       channelId,
       importance: AndroidImportance.HIGH,
       pressAction: { id: 'default', launchActivity: 'default' },
-      color: '#266DD3',
+      // White Kushi mark (Android tints it); see lib/plugins/withNotificationIcon.js
+      smallIcon: 'ic_notification',
+      color: '#F59E0B',
       // Only set largeIcon when the value is an actual https:// URL;
       // undefined / null / empty string / non-URL values cause Notifee to throw.
       largeIcon:
@@ -132,6 +136,8 @@ export const handleIncomingVerificationNotification = async (remoteMessage: any)
       channelId,
       importance: AndroidImportance.HIGH,
       pressAction: { id: 'default', launchActivity: 'default' },
+      // White Kushi mark (Android tints it); see lib/plugins/withNotificationIcon.js
+      smallIcon: 'ic_notification',
       color: '#F59E0B',
     },
     ios: {
