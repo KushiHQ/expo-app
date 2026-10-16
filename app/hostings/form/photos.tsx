@@ -15,6 +15,7 @@ import { MIN_PHOTOS, photoCount, roomPhotoCount } from '@/lib/k/listing-steps';
 import { useHostingFormRoomUtils } from '@/lib/hooks/forms/use-hosting-form-room-utils';
 import { usePropertyTypeConfig } from '@/lib/hooks/use-property-type-config';
 import { useUploadStore } from '@/lib/stores/uploads';
+import { isLocationError, NEEDS_LOCATION } from '@/lib/k/photo-capture';
 import { isLand } from '@/lib/constants/hosting/step-rules';
 import { Room } from '@/lib/types/enums/hostings';
 import type { RoomData } from '@/lib/stores/hostings';
@@ -67,8 +68,11 @@ export default function Photos() {
 
 	const total = hosting ? photoCount(hosting) : 0;
 	const pending = Object.values(statuses).filter((s) => s === 'queued' || s === 'uploading').length;
-	const failed = Object.values(statuses).filter((s) => s === 'error').length;
 	const lost = Object.entries(statuses).filter(([, s]) => s === 'dead');
+	const noLocation = useUploadStore((s) => Object.values(s.tasks).filter((t) => t.status === 'error' && isLocationError(t.lastError)).map((t) => t.uri).join('|'));
+	const unlocated = noLocation ? noLocation.split('|') : [];
+	// Location failures get their own notice — retrying can't fix them.
+	const failed = Object.values(statuses).filter((s) => s === 'error').length - unlocated.length;
 	const enough = total >= MIN_PHOTOS && (!land || hosting?.kind === 'CHILD' || (hosting ? roomPhotoCount(hosting) : 0) >= 1);
 	const spaceOptions = roomsFor(hosting?.propertyType).map((v) => ({ value: v, label: label(v) }));
 	const room = menu != null ? r.rooms[menu] : undefined;
@@ -104,6 +108,11 @@ export default function Photos() {
 			{pending || failed ? (
 				<Notice tone={failed ? 'danger' : 'info'} title={failed ? `${failed} photo${failed === 1 ? '' : 's'} didn’t upload` : `Uploading ${pending} photo${pending === 1 ? '' : 's'}`} action={failed ? 'Retry all' : undefined} onAction={retryAll}>
 					{failed ? 'Tap a red photo to retry it, or retry them all. They’re saved on this phone until they go through.' : 'You can keep going — uploads carry on in the background and resume if you lose signal.'}
+				</Notice>
+			) : null}
+			{unlocated.length ? (
+				<Notice tone="danger" title={`${unlocated.length} photo${unlocated.length === 1 ? ' has' : 's have'} no location`} action="Remove them" onAction={() => unlocated.forEach((uri) => removeTask(uri))}>
+					{NEEDS_LOCATION}. Retake {unlocated.length === 1 ? 'it' : 'them'} with the Kushi camera, with location on.
 				</Notice>
 			) : null}
 			{lost.length ? (

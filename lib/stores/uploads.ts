@@ -11,6 +11,8 @@ import type {
   CreateHostingRoomImageMutationVariables,
 } from '@/lib/services/graphql/generated';
 import { useHostingRoomsStore } from './hostings';
+import { forgetCapture, isLocationError, NEEDS_LOCATION, type PhotoCapture } from '@/lib/k/photo-capture';
+import { toast } from '@/lib/hooks/use-toast';
 
 const MAX_CONCURRENT = 3;
 const MAX_ATTEMPTS = 4;
@@ -46,14 +48,18 @@ export type UploadTask = {
   /** Why the last attempt failed — shown on the failed row so retries that keep
    *  failing are diagnosable instead of looking like a dead button. */
   lastError?: string;
+  /** Where the photo was taken (from the Kushi camera). Sent with the upload —
+   *  the server refuses room photos with no location. Persisted with the task. */
+  capture?: PhotoCapture;
   /** Earliest time the next attempt may start (real backoff — pump() skips the
    *  task until then). Additive + persist-compatible: absent = immediately
    *  eligible. */
   nextAttemptAt?: number;
 };
 
-/** A photo to upload. `replaceImageId` updates an existing server image in place. */
-export type UploadItem = { uri: string; replaceImageId?: string };
+/** A photo to upload. `replaceImageId` updates an existing server image in place;
+ *  `capture` is where it was taken (see lib/k/photo-capture). */
+export type UploadItem = { uri: string; replaceImageId?: string; capture?: PhotoCapture };
 
 // Just-uploaded publicUrl → asset registry (module-scope, NOT persisted). Lets
 // resolveThumb proxy fresh uploads through the resize CDN immediately: without
@@ -200,6 +206,7 @@ export const useUploadStore = create<UploadState>()(
                 ...(task.replaceImageId ? { id: task.replaceImageId } : {}),
                 roomId: task.roomId,
                 asset: generateRNFile(uri),
+                ...(task.capture ? { capture: task.capture } : {}),
               },
             },
             { signal: controller.signal },
@@ -235,7 +242,12 @@ export const useUploadStore = create<UploadState>()(
           const message =
             e instanceof Error ? e.message : typeof e === 'string' ? e : 'Upload failed';
           console.warn(`[uploads] attempt failed for ${uri}:`, message);
-          if (!online) {
+          if (isLocationError(message)) {
+            // The server will never accept this file without a location —
+            // retrying can't help. Park it as failed and say why.
+            setStatus(uri, { status: 'error', attempts: MAX_ATTEMPTS, startedAt: undefined, lastError: NEEDS_LOCATION });
+            toast.show({ type: 'error', text1: 'Photo not added', text2: `${NEEDS_LOCATION}.` });
+          } else if (!online) {
             // Offline: park the task WITHOUT consuming an attempt — pump() is
             // gated on connectivity, and the reconnect listener resumes the
             // queue. Burning attempts while the radio is down permanently
@@ -349,7 +361,9 @@ export const useUploadStore = create<UploadState>()(
               attempts: 0,
               createdAt: Date.now(),
               replaceImageId: item.replaceImageId,
+              capture: item.capture,
             };
+            forgetCapture(localUri);
           }
           set((s) => ({
             tasks: { ...s.tasks, ...newTasks },

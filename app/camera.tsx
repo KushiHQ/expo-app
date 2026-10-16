@@ -14,17 +14,22 @@ import { color, font, radius } from '@/lib/k/theme';
 import { useGalleryStore } from '@/lib/stores/gallery';
 import { usePhotoGalleryScreen } from '@/lib/hooks/camera';
 import { cast } from '@/lib/types/utils';
+import { rememberCapture } from '@/lib/k/photo-capture';
 
 type Fix = { coords: Location.LocationObjectCoords } | null;
 type Gps = 'finding' | 'on' | 'off' | 'blocked';
 
 /**
- * The Kushi camera. Every photo is stamped with where it was taken (EXIF GPS),
- * which is how listing photos are shown to be real. Hands the shots to the
- * photo review screen, which returns them to `redirect`.
+ * The Kushi camera. Every photo is stamped with where it was taken (EXIF GPS,
+ * and the same coordinates are kept for the upload — see lib/k/photo-capture),
+ * which is how listing photos are shown to be real. With `requireLocation`
+ * (listing room photos) it won't shoot without a location fix, because the
+ * server refuses room photos without one. Hands the shots to the photo review
+ * screen, which returns them to `redirect`.
  */
 export default function CameraScreen() {
-	const { images, multiple, redirect } = useLocalSearchParams();
+	const { images, multiple, redirect, requireLocation } = useLocalSearchParams();
+	const needsLocation = requireLocation === 'true';
 	const insets = useSafeAreaInsets();
 	const cam = useRef<CameraView>(null);
 	const [perm, requestPerm] = useCameraPermissions();
@@ -53,6 +58,8 @@ export default function CameraScreen() {
 		}, [imagesParam, setActiveIndex, append, setGallery])
 	);
 
+	// Keep the fix fresh while the host walks round the property.
+	const watch = useRef<Location.LocationSubscription | null>(null);
 	const locate = useCallback(async () => {
 		setGps('finding');
 		try {
@@ -62,18 +69,31 @@ export default function CameraScreen() {
 			const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
 			setFix({ coords: pos.coords });
 			setGps('on');
+			watch.current?.remove();
+			watch.current = await Location.watchPositionAsync({ accuracy: Location.Accuracy.High, timeInterval: 5000, distanceInterval: 5 }, (next) => setFix({ coords: next.coords }));
 		} catch {
 			setGps('off');
 		}
 	}, []);
 	useEffect(() => {
 		locate();
+		return () => {
+			watch.current?.remove();
+			watch.current = null;
+		};
 	}, [locate]);
 
 	const taken = Math.max(0, gallery.length - start.current);
 
 	async function shoot() {
 		if (!cam.current || busy) return;
+		if (needsLocation && !fix) {
+			Alert.alert('Turn on location', 'Room photos must be taken with location on, so renters can trust they were taken at the property.', [
+				{ text: 'Not now', style: 'cancel' },
+				gps === 'blocked' ? { text: 'Open Settings', onPress: () => Linking.openSettings() } : { text: 'Try again', onPress: () => locate() }
+			]);
+			return;
+		}
 		setBusy(true);
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
 		try {
@@ -95,6 +115,7 @@ export default function CameraScreen() {
 					: {}
 			});
 			if (photo?.uri) {
+				if (c) rememberCapture(photo.uri, { latitude: c.latitude, longitude: c.longitude, accuracyM: c.accuracy ?? undefined, capturedAt: new Date().toISOString() });
 				append(photo.uri);
 				if (multiple === 'false') review({ redirect: cast(redirect), fromCamera: true });
 			}
@@ -172,7 +193,7 @@ export default function CameraScreen() {
 			{gps !== 'on' && gps !== 'finding' ? (
 				<View style={[s.warn, { top: insets.top + 64 }]}>
 					<KText v="xs" style={{ color: '#fff' }} center>
-						Photos taken without location can’t be checked, which can hold up verification.
+						{needsLocation ? 'Room photos need your location. Turn it on to take photos.' : 'Photos taken without location can’t be checked, which can hold up verification.'}
 					</KText>
 				</View>
 			) : null}

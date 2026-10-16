@@ -7,6 +7,8 @@ type CameraRedirectOptions = {
   clear?: boolean;
   multiple?: boolean;
   images?: string[];
+  /** Listing room photos: refuse to shoot without a location fix. */
+  requireLocation?: boolean;
 };
 
 type GalleryRedirectOptions = {
@@ -35,6 +37,9 @@ export const useCameraScreen = () => {
     }
     if (opts?.multiple !== undefined) {
       path = `${path}&multiple=${opts.multiple}`;
+    }
+    if (opts?.requireLocation) {
+      path = `${path}&requireLocation=true`;
     }
     router.push(cast(path));
   };

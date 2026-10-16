@@ -442,6 +442,34 @@ export const VERIFY_LISTING_BOOST = gql`
   }
 `;
 
+export const INITIATE_VERIFICATION_FEE = gql`
+  mutation InitiateVerificationFee($hostingId: String!, $tier: HostingVerificationTier!) {
+    initiateVerificationFee(hostingId: $hostingId, tier: $tier) {
+      message
+      data {
+        id
+        amount
+        reference
+        status
+      }
+    }
+  }
+`;
+
+export const VERIFY_VERIFICATION_FEE = gql`
+  mutation VerifyVerificationFee($reference: String!) {
+    verifyVerificationFee(reference: $reference) {
+      message
+      data {
+        id
+        amount
+        reference
+        status
+      }
+    }
+  }
+`;
+
 export const RECORD_LISTING_EVENT = gql`
   mutation RecordListingEvent($hostingId: String!, $kind: ListingEventKind!) {
     recordListingEvent(hostingId: $hostingId, kind: $kind)

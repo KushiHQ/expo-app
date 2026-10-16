@@ -1,26 +1,42 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActionSheetIOS, Platform, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
-import { Check, FileText, Lock, Upload, X } from 'lucide-react-native';
+import { PayWithFlutterwave } from 'flutterwave-react-native';
+import { Check, CreditCard, FileText, Lock, Upload, X } from 'lucide-react-native';
 import { Button, Card, Empty, Header, IconButton, KText, Notice, Screen, Skeleton } from '@/components/k';
 import { Pressable } from '@/components/k/pressable';
 import { color, radius } from '@/lib/k/theme';
 import { TIERS } from '@/lib/k/tiers';
 import { cleanError } from '@/lib/k/use-listing-step';
+import { date, naira } from '@/lib/k/format';
 import { toast } from '@/lib/hooks/use-toast';
+import { useUser } from '@/lib/hooks/user';
 import { formMutation, generateRNFile } from '@/lib/services/graphql/utils/fetch';
 import { REQUEST_HOSTING_VERIFICATION_TIER } from '@/lib/services/graphql/requests/mutations/hostings';
 import { enumKeyByValue } from '@/lib/utils/enums';
-import { HostingVerificationTier as T, useHostingVerificationTierQuery, type RequestHostingVerificationTierMutation, type RequestHostingVerificationTierMutationVariables } from '@/lib/services/graphql/generated';
+import {
+	HostingVerificationTier as T,
+	TransactionStatus,
+	useHostingVerificationFeeQuery,
+	useHostingVerificationTierQuery,
+	useInitiateVerificationFeeMutation,
+	useVerifyVerificationFeeMutation,
+	type RequestHostingVerificationTierMutation,
+	type RequestHostingVerificationTierMutationVariables
+} from '@/lib/services/graphql/generated';
 
 type Picked = { uri: string; name: string; type: string; size?: number };
 const DOC_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/webp'];
 const bytes = (n?: number) => (!n ? '' : n < 1048576 ? `${Math.round(n / 1024)} KB` : `${(n / 1048576).toFixed(1)} MB`);
 
-/** Send documents for one verification level. */
+/**
+ * Send documents for one verification level. Priced levels (e.g. Title
+ * checked) are paid first — once per listing and level; a paid fee covers
+ * resending after Kushi asks for changes, until the level is approved.
+ */
 export default function RequestVerification() {
 	const params = useLocalSearchParams<{ id?: string; tier?: T }>();
 	const id = (Array.isArray(params.id) ? params.id[0] : params.id) ?? '';
@@ -32,6 +48,73 @@ export default function RequestVerification() {
 	const [sending, setSending] = useState(false);
 	const count = docs.filter((d) => picked[d.title]).length;
 	const ready = docs.length > 0 ? count === docs.length : !!data;
+
+	// The fee for this level on this listing (null price = free).
+	const user = useUser();
+	const [{ data: feeData, fetching: feeLoading, error: feeError }, refetchFee] = useHostingVerificationFeeQuery({ variables: { hostingId: id, tier: tier ?? T.Unverified }, pause: !tier || !id, requestPolicy: 'cache-and-network' });
+	const fee = feeData?.hostingVerificationFee;
+	const price = Number(fee?.price ?? 0);
+	const mustPay = !!fee?.required;
+	const [{ fetching: starting }, initiateFee] = useInitiateVerificationFeeMutation();
+	const [{ fetching: verifying }, verifyFee] = useVerifyVerificationFeeMutation();
+	const [payRef, setPayRef] = useState('');
+	const [payAmount, setPayAmount] = useState(0);
+	const [pendingOpen, setPendingOpen] = useState(false);
+	const [processing, setProcessing] = useState(false);
+	const openPay = useRef<(() => void) | null>(null);
+	const reloadFee = () => refetchFee({ requestPolicy: 'network-only' });
+
+	// Open Flutterwave once `initiateFee` has minted a fresh reference.
+	useEffect(() => {
+		if (pendingOpen && openPay.current) {
+			openPay.current();
+			setPendingOpen(false);
+		}
+	}, [payRef, pendingOpen]);
+
+	function startPayment() {
+		if (!tier) return;
+		initiateFee({ hostingId: id, tier }).then((res) => {
+			if (res.error) {
+				toast.show({ type: 'error', text1: 'Couldn’t start the payment', text2: cleanError(res.error.message) });
+				reloadFee(); // e.g. it was already paid on another device
+				return;
+			}
+			const tx = res.data?.initiateVerificationFee?.data;
+			if (!tx?.reference) return;
+			setPayRef(tx.reference);
+			setPayAmount(Number(tx.amount));
+			setPendingOpen(true);
+		});
+	}
+
+	function confirmPayment(reference: string) {
+		verifyFee({ reference }).then((res) => {
+			if (res.error) {
+				setProcessing(true);
+				toast.show({ type: 'error', text1: 'We couldn’t confirm the payment', text2: cleanError(res.error.message) });
+				return;
+			}
+			const tx = res.data?.verifyVerificationFee?.data;
+			if (tx?.status === TransactionStatus.Success) {
+				setProcessing(false);
+				Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+				toast.show({ type: 'success', text1: 'Fee paid', text2: 'Now add your documents and send them for review.' });
+				reloadFee();
+			} else if (tx?.status === TransactionStatus.Failed || tx?.status === TransactionStatus.Cancelled) {
+				setProcessing(false);
+				toast.show({ type: 'error', text1: 'Payment didn’t go through', text2: 'Try again — a failed payment isn’t kept.' });
+			} else {
+				setProcessing(true);
+				toast.show({ type: 'info', text1: 'Payment processing', text2: 'The documents step opens as soon as it clears.' });
+			}
+		});
+	}
+
+	function onRedirect(r: { status: string; tx_ref: string }) {
+		if (r.status === 'cancelled') return toast.show({ type: 'info', text2: 'Payment cancelled. You haven’t been charged.' });
+		confirmPayment(payRef || r.tx_ref);
+	}
 
 	async function fromLibrary(title: string) {
 		const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.9 });
@@ -71,6 +154,7 @@ export default function RequestVerification() {
 			});
 			if (res.error || !res.data?.requestHostingVerificationTier?.data) {
 				toast.show({ type: 'error', text1: 'Not sent', text2: cleanError(res.error?.message) });
+				if (/verification fee/i.test(res.error?.message ?? '')) reloadFee();
 				return;
 			}
 			Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -90,12 +174,30 @@ export default function RequestVerification() {
 			contentStyle={{ paddingTop: 20 }}
 			footer={
 				<View style={{ gap: 8 }}>
-					{docs.length ? (
+					{docs.length && !mustPay ? (
 						<KText v="xs" center>
 							{count} of {docs.length} document{docs.length === 1 ? '' : 's'} added
 						</KText>
 					) : null}
-					<Button title={sending ? 'Sending…' : 'Send for review'} size="lg" block loading={sending} disabled={!ready} onPress={submit} testID="verification-send" />
+					{mustPay ? (
+						<PayWithFlutterwave
+							onRedirect={onRedirect}
+							options={{
+								authorization: process.env.EXPO_PUBLIC_FLUTTERWAVE_PUBLIC_KEY ?? '',
+								amount: payAmount,
+								tx_ref: payRef,
+								currency: 'NGN',
+								customer: { email: user.user.email ?? '', name: user.user.user?.profile.fullName },
+								customizations: { title: 'Kushi verification', description: tier ? `${TIERS[tier].label} check` : 'Listing verification', logo: 'https://res.cloudinary.com/dev-media/image/upload/v1772369352/logo_miq5eq.png' }
+							}}
+							customButton={(p) => {
+								openPay.current = p.onPress;
+								return <Button title={`Pay ${naira(price)} and continue`} size="lg" block loading={starting || verifying} disabled={p.disabled} onPress={startPayment} testID="verification-pay" />;
+							}}
+						/>
+					) : (
+						<Button title={sending ? 'Sending…' : 'Send for review'} size="lg" block loading={sending} disabled={!ready || (feeLoading && !fee)} onPress={submit} testID="verification-send" />
+					)}
 				</View>
 			}
 		>
@@ -104,6 +206,31 @@ export default function RequestVerification() {
 			) : (
 				<>
 					<KText v="small">{TIERS[tier].what}</KText>
+					{feeError && !fee ? (
+						<Notice tone="warn" title="We couldn’t check the fee for this level" action="Try again" onAction={reloadFee}>
+							{cleanError(feeError.message)}
+						</Notice>
+					) : mustPay ? (
+						<Card tone="amber">
+							<View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+								<CreditCard size={18} color={color.amber} />
+								<KText v="bodyStrong" style={{ flex: 1 }}>
+									Verification fee · {naira(price)}
+								</KText>
+							</View>
+							<KText v="small">Kushi charges this to carry out the {TIERS[tier].label} check. Pay first, then add your documents.</KText>
+							<KText v="xs">You pay once for this listing. If Kushi asks for changes, you can send again without paying again. Payment is handled securely by Flutterwave.</KText>
+						</Card>
+					) : fee?.paid && price ? (
+						<Notice tone="success" title="Fee paid">
+							{fee.paidAt ? `Paid ${date(fee.paidAt)}. ` : ''}It covers this level for this listing until it’s approved.
+						</Notice>
+					) : null}
+					{processing && mustPay ? (
+						<Notice tone="info" title="Waiting for your payment to clear" action="Check again" onAction={() => (payRef ? confirmPayment(payRef) : reloadFee())}>
+							If you were charged, this usually takes a minute. You won’t be charged twice.
+						</Notice>
+					) : null}
 					{fetching && !data ? (
 						<View style={{ gap: 10 }}>
 							<Skeleton style={{ height: 76 }} />
@@ -113,6 +240,20 @@ export default function RequestVerification() {
 						<Notice tone="danger" title="We couldn’t load what’s needed" action="Try again" onAction={() => refetch({ requestPolicy: 'network-only' })}>
 							{cleanError(error.message)}
 						</Notice>
+					) : mustPay ? (
+						docs.length ? (
+							<View style={{ gap: 6 }}>
+								<KText v="label">After paying, you’ll add</KText>
+								{docs.map((d) => (
+									<View key={d.title} style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
+										<FileText size={14} color={color.muted} style={{ marginTop: 2 }} />
+										<KText v="small" style={{ flex: 1 }}>
+											{d.title}
+										</KText>
+									</View>
+								))}
+							</View>
+						) : null
 					) : docs.length === 0 ? (
 						<Notice tone="success" title="No documents needed">Send the request and Kushi will take it from there.</Notice>
 					) : (
