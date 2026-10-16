@@ -111,7 +111,7 @@ export default function Basics() {
 				) : null}
 			</Block>
 
-			{management === ManagementType.AgentManaged ? <Notice tone="info" title="Advert-only listings">These skip the ownership and agreement step, and Kushi doesn’t verify or take payment for them.</Notice> : null}
+			{management === ManagementType.AgentManaged ? <Notice tone="info" title="Advert-only listings">These skip the ownership and agreement step, and Kushi doesn’t take payment for them. You can still verify the listing so renters can see it’s genuine.</Notice> : null}
 
 			<PickerSheet open={typeOpen} onClose={() => setTypeOpen(false)} title="Property type" searchable value={input.propertyType} options={propertyTypes.map((p) => ({ value: p.value, label: p.label, terms: p.searchTerms }))} onPick={(o) => updateInput({ propertyType: o.value })} />
 			<PickerSheet open={parentOpen} onClose={() => setParentOpen(false)} title="Which property?" searchable value={parentId} options={parents} empty="You don’t have another listing to add this unit to yet." onPick={(o) => updateInput({ parentId: o.value })} />
