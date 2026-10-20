@@ -42,10 +42,14 @@ type ApplicationVars = {
 type TenantUserVars = {
   kushiId?: string | null;
   kyc?: {
-    idDocumentType?: string | null;
-    kycReferenceId?: string | null;
+    bvnVerified?: boolean | null;
+    ninVerified?: boolean | null;
   } | null;
 };
+
+/** The agreement's KYC line: whether Kushi verified the person, never the BVN/NIN. */
+const verificationNote = (kyc?: TenantUserVars['kyc']) =>
+  kyc?.bvnVerified || kyc?.ninVerified ? 'Identity verified by Kushi' : 'Identity verification pending';
 
 interface Props {
   text: string;
@@ -169,10 +173,9 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
             variablesMap['LANDLORD_KUSHI_ID'] = hu.kushiId;
             variablesMap['LANDLORD_ID_NUMBER'] = hu.kushiId;
           }
-          if (hu.kyc) {
-            variablesMap['LANDLORD_ID_TYPE'] = hu.kyc.idDocumentType ?? 'Government-issued ID';
-            variablesMap['KYC_REFERENCE_ID'] = hu.kyc.kycReferenceId ?? 'Pending';
-          }
+          // No BVN or NIN on the agreement (matches the server's compiler).
+          variablesMap['LANDLORD_ID_TYPE'] = 'Kushi ID';
+          variablesMap['KYC_REFERENCE_ID'] = verificationNote(hu.kyc);
         }
       }
 
@@ -214,10 +217,8 @@ const TenancyAgreementVariableText: React.FC<Props> = React.memo(
           variablesMap['TENANT_KUSHI_ID'] = tenantUser.kushiId;
           variablesMap['TENANT_ID_NUMBER'] = tenantUser.kushiId;
         }
-        if (tenantUser.kyc) {
-          variablesMap['TENANT_ID_TYPE'] = tenantUser.kyc.idDocumentType ?? 'Government-issued ID';
-          variablesMap['TENANT_KYC_REFERENCE_ID'] = tenantUser.kyc.kycReferenceId ?? 'Pending';
-        }
+        variablesMap['TENANT_ID_TYPE'] = 'Kushi ID';
+        variablesMap['TENANT_KYC_REFERENCE_ID'] = verificationNote(tenantUser.kyc);
       }
 
       if (fees) {

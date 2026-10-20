@@ -167,8 +167,8 @@ export const HOSTING_QUERY = gql`
           kushiId
           phoneNumber
           kyc {
-            idDocumentType
-            kycReferenceId
+            bvnVerified
+            ninVerified
           }
           profile {
             fullName
