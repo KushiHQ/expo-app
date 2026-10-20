@@ -124,10 +124,12 @@ export function agreementVars(
 				variablesMap['LANDLORD_KUSHI_ID'] = hu.kushiId;
 				variablesMap['LANDLORD_ID_NUMBER'] = hu.kushiId;
 			}
-			if (hu.kyc) {
-				variablesMap['LANDLORD_ID_TYPE'] = hu.kyc.idDocumentType ?? 'Government-issued ID';
-				variablesMap['KYC_REFERENCE_ID'] = hu.kyc.kycReferenceId ?? 'Pending';
-			}
+			// No BVN or NIN on the agreement (matches the server's compiler):
+			// the ID is the Kushi ID and the KYC line only says whether Kushi
+			// verified the person.
+			variablesMap['LANDLORD_ID_TYPE'] = 'Kushi ID';
+			variablesMap['KYC_REFERENCE_ID'] =
+				hu.kyc?.bvnVerified || hu.kyc?.ninVerified ? 'Identity verified by Kushi' : 'Identity verification pending';
 		}
 	}
 
