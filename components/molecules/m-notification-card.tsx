@@ -1,7 +1,7 @@
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import { hexToRgba } from '@/lib/utils/colors';
 import React from 'react';
-import { Pressable, View, Platform } from 'react-native';
+import { Pressable, View } from 'react-native';
 import ThemedText from '../atoms/a-themed-text';
 import { Fonts } from '@/lib/constants/theme';
 import { SURFACE } from '@/lib/constants/surface';
@@ -13,7 +13,6 @@ import {
 import { useRouter } from '@/lib/hooks/use-router';
 import { isAppUpdateIntent, openAppStore } from '@/lib/utils/urls';
 import moment from 'moment';
-import notifee from '@notifee/react-native';
 import {
   ArrowRight,
   Bell,
@@ -80,10 +79,8 @@ const NotificationCard: React.FC<Props> = ({ notification, onRead }) => {
 
   const markReadAndNavigate = async () => {
     if (!notification.isRead) {
+      // The app icon badge re-syncs from the server after this mutation.
       await markAsRead({ notificationId: notification.id });
-      if (Platform.OS === 'ios') {
-        await notifee.decrementBadgeCount(1);
-      }
       onRead?.();
     }
 
