@@ -18,6 +18,7 @@ import { generateRNFile } from '@/lib/utils/file';
 import { formMutation } from '@/lib/services/graphql/utils/fetch';
 import { CREATE_UPDATE_MESSAGE } from '@/lib/services/graphql/requests/mutations/hosting-chat';
 import { K_CHAT } from '@/lib/services/graphql/requests/queries/k-manage';
+import { dismissChatNotifications } from '@/lib/k/app-badge';
 import {
 	useChatMessagesQuery,
 	useClearChatUrnreadMessagesMutation,
@@ -71,6 +72,7 @@ export default function Conversation() {
 	useEffect(() => {
 		setActiveChatId(id);
 		clearUnread({ chatId: id });
+		dismissChatNotifications(id).catch(() => {});
 		return () => setActiveChatId(null);
 	}, [id, setActiveChatId, clearUnread]);
 

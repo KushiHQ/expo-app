@@ -13,6 +13,7 @@ import { createClient as createWSClient } from 'graphql-ws';
 import { router } from 'expo-router';
 import { findUpgradeRequired } from '@/lib/k/app-version';
 import { APP_VERSION_HEADERS, reportUpgradeRequired } from '@/lib/k/app-version-store';
+import { READ_MUTATIONS, requestBadgeSync } from '@/lib/k/app-badge';
 
 type Props = {
   children?: React.ReactNode;
@@ -62,6 +63,14 @@ const createClient = (ws: ReturnType<typeof createWSClientInstance>) => {
         onError(error) {
           const upgrade = findUpgradeRequired(error.graphQLErrors);
           if (upgrade) reportUpgradeRequired(upgrade);
+        },
+        // Reading a chat or a notification lowers the unread count, so the
+        // app icon badge re-syncs (lib/k/app-badge.ts).
+        onResult(result) {
+          const data = result.data as Record<string, unknown> | undefined;
+          if (result.operation.kind === 'mutation' && data && READ_MUTATIONS.some((m) => m in data)) {
+            requestBadgeSync();
+          }
         },
       }),
       graphcacheExchange,

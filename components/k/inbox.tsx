@@ -1,14 +1,16 @@
-import { useMemo, useState } from 'react';
-import { FlatList, StyleSheet, TextInput, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState, FlatList, StyleSheet, TextInput, View } from 'react-native';
 import { Pressable } from '@/components/k/pressable';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { useSubscription } from 'urql';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Headset, Search } from 'lucide-react-native';
 import { color, font, gutter, radius } from '@/lib/k/theme';
 import { centered, useLayout } from '@/lib/k/layout';
 import { relative } from '@/lib/k/format';
 import { useUserStore } from '@/lib/stores/users';
-import { useUserChatsQuery } from '@/lib/services/graphql/generated';
+import { useUserChatsQuery, type UserChatUpdatedSubscription } from '@/lib/services/graphql/generated';
+import { USER_CHAT_UPDATED } from '@/lib/services/graphql/requests/subscriptions/hosting_chat';
 import { Avatar, Skeleton } from './surface';
 import { KText } from './text';
 import { Empty } from './feedback';
@@ -22,6 +24,35 @@ export function Inbox() {
 	const signedIn = useUserStore((s) => !!s.user.user?.id);
 	const [{ data, fetching }, refetch] = useUserChatsQuery({ variables: { pagination: { limit: 100, offset: 0 } }, pause: !signedIn, requestPolicy: 'cache-and-network' });
 	const [q, setQ] = useState('');
+
+	// The tab stays mounted, so a one-off fetch went stale. Re-read the list
+	// whenever the inbox comes into view or the app returns to the foreground
+	// (the live feed below can miss events while the socket was asleep).
+	const reload = useCallback(() => {
+		if (signedIn) refetch({ requestPolicy: 'network-only' });
+	}, [signedIn, refetch]);
+	useFocusEffect(reload);
+	useEffect(() => {
+		const sub = AppState.addEventListener('change', (st) => st === 'active' && reload());
+		return () => sub.remove();
+	}, [reload]);
+
+	// Live list: `userChatUpdated` fires when a message lands in any of the
+	// user's chats. It selects the same fields as the list query, so the cache
+	// updates that row's last message, time and unread count in place, and the
+	// sort below moves it to the top. Only a chat not in the list yet needs a
+	// reload.
+	const known = useRef(new Set<string>());
+	known.current = new Set((data?.userChats ?? []).map((c) => c.id));
+	useSubscription<UserChatUpdatedSubscription>({ query: USER_CHAT_UPDATED, pause: !signedIn }, (_prev, curr) => {
+		const id = curr?.userChatUpdated?.id;
+		if (id && !known.current.has(id)) {
+			known.current.add(id);
+			reload();
+		}
+		return curr;
+	});
+
 	const chats = useMemo(() => {
 		const t = q.trim().toLowerCase();
 		return (data?.userChats ?? [])
