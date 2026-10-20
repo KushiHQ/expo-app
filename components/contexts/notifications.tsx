@@ -21,6 +21,8 @@ import { AppState, AppStateStatus, Platform } from 'react-native';
 import { useAudioPlayer } from 'expo-audio';
 import { EventEmitter } from '@/lib/utils/event-emitter';
 import VoipPushNotification from 'react-native-voip-push-notification';
+import { useClient } from 'urql';
+import { clearAppBadge, onBadgeSyncRequest, requestBadgeSync, syncAppBadge } from '@/lib/k/app-badge';
 
 /**
  * Booking and application pushes carry { subject, id }. The old routes resolve
@@ -70,6 +72,33 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
   const setActiveChatId = React.useCallback((chatId: string | null) => {
     currentChatId.current = chatId;
   }, []);
+
+  // App icon badge: the server's real unread count, re-read on sign-in, on
+  // returning to the foreground and whenever something asks (a push landing,
+  // a chat or notification read). Signed out → no badge.
+  const client = useClient();
+  React.useEffect(() => {
+    if (!user.user?.id) {
+      clearAppBadge().catch(() => {});
+      return;
+    }
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const sync = () => {
+      // Coalesce bursts (a chat read fires the mutation and a focus refetch).
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        syncAppBadge(client).catch((err) => console.warn('Badge sync failed', err));
+      }, 300);
+    };
+    sync();
+    const offRequest = onBadgeSyncRequest(sync);
+    const appStateSub = AppState.addEventListener('change', (st) => st === 'active' && sync());
+    return () => {
+      clearTimeout(timer);
+      offRequest();
+      appStateSub.remove();
+    };
+  }, [user.user?.id, client]);
 
   const routeToCall = React.useCallback(
     (data: any) => {
@@ -267,6 +296,7 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
     });
 
     const unsubscribeForeground = onMessage(messagingInstance, async (remoteMessage) => {
+      requestBadgeSync();
       if (
         remoteMessage.data?.intent === 'cancel_call' ||
         remoteMessage.data?.intent === 'decline_call'
