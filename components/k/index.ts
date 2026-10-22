@@ -8,3 +8,4 @@ export { Empty, Notice, Row, KV } from './feedback';
 export { Mark, Logo } from './brand';
 export { SignedOut } from './signed-out';
 export { KTabBar } from './tab-bar';
+export * from './dialog';

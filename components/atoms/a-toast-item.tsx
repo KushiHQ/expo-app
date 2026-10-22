@@ -1,5 +1,5 @@
 import { ToastEntry } from '@/lib/stores/toast-store';
-import { Fonts } from '@/lib/constants/theme';
+import { color, font, radius, shadow } from '@/lib/k/theme';
 import { CheckCircle, Info, X, XCircle } from 'lucide-react-native';
 import { useCallback, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -12,30 +12,13 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-// Soft/cloudy: one neutral frosted near-black surface for every type — the
-// colour is carried by the icon badge + a soft coloured glow + a faint shimmer,
-// never by tinting the whole surface.
-const SURFACE_BG = 'rgba(16,16,18,0.97)';
-
+// Kushi night surface with a tone-coloured edge and icon, matching <Notice />
+// (components/k/feedback.tsx). Colour marks the kind of message, never the
+// whole surface.
 const TYPE = {
-  success: {
-    icon: '#34D399',
-    iconBg: 'rgba(52,211,153,0.15)',
-    glow: 'rgba(52,211,153,0.4)',
-    shimmer: 'rgba(52,211,153,0.06)',
-  },
-  error: {
-    icon: '#F87171',
-    iconBg: 'rgba(248,113,113,0.15)',
-    glow: 'rgba(248,113,113,0.4)',
-    shimmer: 'rgba(248,113,113,0.06)',
-  },
-  info: {
-    icon: '#5B8CFF',
-    iconBg: 'rgba(91,140,255,0.15)',
-    glow: 'rgba(91,140,255,0.38)',
-    shimmer: 'rgba(91,140,255,0.06)',
-  },
+  success: { fg: color.success, soft: color.successSoft },
+  error: { fg: color.danger, soft: color.dangerSoft },
+  info: { fg: color.signal, soft: color.signalSoft },
 } as const;
 
 const ICONS = { success: CheckCircle, error: XCircle, info: Info };
@@ -87,57 +70,41 @@ export default function ToastItem({ toast, onDismiss }: Props) {
 
   return (
     <GestureDetector gesture={pan}>
-      <Animated.View style={animStyle}>
-        {/* Soft coloured glow halo */}
-        <View style={[styles.glowWrap, { boxShadow: `0px 8px 26px -8px ${cfg.glow}` }]}>
-          {/* Toast surface — neutral frosted near-black */}
-          <View style={[styles.surface, { backgroundColor: SURFACE_BG }]}>
-            {/* Top-half glass highlight — simulates frosted reflection */}
-            <View
-              pointerEvents="none"
-              style={[
-                StyleSheet.absoluteFillObject,
-                styles.shimmerTop,
-                { backgroundColor: cfg.shimmer },
-              ]}
-            />
+      <Animated.View style={[animStyle, shadow]}>
+        <View style={styles.surface}>
+          <View style={[styles.edge, { backgroundColor: cfg.fg }]} />
 
-            {/* Icon badge */}
-            <View style={[styles.iconBadge, { backgroundColor: cfg.iconBg }]}>
-              <Icon size={16} color={cfg.icon} strokeWidth={2.2} />
-            </View>
-
-            {/* Text */}
-            <View style={styles.body}>
-              {toast.title ? (
-                <>
-                  <Text style={styles.title}>{toast.title}</Text>
-                  <Text style={styles.message}>{toast.message}</Text>
-                </>
-              ) : (
-                <Text style={styles.messageSolo}>{toast.message}</Text>
-              )}
-            </View>
-
-            {/* Action */}
-            {toast.action && (
-              <TouchableOpacity
-                style={styles.actionBtn}
-                onPress={() => {
-                  toast.action!.onPress();
-                  dismiss();
-                }}
-                hitSlop={10}
-              >
-                <Text style={[styles.actionLabel, { color: cfg.icon }]}>{toast.action.label}</Text>
-              </TouchableOpacity>
-            )}
-
-            {/* Close */}
-            <TouchableOpacity style={styles.closeBtn} onPress={dismissWithFade} hitSlop={10}>
-              <X size={15} color="rgba(154,160,166,0.6)" />
-            </TouchableOpacity>
+          <View style={[styles.iconBadge, { backgroundColor: cfg.soft }]}>
+            <Icon size={16} color={cfg.fg} strokeWidth={2.2} />
           </View>
+
+          <View style={styles.body}>
+            {toast.title ? (
+              <>
+                <Text style={styles.title}>{toast.title}</Text>
+                <Text style={styles.message}>{toast.message}</Text>
+              </>
+            ) : (
+              <Text style={styles.messageSolo}>{toast.message}</Text>
+            )}
+          </View>
+
+          {toast.action && (
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={() => {
+                toast.action!.onPress();
+                dismiss();
+              }}
+              hitSlop={10}
+            >
+              <Text style={[styles.actionLabel, { color: cfg.fg }]}>{toast.action.label}</Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity style={styles.closeBtn} onPress={dismissWithFade} hitSlop={10} accessibilityLabel="Dismiss">
+            <X size={15} color={color.muted} />
+          </TouchableOpacity>
         </View>
       </Animated.View>
     </GestureDetector>
@@ -145,65 +112,65 @@ export default function ToastItem({ toast, onDismiss }: Props) {
 }
 
 const styles = StyleSheet.create({
-  glowWrap: {
-    borderRadius: 22,
-  },
   surface: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 22,
-    minHeight: 62,
+    minHeight: 60,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: color.line2,
+    backgroundColor: color.surface2,
     overflow: 'hidden',
   },
-  shimmerTop: {
-    bottom: '50%', // only covers the top half of the toast
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
+  edge: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
   },
   iconBadge: {
-    width: 34,
-    height: 34,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: radius.md,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 14,
-    marginRight: 10,
+    marginRight: 12,
     flexShrink: 0,
   },
   body: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 13,
     paddingRight: 4,
     justifyContent: 'center',
   },
   title: {
-    fontFamily: Fonts.semibold,
-    fontSize: 13,
-    color: '#F3F3F3',
+    fontFamily: font.bodySemi,
+    fontSize: 14,
+    lineHeight: 19,
+    color: color.fg,
     marginBottom: 2,
-    letterSpacing: 0.15,
   },
   message: {
-    fontFamily: Fonts.regular,
-    fontSize: 12,
-    color: '#9AA0A6',
-    lineHeight: 17,
+    fontFamily: font.body,
+    fontSize: 13,
+    lineHeight: 18,
+    color: color.fg2,
   },
   messageSolo: {
-    fontFamily: Fonts.medium,
-    fontSize: 13,
-    color: '#EDEDED',
-    lineHeight: 18,
-    letterSpacing: 0.1,
+    fontFamily: font.bodyMedium,
+    fontSize: 14,
+    lineHeight: 19,
+    color: color.fg,
   },
   actionBtn: {
     paddingHorizontal: 12,
     paddingVertical: 16,
   },
   actionLabel: {
-    fontFamily: Fonts.semibold,
-    fontSize: 13,
-    letterSpacing: 0.2,
+    fontFamily: font.bodySemi,
+    fontSize: 14,
   },
   closeBtn: {
     paddingHorizontal: 14,

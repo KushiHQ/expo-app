@@ -128,17 +128,22 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
   // Sync rooms from server data whenever hosting updates (data-driven, not focus-driven).
   // hosting is kept fresh by useHostingForm which calls refreshHosting() on every refetch,
   // so this always reflects the true server state.
+  //
+  // While a new room is being saved, a refetch that started earlier (e.g. the
+  // upload drain) can land without it. Keep such unsaved rooms (no id yet) on
+  // the end until the save resolves, instead of dropping them mid-flight.
+  const savingRoom = React.useRef(0);
   React.useEffect(() => {
     if (hosting?.rooms) {
-      setRooms(
-        hosting.rooms.map(({ images, ...room }) => ({
-          id: cast(room.id),
-          name: cast(room.name),
-          count: cast(room.count),
-          description: cast(room.description),
-          images: images?.map((img) => img.asset.publicUrl) ?? [],
-        })),
-      );
+      const server: RoomData[] = hosting.rooms.map(({ images, ...room }) => ({
+        id: cast(room.id),
+        name: cast(room.name),
+        count: cast(room.count),
+        description: cast(room.description),
+        images: images?.map((img) => img.asset.publicUrl) ?? [],
+      }));
+      const unsaved = savingRoom.current > 0 ? useHostingRoomsStore.getState().rooms.filter((r) => !r.id) : [];
+      setRooms([...server, ...unsaved]);
     }
   }, [hosting]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -411,9 +416,16 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
   const handleSaveHostingRoom = (index: number, { images, ...rest }: RoomData) => {
     if (!hosting?.id) return;
     saveRoom(rest.name, index);
+    // This save refetches itself; a pending upload-drain refetch would only
+    // race it with a stale room list.
+    drainRefetchPending.current = false;
+    savingRoom.current += 1;
     saveHostingRoomMutate({ input: { ...rest, hostingId: hosting.id } }).then((res) => {
+      savingRoom.current = Math.max(0, savingRoom.current - 1);
       if (res.error) {
         handleError(res.error);
+        // Drop the unsaved room by re-syncing from the server.
+        refetchHosting();
       }
       if (res.data) {
         show({
@@ -422,7 +434,12 @@ export const useHostingFormRoomUtils = (hostingId: string) => {
           text2: res.data.createOrUpdateHostingRoom.message,
         });
         const created = res.data.createOrUpdateHostingRoom.data;
-        updateRoom(index, {
+        // Find the room by identity at resolve time, not by the index captured
+        // before the round-trip (a re-sync may have moved or replaced it). If
+        // it's gone, the refetch below brings it back from the server.
+        const now = useHostingRoomsStore.getState().rooms;
+        const at = rest.id ? now.findIndex((r) => r.id === rest.id) : now.findIndex((r) => !r.id && r.name === rest.name);
+        if (at >= 0) updateRoom(at, {
           id: created?.id,
           name: cast(created?.name),
           count: created?.count ?? 1,

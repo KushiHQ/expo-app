@@ -1,5 +1,5 @@
 import * as Location from 'expo-location';
-import { Alert } from 'react-native';
+import { alert } from '@/lib/k/dialog';
 
 export type LocationObject = {
   name: any;
@@ -26,7 +26,7 @@ export const getLocationAsync = async () => {
   try {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'Location permission is required to tag media.');
+      alert('Permission Denied', 'Location permission is required to tag media.');
       return null;
     }
     const location = await Location.getCurrentPositionAsync({
@@ -35,7 +35,7 @@ export const getLocationAsync = async () => {
     return location;
   } catch (error) {
     console.error('getLocationAsync error:', error);
-    Alert.alert('Error', 'Could not get your location.');
+    alert('Error', 'Could not get your location.');
     return null;
   }
 };
@@ -105,7 +105,7 @@ export const getAddressFromCoords = async (latitude: number, longitude: number) 
     return [parsedAddress];
   } catch (error) {
     console.error('Error fetching address:', error);
-    Alert.alert('Error', 'Could not fetch address');
+    alert('Error', 'Could not fetch address');
     return [];
   }
 };
