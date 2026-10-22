@@ -125,8 +125,7 @@ messaging().setBackgroundMessageHandler(async (remoteMessage) => {
     }
   } else {
     // Android: route by intent, mirroring the foreground onMessage handler.
-    // Call intents → call UI/ringtone; chat & verification → display a banner
-    // (data-only pushes don't auto-display, so the handler must do it).
+    // Call intents → call UI/ringtone; chat, verification & app-update → a banner.
     const intent = data?.intent;
     if (
       intent === 'voice-call' ||
@@ -135,14 +134,14 @@ messaging().setBackgroundMessageHandler(async (remoteMessage) => {
       intent === 'decline_call'
     ) {
       await handleIncomingCall(remoteMessage);
+    } else if (remoteMessage.notification) {
+      // The API sends chat, verification and app-update pushes with a
+      // `notification` block, which FCM already shows in the tray while the app
+      // isn't in the foreground (taps land in onNotificationOpenedApp /
+      // getInitialNotification). Only data-only pushes need a Notifee banner
+      // here, or every one would show twice.
     } else if (intent === 'notification') {
-      // The API sends chat pushes with a `notification` block, which FCM already
-      // shows in the tray while the app isn't in the foreground (taps land in
-      // onNotificationOpenedApp / getInitialNotification). Only data-only chat
-      // pushes need a Notifee banner here, or every message would show twice.
-      if (!remoteMessage.notification) {
-        await handleIncomingChatMessage(remoteMessage);
-      }
+      await handleIncomingChatMessage(remoteMessage);
     } else if (intent === 'verification') {
       await handleIncomingVerificationNotification(remoteMessage);
     } else if (isAppUpdateIntent(intent)) {

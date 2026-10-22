@@ -79,6 +79,14 @@ notifications foreground
 adb shell input keyevent KEYCODE_HOME; sleep 4
 push --es intent notification --es id smoke-background
 chat smoke-background-2 Background-chat-push
+# Verification and app-update pushes as the API sends them: FCM shows them, so
+# each must appear once (no second Notifee banner). A data-only one still gets
+# the Notifee banner (channel verification-status).
+push --es intent verification --es hostingId smoke-hosting --es requestId smoke-req-1 --es gcm.n.e 1 \
+  --es gcm.notification.title Verification --es gcm.notification.body Background-verification-push
+push --es intent app-update --es gcm.n.e 1 --es gcm.notification.title Update \
+  --es gcm.notification.body Background-app-update-push
+push --es intent verification --es hostingId smoke-hosting --es requestId smoke-req-2
 adb shell cmd statusbar expand-notifications; shot 21-push-background
 adb shell cmd statusbar collapse
 notifications background

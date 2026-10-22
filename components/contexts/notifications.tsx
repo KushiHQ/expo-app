@@ -27,8 +27,12 @@ import { clearAppBadge, onBadgeSyncRequest, requestBadgeSync, syncAppBadge } fro
 /**
  * Booking and application pushes carry { subject, id }. The old routes resolve
  * which side you're on (guest → your home, host → the application).
+ * Verification pushes carry { intent: 'verification', hostingId }.
  */
 function journeyRoute(data?: Record<string, unknown>): string | null {
+  if (data?.intent === 'verification' && typeof data.hostingId === 'string' && data.hostingId) {
+    return `/hostings/form/verification/overview?id=${data.hostingId}`;
+  }
   const id = typeof data?.id === 'string' ? data.id : null;
   if (!id) return null;
   if (data?.subject === 'booking') return `/trips/booking/${id}`;
