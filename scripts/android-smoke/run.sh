@@ -53,7 +53,8 @@ push() {
     --es google.original_priority high "$@"
 }
 chat() {
-  push --es intent notification --es id "$1" --es gcm.n.e 1 --es gcm.notification.title "Smoke" \n    --es gcm.notification.body "$2" --es gcm.notification.image "$IMG"
+  push --es intent notification --es id "$1" --es gcm.n.e 1 --es gcm.notification.title "Smoke" \
+    --es gcm.notification.body "$2" --es gcm.notification.image "$IMG"
 }
 
 # ── UI: sign in, browse, photo upload, chat, calls ──
