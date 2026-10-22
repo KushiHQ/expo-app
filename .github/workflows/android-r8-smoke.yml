@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        r8: [on, off]
+        r8: ['on', 'off']
     env:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
@@ -72,7 +72,9 @@ jobs:
 
       - name: Baseline without R8
         if: matrix.r8 == 'off'
-        run: sed -i 's/enableMinifyInReleaseBuilds: true/enableMinifyInReleaseBuilds: false/' app.config.js
+        run: |
+          sed -i 's/enableMinifyInReleaseBuilds: true/enableMinifyInReleaseBuilds: false/' app.config.js
+          grep -n enableMinifyInReleaseBuilds app.config.js
 
       - name: Prebuild
         run: |
