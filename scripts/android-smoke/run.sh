@@ -52,6 +52,7 @@ push() {
     --es google.message_id "smoke-$RANDOM" --es from 1 --es google.delivered_priority high \
     --es google.original_priority high "$@"
 }
+# adb shell re-splits arguments on spaces, so keep the body one word.
 chat() {
   push --es intent notification --es id "$1" --es gcm.n.e 1 --es gcm.notification.title "Smoke" \
     --es gcm.notification.body "$2" --es gcm.notification.image "$IMG"
@@ -71,13 +72,13 @@ adb shell am start -n "$PKG/.MainActivity" >/dev/null; sleep 8
 push --es intent notification --es id smoke-foreground
 shot 20-push-foreground
 # With a sender photo (shown as the banner's large icon).
-chat smoke-foreground-2 "Foreground chat push"
+chat smoke-foreground-2 Foreground-chat-push
 shot 20b-push-foreground-image
 notifications foreground
 
 adb shell input keyevent KEYCODE_HOME; sleep 4
 push --es intent notification --es id smoke-background
-chat smoke-background-2 "Background chat push"
+chat smoke-background-2 Background-chat-push
 adb shell cmd statusbar expand-notifications; shot 21-push-background
 adb shell cmd statusbar collapse
 notifications background
@@ -87,7 +88,7 @@ echo "pid after kill: $(adb shell pidof $PKG)" >> "$OUT/notifications.txt"
 push --es intent notification --es id smoke-killed
 # A second one while React Native is still starting (bridgeless headless-task race).
 push --es intent notification --es id smoke-killed-2
-chat smoke-killed-3 "Killed-state chat push"
+chat smoke-killed-3 Killed-state-chat-push
 sleep 10
 adb shell cmd statusbar expand-notifications; shot 22-push-killed
 adb shell cmd statusbar collapse
