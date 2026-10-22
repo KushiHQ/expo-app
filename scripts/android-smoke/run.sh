@@ -10,6 +10,7 @@ set -u
 APK="$1"
 OUT="$2"
 PKG=com.kushicorp.kushi
+IMG=https://storage.googleapis.com/kushi-prod-assets/uploads/09493f39-6574-4122-9fe8-0e1662ee8157/37E50B5D-07B0-49AB-929E-6C44E71323DC.png
 HERE="$(cd "$(dirname "$0")" && pwd)"
 mkdir -p "$OUT/shots"
 
@@ -24,6 +25,10 @@ adb install -r -g "$APK" || { echo "SMOKE_FAILED=install" >> "$GITHUB_ENV"; exit
 adb push "$HERE/../../assets/icons/icon.png" /sdcard/Pictures/kushi-smoke.png
 adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Pictures/kushi-smoke.png >/dev/null 2>&1 || true
 adb shell content call --uri content://media/external/file --method scan_volume --arg external_primary >/dev/null 2>&1 || true
+
+# Let the cold emulator settle and clear any ANR dialog it raised while booting.
+sleep 30
+adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1 || true
 
 adb logcat -c
 adb logcat -v threadtime > "$OUT/logcat.txt" 2>&1 &
@@ -59,10 +64,14 @@ push() {
 adb shell am start -n "$PKG/.MainActivity" >/dev/null; sleep 8
 push --es intent notification --es id smoke-foreground
 shot 20-push-foreground
+# With a sender photo (chat pushes without one hit a largeIcon validation error in the app).
+push --es intent notification --es id smoke-foreground-2 --es gcm.notification.title "Smoke"   --es gcm.notification.body "Foreground chat push" --es gcm.notification.image "$IMG"
+shot 20b-push-foreground-image
 notifications foreground
 
 adb shell input keyevent KEYCODE_HOME; sleep 4
 push --es intent notification --es id smoke-background
+push --es intent notification --es id smoke-background-2 --es gcm.notification.title "Smoke"   --es gcm.notification.body "Background chat push" --es gcm.notification.image "$IMG"
 adb shell cmd statusbar expand-notifications; shot 21-push-background
 adb shell cmd statusbar collapse
 notifications background
@@ -70,6 +79,7 @@ notifications background
 adb shell am kill "$PKG"; sleep 4
 echo "pid after kill: $(adb shell pidof $PKG)" >> "$OUT/notifications.txt"
 push --es intent notification --es id smoke-killed
+push --es intent notification --es id smoke-killed-2 --es gcm.notification.title "Smoke"   --es gcm.notification.body "Killed-state chat push" --es gcm.notification.image "$IMG"
 sleep 10
 adb shell cmd statusbar expand-notifications; shot 22-push-killed
 adb shell cmd statusbar collapse
@@ -88,7 +98,7 @@ kill $LOGCAT_PID 2>/dev/null || true
 # ── Crash / R8 scan ──
 APP_PIDS=$(grep -oE "Start proc [0-9]+:$PKG[/ ]" "$OUT/logcat.txt" | grep -oE "[0-9]+" | sort -u | tr '\n' '|' | sed 's/|$//')
 echo "app pids: $APP_PIDS" > "$OUT/crashes.txt"
-grep -nE "FATAL EXCEPTION|Fatal signal|ClassNotFoundException|NoClassDefFoundError|NoSuchMethodError|NoSuchFieldError|AbstractMethodError|IncompatibleClassChangeError|VerifyError|JNI DETECTED ERROR|Unable to instantiate|Unable to start (service|receiver)|ProGuard|R8" "$OUT/logcat.txt" \
+grep -E " ($APP_PIDS) " "$OUT/logcat.txt" | grep -nE "FATAL EXCEPTION|Fatal signal|ClassNotFoundException|NoClassDefFoundError|NoSuchMethodError|NoSuchFieldError|AbstractMethodError|IncompatibleClassChangeError|VerifyError|JNI DETECTED ERROR|Unable to instantiate|Unable to start (service|receiver)|ProGuard|R8" "$OUT/logcat.txt" \
   | grep -vE "SentryAndroidGradlePlugin" > "$OUT/r8-suspects.txt" || true
 grep -nE -A25 "FATAL EXCEPTION|Fatal signal" "$OUT/logcat.txt" >> "$OUT/crashes.txt" || true
 grep -nE "ReactNativeJS|ReactNative" "$OUT/logcat.txt" | grep -iE " E |error|exception" > "$OUT/js-errors.txt" || true

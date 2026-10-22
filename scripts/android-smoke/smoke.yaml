@@ -8,6 +8,10 @@ appId: com.kushicorp.kushi
     clearState: true
     permissions:
       all: allow
+# A cold emulator sometimes shows "Pixel Launcher isn't responding" over the app.
+- tapOn:
+    text: "Wait"
+    optional: true
 - extendedWaitUntil:
     visible: "Start exploring"
     timeout: 180000
@@ -88,6 +92,14 @@ appId: com.kushicorp.kushi
     timeout: 60000
     optional: true
 - takeScreenshot: shots/10-photo-saved
+# A failed save leaves the form open.
+- runFlow:
+    when:
+      visible: "Save changes"
+    commands:
+      - back
+- waitForAnimationToEnd:
+    timeout: 4000
 
 # ── Chat + calls ──────────────────────────────────────
 - tapOn:
