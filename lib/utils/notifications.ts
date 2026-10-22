@@ -66,6 +66,12 @@ export const handleIncomingChatMessage = async (remoteMessage: any) => {
   const data = remoteMessage.data;
   const notification = remoteMessage.notification;
 
+  // Sender photo, when the push carries one. Notifee rejects `largeIcon` if the
+  // key is present at all with a non-URL value (undefined included), so it is
+  // only added below when it's a real http(s) URL.
+  const image: unknown = notification?.image ?? notification?.android?.imageUrl;
+  const largeIcon = typeof image === 'string' && /^https?:\/\//.test(image) ? image : null;
+
   const channelId = await notifee.createChannel({
     id: 'chat-messages',
     name: 'Chat Messages',
@@ -89,12 +95,7 @@ export const handleIncomingChatMessage = async (remoteMessage: any) => {
       // White Kushi mark (Android tints it); see lib/plugins/withNotificationIcon.js
       smallIcon: 'ic_notification',
       color: '#F59E0B',
-      // Only set largeIcon when the value is an actual https:// URL;
-      // undefined / null / empty string / non-URL values cause Notifee to throw.
-      largeIcon:
-        typeof notification?.image === 'string' && notification.image.startsWith('http')
-          ? notification.image
-          : undefined,
+      ...(largeIcon ? { largeIcon } : {}),
     },
     ios: {
       sound: 'message-notification.mp3',

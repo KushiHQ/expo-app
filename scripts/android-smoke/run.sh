@@ -64,7 +64,7 @@ push() {
 adb shell am start -n "$PKG/.MainActivity" >/dev/null; sleep 8
 push --es intent notification --es id smoke-foreground
 shot 20-push-foreground
-# With a sender photo (chat pushes without one hit a largeIcon validation error in the app).
+# With a sender photo (shown as the banner's large icon).
 push --es intent notification --es id smoke-foreground-2 --es gcm.notification.title "Smoke"   --es gcm.notification.body "Foreground chat push" --es gcm.notification.image "$IMG"
 shot 20b-push-foreground-image
 notifications foreground
@@ -80,6 +80,8 @@ adb shell am kill "$PKG"; sleep 4
 echo "pid after kill: $(adb shell pidof $PKG)" >> "$OUT/notifications.txt"
 push --es intent notification --es id smoke-killed
 push --es intent notification --es id smoke-killed-2 --es gcm.notification.title "Smoke"   --es gcm.notification.body "Killed-state chat push" --es gcm.notification.image "$IMG"
+# A third push while React Native is still starting (bridgeless headless-task race).
+push --es intent notification --es id smoke-killed-3 --es gcm.notification.title "Smoke"   --es gcm.notification.body "Killed-state chat push 3"
 sleep 10
 adb shell cmd statusbar expand-notifications; shot 22-push-killed
 adb shell cmd statusbar collapse
@@ -102,8 +104,10 @@ grep -E " ($APP_PIDS) " "$OUT/logcat.txt" | grep -nE "FATAL EXCEPTION|Fatal sign
   | grep -vE "SentryAndroidGradlePlugin" > "$OUT/r8-suspects.txt" || true
 grep -nE -A25 "FATAL EXCEPTION|Fatal signal" "$OUT/logcat.txt" >> "$OUT/crashes.txt" || true
 grep -nE "ReactNativeJS|ReactNative" "$OUT/logcat.txt" | grep -iE " E |error|exception" > "$OUT/js-errors.txt" || true
+grep -nE "Cannot start headless task|largeIcon|Failed to show chat notification" "$OUT/logcat.txt" > "$OUT/push-errors.txt" || true
 
 echo "── R8 suspects ($(wc -l < "$OUT/r8-suspects.txt") lines)"; head -60 "$OUT/r8-suspects.txt"
+echo "── Push errors ($(wc -l < "$OUT/push-errors.txt") lines)"; head -20 "$OUT/push-errors.txt"
 echo "── Notifications"; cat "$OUT/notifications.txt"
 if grep -qE "FATAL EXCEPTION|Fatal signal" "$OUT/logcat.txt"; then
   echo "SMOKE_FAILED=crash" >> "$GITHUB_ENV"
