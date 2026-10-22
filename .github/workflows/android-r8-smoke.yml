@@ -95,7 +95,7 @@ jobs:
         run: |
           set -o pipefail
           cd android
-          ./gradlew assembleRelease -PreactNativeArchitectures=x86_64 --no-daemon 2>&1 | tee ../gradle.log | grep -E "^> Task :app:|BUILD|FAILURE|error:|Missing class|R8" | tail -80
+          ./gradlew :app:assembleRelease -PreactNativeArchitectures=x86_64 --no-daemon 2>&1 | tee ../gradle.log | grep -E "^> Task :app:|BUILD|FAILURE|error:|Missing class|R8" | tail -80
           APK=$(ls app/build/outputs/apk/release/*.apk | head -1)
           echo "APK=android/$APK" >> "$GITHUB_ENV"
           mkdir -p ../size
