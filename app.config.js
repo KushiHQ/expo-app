@@ -1,4 +1,6 @@
 import "dotenv/config";
+import fs from "fs";
+import path from "path";
 
 /**
  * @param {import('expo/config').ConfigContext} context
@@ -111,6 +113,14 @@ export default ({ config }) => ({
 						"../../node_modules/@notifee/react-native/android/libs",
 						"https://packages.expo.io/android/maven",
 					],
+					// R8 shrinks and obfuscates release builds (Play flags apps without it).
+					// Resource shrinking stays off: Expo's release bundler doesn't write the
+					// keep.xml that protects images required from JS, so R8 would strip them.
+					enableMinifyInReleaseBuilds: true,
+					extraProguardRules: fs.readFileSync(
+						path.join(__dirname, "proguard-rules.pro"),
+						"utf8",
+					),
 				},
 				ios: {
 					useFrameworks: "static",
@@ -242,6 +252,15 @@ export default ({ config }) => ({
 				// ENV_FILE GitHub secret, source maps are uploaded and stack traces are readable.
 				organization: process.env.SENTRY_ORG,
 				project: process.env.SENTRY_PROJECT,
+				// Uploads R8's mapping file so obfuscated Java/Kotlin frames in
+				// native crashes are readable in Sentry.
+				experimental_android: {
+					enableAndroidGradlePlugin: true,
+					autoUploadProguardMapping: true,
+					uploadNativeSymbols: false,
+					autoUploadNativeSymbols: false,
+					includeNativeSources: false,
+				},
 			},
 		],
 	],

@@ -1,0 +1,135 @@
+# Android release smoke test (R8 build) against the Render TEST API, as the QA
+# guest: sign in, browse a listing and its photos, change the profile photo
+# (picker → cropper → multipart upload), open a chat, place a short voice and
+# video call. Pushes are injected separately by run.sh.
+appId: com.kushicorp.kushi
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Start exploring"
+    timeout: 180000
+- takeScreenshot: shots/01-welcome
+- tapOn: "Sign in"
+- tapOn:
+    id: "email"
+- inputText: "qa.guest@kushi.test"
+- tapOn:
+    id: "password"
+- inputText: "KushiQA-2026!"
+- hideKeyboard
+- pressKey: Enter
+- extendedWaitUntil:
+    visible:
+      id: "tab-index"
+    timeout: 90000
+- tapOn:
+    text: "Allow"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: shots/02-home
+
+# ── Browse: a listing and its photos ──────────────────
+- scroll
+- takeScreenshot: shots/03-home-scrolled
+- tapOn:
+    text: "Open .*"
+    index: 0
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: shots/04-listing
+- tapOn:
+    point: "50%,22%"
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: shots/05-gallery
+- swipe:
+    direction: LEFT
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: shots/06-gallery-next
+- back
+- back
+- waitForAnimationToEnd:
+    timeout: 4000
+
+# ── Photo upload: profile photo ───────────────────────
+- tapOn:
+    id: "tab-you"
+- waitForAnimationToEnd:
+    timeout: 6000
+- tapOn:
+    id: "you-personal"
+- waitForAnimationToEnd:
+    timeout: 6000
+- tapOn: "Change photo"
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: shots/07-picker
+- tapOn:
+    text: "Photo taken on.*|kushi-smoke.*"
+    index: 0
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/08-cropper
+- tapOn:
+    text: "Crop|CROP|Done|DONE"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: shots/09-photo-picked
+- tapOn: "Save changes"
+- extendedWaitUntil:
+    visible: "Profile updated"
+    timeout: 60000
+    optional: true
+- takeScreenshot: shots/10-photo-saved
+
+# ── Chat + calls ──────────────────────────────────────
+- tapOn:
+    id: "tab-inbox"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/11-inbox
+- tapOn: "Ekwo.*"
+- extendedWaitUntil:
+    visible:
+      id: "chat-input"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: shots/12-chat
+- tapOn: "Voice call"
+- extendedWaitUntil:
+    visible: "End"
+    timeout: 60000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: shots/13-voice-call
+- tapOn:
+    text: "End"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/14-after-voice
+- tapOn:
+    text: "Video call"
+    optional: true
+- extendedWaitUntil:
+    visible: "End"
+    timeout: 60000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: shots/15-video-call
+- tapOn:
+    text: "End"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/16-after-video

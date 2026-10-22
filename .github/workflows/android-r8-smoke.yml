@@ -1,0 +1,156 @@
+name: Android · R8 smoke test
+
+# Builds an x86_64 release APK (debug-signed, nothing uploaded to Play or Sentry)
+# with and without R8, runs both on an emulator against the Render TEST API
+# (scripts/android-smoke) and compares sizes and logcat. The "off" build is the
+# baseline: errors it shares with "on" are not R8's.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/r8-minify
+
+concurrency:
+  group: android-r8-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        r8: [on, off]
+    env:
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+      APP_ENV: staging
+      SENTRY_DISABLE_AUTO_UPLOAD: 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /usr/share/swift /usr/local/share/powershell 2>/dev/null || true
+          sudo rm -rf /opt/hostedtoolcache/CodeQL 2>/dev/null || true
+          docker image prune -af 2>/dev/null || true
+          df -h /
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env file
+        run: |
+          echo '${{ secrets.ENV_FILE }}' > .env
+          # Local signing overrides would point at a keystore that isn't here.
+          grep -vE '^(EAS_KEYSTORE_PASSWORD|EAS_KEY_ALIAS|EAS_KEY_PASSWORD|EXPO_PUBLIC_GRAPHQL_URL|EXPO_PUBLIC_GRAPHQL_SUBSCRIPTION_URL|EXPO_PUBLIC_SHARE_PROPERTY_URL|EXPO_PUBLIC_SHARE_HOST_URL)=' .env > .env.tmp || true
+          mv .env.tmp .env
+          cat >> .env <<'ENV'
+          EXPO_PUBLIC_GRAPHQL_URL=https://kushi-housing-api.onrender.com/graphql
+          EXPO_PUBLIC_GRAPHQL_SUBSCRIPTION_URL=wss://kushi-housing-api.onrender.com/ws
+          EXPO_PUBLIC_SHARE_PROPERTY_URL=https://kushi-housing-web.onrender.com/homes
+          EXPO_PUBLIC_SHARE_HOST_URL=https://kushi-housing-web.onrender.com/hosts
+          ENV
+
+      - name: Decode Google Services JSON
+        run: echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 --decode > google-services.json
+
+      - name: Baseline without R8
+        if: matrix.r8 == 'off'
+        run: sed -i 's/enableMinifyInReleaseBuilds: true/enableMinifyInReleaseBuilds: false/' app.config.js
+
+      - name: Prebuild
+        run: |
+          npx expo prebuild --platform android --clean --no-install
+          grep -nE "minifyEnabled|enableProguardInReleaseBuilds|io.sentry.android.gradle|sentry \{" android/app/build.gradle android/gradle.properties || true
+          tail -60 android/app/proguard-rules.pro
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-smoke-${{ hashFiles('package-lock.json') }}
+          restore-keys: gradle-smoke-
+
+      - name: Build release APK (x86_64)
+        run: |
+          set -o pipefail
+          cd android
+          ./gradlew assembleRelease -PreactNativeArchitectures=x86_64 --no-daemon 2>&1 | tee ../gradle.log | grep -E "^> Task :app:|BUILD|FAILURE|error:|Missing class|R8" | tail -80
+          APK=$(ls app/build/outputs/apk/release/*.apk | head -1)
+          echo "APK=android/$APK" >> "$GITHUB_ENV"
+          mkdir -p ../size
+          ls -l "$APK" | tee ../size/apk.txt
+          unzip -l "$APK" | grep -E "classes[0-9]*\.dex" | tee ../size/dex.txt
+          unzip -l "$APK" | tail -1 | tee -a ../size/apk.txt
+
+      - name: Save build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-r8-${{ matrix.r8 }}
+          path: |
+            ${{ env.APK }}
+            size
+            gradle.log
+            android/app/build/outputs/mapping/release
+            android/app/build/outputs/logs
+          retention-days: 7
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Smoke test on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: '300000'
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          ram-size: 4096M
+          disk-size: 6000M
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -camera-back emulated -camera-front emulated
+          script: bash scripts/android-smoke/run.sh "${{ env.APK }}" smoke-out
+
+      - name: Upload smoke results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-r8-${{ matrix.r8 }}
+          path: smoke-out
+          retention-days: 7
+
+      - name: Fail if the smoke test failed
+        if: env.SMOKE_FAILED != ''
+        run: |
+          echo "Smoke test failed: $SMOKE_FAILED"
+          cat smoke-out/crashes.txt || true
+          exit 1
