@@ -12,7 +12,7 @@ diff --git a/node_modules/@react-native-firebase/messaging/android/src/main/java
  import com.facebook.react.jstasks.HeadlessJsTaskConfig;
  import com.google.firebase.messaging.RemoteMessage;
  import io.invertase.firebase.common.ReactNativeFirebaseJSON;
-@@ -13,6 +17,41 @@
+@@ -13,6 +17,43 @@
    private static final String TIMEOUT_JSON_KEY = "messaging_android_headless_task_timeout";
    private static final String TASK_KEY = "ReactNativeFirebaseMessagingHeadlessTask";
  
@@ -21,22 +21,23 @@ diff --git a/node_modules/@react-native-firebase/messaging/android/src/main/java
 +   * ReactInstance does. A push that arrives while the host is still starting (a second push
 +   * right after a cold start, or a redelivered intent) would find that context, and RN's
 +   * HeadlessJsTaskContext then drops the task with "Cannot start headless task, CatalystInstance
-+   * not available". Wait for the instance instead, then start the task as usual.
++   * not available". Unless the instance is already up, wait for it (starting the host if
++   * needed), then start the task. The context is read once: re-reading it, as RN's own
++   * onStartCommand does, reopens the race while the host starts on a background thread.
 +   */
 +  @Override
 +  public int onStartCommand(Intent intent, int flags, int startId) {
-+    ReactContext context = intent != null ? getReactContext() : null;
-+    if (context == null || context.hasActiveReactInstance()) {
-+      return super.onStartCommand(intent, flags, startId);
-+    }
-+    final ReactHost host = getReactHost();
-+    if (host == null) {
-+      return super.onStartCommand(intent, flags, startId);
-+    }
-+
-+    final HeadlessJsTaskConfig taskConfig = getTaskConfig(intent);
++    final HeadlessJsTaskConfig taskConfig = intent != null ? getTaskConfig(intent) : null;
 +    if (taskConfig == null) {
 +      return START_NOT_STICKY;
++    }
++
++    ReactContext context = getReactContext();
++    final ReactHost host =
++        context != null && context.hasActiveReactInstance() ? null : getReactHost();
++    if (host == null) {
++      startTask(taskConfig);
++      return START_REDELIVER_INTENT;
 +    }
 +
 +    HeadlessJsTaskService.acquireWakeLockNow(this);
@@ -48,6 +49,7 @@ diff --git a/node_modules/@react-native-firebase/messaging/android/src/main/java
 +            UiThreadUtil.runOnUiThread(() -> startTask(taskConfig));
 +          }
 +        });
++    host.start();
 +    return START_REDELIVER_INTENT;
 +  }
 +
