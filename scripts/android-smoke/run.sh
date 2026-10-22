@@ -98,7 +98,7 @@ kill $LOGCAT_PID 2>/dev/null || true
 # ── Crash / R8 scan ──
 APP_PIDS=$(grep -oE "Start proc [0-9]+:$PKG[/ ]" "$OUT/logcat.txt" | grep -oE "[0-9]+" | sort -u | tr '\n' '|' | sed 's/|$//')
 echo "app pids: $APP_PIDS" > "$OUT/crashes.txt"
-grep -E " ($APP_PIDS) " "$OUT/logcat.txt" | grep -nE "FATAL EXCEPTION|Fatal signal|ClassNotFoundException|NoClassDefFoundError|NoSuchMethodError|NoSuchFieldError|AbstractMethodError|IncompatibleClassChangeError|VerifyError|JNI DETECTED ERROR|Unable to instantiate|Unable to start (service|receiver)|ProGuard|R8" "$OUT/logcat.txt" \
+grep -E " ($APP_PIDS) " "$OUT/logcat.txt" | grep -nE "FATAL EXCEPTION|Fatal signal|ClassNotFoundException|NoClassDefFoundError|NoSuchMethodError|NoSuchFieldError|AbstractMethodError|IncompatibleClassChangeError|VerifyError|JNI DETECTED ERROR|Unable to instantiate|Unable to start (service|receiver)|ProGuard" \
   | grep -vE "SentryAndroidGradlePlugin" > "$OUT/r8-suspects.txt" || true
 grep -nE -A25 "FATAL EXCEPTION|Fatal signal" "$OUT/logcat.txt" >> "$OUT/crashes.txt" || true
 grep -nE "ReactNativeJS|ReactNative" "$OUT/logcat.txt" | grep -iE " E |error|exception" > "$OUT/js-errors.txt" || true
