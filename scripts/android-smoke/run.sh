@@ -44,11 +44,16 @@ notifications() {
   adb shell dumpsys notification --noredact | grep -E "pkg=$PKG|android.title=|android.text=" | grep -A2 "pkg=$PKG" >> "$OUT/notifications.txt" || true
 }
 
-# Data-only FCM message, as the Kushi API sends them.
+# An FCM message. Bare, it is data-only (the app shows a Notifee banner); with
+# chat() it also carries a notification block like the Kushi API's chat pushes
+# (gcm.n.e=1 marks it as one), which FCM itself shows when the app isn't in front.
 push() {
   adb shell am broadcast -a com.google.android.c2dm.intent.RECEIVE -p "$PKG" \
     --es google.message_id "smoke-$RANDOM" --es from 1 --es google.delivered_priority high \
     --es google.original_priority high "$@"
+}
+chat() {
+  push --es intent notification --es id "$1" --es gcm.n.e 1 --es gcm.notification.title "Smoke" \n    --es gcm.notification.body "$2" --es gcm.notification.image "$IMG"
 }
 
 # ── UI: sign in, browse, photo upload, chat, calls ──
@@ -65,13 +70,13 @@ adb shell am start -n "$PKG/.MainActivity" >/dev/null; sleep 8
 push --es intent notification --es id smoke-foreground
 shot 20-push-foreground
 # With a sender photo (shown as the banner's large icon).
-push --es intent notification --es id smoke-foreground-2 --es gcm.notification.title "Smoke"   --es gcm.notification.body "Foreground chat push" --es gcm.notification.image "$IMG"
+chat smoke-foreground-2 "Foreground chat push"
 shot 20b-push-foreground-image
 notifications foreground
 
 adb shell input keyevent KEYCODE_HOME; sleep 4
 push --es intent notification --es id smoke-background
-push --es intent notification --es id smoke-background-2 --es gcm.notification.title "Smoke"   --es gcm.notification.body "Background chat push" --es gcm.notification.image "$IMG"
+chat smoke-background-2 "Background chat push"
 adb shell cmd statusbar expand-notifications; shot 21-push-background
 adb shell cmd statusbar collapse
 notifications background
@@ -79,9 +84,9 @@ notifications background
 adb shell am kill "$PKG"; sleep 4
 echo "pid after kill: $(adb shell pidof $PKG)" >> "$OUT/notifications.txt"
 push --es intent notification --es id smoke-killed
-push --es intent notification --es id smoke-killed-2 --es gcm.notification.title "Smoke"   --es gcm.notification.body "Killed-state chat push" --es gcm.notification.image "$IMG"
-# A third push while React Native is still starting (bridgeless headless-task race).
-push --es intent notification --es id smoke-killed-3 --es gcm.notification.title "Smoke"   --es gcm.notification.body "Killed-state chat push 3"
+# A second one while React Native is still starting (bridgeless headless-task race).
+push --es intent notification --es id smoke-killed-2
+chat smoke-killed-3 "Killed-state chat push"
 sleep 10
 adb shell cmd statusbar expand-notifications; shot 22-push-killed
 adb shell cmd statusbar collapse

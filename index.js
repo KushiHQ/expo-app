@@ -136,7 +136,13 @@ messaging().setBackgroundMessageHandler(async (remoteMessage) => {
     ) {
       await handleIncomingCall(remoteMessage);
     } else if (intent === 'notification') {
-      await handleIncomingChatMessage(remoteMessage);
+      // The API sends chat pushes with a `notification` block, which FCM already
+      // shows in the tray while the app isn't in the foreground (taps land in
+      // onNotificationOpenedApp / getInitialNotification). Only data-only chat
+      // pushes need a Notifee banner here, or every message would show twice.
+      if (!remoteMessage.notification) {
+        await handleIncomingChatMessage(remoteMessage);
+      }
     } else if (intent === 'verification') {
       await handleIncomingVerificationNotification(remoteMessage);
     } else if (isAppUpdateIntent(intent)) {
