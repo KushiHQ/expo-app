@@ -4,11 +4,9 @@ name: Android · R8 smoke test
 # with and without R8, runs both on an emulator against the Render TEST API
 # (scripts/android-smoke) and compares sizes and logcat. The "off" build is the
 # baseline: errors it shares with "on" are not R8's.
+# Run it by hand (Actions → Run workflow) after changing keep rules or native libraries.
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - feat/r8-minify
 
 concurrency:
   group: android-r8-smoke-${{ github.ref }}
