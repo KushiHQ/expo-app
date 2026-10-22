@@ -5,8 +5,9 @@ import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { FileText, Upload, X } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { Alert, Platform, Pressable, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
 import ThemedText from '@/components/atoms/a-themed-text';
+import { alert } from '@/lib/k/dialog';
 
 export type PickedFile = {
   uri: string;
@@ -130,7 +131,7 @@ const FilePicker: React.FC<Props> = ({
       pickFromFiles();
       return;
     }
-    Alert.alert(label, 'Where is the document?', [
+    alert(label, 'Where is the document?', [
       { text: 'Photo Library', onPress: pickFromLibrary },
       { text: 'Take Photo', onPress: pickFromCamera },
       { text: 'Browse Files…', onPress: pickFromFiles },

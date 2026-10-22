@@ -4,12 +4,12 @@
  * never drops the publish status, and navigation back to the hub.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { PublishStatus, type HostingInput } from '@/lib/services/graphql/generated';
 import { toast } from '@/lib/hooks/use-toast';
 import { hubHref, nextStep, stepHref, type Hosting, type StepKey } from './listing-steps';
+import { alert } from '@/lib/k/dialog';
 
 export const cleanError = (m?: string | null) => (m ?? '').replace(/\[(GraphQL|Network)\]\s*/g, '').trim() || 'Something went wrong. Try again.';
 
@@ -59,7 +59,7 @@ export function useListingStep(rawId: string | string[] | undefined, key: StepKe
 		if (!dirty || !id) return toHub();
 		const saved = await save();
 		if (saved) return toHub();
-		Alert.alert('Leave without saving?', 'Your latest changes on this step weren’t saved.', [
+		alert('Leave without saving?', 'Your latest changes on this step weren’t saved.', [
 			{ text: 'Stay', style: 'cancel' },
 			{
 				text: 'Leave',

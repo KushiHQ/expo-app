@@ -42,7 +42,8 @@ export const useHostingRoomsStore = create<HostingRoomsStore>((set, get) => ({
     return rooms[activeIndex];
   },
   rooms: [],
-  setRooms: (rooms) => set(() => ({ rooms })),
+  // Every room always has an images array — Photos reads `.images.length`.
+  setRooms: (rooms) => set(() => ({ rooms: rooms.map((r) => ({ ...r, images: r.images ?? [] })) })),
   setActiveIndex(index) {
     set(() => ({ activeIndex: index }));
   },
@@ -50,7 +51,7 @@ export const useHostingRoomsStore = create<HostingRoomsStore>((set, get) => ({
     set((state) => {
       const rooms = [...state.rooms];
       if (rooms[index]) {
-        rooms[index].name = value;
+        rooms[index] = { ...rooms[index], name: value };
       } else {
         rooms[index] = { name: value, images: [], count: 0 };
       }
@@ -63,7 +64,10 @@ export const useHostingRoomsStore = create<HostingRoomsStore>((set, get) => ({
     set((state) => {
       const rooms = [...state.rooms];
       const roomData = rooms[state.activeIndex];
-      rooms[state.activeIndex] = { ...roomData, ...room };
+      // The room may have been replaced by a server re-sync meanwhile: never
+      // recreate a half room (no images) at a stale index.
+      if (!roomData) return state;
+      rooms[state.activeIndex] = { ...roomData, ...room, images: room.images ?? roomData.images ?? [] };
 
       return { rooms };
     });
@@ -72,7 +76,8 @@ export const useHostingRoomsStore = create<HostingRoomsStore>((set, get) => ({
     set((state) => {
       const rooms = [...state.rooms];
       const roomData = rooms[index];
-      rooms[index] = { ...roomData, ...room };
+      if (!roomData) return state;
+      rooms[index] = { ...roomData, ...room, images: room.images ?? roomData.images ?? [] };
 
       return { rooms };
     });
@@ -80,8 +85,9 @@ export const useHostingRoomsStore = create<HostingRoomsStore>((set, get) => ({
   deleteRoomImage(roomIndex, imageIndex) {
     set((state) => {
       const rooms = [...state.rooms];
-      const currentImages = rooms[roomIndex].images;
-      rooms[roomIndex].images = currentImages.filter((_, i) => i !== imageIndex);
+      const room = rooms[roomIndex];
+      if (!room) return state;
+      rooms[roomIndex] = { ...room, images: (room.images ?? []).filter((_, i) => i !== imageIndex) };
 
       return { rooms };
     });
@@ -96,7 +102,11 @@ export const useHostingRoomsStore = create<HostingRoomsStore>((set, get) => ({
   updateActiveRoomImage(imageIndex, image) {
     set((state) => {
       const rooms = [...state.rooms];
-      rooms[state.activeIndex].images[imageIndex] = image;
+      const room = rooms[state.activeIndex];
+      if (!room) return state;
+      const images = [...(room.images ?? [])];
+      images[imageIndex] = image;
+      rooms[state.activeIndex] = { ...room, images };
 
       return { rooms };
     });

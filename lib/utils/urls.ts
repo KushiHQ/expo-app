@@ -1,4 +1,5 @@
-import { Alert, Linking, Platform } from 'react-native';
+import { Linking, Platform } from 'react-native';
+import { alert } from '@/lib/k/dialog';
 
 type Coordinates = { longitude: number; latitude: number };
 
@@ -32,7 +33,7 @@ export const openAppStore = async () => {
     try {
       await Linking.openURL(web);
     } catch {
-      Alert.alert('Update Kushi', 'Please open your app store to update Kushi.');
+      alert('Update Kushi', 'Please open your app store to update Kushi.');
     }
   }
 };
@@ -54,11 +55,11 @@ export const openGoogleMaps = async (coordinates: Coordinates) => {
     if (supported) {
       await Linking.openURL(url);
     } else {
-      Alert.alert('Error', 'Google Maps is not installed on your device.');
+      alert('Error', 'Google Maps is not installed on your device.');
     }
   } catch (error) {
     console.error('Failed to open Google Maps:', error);
-    Alert.alert('Error', 'Could not open Google Maps.');
+    alert('Error', 'Could not open Google Maps.');
   }
 };
 

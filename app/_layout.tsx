@@ -6,12 +6,14 @@ import { InterTight_400Regular, InterTight_500Medium, InterTight_600SemiBold, In
 import { JetBrainsMono_400Regular, JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import { color as k } from '@/lib/k/theme';
-import { Stack, useLocalSearchParams, usePathname } from 'expo-router';
+import { Stack, useLocalSearchParams, usePathname, type ErrorBoundaryProps } from 'expo-router';
+import { RouteError } from '@/components/k/route-error';
 import * as SplashScreen from 'expo-splash-screen';
 import { setAudioModeAsync } from 'expo-audio';
 import { StatusBar } from 'expo-status-bar';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import ToastContainer from '@/components/atoms/a-toast-container';
+import { DialogHost } from '@/components/k/dialog';
 import UploadProgress from '@/components/organisms/o-upload-progress';
 import { NotificationProvider } from '@/components/contexts/notifications';
 import GraphqlClientProvider from '@/components/providers/graphql-client';
@@ -152,6 +154,7 @@ function RootLayout() {
                       <StatusBar style="light" />
                       <UploadProgress />
                       <ToastContainer />
+                      <DialogHost />
                       {/* Forced/optional update — above every screen, signed in or out. */}
                       <AppUpdate />
                     </ThemeProvider>
@@ -164,6 +167,11 @@ function RootLayout() {
       </GraphqlClientProvider>
     </>
   );
+}
+
+// Last line of defence for any screen without its own boundary.
+export function ErrorBoundary(props: ErrorBoundaryProps) {
+  return <RouteError {...props} />;
 }
 
 export default Sentry.wrap(RootLayout);

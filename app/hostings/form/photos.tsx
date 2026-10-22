@@ -137,20 +137,22 @@ export default function Photos() {
 				) : null}
 				{r.rooms.map((x: RoomData, index) => {
 					const selecting = select?.index === index;
+					const imgs = x.images ?? [];
+					const name = labels[index] ?? label(x.name);
 					return (
 						<Card key={x.id ?? `new-${index}`} style={{ padding: 14 }}>
 							<View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
 								<View style={{ flex: 1 }}>
-									<KText v="bodyStrong">{labels[index]}</KText>
-									<KText v="xs">{x.images.length ? `${x.images.length} photo${x.images.length === 1 ? '' : 's'}` : 'No photos yet'}{x.description ? ' · described' : ''}</KText>
+									<KText v="bodyStrong">{name}</KText>
+									<KText v="xs">{imgs.length ? `${imgs.length} photo${imgs.length === 1 ? '' : 's'}` : 'No photos yet'}{x.description ? ' · described' : ''}</KText>
 								</View>
 								{!x.id ? <Spinner /> : null}
-								<IconButton label={`More for ${labels[index]}`} size={38} onPress={() => setMenu(index)}>
+								<IconButton label={`More for ${name}`} size={38} onPress={() => setMenu(index)}>
 									<MoreHorizontal size={18} color={color.fg} />
 								</IconButton>
 							</View>
 							<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-								{x.images.map((img, i) => (
+								{imgs.map((img, i) => (
 									<PhotoTile
 										key={img}
 										uri={r.resolveThumb(img)}
@@ -158,7 +160,7 @@ export default function Photos() {
 										status={statuses[img]}
 										cover={!!r.coverImageUrl && img === r.coverImageUrl}
 										selected={selecting && select.urls.includes(img)}
-										label={`${labels[index]} photo ${i + 1}`}
+										label={`${name} photo ${i + 1}`}
 										onRetry={() => retry(img)}
 										onPress={() => (selecting ? setSelect({ index, urls: select.urls.includes(img) ? select.urls.filter((u) => u !== img) : [...select.urls, img] }) : r.handleOpenRoomImage(index, i))}
 									/>
@@ -179,7 +181,7 @@ export default function Photos() {
 											variant="ghost"
 											icon={<Star size={14} color={color.fg} />}
 											onPress={() => {
-												r.handleSetCoverImage(index, x.images.indexOf(select.urls[0]));
+												r.handleSetCoverImage(index, imgs.indexOf(select.urls[0]));
 												setSelect(null);
 											}}
 										/>
@@ -219,7 +221,7 @@ export default function Photos() {
 
 			<Sheet open={menu != null} onClose={() => setMenu(null)} title={menu != null ? labels[menu] : ''}>
 				<Row icon={<Camera size={17} color={color.fg} />} title="Take photos" detail="Opens the Kushi camera" onPress={() => { const i = menu!; setMenu(null); later(() => r.handleRoomImageEdit(i)); }} />
-				{room?.images.length ? <Row icon={<FolderInput size={17} color={color.fg} />} title="Select photos" detail="Set the cover, move or delete" onPress={() => { const i = menu!; setMenu(null); setSelect({ index: i, urls: [] }); }} /> : null}
+				{room?.images?.length ? <Row icon={<FolderInput size={17} color={color.fg} />} title="Select photos" detail="Set the cover, move or delete" onPress={() => { const i = menu!; setMenu(null); setSelect({ index: i, urls: [] }); }} /> : null}
 				<Row icon={<PenLine size={17} color={color.fg} />} title={room?.description ? 'Edit description' : 'Describe this space'} detail="Optional — size, finishes, views" onPress={() => { const i = menu!; setMenu(null); later(() => setDescribe({ index: i, text: r.rooms[i]?.description ?? '' })); }} />
 				{hosting?.kind === 'CHILD' && room?.id ? <Row icon={<Copy size={17} color={color.fg} />} title="Copy to another unit" detail="Same space and photos, no re-upload" onPress={() => { const c = { id: room.id!, name: labels[menu!] }; setMenu(null); later(() => setCopyRoom(c)); }} /> : null}
 				<Row icon={<Trash2 size={17} color={color.danger} />} title="Delete this space" danger onPress={() => { const i = menu!; setMenu(null); later(() => setConfirmDelete(i)); }} />
@@ -230,7 +232,7 @@ export default function Photos() {
 			</Sheet>
 
 			<Sheet open={confirmDelete != null} onClose={() => setConfirmDelete(null)} title={confirmDelete != null ? `Delete ${labels[confirmDelete]}?` : ''}>
-				<KText v="small">{confirmDelete != null && r.rooms[confirmDelete]?.images.length ? 'Its photos will be deleted too. This can’t be undone.' : 'This can’t be undone.'}</KText>
+				<KText v="small">{confirmDelete != null && r.rooms[confirmDelete]?.images?.length ? 'Its photos will be deleted too. This can’t be undone.' : 'This can’t be undone.'}</KText>
 				<Button title="Delete" variant="danger" block loading={deleting} onPress={() => confirmDelete != null && removeRoom(confirmDelete)} />
 				<Button title="Keep it" variant="ghost" block onPress={() => setConfirmDelete(null)} />
 			</Sheet>

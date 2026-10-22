@@ -2,7 +2,7 @@ import moment from 'moment';
 import { useThemeColors } from '@/lib/hooks/use-theme-color';
 import ThemedView from '../atoms/a-themed-view';
 import { hexToRgba } from '@/lib/utils/colors';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
 import { Pressable } from '@/components/k/pressable';
 import { SURFACE } from '@/lib/constants/surface';
 import { HugeiconsFolder03 } from '../icons/i-files';
@@ -17,6 +17,7 @@ import * as Haptics from 'expo-haptics';
 import { useRouter } from '@/lib/hooks/use-router';
 import { toast } from '@/lib/hooks/use-toast';
 import { Trash2 } from 'lucide-react-native';
+import { alert } from '@/lib/k/dialog';
 
 type Props = {
   folder: SavedHostingFolder;
@@ -44,7 +45,7 @@ const SavedHostingFolderCard: React.FC<Props> = ({ folder, onDelete }) => {
 
   const confirmDelete = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert(
+    alert(
       'Delete Folder',
       `Delete "${folder.folderName}"? Its saved homes will move back to Unsorted.`,
       [

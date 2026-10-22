@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Linking, StyleSheet, View } from 'react-native';
+import { Linking, Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { CameraView, type CameraType, type FlashMode, useCameraPermissions } from 'expo-camera';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
+import { useAudioPlayer } from 'expo-audio';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, MapPin, MapPinOff, RefreshCcw, X, Zap, ZapOff } from 'lucide-react-native';
@@ -15,8 +18,14 @@ import { useGalleryStore } from '@/lib/stores/gallery';
 import { usePhotoGalleryScreen } from '@/lib/hooks/camera';
 import { cast } from '@/lib/types/utils';
 import { rememberCapture } from '@/lib/k/photo-capture';
+import { alert } from '@/lib/k/dialog';
 
 type Fix = { coords: Location.LocationObjectCoords } | null;
+
+/** Pinch range. Past this, digital zoom is too soft for listing photos. */
+const MAX_ZOOM = 0.6;
+/** iOS names its lenses; this one is the 0.5× ultra-wide on phones that have it. */
+const isUltraWide = (name: string) => /ultra\s*wide/i.test(name);
 type Gps = 'finding' | 'on' | 'off' | 'blocked';
 
 /**
@@ -41,6 +50,32 @@ export default function CameraScreen() {
 	const { gallery, append, setGallery, setActiveIndex } = useGalleryStore();
 	const { redirect: review } = usePhotoGalleryScreen();
 	const start = useRef(0);
+	const { width: winW, height: winH } = useWindowDimensions();
+	// The photo is 4:3, so the preview is too: what you see is what you get.
+	// (Filling the whole screen cropped the sides and looked zoomed in.)
+	const frameW = Math.min(winW, (winH * 3) / 4);
+	const frameH = (frameW * 4) / 3;
+
+	const [zoom, setZoom] = useState(0);
+	const pinchStart = useRef(0);
+	const [ultraWide, setUltraWide] = useState<string | null>(null);
+	const [wide, setWide] = useState(false);
+	const pinch = Gesture.Pinch()
+		.onStart(() => {
+			runOnJS(beginPinch)();
+		})
+		.onUpdate((e) => {
+			runOnJS(applyPinch)(e.scale);
+		});
+	function beginPinch() {
+		pinchStart.current = zoom;
+	}
+	function applyPinch(scale: number) {
+		setZoom(Math.min(MAX_ZOOM, Math.max(0, pinchStart.current + Math.log(scale) * 0.25)));
+	}
+
+	// Kushi's own shutter sound, the same on every phone (the system one is muted).
+	const shutterSound = useAudioPlayer(require('@/assets/audio/shutter.wav'));
 
 	const imagesParam = JSON.stringify(images);
 	useFocusEffect(
@@ -88,7 +123,7 @@ export default function CameraScreen() {
 	async function shoot() {
 		if (!cam.current || busy) return;
 		if (needsLocation && !fix) {
-			Alert.alert('Turn on location', 'Room photos must be taken with location on, so renters can trust they were taken at the property.', [
+			alert('Turn on location', 'Room photos must be taken with location on, so renters can trust they were taken at the property.', [
 				{ text: 'Not now', style: 'cancel' },
 				gps === 'blocked' ? { text: 'Open Settings', onPress: () => Linking.openSettings() } : { text: 'Try again', onPress: () => locate() }
 			]);
@@ -97,11 +132,16 @@ export default function CameraScreen() {
 		setBusy(true);
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
 		try {
+			shutterSound.seekTo(0);
+			shutterSound.play();
+		} catch {}
+		try {
 			const c = fix?.coords;
 			const photo = await cam.current.takePictureAsync({
 				// JPEG quality only — 0.7 keeps uploads to 1–2 MB on Nigerian networks; resolution and EXIF are untouched.
 				quality: 0.7,
 				exif: true,
+				shutterSound: false,
 				additionalExif: c
 					? {
 							GPSLatitude: Math.abs(c.latitude),
@@ -120,7 +160,7 @@ export default function CameraScreen() {
 				if (multiple === 'false') review({ redirect: cast(redirect), fromCamera: true });
 			}
 		} catch {
-			Alert.alert('That photo didn’t save', 'Try again.');
+			alert('That photo didn’t save', 'Try again.');
 		} finally {
 			setBusy(false);
 		}
@@ -128,7 +168,7 @@ export default function CameraScreen() {
 
 	function close() {
 		if (taken === 0) return router.back();
-		Alert.alert(`Discard ${taken} new photo${taken === 1 ? '' : 's'}?`, 'They haven’t been added to your listing yet.', [
+		alert(`Discard ${taken} new photo${taken === 1 ? '' : 's'}?`, 'They haven’t been added to your listing yet.', [
 			{ text: 'Keep shooting', style: 'cancel' },
 			{ text: 'Discard', style: 'destructive', onPress: () => router.back() }
 		]);
@@ -165,7 +205,22 @@ export default function CameraScreen() {
 	return (
 		<View style={s.fill}>
 			<StatusBar style="light" />
-			<CameraView ref={cam} style={StyleSheet.absoluteFill} facing={facing} flash={flash} />
+			<View style={[StyleSheet.absoluteFill, s.center]}>
+				<GestureDetector gesture={pinch}>
+					<View style={{ width: frameW, height: frameH, overflow: 'hidden' }}>
+						<CameraView
+							ref={cam}
+							style={StyleSheet.absoluteFill}
+							facing={facing}
+							flash={flash}
+							ratio="4:3"
+							zoom={zoom}
+							selectedLens={Platform.OS === 'ios' && facing === 'back' && wide && ultraWide ? ultraWide : undefined}
+							onAvailableLensesChanged={(e) => setUltraWide(e.lenses.find(isUltraWide) ?? null)}
+						/>
+					</View>
+				</GestureDetector>
+			</View>
 
 			<View style={[s.top, { paddingTop: insets.top + 8 }]}>
 				<Pressable accessibilityRole="button" accessibilityLabel="Close camera" onPress={close} style={s.round}>
@@ -214,6 +269,18 @@ export default function CameraScreen() {
 					<RefreshCcw size={22} color="#fff" />
 				</Pressable>
 			</View>
+			{facing === 'back' ? (
+				<View style={[s.zoomRow, { bottom: Math.max(insets.bottom, 16) + (taken ? 164 : 112) }]}>
+					{ultraWide ? (
+						<Pressable accessibilityRole="button" accessibilityLabel="Wide angle, 0.5 times" onPress={() => { setWide(true); setZoom(0); }} style={[s.zoomChip, wide && s.zoomOn]}>
+							<KText style={[s.zoomText, wide && { color: color.amber }]}>0.5</KText>
+						</Pressable>
+					) : null}
+					<Pressable accessibilityRole="button" accessibilityLabel="Normal zoom, 1 times" onPress={() => { setWide(false); setZoom(0); }} style={[s.zoomChip, !wide && s.zoomOn]}>
+						<KText style={[s.zoomText, !wide && { color: color.amber }]}>{!wide && zoom > 0.01 ? 'Zoom' : '1×'}</KText>
+					</Pressable>
+				</View>
+			) : null}
 			{taken ? (
 				<View style={[s.done, { bottom: Math.max(insets.bottom, 16) + 112 }]}>
 					<Button title={`Review ${gallery.length} photo${gallery.length === 1 ? '' : 's'}`} size="sm" onPress={() => review({ redirect: cast(redirect), fromCamera: true })} />
@@ -237,5 +304,9 @@ const s = StyleSheet.create({
 	count: { position: 'absolute', right: 3, top: 3, minWidth: 18, height: 18, paddingHorizontal: 4, borderRadius: 9, backgroundColor: color.amber, alignItems: 'center', justifyContent: 'center' },
 	shutter: { width: 80, height: 80, borderRadius: 40, borderWidth: 4, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
 	shutterIn: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#fff' },
-	done: { position: 'absolute', alignSelf: 'center' }
+	done: { position: 'absolute', alignSelf: 'center' },
+	zoomRow: { position: 'absolute', alignSelf: 'center', flexDirection: 'row', gap: 8, padding: 4, borderRadius: radius.pill, backgroundColor: 'rgba(0,0,0,0.45)' },
+	zoomChip: { minWidth: 40, height: 40, paddingHorizontal: 10, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+	zoomOn: { backgroundColor: 'rgba(0,0,0,0.55)' },
+	zoomText: { fontFamily: font.bodySemi, fontSize: 13, color: '#fff' }
 });
