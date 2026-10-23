@@ -44,7 +44,7 @@ Config: `codegen.ts` — schema `https://devapi.kushicorp.com/graphql`. Run `pnp
 ## Platform Quirks
 
 - **Gradle pinned to 8.13** via custom config plugin (`withGradleVersion`). Do not upgrade — 8.14 breaks the build.
-- **JVM heap set to 4GB** (`withGradleJvmArgs`) for dex merging.
+- **JVM heap set to 6GB** (`withGradleJvmArgs`) for dex merging and R8; the JVM exits on OOM instead of hanging.
 - `react-native-callkeep` is **Android-only** (nulled on iOS in `react-native.config.js`).
 - Prebuild step may be needed: `npx expo prebuild` before `expo run:android`/`expo run:ios`.
 
