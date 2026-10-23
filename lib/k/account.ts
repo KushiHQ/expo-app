@@ -236,3 +236,6 @@ export const LINKS = {
 	cancellation: 'https://housing.kushi.ng/legal/booking-cancellation-policy',
 	supportEmail: 'support@kushi.ng'
 } as const;
+
+/** Apple "Hide My Email" relay addresses (mail only arrives from senders registered with Apple). */
+export const isPrivateRelay = (email?: string | null) => !!email && /@privaterelay\.appleid\.com$/i.test(email);

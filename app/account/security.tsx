@@ -6,6 +6,7 @@ import { Button, Eyebrow, Header, KText, Notice, Row, Screen, Sheet } from '@/co
 import { Group } from '@/components/k/settings';
 import { color } from '@/lib/k/theme';
 import { useUserStore } from '@/lib/stores/users';
+import { isPrivateRelay } from '@/lib/k/account';
 
 /** Security: password, this device, and how to lock things down. */
 export default function Security() {
@@ -21,7 +22,7 @@ export default function Security() {
 			</View>
 
 			<Group title="Sign-in">
-				<Row icon={<Mail size={17} color={color.fg2} />} title="Email" detail={email ?? '—'} />
+				<Row icon={<Mail size={17} color={color.fg2} />} title="Email" detail={isPrivateRelay(email) ? `${email} · Apple private relay. Tap to change` : email ?? '—'} onPress={() => router.push('/account/email')} testID="security-email" />
 				<Row icon={<KeyRound size={17} color={color.fg2} />} title="Change password" detail="We email you a code to confirm it’s you" onPress={() => router.push('/account/password')} testID="security-password" />
 			</Group>
 
