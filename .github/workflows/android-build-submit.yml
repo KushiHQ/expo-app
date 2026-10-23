@@ -93,9 +93,14 @@ jobs:
           key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: gradle-
 
+      # A normal build takes ~50 min. Twice (1.4.3) Gradle failed at the final
+      # bundle packaging/signing step without printing why and then hung until
+      # the 6 h job limit, so cap the step and keep evidence for the failure dump.
       - name: Build Android (local)
+        timeout-minutes: 90
         run: |
           set -o pipefail
+          ( while true; do { date -u +%T; free -m | sed -n 2,3p; ps -eo rss,comm --sort=-rss | sed -n 2,6p; } >> /tmp/mem.log; sleep 60; done ) &
           eas build --platform android --profile production --local --non-interactive 2>&1 | tee /tmp/eas-output.txt || true
           AAB_PATH=$(grep -oE '[^[:space:]]+\.aab' /tmp/eas-output.txt | tail -1)
           if [ -z "$AAB_PATH" ] || [ ! -f "$AAB_PATH" ]; then
@@ -104,6 +109,16 @@ jobs:
           fi
           echo "AAB_PATH=$AAB_PATH" >> "$GITHUB_ENV"
           echo "✅ Built AAB: $AAB_PATH"
+
+      - name: Gradle diagnostics
+        if: failure() || cancelled()
+        run: |
+          echo "── memory over time"; tail -60 /tmp/mem.log || true
+          echo "── kernel OOM kills"; sudo dmesg -T 2>/dev/null | grep -iE "out of memory|killed process|oom" | tail -20 || true
+          echo "── heap dumps / JVM crash logs"; sudo find / -xdev \( -name 'java_pid*.hprof' -o -name 'hs_err_pid*.log' \) -printf '%p %s\n' 2>/dev/null | head || true
+          for f in $(sudo find / -xdev -name 'hs_err_pid*.log' 2>/dev/null | head -2); do echo "── $f"; sudo head -40 "$f"; done
+          echo "── Gradle daemon log"; for f in $(ls -t ~/.gradle/daemon/*/daemon-*.out.log 2>/dev/null | head -2); do echo "── $f"; grep -nE -B2 -A40 "FAILED|Exception|Error" "$f" | tail -150; done
+          echo "── processes"; ps -eo pid,rss,etime,comm --sort=-rss | head -15
 
       # Keep the build so a failed store upload can be retried without rebuilding.
       - name: Save build
