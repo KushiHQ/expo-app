@@ -78,7 +78,7 @@ export default function ListingHub() {
 		const r = await createUnits({ hostingId: id, count: copyCount, publish: copyPublish });
 		if (r.error) return toast.show({ type: 'error', text2: cleanError(r.error.message) });
 		setCopyOpen(false);
-		toast.show({ type: 'success', text1: 'Units created', text2: r.data?.createUnitsFromHosting.message });
+		toast.show({ type: 'success', text1: 'Units created', text2: r.data?.createUnitsFromHosting.message ?? 'Your new units are under this property.' });
 		refetch();
 	}
 	async function onDelete() {
