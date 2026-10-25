@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { BarChart3, Copy, ExternalLink, Inbox, MoreHorizontal, Plus, Rocket, ShieldCheck, Trash2 } from 'lucide-react-native';
-import { Button, Card, Divider, Empty, Eyebrow, Header, IconButton, KText, Notice, Photo, Pill, Row, Screen, Sheet, Skeleton } from '@/components/k';
+import { BarChart3, Copy, CopyPlus, ExternalLink, Inbox, MoreHorizontal, Plus, Rocket, ShieldCheck, Trash2 } from 'lucide-react-native';
+import { useMutation } from 'urql';
+import { Button, Card, Check, Divider, Empty, Eyebrow, Header, IconButton, KText, Notice, Photo, Pill, Row, Screen, Sheet, Skeleton, Stepper } from '@/components/k';
 import { HostListingRow, PUBLISH } from '@/components/k/host-bits';
 import { Progress, StepRow } from '@/components/k/listing-form';
 import { color } from '@/lib/k/theme';
 import { naira, perInterval, place } from '@/lib/k/format';
 import { TIERS } from '@/lib/k/tiers';
-import { agentManaged, stepHref, stepsFor, type Hosting, type StepKey } from '@/lib/k/listing-steps';
+import { agentManaged, roomPhotoCount, stepHref, stepsFor, type Hosting, type StepKey } from '@/lib/k/listing-steps';
+import { CREATE_UNITS_FROM_HOSTING, type CreateUnitsResult } from '@/lib/services/graphql/requests/mutations/units';
 import { cleanError } from '@/lib/k/use-listing-step';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { toast } from '@/lib/hooks/use-toast';
@@ -24,6 +26,11 @@ export default function ListingHub() {
 	const [confirmDelete, setConfirmDelete] = useState(false);
 	const [{ fetching: deleting }, del] = useDeleteHostingMutation();
 	const [{ fetching: duplicating }, duplicate] = useDuplicateHostingMutation();
+	// Copy the property's own rooms and photos into N units (identical compounds).
+	const [copyOpen, setCopyOpen] = useState(false);
+	const [copyCount, setCopyCount] = useState(5);
+	const [copyPublish, setCopyPublish] = useState(true);
+	const [{ fetching: copying }, createUnits] = useMutation<CreateUnitsResult>(CREATE_UNITS_FROM_HOSTING);
 
 	// A brand-new listing arrives with ?next=photos: carry straight on to that step, once.
 	const jumped = useRef(false);
@@ -66,6 +73,13 @@ export default function ListingHub() {
 		setMenu(false);
 		if (r.error) return toast.show({ type: 'error', text2: cleanError(r.error.message) });
 		toast.show({ type: 'success', text1: 'Copied', text2: 'A draft copy is in your listings.' });
+	}
+	async function onCopyIntoUnits() {
+		const r = await createUnits({ hostingId: id, count: copyCount, publish: copyPublish });
+		if (r.error) return toast.show({ type: 'error', text2: cleanError(r.error.message) });
+		setCopyOpen(false);
+		toast.show({ type: 'success', text1: 'Units created', text2: r.data?.createUnitsFromHosting.message });
+		refetch();
 	}
 	async function onDelete() {
 		const r = await del({ hostingId: id });
@@ -150,7 +164,18 @@ export default function ListingHub() {
 						<Eyebrow>{`Units · ${units.length}`}</Eyebrow>
 						<Button title="Add a unit" size="sm" variant="ghost" icon={<Plus size={14} color={color.fg} />} onPress={() => router.push(`/hostings/form?parent=${id}` as Href)} />
 					</View>
-					{units.length ? units.map((u) => <HostListingRow key={u.id} l={u} />) : <KText v="small">No units yet. Add each flat or shop so renters can pick one.</KText>}
+					{roomPhotoCount(h) > 0 ? (
+						<Button
+							title="Copy into units"
+							variant="ghost"
+							size="sm"
+							icon={<CopyPlus size={14} color={color.fg} />}
+							onPress={() => setCopyOpen(true)}
+							style={{ alignSelf: 'flex-start' }}
+							testID="copy-into-units"
+						/>
+					) : null}
+					{units.length ? units.map((u) => <HostListingRow key={u.id} l={u} />) : <KText v="small">No units yet. Add each flat or shop so renters can pick one, or, if they’re all the same, copy this property’s rooms and photos into units.</KText>}
 				</View>
 			) : null}
 
@@ -177,6 +202,20 @@ export default function ListingHub() {
 				<Row icon={<ExternalLink size={17} color={color.fg} />} title="View as renters see it" onPress={() => { setMenu(false); router.push(`/hostings/${id}` as Href); }} />
 				<Row icon={<Copy size={17} color={color.fg} />} title={duplicating ? 'Copying…' : 'Make a copy'} detail="Starts a new draft with the same details" onPress={onDuplicate} />
 				<Row icon={<Trash2 size={17} color={color.danger} />} title="Delete listing" danger onPress={() => { setMenu(false); setTimeout(() => setConfirmDelete(true), 380); }} />
+			</Sheet>
+			<Sheet open={copyOpen} onClose={() => setCopyOpen(false)} eyebrow="Identical units" title="Copy into units">
+				<KText v="small">
+					Each new unit gets this property’s rooms, photos, price and details{units.length ? `, numbered after your ${units.length} existing unit${units.length === 1 ? '' : 's'}` : ''}. You can still change any unit afterwards, like its price or a photo.
+				</KText>
+				<View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+					<KText v="bodyStrong">How many units?</KText>
+					<Stepper value={copyCount} onChange={setCopyCount} min={1} max={50} />
+				</View>
+				<Check on={copyPublish} onPress={() => setCopyPublish((v) => !v)}>
+					Publish them now (units with everything filled in go live straight away)
+				</Check>
+				<Button title={copying ? 'Creating units…' : `Create ${copyCount} unit${copyCount === 1 ? '' : 's'}`} block loading={copying} onPress={onCopyIntoUnits} testID="copy-into-units-confirm" />
+				<Button title="Cancel" variant="ghost" block onPress={() => setCopyOpen(false)} />
 			</Sheet>
 			<Sheet open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Delete this listing?">
 				<KText v="small">It disappears from Kushi and your listings. This can’t be undone.</KText>
