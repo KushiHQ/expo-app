@@ -270,7 +270,7 @@ function Detail({ h }: { h: Listing }) {
 
 			{h.video?.asset?.publicUrl ? <VideoTour uri={h.video.asset.publicUrl} seconds={h.video.durationSeconds} /> : null}
 
-			<PhotoTour hostingId={h.id} coverAssetId={h.coverImage?.asset?.id} />
+			<PhotoTour hostingId={h.id} title={h.title} coverAssetId={h.coverImage?.asset?.id} />
 
 			{(h.rooms ?? []).length ? (
 				<View style={{ gap: 12 }}>
