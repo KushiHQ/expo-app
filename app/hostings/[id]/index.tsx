@@ -26,6 +26,7 @@ import {
 import { Avatar, Button, Card, Divider, Empty, Eyebrow, IconButton, KText, Notice, Photo, Pill, Sheet, Skeleton, Stepper, Waypoint } from '@/components/k';
 import { QuoteLines, useQuote } from '@/components/k/quote';
 import { useSaveToggle } from '@/components/k/listing-card';
+import { PhotoTour } from '@/components/k/photo-tour';
 import { color, font, gutter, radius } from '@/lib/k/theme';
 import { centered, maxWidth, useLayout } from '@/lib/k/layout';
 import { date, duration, humanize, intervalAdverb, isShortLet, naira, perInterval, place } from '@/lib/k/format';
@@ -268,6 +269,8 @@ function Detail({ h }: { h: Listing }) {
 			) : null}
 
 			{h.video?.asset?.publicUrl ? <VideoTour uri={h.video.asset.publicUrl} seconds={h.video.durationSeconds} /> : null}
+
+			<PhotoTour hostingId={h.id} coverAssetId={h.coverImage?.asset?.id} />
 
 			{(h.rooms ?? []).length ? (
 				<View style={{ gap: 12 }}>
