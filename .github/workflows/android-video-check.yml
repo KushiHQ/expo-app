@@ -6,6 +6,10 @@ name: Android · photo tour playback check
 # logcat show whether the player starts, and whether R8 is to blame.
 on:
   workflow_dispatch:
+    inputs:
+      hosting_id:
+        description: Live listing whose photo tour to play
+        default: a05781bf-128c-4d71-a2a3-61237f75ecf8
 
 concurrency:
   group: android-video-check-${{ github.ref }}
@@ -130,7 +134,7 @@ jobs:
           disk-size: 6000M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-boot-anim -no-snapshot
-          script: bash scripts/android-smoke/video.sh "${{ env.APK }}" video-out
+          script: bash scripts/android-smoke/video.sh "${{ env.APK }}" video-out "${{ inputs.hosting_id }}"
 
       - name: Upload results
         if: always()
