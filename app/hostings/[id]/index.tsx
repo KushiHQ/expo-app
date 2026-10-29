@@ -282,7 +282,16 @@ function Detail({ h }: { h: Listing }) {
 						showsHorizontalScrollIndicator={false}
 						contentContainerStyle={{ gap: 12 }}
 						renderItem={({ item: r }) => (
-							<View style={{ width: 160, gap: 6 }}>
+							<Pressable
+								disabled={!r.images?.[0]?.asset?.id}
+								onPress={() => {
+									const start = Math.max(0, photos.findIndex((p) => p.id === r.images?.[0]?.asset?.id));
+									router.push({ pathname: '/hostings/[id]/gallery', params: { id: h.id, start: String(start) } });
+								}}
+								accessibilityRole="button"
+								accessibilityLabel={`See photos of ${roomLabel(r.name)}`}
+								style={({ pressed }) => [{ width: 160, gap: 6 }, pressed && { opacity: 0.8 }]}
+							>
 								<Photo assetId={r.images?.[0]?.asset?.id} w={400} h={300} style={{ width: 160, height: 116 }} />
 								<KText v="smallStrong">
 									{roomLabel(r.name)}
@@ -293,7 +302,7 @@ function Detail({ h }: { h: Listing }) {
 										{r.description}
 									</KText>
 								) : null}
-							</View>
+							</Pressable>
 						)}
 					/>
 				</View>
