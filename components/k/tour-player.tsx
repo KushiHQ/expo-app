@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Share, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import * as Sentry from '@sentry/react-native';
 import { useEvent } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { Pause, Play, RotateCcw, Share2, Volume2, VolumeX, X } from 'lucide-react-native';
@@ -37,7 +38,7 @@ function Stage({ uri, title, shareUrl, onClose }: Omit<Props, 'visible'>) {
 		p.play();
 	});
 	const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
-	const { status } = useEvent(player, 'statusChange', { status: player.status });
+	const { status, error } = useEvent(player, 'statusChange', { status: player.status });
 	const time = useEvent(player, 'timeUpdate', { currentTime: 0, currentLiveTimestamp: null, currentOffsetFromLive: null, bufferedPosition: 0 });
 	const [ended, setEnded] = useState(false);
 	const [muted, setMuted] = useState(false);
@@ -47,6 +48,17 @@ function Stage({ uri, title, shareUrl, onClose }: Omit<Props, 'visible'>) {
 		const sub = player.addListener('playToEnd', () => setEnded(true));
 		return () => sub.remove();
 	}, [player]);
+
+	// A native playback error never reaches JS on its own: show it and report it.
+	useEffect(() => {
+		if (status !== 'error') return;
+		console.warn('[tour-player] playback error', error?.message);
+		Sentry.captureMessage(`Photo tour playback error: ${error?.message ?? 'unknown'}`, { level: 'error', tags: { area: 'tour-player' }, extra: { uri } });
+	}, [status, error, uri]);
+	function retry() {
+		player.replace(uri);
+		player.play();
+	}
 
 	const duration = player.duration || 0;
 	const current = time?.currentTime ?? 0;
@@ -77,7 +89,21 @@ function Stage({ uri, title, shareUrl, onClose }: Omit<Props, 'visible'>) {
 			<VideoView player={player} style={StyleSheet.absoluteFill} nativeControls={false} contentFit="contain" />
 			<Pressable onPress={toggle} style={StyleSheet.absoluteFill} accessibilityRole="button" accessibilityLabel={isPlaying ? 'Pause' : 'Play'}>
 				<View style={s.center}>
-					{loading ? (
+					{status === 'error' ? (
+						<View style={s.err}>
+							<KText v="bodyStrong" style={{ color: color.fg, textAlign: 'center' }}>
+								This video wouldn’t play
+							</KText>
+							<KText v="micro" style={{ textAlign: 'center' }}>
+								{error?.message ?? 'Playback failed'}
+							</KText>
+							<Pressable onPress={retry} style={s.retry} accessibilityRole="button">
+								<KText v="smallStrong" style={{ color: color.bg }}>
+									Try again
+								</KText>
+							</Pressable>
+						</View>
+					) : loading ? (
 						<ActivityIndicator size="large" color={color.amber} />
 					) : !isPlaying ? (
 						<View style={s.disc}>{ended ? <RotateCcw size={28} color={color.bg} /> : <Play size={30} color={color.bg} fill={color.bg} style={{ marginLeft: 4 }} />}</View>
@@ -138,6 +164,8 @@ function Stage({ uri, title, shareUrl, onClose }: Omit<Props, 'visible'>) {
 const s = StyleSheet.create({
 	root: { flex: 1, backgroundColor: color.bg },
 	center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+	err: { alignItems: 'center', gap: 8, paddingHorizontal: 32 },
+	retry: { marginTop: 6, paddingHorizontal: 18, paddingVertical: 10, borderRadius: 999, backgroundColor: color.amber },
 	disc: {
 		width: 76,
 		height: 76,
