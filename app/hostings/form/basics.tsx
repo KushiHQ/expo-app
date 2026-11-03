@@ -5,6 +5,7 @@ import { Choice, KText, Notice } from '@/components/k';
 import { Block, PickerSheet, SelectField, StepScreen } from '@/components/k/listing-form';
 import { useListingStep } from '@/lib/k/use-listing-step';
 import { usePropertyTypeConfig } from '@/lib/hooks/use-property-type-config';
+import { usePlatformFeatures } from '@/lib/k/platform-features';
 import { useUserStore } from '@/lib/stores/users';
 import { place } from '@/lib/k/format';
 import { HostingKind, ListingType, ManagementType, PublishStatus, UnitStructure, useHostListingsQuery } from '@/lib/services/graphql/generated';
@@ -29,6 +30,12 @@ export default function Basics() {
 	const kind = (input.kind as HostingKind | undefined) ?? hosting?.kind ?? HostingKind.Standalone;
 	const parentId = input.parentId ?? hosting?.parentId ?? null;
 	const management = (input.managementType as ManagementType | undefined) ?? hosting?.managementType ?? ManagementType.KushiManaged;
+	// Staff can switch advert-only listings off; a listing that already is one keeps the choice.
+	const { agentListings } = usePlatformFeatures();
+	const showAdvert = agentListings || hosting?.managementType === ManagementType.AgentManaged;
+	useEffect(() => {
+		if (!showAdvert && management === ManagementType.AgentManaged) updateInput({ managementType: ManagementType.KushiManaged });
+	}, [showAdvert, management, updateInput]);
 	const structure = (input.unitStructure as UnitStructure | undefined) ?? hosting?.unitStructure ?? UnitStructure.Individual;
 	const kindLocked = hosting?.kind === HostingKind.Parent && (hosting?.childCount ?? 0) > 0;
 
@@ -73,7 +80,9 @@ export default function Basics() {
 		>
 			<Block title="Who manages it?" sub="This decides how renters deal with you.">
 				<Choice title="Kushi managed" detail="Kushi verifies the property, handles the agreement and signing, and holds payment safely until move-in." on={management === ManagementType.KushiManaged} onPress={() => updateInput({ managementType: ManagementType.KushiManaged })} />
-				<Choice title="Advert only" detail="People contact you and you close the deal off Kushi. No agreement or payment here, and your exact address stays hidden." on={management === ManagementType.AgentManaged} onPress={() => updateInput({ managementType: ManagementType.AgentManaged })} />
+				{showAdvert ? (
+					<Choice title="Advert only" detail="People contact you and you close the deal off Kushi. No agreement or payment here, and your exact address stays hidden." on={management === ManagementType.AgentManaged} onPress={() => updateInput({ managementType: ManagementType.AgentManaged })} />
+				) : null}
 			</Block>
 
 			<Block title="Rent or sale?">
