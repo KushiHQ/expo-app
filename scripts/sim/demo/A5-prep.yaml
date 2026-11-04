@@ -1,0 +1,13 @@
+appId: com.kushicorp.kushi
+---
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "search"
+    timeout: 90000
+- tapOn:
+    text: "For sale"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 10000

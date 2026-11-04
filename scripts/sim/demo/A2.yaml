@@ -1,0 +1,11 @@
+appId: com.kushicorp.kushi
+---
+- tapOn:
+    id: "search"
+- tapOn:
+    id: "search-input"
+- inputText: "Abuja"
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: shots/A2-search

@@ -1,0 +1,17 @@
+appId: com.kushicorp.kushi
+---
+- takeScreenshot: shots/A3-listing
+- swipe:
+    start: "50%, 72%"
+    end: "50%, 38%"
+    duration: 1800
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: shots/A3-details
+- swipe:
+    start: "50%, 72%"
+    end: "50%, 38%"
+    duration: 1800
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: shots/A3-details-2

@@ -1,0 +1,6 @@
+appId: com.kushicorp.kushi
+---
+- tapOn: "Show map"
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: shots/A6-map

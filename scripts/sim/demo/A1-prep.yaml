@@ -1,0 +1,14 @@
+appId: com.kushicorp.kushi
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Start exploring"
+    timeout: 180000
+- tapOn:
+    text: "Allow"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000

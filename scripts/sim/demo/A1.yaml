@@ -1,0 +1,12 @@
+appId: com.kushicorp.kushi
+---
+- takeScreenshot: shots/A1-welcome
+- tapOn: "Start exploring"
+- extendedWaitUntil:
+    visible:
+      id: "search"
+    timeout: 90000
+- tapOn: "For sale"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: shots/A1-explore

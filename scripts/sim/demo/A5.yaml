@@ -1,0 +1,13 @@
+appId: com.kushicorp.kushi
+---
+- tapOn: "Filters"
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: shots/A5-filters
+- swipe:
+    start: "50%, 75%"
+    end: "50%, 48%"
+    duration: 1600
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: shots/A5-verification-filters
