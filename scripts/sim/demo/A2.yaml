@@ -2,10 +2,7 @@ appId: com.kushicorp.kushi
 ---
 - tapOn:
     id: "search"
-- tapOn:
-    id: "search-input"
-- inputText: "Abuja"
-- hideKeyboard
+- tapOn: "Abuja (FCT)"
 - waitForAnimationToEnd:
-    timeout: 5000
-- takeScreenshot: shots/A2-search
+    timeout: 8000
+- takeScreenshot: shots/A2-abuja-results

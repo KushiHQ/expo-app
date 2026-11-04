@@ -1,22 +1,30 @@
 appId: com.kushicorp.kushi
 ---
-- stopApp
-- launchApp
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Start exploring"
+    timeout: 180000
+- tapOn:
+    text: "Allow"
+    optional: true
+- tapOn: "Start exploring"
 - extendedWaitUntil:
     visible:
       id: "search"
     timeout: 90000
-- tapOn:
-    text: "For sale"
-    optional: true
+- tapOn: "For sale"
 - waitForAnimationToEnd:
-    timeout: 10000
-- openLink: "kushi://hostings/8d7b096d-9bc2-498d-9c06-088e6d1b3107"
+    timeout: 12000
+- openLink: "kushi://hostings/8d7b096d-9bc2-498d-9c06-088e6d1b3107/gallery"
 - tapOn:
     text: "Open"
     optional: true
 - extendedWaitUntil:
-    visible: ".*6 Units.*"
-    timeout: 90000
+    visible:
+      id: "photo-viewer"
+    timeout: 60000
 - waitForAnimationToEnd:
-    timeout: 12000
+    timeout: 10000

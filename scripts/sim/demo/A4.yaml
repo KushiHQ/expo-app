@@ -1,17 +1,10 @@
 appId: com.kushicorp.kushi
 ---
-- takeScreenshot: shots/A4-listing
+- takeScreenshot: shots/A4-gallery
 - swipe:
-    start: "50%, 72%"
-    end: "50%, 38%"
+    start: "85%, 50%"
+    end: "15%, 50%"
     duration: 1800
 - waitForAnimationToEnd:
     timeout: 5000
-- takeScreenshot: shots/A4-details
-- swipe:
-    start: "50%, 72%"
-    end: "50%, 38%"
-    duration: 1800
-- waitForAnimationToEnd:
-    timeout: 5000
-- takeScreenshot: shots/A4-details-2
+- takeScreenshot: shots/A4-gallery-2

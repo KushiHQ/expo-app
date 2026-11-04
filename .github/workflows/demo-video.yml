@@ -64,6 +64,12 @@ jobs:
       - name: Prebuild
         run: npx expo prebuild --platform ios --clean
 
+      - name: Cache simulator build
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: demo-simulator-${{ hashFiles('package-lock.json', 'app.config.js') }}
+
       - name: Build for simulator
         run: |
           set -o pipefail

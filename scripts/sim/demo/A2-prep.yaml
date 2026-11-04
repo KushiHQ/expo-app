@@ -1,13 +1,20 @@
 appId: com.kushicorp.kushi
 ---
-- stopApp
-- launchApp
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Start exploring"
+    timeout: 180000
+- tapOn:
+    text: "Allow"
+    optional: true
+- tapOn: "Start exploring"
 - extendedWaitUntil:
     visible:
       id: "search"
     timeout: 90000
-- tapOn:
-    text: "For sale"
-    optional: true
+- tapOn: "For sale"
 - waitForAnimationToEnd:
-    timeout: 10000
+    timeout: 12000
