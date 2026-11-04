@@ -419,7 +419,6 @@ function Detail({ h }: { h: Listing }) {
 						</MapView>
 					</View>
 				) : null}
-				<KText v="xs">The exact address is shared once your booking is paid.</KText>
 			</View>
 
 			{h.electricityBilling ? (

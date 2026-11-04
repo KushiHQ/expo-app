@@ -90,7 +90,7 @@ export default function LocationStep() {
 			hosting={hosting}
 			onBack={f.leave}
 			loading={!f.ready}
-			intro={isAgentManaged(hosting?.managementType) ? 'Renters only see the area for advert-only listings — your exact address stays private.' : 'Renters see the rough area on the map, not the exact pin.'}
+			intro={isAgentManaged(hosting?.managementType) ? 'Renters only see the area for advert-only listings — your exact address stays private.' : 'Renters see this location on the listing map.'}
 			primary={{ title: 'Save and continue', onPress: next, loading: busy, testID: 'step-next' }}
 			footnote={tried && !valid ? <KText v="xs" c="danger" center>{errors.pin ?? errors.area ?? errors.contact}</KText> : null}
 		>
