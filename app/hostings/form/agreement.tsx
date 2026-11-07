@@ -17,7 +17,7 @@ import { useTenancyTermsForm } from '@/lib/hooks/forms/use-tenancy-terms-form';
 import { cleanupAgreementTemplateInput } from '@/lib/utils/hosting/tenancyAgreement';
 import { showTenancySteps } from '@/lib/constants/hosting/step-rules';
 import { toast } from '@/lib/hooks/use-toast';
-import { VariableType, type HostingVerificationInput, type SubClause, type TenancySection } from '@/lib/services/graphql/generated';
+import { FeeType, VariableType, type HostingVerificationInput, type SubClause, type TenancySection } from '@/lib/services/graphql/generated';
 
 const varLabel = (name: string) => name.replace(/_/g, ' ').toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
 const filled = (c: SubClause, name: string) => !!c.providedValues.find((p) => p.key === name)?.value?.trim();
@@ -80,7 +80,7 @@ export default function Agreement() {
 			footnote={tried && !valid ? <KText v="xs" c="danger" center>{errors.mandate ?? errors.terms ?? errors.signature}</KText> : null}
 		>
 			<Block title="Your right to let it" sub="The owner’s details go into the agreement.">
-				<MandateFields v={v} update={updateVerificationInput} tried={tried} />
+				<MandateFields v={v} update={updateVerificationInput} tried={tried} agentFee={(hosting?.fees ?? []).some((x) => x.feeType === FeeType.AgentFee && Number(x.amount) > 0)} />
 			</Block>
 
 			<Block

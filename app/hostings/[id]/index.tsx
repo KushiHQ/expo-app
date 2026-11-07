@@ -24,6 +24,7 @@ import {
 	Zap
 } from 'lucide-react-native';
 import { Avatar, Button, Card, Divider, Empty, Eyebrow, IconButton, KText, Notice, Photo, Pill, Sheet, Skeleton, Stepper, Waypoint } from '@/components/k';
+import { TitleNotice } from '@/components/k/title-notice';
 import { QuoteLines, useQuote } from '@/components/k/quote';
 import { useSaveToggle } from '@/components/k/listing-card';
 import { PhotoTour } from '@/components/k/photo-tour';
@@ -212,6 +213,7 @@ function Detail({ h }: { h: Listing }) {
 					</>
 				) : null}
 			</View>
+			{!isOwner ? <TitleNotice verification={h.verification} /> : null}
 		</View>
 	);
 	const ownerCard = isOwner ? (

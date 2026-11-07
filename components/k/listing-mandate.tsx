@@ -22,11 +22,14 @@ const DECLS: { key: 'declOwnership' | 'declLitigation' | 'declIndemnity'; text: 
 
 type V = Partial<HostingVerificationInput>;
 
-export function mandateComplete(v: V) {
-	return !!v.landlordFullName?.trim() && !!v.landlordAddress?.trim() && !!v.propertyRelationship && !!v.declOwnership && !!v.declLitigation && !!v.declIndemnity;
+/** `agentFee`: the listing charges one, so the host must be the agent and give the owner's phone. */
+export function mandateComplete(v: V, agentFee = false) {
+	const base = !!v.landlordFullName?.trim() && !!v.landlordAddress?.trim() && !!v.propertyRelationship && !!v.declOwnership && !!v.declLitigation && !!v.declIndemnity;
+	if (!agentFee) return base;
+	return base && v.propertyRelationship === HostingPropertyRelationship.Agent && !!v.landlordPhone?.trim();
 }
 
-export function MandateFields({ v, update, tried }: { v: V; update: (p: V) => void; tried?: boolean }) {
+export function MandateFields({ v, update, tried, agentFee = false }: { v: V; update: (p: V) => void; tried?: boolean; agentFee?: boolean }) {
 	return (
 		<View style={{ gap: 12 }}>
 			<KText v="label">You are…</KText>
@@ -40,6 +43,24 @@ export function MandateFields({ v, update, tried }: { v: V; update: (p: V) => vo
 			) : null}
 			<Field label="Owner’s full name" value={v.landlordFullName ?? ''} onChangeText={(landlordFullName) => update({ landlordFullName })} placeholder="As on the title document" autoCapitalize="words" error={tried && !v.landlordFullName?.trim() ? 'Enter the owner’s name.' : null} />
 			<Field label="Owner’s address" value={v.landlordAddress ?? ''} onChangeText={(landlordAddress) => update({ landlordAddress })} placeholder="Where the owner can be served notices" error={tried && !v.landlordAddress?.trim() ? 'Enter the owner’s address.' : null} />
+			{v.propertyRelationship && v.propertyRelationship !== HostingPropertyRelationship.Landlord ? (
+				<>
+					<Field
+						label={agentFee ? 'Owner’s phone number' : 'Owner’s phone number (optional)'}
+						value={v.landlordPhone ?? ''}
+						onChangeText={(landlordPhone) => update({ landlordPhone })}
+						keyboardType="phone-pad"
+						placeholder="Kushi calls the owner to confirm"
+						error={tried && agentFee && !v.landlordPhone?.trim() ? 'Add the owner’s phone so Kushi can confirm your agent fee.' : null}
+					/>
+					<Field label="Owner’s email (optional)" value={v.landlordEmail ?? ''} onChangeText={(landlordEmail) => update({ landlordEmail })} keyboardType="email-address" autoCapitalize="none" />
+				</>
+			) : null}
+			{agentFee && v.propertyRelationship !== HostingPropertyRelationship.Agent ? (
+				<KText v="xs" c="danger">
+					This listing charges an agent fee, so choose “I’m the owner’s agent”, or remove the fee in the Price step.
+				</KText>
+			) : null}
 			<View style={{ gap: 14, marginTop: 4 }}>
 				<KText v="label">Declarations</KText>
 				{DECLS.map((d) => (

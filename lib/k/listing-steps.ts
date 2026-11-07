@@ -37,6 +37,9 @@ export function mandateMissing(h: Hosting): string[] {
 	const out: string[] = [];
 	if (!v?.landlordFullName?.trim() || !v?.landlordAddress?.trim() || !v?.propertyRelationship) out.push('Owner details');
 	if (!v?.declOwnership || !v?.declLitigation || !v?.declIndemnity) out.push('The three declarations');
+	// An agent fee needs the host to be the owner's agent, with the owner's phone (the server checks this too).
+	const agentFee = (h.fees ?? []).some((f) => f.feeType === 'AGENT_FEE' && Number(f.amount) > 0);
+	if (agentFee && (v?.propertyRelationship !== 'AGENT' || !v?.landlordPhone?.trim())) out.push('You as the owner’s agent, with the owner’s phone');
 	return out;
 }
 

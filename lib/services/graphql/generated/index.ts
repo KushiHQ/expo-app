@@ -719,6 +719,11 @@ export type Booking = {
   expiresAt?: Maybe<Scalars['String']['output']>;
   expiryDate?: Maybe<Scalars['String']['output']>;
   feeLineItems: Array<FeeLineItem>;
+  /**
+   * What this booking charged for each fee, saved when it was created.
+   * The agent fee (`shownInRent`) is part of the rent for guests.
+   */
+  fees: Array<BookingFee>;
   fullName: Scalars['String']['output'];
   guest: Guest;
   guestServiceCharge: Scalars['Decimal']['output'];
@@ -900,6 +905,18 @@ export type BookingAssistResponse = {
   message: Scalars['String']['output'];
 };
 
+/** What a booking charged for one fee, saved when it was created. */
+export type BookingFee = {
+  __typename?: 'BookingFee';
+  amount: Scalars['Decimal']['output'];
+  feeType: FeeType;
+  label: Scalars['String']['output'];
+  /** The payout of this fee on its own (e.g. the agent fee), if any. */
+  payoutTransactionId?: Maybe<Scalars['String']['output']>;
+  /** Guests see it inside the rent. */
+  shownInRent: Scalars['Boolean']['output'];
+};
+
 export type BookingFilterInput = {
   paymentStatus?: InputMaybe<PaymentStatus>;
 };
@@ -1050,6 +1067,27 @@ export type FeeLineItem = {
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
 };
+
+export enum FeeType {
+  /**
+   * The agent's fee, charged once per booking (never on renewal) and paid
+   * to the agent's account when the guest confirms move-in.
+   */
+  AgentFee = 'AGENT_FEE',
+  /** Refundable deposit, held by Kushi until the tenancy ends. */
+  CautionFee = 'CAUTION_FEE',
+  /** Kushi's fee for the tenancy agreement. Set by Kushi. */
+  LegalFee = 'LEGAL_FEE',
+  /** Kushi's percentage of the base rent. Set by Kushi. */
+  PlatformFee = 'PLATFORM_FEE',
+  /** Estate / facility charge, charged every rent period like the rent. */
+  ServiceCharge = 'SERVICE_CHARGE',
+  /**
+   * Government tax on the agreement, a percentage of the base rent. Only
+   * on bookings.
+   */
+  StampDuty = 'STAMP_DUTY'
+}
 
 export type Feedback = {
   __typename?: 'Feedback';
@@ -1337,6 +1375,11 @@ export type Hosting = {
   electricityBilling?: Maybe<ElectricityBilling>;
   electricityOutstandingBalance?: Maybe<Scalars['Decimal']['output']>;
   facilities?: Maybe<Array<Scalars['String']['output']>>;
+  /**
+   * The listing's fees: those the host added, then Kushi's own. Each says
+   * whether guests see it inside the rent (`shownInRent`).
+   */
+  fees: Array<HostingFee>;
   host: Host;
   /**
    * Hosting-level uploaded images (e.g. land posters), optionally filtered
@@ -1388,14 +1431,29 @@ export type Hosting = {
    * host's listing cards without opening the detail screen.
    */
   pendingBookingApplicationsCount: Scalars['Int']['output'];
+  /**
+   * Location check of every room photo (EXIF / app GPS vs the map pin).
+   * Host / staff only — empty for anyone else.
+   */
   photoLocationChecks: Array<PhotoLocationCheck>;
+  /** Totals of `photoLocationChecks`. Host / staff only — null for anyone else. */
   photoLocationSummary?: Maybe<PhotoLocationSummary>;
+  /**
+   * The Kushi photo tour (a video made from the room photos), if one has
+   * been made. Separate from `video`, the host's walk-through. A unit with
+   * no tour of its own shows its property's.
+   */
+  photoTour?: Maybe<PhotoTour>;
   postalCode?: Maybe<Scalars['String']['output']>;
   price?: Maybe<Scalars['Decimal']['output']>;
   /** Lowest price among this plaza's available shops — the card's "from ₦X". */
   priceFrom?: Maybe<Scalars['Decimal']['output']>;
   propertyType?: Maybe<Scalars['String']['output']>;
-  /** What this listing still needs before it can be LIVE (host / staff only). */
+  /**
+   * What this listing still needs before it can be LIVE, per the server's
+   * publish rules (same wording as the app's publish checklist). Empty when
+   * it's complete. Host / staff only — empty for anyone else.
+   */
   publishMissing: Array<Scalars['String']['output']>;
   publishStatus?: Maybe<PublishStatus>;
   reviewAverage: HostingReviewAverage;
@@ -1527,8 +1585,65 @@ export type HostingCounts = {
   total: Scalars['Int']['output'];
 };
 
+/** One fee on a listing. */
+export type HostingFee = {
+  __typename?: 'HostingFee';
+  /**
+   * The host's amount. For Kushi's legal fee, today's amount (the booking
+   * saves the amount in force when the guest pays). Null for percentages.
+   */
+  amount?: Maybe<Scalars['Decimal']['output']>;
+  description: Scalars['String']['output'];
+  feeType: FeeType;
+  id: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  /**
+   * Where the fee is paid when the guest moves in. Only the host and staff
+   * see it. Null means it goes with the rent.
+   */
+  payoutAccount?: Maybe<HostAccountDetails>;
+  /** Charged every rent period, like the rent. */
+  perPeriod: Scalars['Boolean']['output'];
+  /** For Kushi's percentage fees, today's rate on the base rent. */
+  ratePercent?: Maybe<Scalars['Decimal']['output']>;
+  /** Kushi sets it; hosts can't change or remove it. */
+  setByKushi: Scalars['Boolean']['output'];
+  /** Guests see it inside the rent, not as its own line. */
+  shownInRent: Scalars['Boolean']['output'];
+};
+
+/**
+ * Add or change a fee on a listing. `payoutAccountId` is one of the host's
+ * payout accounts; the agent fee needs one.
+ */
+export type HostingFeeInput = {
+  amount: Scalars['Decimal']['input'];
+  feeType: FeeType;
+  hostingId: Scalars['String']['input'];
+  payoutAccountId?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** A fee type a host can pick in "Add fee". */
+export type HostingFeeTypeOption = {
+  __typename?: 'HostingFeeTypeOption';
+  /** Only the landlord's agent can add it (with the landlord's phone). */
+  agentsOnly: Scalars['Boolean']['output'];
+  description: Scalars['String']['output'];
+  feeType: FeeType;
+  label: Scalars['String']['output'];
+  /** The host must choose the account it's paid to. */
+  needsPayoutAccount: Scalars['Boolean']['output'];
+  perPeriod: Scalars['Boolean']['output'];
+};
+
 export type HostingFees = {
   __typename?: 'HostingFees';
+  /** The agent's fee, charged once. Already inside `base_rent`. */
+  agentFee: Scalars['Decimal']['output'];
+  /**
+   * The rent guests see: the rent for the duration plus any agent fee
+   * (guests treat the agent as the host, so it isn't a separate line).
+   */
   baseRent: Scalars['Decimal']['output'];
   cautionCustodyFee: Scalars['Decimal']['output'];
   cautionFee: Scalars['Decimal']['output'];
@@ -1541,6 +1656,11 @@ export type HostingFees = {
    * spot may be released (admin-configurable; mirrored in checkout copy).
    */
   paymentWindowDays: Scalars['Int']['output'];
+  /**
+   * The rent alone, without the agent fee. Kushi's percentage and stamp
+   * duty are worked out on this.
+   */
+  rent: Scalars['Decimal']['output'];
   serviceCharge: Scalars['Decimal']['output'];
   stampDuty: Scalars['Decimal']['output'];
   totalPayableAmount: Scalars['Decimal']['output'];
@@ -1599,6 +1719,10 @@ export enum HostingImageVariant {
 export type HostingInput = {
   averageRating?: InputMaybe<Scalars['Float']['input']>;
   categories?: InputMaybe<Array<Scalars['String']['input']>>;
+  /**
+   * Older apps send these two on the price step (`null` clears). Left out,
+   * the stored fee is kept. Newer apps use `saveHostingFee` instead.
+   */
   cautionFee?: InputMaybe<Scalars['Decimal']['input']>;
   city?: InputMaybe<Scalars['String']['input']>;
   contact?: InputMaybe<Scalars['String']['input']>;
@@ -1741,6 +1865,11 @@ export type HostingRoomImage = {
 
 export type HostingRoomImageInput = {
   asset: Scalars['Upload']['input'];
+  /**
+   * Where the photo was taken, as captured by the app with the shot. Used
+   * when the file itself carries no EXIF GPS (e.g. after an in-app crop).
+   * Room photos need a location from one or the other.
+   */
   capture?: InputMaybe<PhotoCaptureInput>;
   id?: InputMaybe<Scalars['String']['input']>;
   roomId: Scalars['String']['input'];
@@ -1774,8 +1903,17 @@ export type HostingVerificationData = {
   declOwnership: Scalars['Boolean']['output'];
   id: Scalars['String']['output'];
   landlordAddress: Scalars['String']['output'];
+  /** Whether Kushi has called the landlord of an agent's listing. */
+  landlordConfirmationStatus: LandlordConfirmationStatus;
+  landlordConfirmedAt?: Maybe<Scalars['String']['output']>;
+  /** The landlord's email. Only the listing's host and staff see it. */
+  landlordEmail?: Maybe<Scalars['String']['output']>;
   landlordFullName: Scalars['String']['output'];
+  /** The landlord's phone. Only the listing's host and staff see it. */
+  landlordPhone?: Maybe<Scalars['String']['output']>;
   lastUpdated: Scalars['String']['output'];
+  /** The host is the landlord's agent, not the landlord. */
+  listedByAgent: Scalars['Boolean']['output'];
   propertyRelationship: HostingPropertyRelationship;
   /** Human-readable tooltip from admin-configured tier description. */
   tierTooltip: Scalars['String']['output'];
@@ -1791,7 +1929,13 @@ export type HostingVerificationInput = {
   hostingId: Scalars['String']['input'];
   id?: InputMaybe<Scalars['String']['input']>;
   landlordAddress: Scalars['String']['input'];
+  landlordEmail?: InputMaybe<Scalars['String']['input']>;
   landlordFullName: Scalars['String']['input'];
+  /**
+   * The landlord's phone and email, so Kushi can confirm an agent's listing
+   * with them. Left out, the stored values are kept (older apps).
+   */
+  landlordPhone?: InputMaybe<Scalars['String']['input']>;
   propertyRelationship: HostingPropertyRelationship;
   titleNumber?: InputMaybe<Scalars['String']['input']>;
   titleType?: InputMaybe<Scalars['String']['input']>;
@@ -1916,8 +2060,10 @@ export type Kyc = {
   bvnVerified?: Maybe<Scalars['Boolean']['output']>;
   createdAt: Scalars['String']['output'];
   id: Scalars['String']['output'];
+  /** Which document was used (BVN / NIN); null for anyone but the owner and staff. */
   idDocumentType?: Maybe<Scalars['String']['output']>;
   image?: Maybe<Asset>;
+  /** The BVN or NIN number; null for anyone but the owner and staff. */
   kycReferenceId?: Maybe<Scalars['String']['output']>;
   lastUpdated: Scalars['String']['output'];
   ninVerified?: Maybe<Scalars['Boolean']['output']>;
@@ -1935,6 +2081,17 @@ export type KycStatus = {
   kycComplete: Scalars['Boolean']['output'];
   ninVerified: Scalars['Boolean']['output'];
 };
+
+/** Kushi staff's call to the landlord of a listing put up by an agent. */
+export enum LandlordConfirmationStatus {
+  /** The landlord confirmed they own it and the agent may let it. */
+  Confirmed = 'CONFIRMED',
+  /** The landlord said no, or isn't the landlord. */
+  Declined = 'DECLINED',
+  NotContacted = 'NOT_CONTACTED',
+  /** Couldn't reach them yet. */
+  Unreachable = 'UNREACHABLE'
+}
 
 export type LandlordMandateConfig = {
   __typename?: 'LandlordMandateConfig';
@@ -2100,6 +2257,12 @@ export type Mutations = {
   /** Append an ad-hoc note to the assist timeline. */
   adminLogBookingAssistEvent: BookingAssistEventResponse;
   /**
+   * Make (or remake) the listing's Kushi photo tour now, from its current
+   * room photos. Takes about a minute; the background job otherwise does
+   * this on its own for live listings whose photos, title or price changed.
+   */
+  adminMakePhotoTour: PhotoTour;
+  /**
    * Manually mark a hosting as Address Verified. Upgrades the hosting's
    * verification tier from Unverified or IdentityVerified → AddressVerified.
    */
@@ -2150,6 +2313,16 @@ export type Mutations = {
    */
   adminSetAppVersionPolicy: AppVersionPolicy;
   /**
+   * Record the call to an agent listing's landlord, with a note (who you
+   * spoke to, what they said). Kept in the audit log.
+   */
+  adminSetLandlordConfirmation: Scalars['Boolean']['output'];
+  /**
+   * Turn a platform feature on or off. Takes effect on this server at once
+   * and on other instances within 30 seconds.
+   */
+  adminSetPlatformFeature: PlatformFeatures;
+  /**
    * Start a field interaction. Creates the contact inline when no
    * `contactId` is supplied, then snapshots the active script's question
    * steps into ordered response rows.
@@ -2160,6 +2333,16 @@ export type Mutations = {
    * else currently holds it. Publishes the new presence to live subscribers.
    */
   adminTakeBookingAssist: BookingAssistResponse;
+  /**
+   * Move a listing (and every unit under it) to another user's host
+   * account — e.g. staff captured it on their own account for an agent who
+   * hadn't finished signing up. `to_user` is the new owner's email or Kushi ID.
+   *
+   * Only for listings with no bookings or applications yet: those carry
+   * payments tied to the current host. The payout account is cleared (it
+   * belongs to the old host), and chats about the listing move with it.
+   */
+  adminTransferHosting: BoolResponse;
   /**
    * Move an application to another status. Only valid moves are allowed
    * (`BookingApplicationQueries::can_move`). `reason` is saved as the
@@ -2219,6 +2402,11 @@ export type Mutations = {
   completePasswordChange: MessageResponse;
   completePhoneNumberVerification: PhoneNumberResponse;
   /**
+   * Step 2: the code from the new address. Switches the account to it
+   * (verified), and tells the old address about the change.
+   */
+  confirmEmailChange: User;
+  /**
    * Copy a space (room + its photos, shared at the asset level) into another
    * of the caller's listings — the estate workflow where sibling units share
    * identical spaces and one unit's capture should serve the others.
@@ -2240,6 +2428,14 @@ export type Mutations = {
   createOrUpdateHosting: HostingResponse;
   createOrUpdateHostingReview: HostingReviewResponse;
   createOrUpdateHostingRoom: HostingRoomResponse;
+  /**
+   * Create `count` units under a property, each a copy of the property's
+   * own rooms, photos, price and details: for compounds of identical units,
+   * captured once on the property. `publish` puts each unit live straight
+   * away when it passes the publish rules (otherwise it stays a draft).
+   * Returns the property; its `children` now include the new units.
+   */
+  createUnitsFromHosting: HostingResponse;
   createUpdateHostPaymentDetails: HostAccountDetailsResponse;
   createUpdateMessage: HostingChatMessage;
   createUpdateSavedHosting: SavedHostingResponse;
@@ -2249,6 +2445,8 @@ export type Mutations = {
   deleteAgentReview: Scalars['Boolean']['output'];
   deleteHostPaymentDetails: MessageResponse;
   deleteHosting: MessageResponse;
+  /** Remove a fee the host added. Bookings already made keep what they charged. */
+  deleteHostingFee: Array<HostingFee>;
   /** Delete a hosting-level image (owner only). */
   deleteHostingImage: MessageResponse;
   deleteHostingRoom: MessageResponse;
@@ -2292,6 +2490,11 @@ export type Mutations = {
   initiateListingBoost: TransactionResponse;
   initiatePhoneNumberVerification: MessageResponse;
   initiateSupportChat: SupportChat;
+  /**
+   * Start paying the fee for a priced verification level on a listing the
+   * caller owns. Returns the pending transaction (reference + amount) the
+   * client pays via Flutterwave; `verifyVerificationFee` confirms it.
+   */
   initiateVerificationFee: TransactionResponse;
   login: AuthTokenResponse;
   logout: MessageResponse;
@@ -2326,6 +2529,12 @@ export type Mutations = {
   /** Host requests a partial or full release of the caution deposit. */
   requestCautionRelease: CautionClaimResponse;
   /**
+   * Step 1 of changing the account email: send a 6-digit code to the NEW
+   * address. Nothing changes until `confirmEmailChange` succeeds. Useful for
+   * Apple "Hide My Email" users who want mail at their real address.
+   */
+  requestEmailChange: MessageResponse;
+  /**
    * Submit a tier-upgrade request. The client passes a parallel list of
    * `documentNames` and `uploads`; the server uploads each file securely
    * and creates one document row per pair.
@@ -2342,6 +2551,14 @@ export type Mutations = {
    * them; one review per agent, editable.
    */
   reviewAgent: Scalars['Boolean']['output'];
+  /**
+   * Add or change a fee on a listing (agent fee, service charge, caution).
+   * Returns the listing's fees.
+   * Kushi's legal and platform fees can't be set here. The agent fee needs
+   * the host to be the landlord's agent, with the landlord's phone, and an
+   * account to pay it to.
+   */
+  saveHostingFee: Array<HostingFee>;
   sendChatCallNotification: MessageResponse;
   sendSupportMessage: SupportChatMessage;
   /**
@@ -2391,6 +2608,10 @@ export type Mutations = {
   /** Verify a boost payment; on success the listing's tier + expiry are set. */
   verifyListingBoost: TransactionResponse;
   verifyTransactionByReference: TransactionResponse;
+  /**
+   * Verify a verification-fee payment; on success the fee is recorded as
+   * paid for that listing + level and the request can be sent.
+   */
   verifyVerificationFee: TransactionResponse;
 };
 
@@ -2539,6 +2760,11 @@ export type MutationsAdminLogBookingAssistEventArgs = {
 };
 
 
+export type MutationsAdminMakePhotoTourArgs = {
+  hostingId: Scalars['String']['input'];
+};
+
+
 export type MutationsAdminMarkHostingAsAddressVerifiedArgs = {
   hostingId: Scalars['String']['input'];
 };
@@ -2607,6 +2833,19 @@ export type MutationsAdminSetAppVersionPolicyArgs = {
 };
 
 
+export type MutationsAdminSetLandlordConfirmationArgs = {
+  hostingId: Scalars['String']['input'];
+  note?: InputMaybe<Scalars['String']['input']>;
+  status: LandlordConfirmationStatus;
+};
+
+
+export type MutationsAdminSetPlatformFeatureArgs = {
+  enabled: Scalars['Boolean']['input'];
+  feature: PlatformFeature;
+};
+
+
 export type MutationsAdminStartFieldInteractionArgs = {
   input: AdminStartFieldInteractionInput;
 };
@@ -2614,6 +2853,12 @@ export type MutationsAdminStartFieldInteractionArgs = {
 
 export type MutationsAdminTakeBookingAssistArgs = {
   assistId: Scalars['String']['input'];
+};
+
+
+export type MutationsAdminTransferHostingArgs = {
+  hostingId: Scalars['String']['input'];
+  toUser: Scalars['String']['input'];
 };
 
 
@@ -2727,6 +2972,12 @@ export type MutationsCompletePhoneNumberVerificationArgs = {
 };
 
 
+export type MutationsConfirmEmailChangeArgs = {
+  newEmail: Scalars['String']['input'];
+  otp: Scalars['String']['input'];
+};
+
+
 export type MutationsCopyHostingRoomArgs = {
   hostingRoomId: Scalars['String']['input'];
   targetHostingId: Scalars['String']['input'];
@@ -2764,6 +3015,13 @@ export type MutationsCreateOrUpdateHostingRoomArgs = {
 };
 
 
+export type MutationsCreateUnitsFromHostingArgs = {
+  count: Scalars['Int']['input'];
+  hostingId: Scalars['String']['input'];
+  publish?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
 export type MutationsCreateUpdateHostPaymentDetailsArgs = {
   input: HostAccountDetailsInput;
 };
@@ -2795,6 +3053,12 @@ export type MutationsDeleteHostPaymentDetailsArgs = {
 
 
 export type MutationsDeleteHostingArgs = {
+  hostingId: Scalars['String']['input'];
+};
+
+
+export type MutationsDeleteHostingFeeArgs = {
+  feeType: FeeType;
   hostingId: Scalars['String']['input'];
 };
 
@@ -2971,6 +3235,11 @@ export type MutationsRequestCautionReleaseArgs = {
 };
 
 
+export type MutationsRequestEmailChangeArgs = {
+  newEmail: Scalars['String']['input'];
+};
+
+
 export type MutationsRequestHostingVerificationTierArgs = {
   input: HostingVerificationTierRequestInput;
 };
@@ -3006,6 +3275,11 @@ export type MutationsReviewAgentArgs = {
   comment?: InputMaybe<Scalars['String']['input']>;
   hostingId?: InputMaybe<Scalars['String']['input']>;
   rating: Scalars['Float']['input'];
+};
+
+
+export type MutationsSaveHostingFeeArgs = {
+  input: HostingFeeInput;
 };
 
 
@@ -3302,12 +3576,15 @@ export enum PhoneNumberVerificationStatus {
 
 /** Location the app recorded when a photo was taken. */
 export type PhotoCaptureInput = {
+  /** Horizontal accuracy in metres, if known. */
   accuracyM?: InputMaybe<Scalars['Float']['input']>;
+  /** When the photo was taken (RFC 3339). */
   capturedAt: Scalars['String']['input'];
   latitude: Scalars['Float']['input'];
   longitude: Scalars['Float']['input'];
 };
 
+/** Location check of one room photo, for the verification review. */
 export type PhotoLocationCheck = {
   __typename?: 'PhotoLocationCheck';
   accuracyM?: Maybe<Scalars['Float']['output']>;
@@ -3315,37 +3592,86 @@ export type PhotoLocationCheck = {
   cameraModel?: Maybe<Scalars['String']['output']>;
   capturedAt?: Maybe<Scalars['String']['output']>;
   checkedAt?: Maybe<Scalars['String']['output']>;
+  /** Distance from the listing's current map pin, in metres. */
   distanceM?: Maybe<Scalars['Float']['output']>;
+  /** Other assets on Kushi with the identical file. */
   duplicateCount?: Maybe<Scalars['Int']['output']>;
   imageId: Scalars['String']['output'];
   latitude?: Maybe<Scalars['Float']['output']>;
   longitude?: Maybe<Scalars['Float']['output']>;
   roomId: Scalars['String']['output'];
   roomName: Scalars['String']['output'];
+  /** `exif`, `app`, `carried` or `none`. */
   source?: Maybe<Scalars['String']['output']>;
   status: PhotoLocationStatus;
 };
 
+/** The verdict for one room photo. */
 export enum PhotoLocationStatus {
+  /** Within 200 m of the listing's map pin. */
   AtProperty = 'AT_PROPERTY',
+  /** Located, but more than 200 m from the pin — worth a look. */
   AwayFromProperty = 'AWAY_FROM_PROPERTY',
+  /** Uploaded before photos were checked — no record. */
   NotChecked = 'NOT_CHECKED',
+  /** Checked and no location was found (only possible with the rule off). */
   NoLocation = 'NO_LOCATION',
+  /** Located, but the listing has no map pin to compare with yet. */
   NoPropertyPin = 'NO_PROPERTY_PIN',
+  /** The check hasn't run yet (just uploaded). */
   Pending = 'PENDING'
 }
 
+/** Totals across a listing's room photos. */
 export type PhotoLocationSummary = {
   __typename?: 'PhotoLocationSummary';
   atProperty: Scalars['Int']['output'];
   awayFromProperty: Scalars['Int']['output'];
   duplicates: Scalars['Int']['output'];
+  /** Largest distance from the pin among located photos, in metres. */
   maxDistanceM?: Maybe<Scalars['Float']['output']>;
   noLocation: Scalars['Int']['output'];
   noPropertyPin: Scalars['Int']['output'];
   notChecked: Scalars['Int']['output'];
   pending: Scalars['Int']['output'];
   total: Scalars['Int']['output'];
+};
+
+/**
+ * A Kushi-made video of the listing's photos. Not the host's walk-through
+ * (`Hosting.video`), which is recorded on site and counts towards verification.
+ */
+export type PhotoTour = {
+  __typename?: 'PhotoTour';
+  durationSeconds?: Maybe<Scalars['Int']['output']>;
+  /** Why the last render failed or was skipped. */
+  error?: Maybe<Scalars['String']['output']>;
+  hostingId: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  lastUpdated: Scalars['String']['output'];
+  renderedAt?: Maybe<Scalars['String']['output']>;
+  /** pending, rendering, ready, failed or skipped (too few room photos). */
+  status: Scalars['String']['output'];
+  /**
+   * The MP4 (vertical 1080×1920). Present once a render has succeeded; it
+   * stays while a newer one renders.
+   */
+  video?: Maybe<Asset>;
+};
+
+export enum PlatformFeature {
+  /** "Advert only" listings: the host closes the deal off Kushi. */
+  AgentListings = 'AGENT_LISTINGS'
+}
+
+/** What the apps need to know, one field per switch. */
+export type PlatformFeatures = {
+  __typename?: 'PlatformFeatures';
+  /**
+   * Hosts may create "Advert only" listings. When false the app hides the
+   * choice and the server refuses it.
+   */
+  agentListings: Scalars['Boolean']['output'];
 };
 
 export type Profile = {
@@ -3499,6 +3825,12 @@ export type Query = {
    */
   adminJobStatus: Array<AdminJobStatus>;
   /**
+   * Listings whose host is the landlord's agent, for staff to call the
+   * landlord. Filter by call status; oldest first.
+   */
+  adminLandlordConfirmations: Array<Hosting>;
+  adminLandlordConfirmationsCount: Scalars['Int']['output'];
+  /**
    * Returns the platform-wide legal configuration defaults used to
    * pre-populate tenancy agreement fields.
    */
@@ -3596,6 +3928,9 @@ export type Query = {
   hostingAnalytics: HostingAnalytics;
   hostingChat: HostingChat;
   hostingCounts: HostingCounts;
+  /** Fees a host can pick from "Add fee". Kushi's own fees aren't listed. */
+  hostingFeeTypes: Array<HostingFeeTypeOption>;
+  /** The fee for a verification level on a listing the caller can manage. */
   hostingVerificationFee: VerificationFeeStatus;
   /**
    * All verification requests for a hosting, newest-first.
@@ -3624,6 +3959,8 @@ export type Query = {
   me: User;
   mySupportChats: Array<SupportChat>;
   notifications: Array<Notification>;
+  /** Which optional features are on. Needs no sign-in. */
+  platformFeatures: PlatformFeatures;
   /**
    * The canonical, admin-editable property types (with the rooms + facilities
    * potential for each). Clients read this instead of hardcoding the list, and
@@ -3666,6 +4003,11 @@ export type Query = {
   tenantMandateOptions: TenantMandateConfig;
   transactionByReference: Transaction;
   transactions: Array<Transaction>;
+  /**
+   * The app icon badge: unread notifications, chat messages included.
+   * Signed-out callers get 0 so the app can clear the badge on logout.
+   */
+  unreadNotificationCount: Scalars['Int']['output'];
   userChats: Array<HostingChat>;
   /**
    * Public profile of a user: identity, agent rating, reviews others left,
@@ -3846,6 +4188,17 @@ export type QueryAdminHostingsCountArgs = {
 export type QueryAdminInteractionAnswerSuggestionsArgs = {
   interactionId: Scalars['String']['input'];
   questionText: Scalars['String']['input'];
+};
+
+
+export type QueryAdminLandlordConfirmationsArgs = {
+  pagination?: InputMaybe<PaginationInput>;
+  status?: InputMaybe<LandlordConfirmationStatus>;
+};
+
+
+export type QueryAdminLandlordConfirmationsCountArgs = {
+  status?: InputMaybe<LandlordConfirmationStatus>;
 };
 
 
@@ -4613,6 +4966,11 @@ export enum TransactionStatus {
 
 export enum TransactionType {
   BookingPayment = 'booking_payment',
+  /**
+   * A booking fee paid to its own account at move-in (e.g. the agent fee).
+   * Linked from `booking_fee.transaction_id`.
+   */
+  FeePayout = 'fee_payout',
   GuestCancellationRefund = 'guest_cancellation_refund',
   /** The rest of a guest's caution deposit paid back to them. */
   GuestCautionRefund = 'guest_caution_refund',
@@ -4685,12 +5043,20 @@ export enum VariableType {
   String = 'STRING'
 }
 
+/**
+ * Whether a verification level costs money for this listing, and whether
+ * it's been paid (see `VerificationFeeQueries` for the carry-over rule).
+ */
 export type VerificationFeeStatus = {
   __typename?: 'VerificationFeeStatus';
+  /** True when a paid fee currently covers requests for this level. */
   paid: Scalars['Boolean']['output'];
   paidAt?: Maybe<Scalars['String']['output']>;
+  /** Admin-set price; null when the level is free. */
   price?: Maybe<Scalars['Decimal']['output']>;
+  /** Reference of the payment that covers it (for receipts). */
   reference?: Maybe<Scalars['String']['output']>;
+  /** True when a fee must be paid before the request can be sent. */
   required: Scalars['Boolean']['output'];
   tier: HostingVerificationTier;
 };
@@ -4965,6 +5331,21 @@ export type RequestCautionRefundMutationVariables = Exact<{
 
 
 export type RequestCautionRefundMutation = { __typename?: 'Mutations', requestCautionRefund: { __typename?: 'CautionRefundResponse', message: string, data?: { __typename?: 'CautionRefund', id: string, bookingId: string, amount: any, status: CautionRefundStatus, accountNumber: string, accountName: string, bankName: string, bankCode: string, createdAt: string, lastUpdated: string } | null } };
+
+export type RequestEmailChangeMutationVariables = Exact<{
+  newEmail: Scalars['String']['input'];
+}>;
+
+
+export type RequestEmailChangeMutation = { __typename?: 'Mutations', requestEmailChange: { __typename?: 'MessageResponse', message: string } };
+
+export type ConfirmEmailChangeMutationVariables = Exact<{
+  newEmail: Scalars['String']['input'];
+  otp: Scalars['String']['input'];
+}>;
+
+
+export type ConfirmEmailChangeMutation = { __typename?: 'Mutations', confirmEmailChange: { __typename?: 'User', id: string, email: string } };
 
 export type SubmitFeedbackMutationVariables = Exact<{
   input: SubmitFeedbackInput;
@@ -5275,6 +5656,21 @@ export type SetHostingCoverMutationVariables = Exact<{
 
 export type SetHostingCoverMutation = { __typename?: 'Mutations', setHostingCover: { __typename?: 'MessageResponse', message: string } };
 
+export type SaveHostingFeeMutationVariables = Exact<{
+  input: HostingFeeInput;
+}>;
+
+
+export type SaveHostingFeeMutation = { __typename?: 'Mutations', saveHostingFee: Array<{ __typename?: 'HostingFee', id: string, feeType: FeeType, label: string, description: string, amount?: any | null, ratePercent?: any | null, setByKushi: boolean, perPeriod: boolean, shownInRent: boolean, payoutAccount?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, bankDetails?: { __typename?: 'Bank', name: string } | null } | null }> };
+
+export type DeleteHostingFeeMutationVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+  feeType: FeeType;
+}>;
+
+
+export type DeleteHostingFeeMutation = { __typename?: 'Mutations', deleteHostingFee: Array<{ __typename?: 'HostingFee', id: string, feeType: FeeType, label: string, description: string, amount?: any | null, ratePercent?: any | null, setByKushi: boolean, perPeriod: boolean, shownInRent: boolean, payoutAccount?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, bankDetails?: { __typename?: 'Bank', name: string } | null } | null }> };
+
 export type KInitiateBookingApplicationMutationVariables = Exact<{
   hostingId: Scalars['String']['input'];
 }>;
@@ -5338,6 +5734,15 @@ export type SendSupportMessageMutationVariables = Exact<{
 
 
 export type SendSupportMessageMutation = { __typename?: 'Mutations', sendSupportMessage: { __typename?: 'SupportChatMessage', id: string, chatId: string, text: string, createdAt: string, isReadByUser: boolean, sender?: { __typename?: 'User', id: string, isStaff: boolean, profile: { __typename?: 'Profile', fullName: string } } | null } };
+
+export type CreateUnitsFromHostingMutationVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+  count: Scalars['Int']['input'];
+  publish?: InputMaybe<Scalars['Boolean']['input']>;
+}>;
+
+
+export type CreateUnitsFromHostingMutation = { __typename?: 'Mutations', createUnitsFromHosting: { __typename?: 'HostingResponse', message: string, data?: { __typename?: 'Hosting', id: string, childCount: number } | null } };
 
 export type UpdateHostMutationVariables = Exact<{
   input: HostInput;
@@ -5438,7 +5843,7 @@ export type CalculateHostingFeesQueryVariables = Exact<{
 }>;
 
 
-export type CalculateHostingFeesQuery = { __typename?: 'Query', calculateHostingFees: { __typename?: 'HostingFees', baseRent: any, totalPayableAmount: any, cautionFee: any, serviceCharge: any, legalFee: any, stampDuty: any, guestServiceCharge: any, hostServiceCharge: any, paymentWindowDays: number, lineItems: Array<{ __typename?: 'FeeLineItem', key: string, label: string, description: string, amount: any }> } };
+export type CalculateHostingFeesQuery = { __typename?: 'Query', calculateHostingFees: { __typename?: 'HostingFees', baseRent: any, rent: any, agentFee: any, totalPayableAmount: any, cautionFee: any, serviceCharge: any, legalFee: any, stampDuty: any, guestServiceCharge: any, hostServiceCharge: any, paymentWindowDays: number, lineItems: Array<{ __typename?: 'FeeLineItem', key: string, label: string, description: string, amount: any }> } };
 
 export type BookingApplicationQueryVariables = Exact<{
   bookingApplicationId: Scalars['String']['input'];
@@ -5573,7 +5978,7 @@ export type HostingQueryVariables = Exact<{
 }>;
 
 
-export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, unitStructure: UnitStructure, managementType: ManagementType, childCount: number, priceFrom?: any | null, isBookable: boolean, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, cautionFee?: any | null, serviceCharge?: any | null, maxOccupants?: number | null, electricityBilling?: ElectricityBilling | null, electricityOutstandingBalance?: any | null, electricityBalanceCleared?: boolean | null, bookingApplicationsCount: number, parent?: { __typename?: 'Hosting', id: string, title?: string | null, unitStructure: UnitStructure } | null, children: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, childCount: number, title?: string | null, state?: string | null, city?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, listingType?: ListingType | null, managementType: ManagementType, publishStatus?: PublishStatus | null, isBookable: boolean, bookingApplicationsCount: number, pendingBookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } } | null }>, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } }> }>, host: { __typename?: 'Host', id: string, createdAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, phoneNumber?: string | null, kyc: { __typename?: 'Kyc', bvnVerified?: boolean | null, ninVerified?: boolean | null }, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string, image?: { __typename?: 'Asset', publicUrl: string, lastUpdated: string } | null } }, signature?: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } | null }, coverImage?: { __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } } | null, hostingImages: Array<{ __typename?: 'HostingImage', id: string, variant: HostingImageVariant, caption?: string | null, sequence: number, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } }>, video?: { __typename?: 'VideoWalkthrough', id: string, durationSeconds: number, recordedAt: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } } | null, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } }>, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, createdAt: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null, image?: { __typename?: 'Asset', publicUrl: string, lastUpdated: string } | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null }, tenancyAgreementTemplate?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, priority: number, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, verification?: { __typename?: 'HostingVerificationData', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, titleType?: string | null, titleNumber?: string | null, createdAt: string, lastUpdated: string, tierTooltip: string } | null } };
+export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, unitStructure: UnitStructure, managementType: ManagementType, childCount: number, priceFrom?: any | null, isBookable: boolean, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, cautionFee?: any | null, serviceCharge?: any | null, maxOccupants?: number | null, electricityBilling?: ElectricityBilling | null, electricityOutstandingBalance?: any | null, electricityBalanceCleared?: boolean | null, bookingApplicationsCount: number, parent?: { __typename?: 'Hosting', id: string, title?: string | null, unitStructure: UnitStructure } | null, children: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, childCount: number, title?: string | null, state?: string | null, city?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, listingType?: ListingType | null, managementType: ManagementType, publishStatus?: PublishStatus | null, isBookable: boolean, bookingApplicationsCount: number, pendingBookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } } | null }>, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } }> }>, host: { __typename?: 'Host', id: string, createdAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, phoneNumber?: string | null, kyc: { __typename?: 'Kyc', bvnVerified?: boolean | null, ninVerified?: boolean | null }, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string, image?: { __typename?: 'Asset', publicUrl: string, lastUpdated: string } | null } }, signature?: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } | null }, coverImage?: { __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } } | null, hostingImages: Array<{ __typename?: 'HostingImage', id: string, variant: HostingImageVariant, caption?: string | null, sequence: number, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } }>, video?: { __typename?: 'VideoWalkthrough', id: string, durationSeconds: number, recordedAt: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } } | null, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } }>, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, createdAt: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null, image?: { __typename?: 'Asset', publicUrl: string, lastUpdated: string } | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null }, tenancyAgreementTemplate?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, priority: number, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, verification?: { __typename?: 'HostingVerificationData', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, titleType?: string | null, titleNumber?: string | null, landlordPhone?: string | null, landlordEmail?: string | null, landlordConfirmationStatus: LandlordConfirmationStatus, listedByAgent: boolean, createdAt: string, lastUpdated: string, tierTooltip: string } | null, fees: Array<{ __typename?: 'HostingFee', id: string, feeType: FeeType, label: string, description: string, amount?: any | null, ratePercent?: any | null, setByKushi: boolean, perPeriod: boolean, shownInRent: boolean, payoutAccount?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, bankDetails?: { __typename?: 'Bank', name: string } | null } | null }> } };
 
 export type HostingsQueryVariables = Exact<{
   filters?: InputMaybe<HostingFilterInput>;
@@ -5645,6 +6050,11 @@ export type UserProfileQueryVariables = Exact<{
 
 
 export type UserProfileQuery = { __typename?: 'Query', userProfile: { __typename?: 'PublicUserProfile', id: string, fullName: string, avatar?: string | null, memberSince: string, verified: boolean, agentRatingAvg?: number | null, agentReviewCount: number, reviews: Array<{ __typename?: 'AgentReview', id: string, rating: number, comment?: string | null, reviewerName: string, reviewerAvatar?: string | null, hostingId?: string | null, createdAt: string }>, listings: Array<{ __typename?: 'Hosting', id: string, title?: string | null, state?: string | null, city?: string | null, price?: any | null, listingType?: ListingType | null, managementType: ManagementType, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', id: string, publicUrl: string } } | null }> } };
+
+export type HostingFeeTypesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type HostingFeeTypesQuery = { __typename?: 'Query', hostingFeeTypes: Array<{ __typename?: 'HostingFeeTypeOption', feeType: FeeType, label: string, description: string, perPeriod: boolean, needsPayoutAccount: boolean, agentsOnly: boolean }> };
 
 export type KApplicantTrustQueryVariables = Exact<{
   bookingApplicationId: Scalars['String']['input'];
@@ -6592,6 +7002,29 @@ export const RequestCautionRefundDocument = gql`
 export function useRequestCautionRefundMutation() {
   return Urql.useMutation<RequestCautionRefundMutation, RequestCautionRefundMutationVariables>(RequestCautionRefundDocument);
 };
+export const RequestEmailChangeDocument = gql`
+    mutation RequestEmailChange($newEmail: String!) {
+  requestEmailChange(newEmail: $newEmail) {
+    message
+  }
+}
+    `;
+
+export function useRequestEmailChangeMutation() {
+  return Urql.useMutation<RequestEmailChangeMutation, RequestEmailChangeMutationVariables>(RequestEmailChangeDocument);
+};
+export const ConfirmEmailChangeDocument = gql`
+    mutation ConfirmEmailChange($newEmail: String!, $otp: String!) {
+  confirmEmailChange(newEmail: $newEmail, otp: $otp) {
+    id
+    email
+  }
+}
+    `;
+
+export function useConfirmEmailChangeMutation() {
+  return Urql.useMutation<ConfirmEmailChangeMutation, ConfirmEmailChangeMutationVariables>(ConfirmEmailChangeDocument);
+};
 export const SubmitFeedbackDocument = gql`
     mutation SubmitFeedback($input: SubmitFeedbackInput!) {
   submitFeedback(input: $input) {
@@ -7375,6 +7808,62 @@ export const SetHostingCoverDocument = gql`
 export function useSetHostingCoverMutation() {
   return Urql.useMutation<SetHostingCoverMutation, SetHostingCoverMutationVariables>(SetHostingCoverDocument);
 };
+export const SaveHostingFeeDocument = gql`
+    mutation SaveHostingFee($input: HostingFeeInput!) {
+  saveHostingFee(input: $input) {
+    id
+    feeType
+    label
+    description
+    amount
+    ratePercent
+    setByKushi
+    perPeriod
+    shownInRent
+    payoutAccount {
+      id
+      accountNumber
+      accountName
+      bankCode
+      bankDetails {
+        name
+      }
+    }
+  }
+}
+    `;
+
+export function useSaveHostingFeeMutation() {
+  return Urql.useMutation<SaveHostingFeeMutation, SaveHostingFeeMutationVariables>(SaveHostingFeeDocument);
+};
+export const DeleteHostingFeeDocument = gql`
+    mutation DeleteHostingFee($hostingId: String!, $feeType: FeeType!) {
+  deleteHostingFee(hostingId: $hostingId, feeType: $feeType) {
+    id
+    feeType
+    label
+    description
+    amount
+    ratePercent
+    setByKushi
+    perPeriod
+    shownInRent
+    payoutAccount {
+      id
+      accountNumber
+      accountName
+      bankCode
+      bankDetails {
+        name
+      }
+    }
+  }
+}
+    `;
+
+export function useDeleteHostingFeeMutation() {
+  return Urql.useMutation<DeleteHostingFeeMutation, DeleteHostingFeeMutationVariables>(DeleteHostingFeeDocument);
+};
 export const KInitiateBookingApplicationDocument = gql`
     mutation KInitiateBookingApplication($hostingId: String!) {
   initiateBookingApplication(hostingId: $hostingId) {
@@ -7617,6 +8106,21 @@ export const SendSupportMessageDocument = gql`
 
 export function useSendSupportMessageMutation() {
   return Urql.useMutation<SendSupportMessageMutation, SendSupportMessageMutationVariables>(SendSupportMessageDocument);
+};
+export const CreateUnitsFromHostingDocument = gql`
+    mutation CreateUnitsFromHosting($hostingId: String!, $count: Int!, $publish: Boolean) {
+  createUnitsFromHosting(hostingId: $hostingId, count: $count, publish: $publish) {
+    message
+    data {
+      id
+      childCount
+    }
+  }
+}
+    `;
+
+export function useCreateUnitsFromHostingMutation() {
+  return Urql.useMutation<CreateUnitsFromHostingMutation, CreateUnitsFromHostingMutationVariables>(CreateUnitsFromHostingDocument);
 };
 export const UpdateHostDocument = gql`
     mutation UpdateHost($input: HostInput!) {
@@ -7871,6 +8375,8 @@ export const CalculateHostingFeesDocument = gql`
     query CalculateHostingFees($hostingId: String!, $multiplier: Int!) {
   calculateHostingFees(hostingId: $hostingId, multiplier: $multiplier) {
     baseRent
+    rent
+    agentFee
     totalPayableAmount
     cautionFee
     serviceCharge
@@ -8739,9 +9245,33 @@ export const HostingDocument = gql`
       declIndemnity
       titleType
       titleNumber
+      landlordPhone
+      landlordEmail
+      landlordConfirmationStatus
+      listedByAgent
       createdAt
       lastUpdated
       tierTooltip
+    }
+    fees {
+      id
+      feeType
+      label
+      description
+      amount
+      ratePercent
+      setByKushi
+      perPeriod
+      shownInRent
+      payoutAccount {
+        id
+        accountNumber
+        accountName
+        bankCode
+        bankDetails {
+          name
+        }
+      }
     }
     cautionFee
     serviceCharge
@@ -9038,6 +9568,22 @@ export const UserProfileDocument = gql`
 
 export function useUserProfileQuery(options: Omit<Urql.UseQueryArgs<UserProfileQueryVariables>, 'query'>) {
   return Urql.useQuery<UserProfileQuery, UserProfileQueryVariables>({ query: UserProfileDocument, ...options });
+};
+export const HostingFeeTypesDocument = gql`
+    query HostingFeeTypes {
+  hostingFeeTypes {
+    feeType
+    label
+    description
+    perPeriod
+    needsPayoutAccount
+    agentsOnly
+  }
+}
+    `;
+
+export function useHostingFeeTypesQuery(options?: Omit<Urql.UseQueryArgs<HostingFeeTypesQueryVariables>, 'query'>) {
+  return Urql.useQuery<HostingFeeTypesQuery, HostingFeeTypesQueryVariables>({ query: HostingFeeTypesDocument, ...options });
 };
 export const KApplicantTrustDocument = gql`
     query KApplicantTrust($bookingApplicationId: String!) {
@@ -10082,4 +10628,4 @@ export const SupportChatMessageAddedDocument = gql`
 
 export function useSupportChatMessageAddedSubscription<TData = SupportChatMessageAddedSubscription>(options: Omit<Urql.UseSubscriptionArgs<SupportChatMessageAddedSubscriptionVariables>, 'query'>, handler?: Urql.SubscriptionHandler<SupportChatMessageAddedSubscription, TData>) {
   return Urql.useSubscription<SupportChatMessageAddedSubscription, TData, SupportChatMessageAddedSubscriptionVariables>({ query: SupportChatMessageAddedDocument, ...options }, handler);
-};
+};

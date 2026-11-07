@@ -533,3 +533,54 @@ export const SET_HOSTING_COVER = gql`
     }
   }
 `;
+
+export const SAVE_HOSTING_FEE = gql`
+  mutation SaveHostingFee($input: HostingFeeInput!) {
+    saveHostingFee(input: $input) {
+      id
+      feeType
+      label
+      description
+      amount
+      ratePercent
+      setByKushi
+      perPeriod
+      shownInRent
+      payoutAccount {
+        id
+        accountNumber
+        accountName
+        bankCode
+        bankDetails {
+          name
+        }
+      }
+    }
+  }
+`;
+
+export const DELETE_HOSTING_FEE = gql`
+  mutation DeleteHostingFee($hostingId: String!, $feeType: FeeType!) {
+    deleteHostingFee(hostingId: $hostingId, feeType: $feeType) {
+      id
+      feeType
+      label
+      description
+      amount
+      ratePercent
+      setByKushi
+      perPeriod
+      shownInRent
+      payoutAccount {
+        id
+        accountNumber
+        accountName
+        bankCode
+        bankDetails {
+          name
+        }
+      }
+    }
+  }
+`;
+
