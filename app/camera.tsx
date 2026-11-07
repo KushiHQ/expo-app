@@ -155,7 +155,16 @@ export default function CameraScreen() {
 					: {}
 			});
 			if (photo?.uri) {
-				if (c) rememberCapture(photo.uri, { latitude: c.latitude, longitude: c.longitude, accuracyM: c.accuracy ?? undefined, capturedAt: new Date().toISOString() });
+				if (c)
+					rememberCapture(photo.uri, {
+						latitude: c.latitude,
+						longitude: c.longitude,
+						accuracyM: c.accuracy ?? undefined,
+						capturedAt: new Date().toISOString(),
+						// Altitude helps tell stacked flats apart in the duplicate check, when the phone is sure of it.
+						altitudeM: c.altitude ?? undefined,
+						altitudeAccuracyM: c.altitudeAccuracy ?? undefined
+					});
 				append(photo.uri);
 				if (multiple === 'false') review({ redirect: cast(redirect), fromCamera: true });
 			}

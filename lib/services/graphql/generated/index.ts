@@ -379,6 +379,25 @@ export type AdminPropertyTypeResponse = {
   message: Scalars['String']['output'];
 };
 
+/** A block with the listing it matched. */
+export type AdminPublishBlock = {
+  __typename?: 'AdminPublishBlock';
+  code: Scalars['String']['output'];
+  matchedRooms: Scalars['Int']['output'];
+  message: Scalars['String']['output'];
+  otherHosting?: Maybe<Hosting>;
+  sharedPhotos: Scalars['Int']['output'];
+};
+
+/** Whether staff cleared a listing to publish, and why. */
+export type AdminPublishCheck = {
+  __typename?: 'AdminPublishCheck';
+  blocks: Array<AdminPublishBlock>;
+  cleared: Scalars['Boolean']['output'];
+  clearedAt?: Maybe<Scalars['String']['output']>;
+  note?: Maybe<Scalars['String']['output']>;
+};
+
 export type AdminRecordInteractionResponseInput = {
   /** One of `favourable` | `medium` | `bad`, if a suggestion was tapped. */
   aiSuggestionUsed?: InputMaybe<Scalars['String']['input']>;
@@ -401,6 +420,49 @@ export type AdminReviewHostingVerificationRequestInput = {
   details?: InputMaybe<Scalars['String']['input']>;
   requestId: Scalars['String']['input'];
   status: HostingVerificationRequestStatus;
+};
+
+export type AdminRewardCampaign = {
+  __typename?: 'AdminRewardCampaign';
+  activatedAt?: Maybe<Scalars['String']['output']>;
+  active: Scalars['Boolean']['output'];
+  amount: Scalars['Decimal']['output'];
+  /** Claims holding a place (not rejected). */
+  claims: Scalars['Int']['output'];
+  createdAt: Scalars['String']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  endsAt?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  kind: RewardKind;
+  maxClaims?: Maybe<Scalars['Int']['output']>;
+  minTier: HostingVerificationTier;
+  pendingClaims: Scalars['Int']['output'];
+  targetCount: Scalars['Int']['output'];
+  title: Scalars['String']['output'];
+  /** amount × max claims; null when unlimited. */
+  totalCost?: Maybe<Scalars['Decimal']['output']>;
+};
+
+export type AdminRewardClaim = {
+  __typename?: 'AdminRewardClaim';
+  accountName: Scalars['String']['output'];
+  accountNumber: Scalars['String']['output'];
+  amount: Scalars['Decimal']['output'];
+  bankCode: Scalars['String']['output'];
+  createdAt: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  note?: Maybe<Scalars['String']['output']>;
+  /** Their progress now (it can drop if listings come down after claiming). */
+  progressNow: Scalars['Int']['output'];
+  reviewedAt?: Maybe<Scalars['String']['output']>;
+  rewardId: Scalars['String']['output'];
+  rewardTitle: Scalars['String']['output'];
+  status: RewardClaimStatus;
+  targetCount: Scalars['Int']['output'];
+  transactionId?: Maybe<Scalars['String']['output']>;
+  userEmail: Scalars['String']['output'];
+  userId: Scalars['String']['output'];
+  userName: Scalars['String']['output'];
 };
 
 /** A staff invitation that hasn't been accepted yet. */
@@ -1423,6 +1485,7 @@ export type Hosting = {
   /** The parent (plaza) this shop belongs to, if any. */
   parent?: Maybe<Hosting>;
   parentId?: Maybe<Scalars['String']['output']>;
+  /** The host's payout account. Host / staff only — null for anyone else. */
   paymentDetails?: Maybe<HostAccountDetails>;
   paymentInterval?: Maybe<PaymentInterval>;
   /**
@@ -1449,6 +1512,11 @@ export type Hosting = {
   /** Lowest price among this plaza's available shops — the card's "from ₦X". */
   priceFrom?: Maybe<Scalars['Decimal']['output']>;
   propertyType?: Maybe<Scalars['String']['output']>;
+  /**
+   * Why this listing can't go live (e.g. the same rooms are already on
+   * another listing). Only the host and staff see it; empty otherwise.
+   */
+  publishBlocks: Array<PublishBlock>;
   /**
    * What this listing still needs before it can be LIVE, per the server's
    * publish rules (same wording as the app's publish checklist). Empty when
@@ -2176,6 +2244,11 @@ export type Mutations = {
    */
   adminApproveCautionRefund: CautionRefundResponse;
   /**
+   * Approve a claim: it's paid into the claim's account by the payout
+   * worker. Needs `payouts.update`.
+   */
+  adminApproveRewardClaim: Scalars['Boolean']['output'];
+  /**
    * Enact the host's decision on their behalf — accept or reject. Wraps
    * `BookingApplicationQueries::update_booking_application_status` (the same
    * path the admin status mutation uses), records the event, stamps the
@@ -2269,6 +2342,11 @@ export type Mutations = {
   adminMarkHostingAsAddressVerified: HostingVerificationRequestResponse;
   /** Record (upsert) a single question's answer/context. */
   adminRecordInteractionResponse: InteractionResponseResponse;
+  /**
+   * Turn a claim down with a reason the person sees. Their place is freed.
+   * Needs `payouts.update`.
+   */
+  adminRejectRewardClaim: Scalars['Boolean']['output'];
   /** Release the soft lock (only the current handler may). Publishes presence. */
   adminReleaseBookingAssist: BookingAssistResponse;
   /**
@@ -2302,6 +2380,12 @@ export type Mutations = {
   /** Withdraw an invitation that hasn't been accepted. Needs `staff.invite`. */
   adminRevokeStaffInvitation: Scalars['Boolean']['output'];
   /**
+   * Create or change a reward (switched off until `adminSetRewardActive`).
+   * Once anyone has claimed it, its amount, goal and level are fixed.
+   * Needs `fee_config.update`.
+   */
+  adminSaveRewardCampaign: AdminRewardCampaign;
+  /**
    * Email the user a one-time code to set a new password (the same email
    * as "Forgot password"). Kushi never sees or sets the password. Needs
    * `users.update`.
@@ -2322,6 +2406,16 @@ export type Mutations = {
    * and on other instances within 30 seconds.
    */
   adminSetPlatformFeature: PlatformFeatures;
+  /**
+   * Let a listing publish although the duplicate check matched it, or undo
+   * that (`cleared: false`). A note is required when clearing.
+   */
+  adminSetPublishCheckCleared: Scalars['Boolean']['output'];
+  /**
+   * Switch a reward on or off. Switching it on the first time starts the
+   * count: only listings created from then on count. Needs `fee_config.update`.
+   */
+  adminSetRewardActive: AdminRewardCampaign;
   /**
    * Start a field interaction. Creates the contact inline when no
    * `contactId` is supplied, then snapshots the active script's question
@@ -2397,6 +2491,11 @@ export type Mutations = {
   appleSignUp: AuthTokenResponse;
   cancelBooking: MessageResponse;
   cancelBookingApplication: MessageResponse;
+  /**
+   * Claim a reward once its goal is met. The account must be in your own
+   * name. Kushi's team approves it, then it's paid into the account.
+   */
+  claimReward: RewardProgress;
   clearChatUrnreadMessages: MessageResponse;
   completeBookingApplicationSubmission: BookingApplicationResponse;
   completePasswordChange: MessageResponse;
@@ -2649,6 +2748,11 @@ export type MutationsAdminApproveCautionRefundArgs = {
 };
 
 
+export type MutationsAdminApproveRewardClaimArgs = {
+  claimId: Scalars['String']['input'];
+};
+
+
 export type MutationsAdminBookingAssistDecisionArgs = {
   input: AdminBookingAssistDecisionInput;
 };
@@ -2775,6 +2879,12 @@ export type MutationsAdminRecordInteractionResponseArgs = {
 };
 
 
+export type MutationsAdminRejectRewardClaimArgs = {
+  claimId: Scalars['String']['input'];
+  reason: Scalars['String']['input'];
+};
+
+
 export type MutationsAdminReleaseBookingAssistArgs = {
   assistId: Scalars['String']['input'];
 };
@@ -2823,6 +2933,11 @@ export type MutationsAdminRevokeStaffInvitationArgs = {
 };
 
 
+export type MutationsAdminSaveRewardCampaignArgs = {
+  input: RewardCampaignInput;
+};
+
+
 export type MutationsAdminSendPasswordResetArgs = {
   userId: Scalars['String']['input'];
 };
@@ -2843,6 +2958,19 @@ export type MutationsAdminSetLandlordConfirmationArgs = {
 export type MutationsAdminSetPlatformFeatureArgs = {
   enabled: Scalars['Boolean']['input'];
   feature: PlatformFeature;
+};
+
+
+export type MutationsAdminSetPublishCheckClearedArgs = {
+  cleared: Scalars['Boolean']['input'];
+  hostingId: Scalars['String']['input'];
+  note?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationsAdminSetRewardActiveArgs = {
+  active: Scalars['Boolean']['input'];
+  rewardId: Scalars['String']['input'];
 };
 
 
@@ -2949,6 +3077,13 @@ export type MutationsCancelBookingArgs = {
 
 export type MutationsCancelBookingApplicationArgs = {
   applicationId: Scalars['String']['input'];
+};
+
+
+export type MutationsClaimRewardArgs = {
+  accountNumber: Scalars['String']['input'];
+  bankCode: Scalars['String']['input'];
+  rewardId: Scalars['String']['input'];
 };
 
 
@@ -3426,6 +3561,19 @@ export type MutationsVerifyVerificationFeeArgs = {
   reference: Scalars['String']['input'];
 };
 
+/** A person's own claim on a reward. */
+export type MyRewardClaim = {
+  __typename?: 'MyRewardClaim';
+  accountLast4: Scalars['String']['output'];
+  accountName: Scalars['String']['output'];
+  amount: Scalars['Decimal']['output'];
+  createdAt: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  /** Why it was turned down, when it was. */
+  note?: Maybe<Scalars['String']['output']>;
+  status: RewardClaimStatus;
+};
+
 export type Notification = {
   __typename?: 'Notification';
   createdAt: Scalars['String']['output'];
@@ -3578,6 +3726,9 @@ export enum PhoneNumberVerificationStatus {
 export type PhotoCaptureInput = {
   /** Horizontal accuracy in metres, if known. */
   accuracyM?: InputMaybe<Scalars['Float']['input']>;
+  altitudeAccuracyM?: InputMaybe<Scalars['Float']['input']>;
+  /** Metres above sea level and vertical accuracy, if the phone gave them. */
+  altitudeM?: InputMaybe<Scalars['Float']['input']>;
   /** When the photo was taken (RFC 3339). */
   capturedAt: Scalars['String']['input'];
   latitude: Scalars['Float']['input'];
@@ -3736,6 +3887,16 @@ export type PublicUserProfile = {
   verified: Scalars['Boolean']['output'];
 };
 
+/** One reason a listing can't go live. */
+export type PublishBlock = {
+  __typename?: 'PublishBlock';
+  code: Scalars['String']['output'];
+  matchedRooms: Scalars['Int']['output'];
+  /** Plain words for the host. */
+  message: Scalars['String']['output'];
+  sharedPhotos: Scalars['Int']['output'];
+};
+
 export enum PublishStatus {
   Archived = 'ARCHIVED',
   Draft = 'DRAFT',
@@ -3856,6 +4017,15 @@ export type Query = {
   adminPermissions: Array<Scalars['String']['output']>;
   /** Every property type (including inactive) for the admin editor. */
   adminPropertyTypes: Array<AdminPropertyType>;
+  /**
+   * What stops this listing going live, with the listings it matched. The
+   * blocks are worked out as if staff hadn't cleared it.
+   */
+  adminPublishCheck: AdminPublishCheck;
+  /** Every reward, newest first. Needs `fee_config.read`. */
+  adminRewardCampaigns: Array<AdminRewardCampaign>;
+  /** Claims to review, oldest first. Needs `financials.read`. */
+  adminRewardClaims: Array<AdminRewardClaim>;
   /** Get a single role by ID with its permissions */
   adminRole: Role;
   adminRoles: Array<Role>;
@@ -3957,6 +4127,8 @@ export type Query = {
    */
   listingBoostCatalogue: Array<ListingTierOption>;
   me: User;
+  /** Rewards running now, plus any this person has claimed, with progress. */
+  myRewards: Array<RewardProgress>;
   mySupportChats: Array<SupportChat>;
   notifications: Array<Notification>;
   /** Which optional features are on. Needs no sign-in. */
@@ -4214,6 +4386,18 @@ export type QueryAdminPayoutNotesArgs = {
 
 export type QueryAdminPendingDisbursementsArgs = {
   pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QueryAdminPublishCheckArgs = {
+  hostingId: Scalars['String']['input'];
+};
+
+
+export type QueryAdminRewardClaimsArgs = {
+  pagination?: InputMaybe<PaginationInput>;
+  rewardId?: InputMaybe<Scalars['String']['input']>;
+  status?: InputMaybe<RewardClaimStatus>;
 };
 
 
@@ -4495,6 +4679,58 @@ export type RespondToCautionClaimInput = {
   approved: Scalars['Boolean']['input'];
   claimId: Scalars['String']['input'];
   notes?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type RewardCampaignInput = {
+  amount: Scalars['Decimal']['input'];
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** RFC 3339; null for no end date. */
+  endsAt?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  kind: RewardKind;
+  /** Null for no limit. */
+  maxClaims?: InputMaybe<Scalars['Int']['input']>;
+  minTier: HostingVerificationTier;
+  targetCount: Scalars['Int']['input'];
+  title: Scalars['String']['input'];
+};
+
+/** Where a claim is. Paid and payout-failed come from the payout itself. */
+export enum RewardClaimStatus {
+  /** Approved; the money is on its way. */
+  Approved = 'APPROVED',
+  Paid = 'PAID',
+  /** The bank transfer failed; Kushi's team follows up. */
+  PayoutFailed = 'PAYOUT_FAILED',
+  /** Waiting for staff. */
+  Pending = 'PENDING',
+  Rejected = 'REJECTED'
+}
+
+export enum RewardKind {
+  /** Publish a number of listings at or above a verification level. */
+  ListingsPublished = 'LISTINGS_PUBLISHED'
+}
+
+/** A reward and how close this person is to it. */
+export type RewardProgress = {
+  __typename?: 'RewardProgress';
+  amount: Scalars['Decimal']['output'];
+  canClaim: Scalars['Boolean']['output'];
+  claim?: Maybe<MyRewardClaim>;
+  /** Only listings created on or after this count. */
+  countsFrom?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  endsAt?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  kind: RewardKind;
+  /** Lowest verification level a listing needs to count. */
+  minTier: HostingVerificationTier;
+  progress: Scalars['Int']['output'];
+  /** Rewards left to claim; null when there's no limit. */
+  slotsLeft?: Maybe<Scalars['Int']['output']>;
+  targetCount: Scalars['Int']['output'];
+  title: Scalars['String']['output'];
 };
 
 export type Role = {
@@ -4979,6 +5215,11 @@ export enum TransactionType {
   /** An approved caution claim paid to the host from the guest's deposit. */
   HostCautionClaim = 'host_caution_claim',
   ListingTierBoost = 'listing_tier_boost',
+  /**
+   * A reward paid to the person who claimed it. Linked from
+   * `reward_claim.transaction_id`.
+   */
+  RewardPayout = 'reward_payout',
   /** A host's fee for a priced listing verification level. */
   VerificationFee = 'verification_fee'
 }
@@ -5718,6 +5959,15 @@ export type VerifyTransactionByReferenceMutationVariables = Exact<{
 
 export type VerifyTransactionByReferenceMutation = { __typename?: 'Mutations', verifyTransactionByReference: { __typename?: 'TransactionResponse', message: string, data?: { __typename?: 'Transaction', id: string, status: TransactionStatus } | null } };
 
+export type ClaimRewardMutationVariables = Exact<{
+  rewardId: Scalars['String']['input'];
+  accountNumber: Scalars['String']['input'];
+  bankCode: Scalars['String']['input'];
+}>;
+
+
+export type ClaimRewardMutation = { __typename?: 'Mutations', claimReward: { __typename?: 'RewardProgress', id: string, title: string, description?: string | null, amount: any, targetCount: number, minTier: HostingVerificationTier, progress: number, slotsLeft?: number | null, endsAt?: string | null, countsFrom?: string | null, canClaim: boolean, claim?: { __typename?: 'MyRewardClaim', status: RewardClaimStatus, amount: any, accountName: string, accountLast4: string, note?: string | null } | null } };
+
 export type InitiateSupportChatMutationVariables = Exact<{
   itemType?: InputMaybe<SupportItemType>;
   itemId?: InputMaybe<Scalars['String']['input']>;
@@ -6173,6 +6423,18 @@ export type TransactionsQueryVariables = Exact<{
 
 
 export type TransactionsQuery = { __typename?: 'Query', transactions: Array<{ __typename?: 'Transaction', id: string, amount: any, type: TransactionType, createdAt: string, lastUpdated: string, reference?: string | null, status: TransactionStatus, booking?: { __typename?: 'Booking', id: string, hosting: { __typename?: 'Hosting', id: string, title?: string | null } } | null }> };
+
+export type MyRewardsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyRewardsQuery = { __typename?: 'Query', myRewards: Array<{ __typename?: 'RewardProgress', id: string, title: string, description?: string | null, amount: any, targetCount: number, minTier: HostingVerificationTier, progress: number, slotsLeft?: number | null, endsAt?: string | null, countsFrom?: string | null, canClaim: boolean, claim?: { __typename?: 'MyRewardClaim', status: RewardClaimStatus, amount: any, accountName: string, accountLast4: string, note?: string | null } | null }> };
+
+export type HostingPublishBlocksQueryVariables = Exact<{
+  hostingId: Scalars['String']['input'];
+}>;
+
+
+export type HostingPublishBlocksQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, publishBlocks: Array<{ __typename?: 'PublishBlock', code: string, message: string }> } };
 
 export type MySupportChatsQueryVariables = Exact<{
   pagination?: InputMaybe<PaginationInput>;
@@ -8063,6 +8325,38 @@ export const VerifyTransactionByReferenceDocument = gql`
 
 export function useVerifyTransactionByReferenceMutation() {
   return Urql.useMutation<VerifyTransactionByReferenceMutation, VerifyTransactionByReferenceMutationVariables>(VerifyTransactionByReferenceDocument);
+};
+export const ClaimRewardDocument = gql`
+    mutation ClaimReward($rewardId: String!, $accountNumber: String!, $bankCode: String!) {
+  claimReward(
+    rewardId: $rewardId
+    accountNumber: $accountNumber
+    bankCode: $bankCode
+  ) {
+    id
+    title
+    description
+    amount
+    targetCount
+    minTier
+    progress
+    slotsLeft
+    endsAt
+    countsFrom
+    canClaim
+    claim {
+      status
+      amount
+      accountName
+      accountLast4
+      note
+    }
+  }
+}
+    `;
+
+export function useClaimRewardMutation() {
+  return Urql.useMutation<ClaimRewardMutation, ClaimRewardMutationVariables>(ClaimRewardDocument);
 };
 export const InitiateSupportChatDocument = gql`
     mutation InitiateSupportChat($itemType: SupportItemType, $itemId: String, $initialMessage: String) {
@@ -10210,6 +10504,49 @@ export const TransactionsDocument = gql`
 
 export function useTransactionsQuery(options?: Omit<Urql.UseQueryArgs<TransactionsQueryVariables>, 'query'>) {
   return Urql.useQuery<TransactionsQuery, TransactionsQueryVariables>({ query: TransactionsDocument, ...options });
+};
+export const MyRewardsDocument = gql`
+    query MyRewards {
+  myRewards {
+    id
+    title
+    description
+    amount
+    targetCount
+    minTier
+    progress
+    slotsLeft
+    endsAt
+    countsFrom
+    canClaim
+    claim {
+      status
+      amount
+      accountName
+      accountLast4
+      note
+    }
+  }
+}
+    `;
+
+export function useMyRewardsQuery(options?: Omit<Urql.UseQueryArgs<MyRewardsQueryVariables>, 'query'>) {
+  return Urql.useQuery<MyRewardsQuery, MyRewardsQueryVariables>({ query: MyRewardsDocument, ...options });
+};
+export const HostingPublishBlocksDocument = gql`
+    query HostingPublishBlocks($hostingId: String!) {
+  hosting(hostingId: $hostingId) {
+    id
+    publishBlocks {
+      code
+      message
+    }
+  }
+}
+    `;
+
+export function useHostingPublishBlocksQuery(options: Omit<Urql.UseQueryArgs<HostingPublishBlocksQueryVariables>, 'query'>) {
+  return Urql.useQuery<HostingPublishBlocksQuery, HostingPublishBlocksQueryVariables>({ query: HostingPublishBlocksDocument, ...options });
 };
 export const MySupportChatsDocument = gql`
     query MySupportChats($pagination: PaginationInput) {

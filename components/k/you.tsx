@@ -13,6 +13,7 @@ import { useLayout } from '@/lib/k/layout';
 import { LINKS } from '@/lib/k/account';
 import { useUserStore } from '@/lib/stores/users';
 import { UserType } from '@/lib/types/users';
+import { Rewards } from '@/components/k/rewards';
 
 /** The You tab: profile, verification status and every account setting in one tidy list. */
 export function You({ mode = 'guest' }: { mode?: 'guest' | 'host' }) {
@@ -68,6 +69,7 @@ export function You({ mode = 'guest' }: { mode?: 'guest' | 'host' }) {
 				<ChevronRight size={18} color={color.dim} />
 			</Pressable>
 			<VerificationCard />
+			<Rewards />
 			<HostCard onPress={switchMode} host={mode === 'host'} />
 		</>
 	);
