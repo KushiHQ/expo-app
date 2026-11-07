@@ -52,6 +52,8 @@ export const CALCULATE_HOSTING_FEE = gql`
   query CalculateHostingFees($hostingId: String!, $multiplier: Int!) {
     calculateHostingFees(hostingId: $hostingId, multiplier: $multiplier) {
       baseRent
+      rent
+      agentFee
       totalPayableAmount
       cautionFee
       serviceCharge

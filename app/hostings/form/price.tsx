@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Card, KText, KV, Segmented } from '@/components/k';
 import { Block, MoneyField, StepScreen } from '@/components/k/listing-form';
 import { PayoutPicker } from '@/components/k/listing-payout';
+import { FeeList } from '@/components/k/listing-fees';
 import { naira, perInterval } from '@/lib/k/format';
 import { useListingStep } from '@/lib/k/use-listing-step';
 import { showPayoutAccount } from '@/lib/constants/hosting/step-rules';
-import { ListingType, PaymentInterval } from '@/lib/services/graphql/generated';
+import { FeeType, HostingPropertyRelationship, ListingType, PaymentInterval } from '@/lib/services/graphql/generated';
 
 const INTERVALS: { value: PaymentInterval; label: string; noun: string }[] = [
 	{ value: PaymentInterval.Anually, label: 'Yearly', noun: 'year' },
@@ -28,6 +28,12 @@ export default function Price() {
 	const noun = INTERVALS.find((i) => i.value === interval)?.noun ?? 'period';
 	const payout = showPayoutAccount(input.managementType ?? hosting?.managementType);
 	const price = Number(input.price) || 0;
+	const id = hosting?.id;
+	const feeOf = (t: FeeType) => Number(hosting?.fees?.find((x) => x.feeType === t)?.amount ?? 0) || 0;
+	const agentFee = feeOf(FeeType.AgentFee);
+	const serviceCharge = feeOf(FeeType.ServiceCharge);
+	const caution = feeOf(FeeType.CautionFee);
+	const isAgent = hosting?.verification?.propertyRelationship === HostingPropertyRelationship.Agent;
 
 	const errors = {
 		interval: !sale && !interval ? 'Choose how often rent is paid.' : null,
@@ -68,29 +74,45 @@ export default function Price() {
 						</KText>
 					) : null}
 					<MoneyField label={`Rent per ${noun}`} value={input.price} onChange={(v) => updateInput({ price: v || null })} error={tried ? errors.price : null} testID="field-price" />
-					<View style={{ flexDirection: 'row', gap: 12 }}>
-						<View style={{ flex: 1 }}>
-							<MoneyField label="Service charge" optional value={input.serviceCharge} onChange={(v) => updateInput({ serviceCharge: v || null })} />
-						</View>
-						<View style={{ flex: 1 }}>
-							<MoneyField label="Caution deposit" optional value={input.cautionFee} onChange={(v) => updateInput({ cautionFee: v || null })} />
-						</View>
-					</View>
-					<KText v="xs">The caution deposit is held by Kushi and returned to the renter at the end, minus any claims you make for damage.</KText>
 					{price ? (
 						<Card>
 							<KText v="label">What renters see</KText>
 							<KV k="Rent" v={`${naira(price)} ${perInterval(interval)}`} strong />
-							{Number(input.serviceCharge) ? <KV k="Service charge" v={naira(Number(input.serviceCharge))} /> : null}
-							{Number(input.cautionFee) ? <KV k="Caution deposit (refundable)" v={naira(Number(input.cautionFee))} /> : null}
+							{agentFee ? <KV k="First rent includes" v={`${naira(agentFee)} agent fee`} /> : null}
+							{serviceCharge ? <KV k="Service charge" v={naira(serviceCharge)} /> : null}
+							{caution ? <KV k="Caution deposit (refundable)" v={naira(caution)} /> : null}
 							<KText v="xs">Kushi’s fees, legal fee and stamp duty are added on top for the renter.</KText>
 						</Card>
 					) : null}
 				</Block>
 			)}
 
+			{!sale && payout ? (
+				<Block title="Fees" sub="Anything the renter pays on top of the rent. Kushi’s own fees are added for you.">
+					{id ? (
+						<FeeList
+							hosting={hosting}
+							interval={interval}
+							onChanged={(fees) => {
+								// The agreement step reads these two to show their clauses.
+								updateInput({
+									cautionFee: fees.find((x) => x.feeType === FeeType.CautionFee)?.amount ?? null,
+									serviceCharge: fees.find((x) => x.feeType === FeeType.ServiceCharge)?.amount ?? null
+								});
+								f.refetch();
+							}}
+						/>
+					) : (
+						<KText v="small">Save the rent first, then add fees.</KText>
+					)}
+				</Block>
+			) : null}
+
 			{payout ? (
-				<Block title="Where Kushi pays you" sub="Payment is held safely until the renter moves in, then paid here.">
+				<Block
+					title="Where the rent goes"
+					sub={isAgent ? 'Rent is held until the renter moves in, then paid here. As the owner’s agent, use the owner’s account; your agent fee goes to its own account.' : 'Payment is held safely until the renter moves in, then paid here.'}
+				>
 					<PayoutPicker value={input.paymentDetailsId} onChange={(paymentDetailsId) => updateInput({ paymentDetailsId })} error={tried ? errors.payout : null} />
 				</Block>
 			) : null}
