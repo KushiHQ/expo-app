@@ -2,6 +2,7 @@ import { View } from 'react-native';
 import { router } from 'expo-router';
 import { Bell, Building2, Inbox, Landmark, Plus, Wallet } from 'lucide-react-native';
 import { ApplicationRow, DECIDABLE, HostListingRow } from '@/components/k/host-bits';
+import { Rewards } from '@/components/k/rewards';
 import { Button, Card, Empty, Eyebrow, IconButton, KText, Notice, Screen, Section, Skeleton } from '@/components/k';
 import { color, font, radius } from '@/lib/k/theme';
 import { naira } from '@/lib/k/format';
@@ -60,6 +61,8 @@ export default function Today() {
 					</View>
 				))}
 			</View>
+
+			<Rewards />
 
 			<Section title="Applications to review" action={pending.length ? <Button title="All" variant="quiet" size="sm" onPress={() => router.navigate('/host/applications')} /> : undefined}>
 				{pending.length ? (

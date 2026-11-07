@@ -235,6 +235,7 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>((set, get
       video,
       bookingApplicationsCount,
       hostingImages,
+      fees,
       ...rest
     } = hosting;
     // NOTE: `rest` is sent verbatim as HostingInput, so EVERY read-only field
@@ -249,6 +250,8 @@ export const useActiveFormHosingStore = create<ActiveFormHostingStore>((set, get
       createdAt: createdAt2,
       lastUpdated: lastUpdated2,
       tierTooltip,
+      landlordConfirmationStatus,
+      listedByAgent,
       ...vRest
     } = verification ?? {};
 

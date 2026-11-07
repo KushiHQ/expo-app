@@ -176,7 +176,9 @@ const DetailsLayout = React.forwardRef<ScrollView, Props>(
       const input = useActiveFormHosingStore.getState().input;
       if (input && Object.keys(input).length > 0) {
         setDoneSaving(true);
-        const res = await saveHosting({ input: removeTypenames(input) as typeof input });
+        // Fees are saved on their own (saveHostingFee); leave them out here.
+        const { cautionFee: _c, serviceCharge: _s, ...rest } = input;
+        const res = await saveHosting({ input: removeTypenames(rest) as typeof input });
         setDoneSaving(false);
         if (res.error) {
           // Don't leave silently on a failed save — surface it and stay put.

@@ -29,6 +29,7 @@ export const Field = forwardRef<TextInput, FieldProps>(function Field({ label, h
 				{prefix}
 				<TextInput
 					ref={ref}
+					maxFontSizeMultiplier={1.4}
 					placeholderTextColor={color.dim}
 					selectionColor={color.amber}
 					cursorColor={color.amber}

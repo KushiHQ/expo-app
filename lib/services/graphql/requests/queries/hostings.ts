@@ -309,9 +309,33 @@ export const HOSTING_QUERY = gql`
         declIndemnity
         titleType
         titleNumber
+        landlordPhone
+        landlordEmail
+        landlordConfirmationStatus
+        listedByAgent
         createdAt
         lastUpdated
         tierTooltip
+      }
+      fees {
+        id
+        feeType
+        label
+        description
+        amount
+        ratePercent
+        setByKushi
+        perPeriod
+        shownInRent
+        payoutAccount {
+          id
+          accountNumber
+          accountName
+          bankCode
+          bankDetails {
+            name
+          }
+        }
       }
       cautionFee
       serviceCharge
@@ -572,6 +596,19 @@ export const USER_PROFILE = gql`
           }
         }
       }
+    }
+  }
+`;
+
+export const HOSTING_FEE_TYPES = gql`
+  query HostingFeeTypes {
+    hostingFeeTypes {
+      feeType
+      label
+      description
+      perPeriod
+      needsPayoutAccount
+      agentsOnly
     }
   }
 `;

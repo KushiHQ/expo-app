@@ -24,8 +24,10 @@ import {
 	Zap
 } from 'lucide-react-native';
 import { Avatar, Button, Card, Divider, Empty, Eyebrow, IconButton, KText, Notice, Photo, Pill, Sheet, Skeleton, Stepper, Waypoint } from '@/components/k';
+import { TitleNotice } from '@/components/k/title-notice';
 import { QuoteLines, useQuote } from '@/components/k/quote';
 import { useSaveToggle } from '@/components/k/listing-card';
+import { PhotoTour } from '@/components/k/photo-tour';
 import { color, font, gutter, radius } from '@/lib/k/theme';
 import { centered, maxWidth, useLayout } from '@/lib/k/layout';
 import { date, duration, humanize, intervalAdverb, isShortLet, naira, perInterval, place } from '@/lib/k/format';
@@ -211,6 +213,7 @@ function Detail({ h }: { h: Listing }) {
 					</>
 				) : null}
 			</View>
+			{!isOwner ? <TitleNotice verification={h.verification} /> : null}
 		</View>
 	);
 	const ownerCard = isOwner ? (
@@ -269,6 +272,8 @@ function Detail({ h }: { h: Listing }) {
 
 			{h.video?.asset?.publicUrl ? <VideoTour uri={h.video.asset.publicUrl} seconds={h.video.durationSeconds} /> : null}
 
+			<PhotoTour hostingId={h.id} title={h.title} coverAssetId={h.coverImage?.asset?.id} />
+
 			{(h.rooms ?? []).length ? (
 				<View style={{ gap: 12 }}>
 					<KText v="heading">Inside</KText>
@@ -279,7 +284,16 @@ function Detail({ h }: { h: Listing }) {
 						showsHorizontalScrollIndicator={false}
 						contentContainerStyle={{ gap: 12 }}
 						renderItem={({ item: r }) => (
-							<View style={{ width: 160, gap: 6 }}>
+							<Pressable
+								disabled={!r.images?.[0]?.asset?.id}
+								onPress={() => {
+									const start = Math.max(0, photos.findIndex((p) => p.id === r.images?.[0]?.asset?.id));
+									router.push({ pathname: '/hostings/[id]/gallery', params: { id: h.id, start: String(start) } });
+								}}
+								accessibilityRole="button"
+								accessibilityLabel={`See photos of ${roomLabel(r.name)}`}
+								style={({ pressed }) => [{ width: 160, gap: 6 }, pressed && { opacity: 0.8 }]}
+							>
 								<Photo assetId={r.images?.[0]?.asset?.id} w={400} h={300} style={{ width: 160, height: 116 }} />
 								<KText v="smallStrong">
 									{roomLabel(r.name)}
@@ -290,7 +304,7 @@ function Detail({ h }: { h: Listing }) {
 										{r.description}
 									</KText>
 								) : null}
-							</View>
+							</Pressable>
 						)}
 					/>
 				</View>
@@ -407,7 +421,6 @@ function Detail({ h }: { h: Listing }) {
 						</MapView>
 					</View>
 				) : null}
-				<KText v="xs">The exact address is shared once your booking is paid.</KText>
 			</View>
 
 			{h.electricityBilling ? (

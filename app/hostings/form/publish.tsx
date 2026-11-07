@@ -11,7 +11,7 @@ import { useListingStep, cleanError } from '@/lib/k/use-listing-step';
 import { MIN_DESCRIPTION, PLACEHOLDER_TITLE, stepHref, stepsFor, type Hosting } from '@/lib/k/listing-steps';
 import { isAgentManaged } from '@/lib/constants/hosting/step-rules';
 import { useUploadStore } from '@/lib/stores/uploads';
-import { PublishStatus, useAiHostingContentSuggestionQuery } from '@/lib/services/graphql/generated';
+import { PublishStatus, useAiHostingContentSuggestionQuery, useHostingPublishBlocksQuery } from '@/lib/services/graphql/generated';
 
 const TITLE_MAX = 80;
 const DESCRIPTION_MAX = 1500;
@@ -29,6 +29,9 @@ export default function Publish() {
 	const uploading = useUploadStore((s) => Object.keys(s.tasks).length > 0);
 	const [{ data: ai, fetching: drafting, error: aiError }, draft] = useAiHostingContentSuggestionQuery({ variables: { hostingId: f.id ?? '' }, pause: true });
 	const [aiOpen, setAiOpen] = useState(false);
+	// Reasons the server won't let it go live (e.g. it matches a listing already on Kushi).
+	const [{ data: blockData }, refetchBlocks] = useHostingPublishBlocksQuery({ variables: { hostingId: f.id ?? '' }, pause: !f.id, requestPolicy: 'network-only' });
+	const blocks = blockData?.hosting?.publishBlocks ?? [];
 
 	const status = hosting?.publishStatus ?? PublishStatus.Draft;
 	const live = status === PublishStatus.Live;
@@ -52,6 +55,7 @@ export default function Publish() {
 		const id = await f.save({ title: input.title?.trim(), description: input.description?.trim(), publishStatus: PublishStatus.Live });
 		setBusy(false);
 		if (id) setDone(true);
+		else refetchBlocks({ requestPolicy: 'network-only' });
 	}
 
 	async function saveOnly() {
@@ -106,6 +110,12 @@ export default function Publish() {
 						<Pill tone={st.tone}>{st.label}</Pill>
 					</View>
 				</Card>
+			) : null}
+
+			{!live && blocks.length ? (
+				<Notice tone="danger" title="This listing can’t be published" action="Contact support" onAction={() => router.push('/support' as Href)}>
+					{blocks.map((b) => b.message).join(' ')} If it’s a different property, or it’s yours, contact Kushi support and we’ll sort it out.
+				</Notice>
 			) : null}
 
 			<Block title="Name and describe it" sub="Say what makes it worth a visit: size, condition, the street, what’s nearby.">

@@ -97,9 +97,12 @@ export const useHostingForm = (id?: string | string[]) => {
       if (variables.input.listingType === ListingType.Sale) {
         variables.input.paymentInterval = PaymentInterval.OneTimePayment;
       }
+      // Caution and service charge are fees now (saveHostingFee). Leaving them
+      // out keeps what's stored; the input still holds them for the agreement.
+      const { cautionFee: _c, serviceCharge: _s, ...input } = variables.input;
       return mutate({
         ...variables,
-        input: removeTypenames(variables.input) as typeof variables.input,
+        input: removeTypenames(input) as typeof variables.input,
       });
     },
     [mutate],
