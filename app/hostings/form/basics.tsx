@@ -78,12 +78,13 @@ export default function Basics() {
 			primary={{ title: f.id ? 'Save and continue' : 'Create draft and continue', onPress: next, loading: busy || f.mutating, testID: 'step-next' }}
 			footnote={tried && !valid ? <KText v="xs" c="danger" center>Fill in the highlighted fields to continue.</KText> : null}
 		>
-			<Block title="Who manages it?" sub="This decides how renters deal with you.">
-				<Choice title="Kushi managed" detail="Kushi verifies the property, handles the agreement and signing, and holds payment safely until move-in." on={management === ManagementType.KushiManaged} onPress={() => updateInput({ managementType: ManagementType.KushiManaged })} />
-				{showAdvert ? (
+			{/* Only a choice while advert-only listings are switched on; otherwise every listing is Kushi managed. */}
+			{showAdvert ? (
+				<Block title="Who manages it?" sub="This decides how renters deal with you.">
+					<Choice title="Kushi managed" detail="Kushi verifies the property, handles the agreement and signing, and holds payment safely until move-in." on={management === ManagementType.KushiManaged} onPress={() => updateInput({ managementType: ManagementType.KushiManaged })} />
 					<Choice title="Advert only" detail="People contact you and you close the deal off Kushi. No agreement or payment here, and your exact address stays hidden." on={management === ManagementType.AgentManaged} onPress={() => updateInput({ managementType: ManagementType.AgentManaged })} />
-				) : null}
-			</Block>
+				</Block>
+			) : null}
 
 			<Block title="Rent or sale?">
 				<View style={{ gap: 10 }}>
