@@ -7,6 +7,8 @@ import { useQuery } from 'urql';
 import { useAudioPlayer } from 'expo-audio';
 import * as Sentry from '@sentry/react-native';
 import { ChatHeader, Composer, DayDivider, MessageBubble, type Attachment, type ChatMsg } from '@/components/k/chat';
+import { LinkSheetHost, MessageActionsSheet, canEditMessage, type ReplyRef } from '@/components/k/chat-actions';
+import { toast } from '@/lib/hooks/use-toast';
 import { Avatar, Chip, KText, Notice, Photo, Skeleton, Spinner } from '@/components/k';
 import { useNotifications } from '@/components/contexts/notifications';
 import { color, gutter, radius } from '@/lib/k/theme';
@@ -19,6 +21,8 @@ import { formMutation } from '@/lib/services/graphql/utils/fetch';
 import { CREATE_UPDATE_MESSAGE } from '@/lib/services/graphql/requests/mutations/hosting-chat';
 import { K_CHAT } from '@/lib/services/graphql/requests/queries/k-manage';
 import { dismissChatNotifications } from '@/lib/k/app-badge';
+import { onLiveReconnected, useLiveOutage } from '@/lib/k/live-connection';
+import { primeMicPermission } from '@/lib/call/permissions';
 import {
 	useChatMessagesQuery,
 	useClearChatUrnreadMessagesMutation,
@@ -67,6 +71,10 @@ export default function Conversation() {
 	const [pending, setPending] = useState<ChatMsg[]>([]);
 	const [presence, setPresence] = useState<OnlineUserSubscription['onlineUser'] | null>(null);
 	const [draft, setDraft] = useState<string | undefined>();
+	const [actionsFor, setActionsFor] = useState<ChatMsg | null>(null);
+	const [replyTo, setReplyTo] = useState<ReplyRef | null>(null);
+	const [editing, setEditing] = useState<{ id: string; text: string } | null>(null);
+	const [highlighted, setHighlighted] = useState<string | null>(null);
 	const [, clearUnread] = useClearChatUrnreadMessagesMutation();
 
 	useEffect(() => {
@@ -88,6 +96,20 @@ export default function Conversation() {
 	useEffect(() => {
 		if (subError) Sentry.captureException(subError, { tags: { area: 'chat-subscription', chatId: id } });
 	}, [subError, id]);
+
+	// Live updates drop and come back on their own (background, power saving,
+	// network changes). When they do, fetch the latest page so nothing sent in
+	// the gap is missed. Users only hear about it after a long outage.
+	const refreshRef = useRef(refresh);
+	refreshRef.current = refresh;
+	useEffect(() => onLiveReconnected(() => refreshRef.current()), []);
+	const outage = useLiveOutage();
+
+	// Ask for the microphone here, before any call: an incoming call is often
+	// answered from the lock screen, where no permission prompt can show.
+	useEffect(() => {
+		primeMicPermission();
+	}, []);
 
 	useOnlineUserSubscription({ variables: { userId: other?.id ?? '' }, pause: !other?.id }, (_prev: unknown, curr: OnlineUserSubscription) => {
 		setPresence(curr.onlineUser);
@@ -112,6 +134,7 @@ export default function Conversation() {
 			out.push({ kind: 'msg', m, last });
 			if (!older || new Date(older.createdAt).toDateString() !== new Date(m.createdAt).toDateString()) out.push({ kind: 'day', key: `day-${m.id}`, iso: m.createdAt });
 		});
+		rowsRef.current = out;
 		return out;
 	}, [messages]);
 
@@ -122,7 +145,7 @@ export default function Conversation() {
 			let sent: CreateUpdateMessageMutation['createUpdateMessage'] | undefined;
 			try {
 				const res = await formMutation<CreateUpdateMessageMutation, CreateUpdateMessageMutationVariables>(CREATE_UPDATE_MESSAGE, {
-					input: { chatId: id, text: msg.text, assets: files.map((f) => ({ ...generateRNFile(f.uri), ...(f.name ? { name: f.name } : {}), ...(f.mimeType ? { type: f.mimeType } : {}) })) }
+					input: { chatId: id, text: msg.text, ...(msg.replyTo ? { replyToId: msg.replyTo.id } : {}), assets: files.map((f) => ({ ...generateRNFile(f.uri), ...(f.name ? { name: f.name } : {}), ...(f.mimeType ? { type: f.mimeType } : {}) })) }
 				});
 				if (!res.error) sent = res.data?.createUpdateMessage;
 			} catch {}
@@ -139,9 +162,10 @@ export default function Conversation() {
 	const send = useCallback(
 		(text: string, files: Attachment[]) => {
 			const now = new Date().toISOString();
-			const msg: ChatMsg = { id: `local-${Date.now()}`, text, isSender: true, createdAt: now, lastUpdated: now, assets: [], local: files, state: 'sending' };
+			const msg: ChatMsg = { id: `local-${Date.now()}`, text, isSender: true, createdAt: now, lastUpdated: now, assets: [], local: files, state: 'sending', replyTo };
 			setPending((p) => [msg, ...p]);
 			setDraft(undefined);
+			setReplyTo(null);
 			list.current?.scrollToOffset({ offset: 0, animated: true });
 			try {
 				sendSound.seekTo(0);
@@ -149,13 +173,75 @@ export default function Conversation() {
 			} catch {}
 			deliver(msg);
 		},
-		[deliver, sendSound]
+		[deliver, sendSound, replyTo]
 	);
+
+	// Edits show straight away and roll back if the server says no.
+	const saveEdit = useCallback(
+		async (msgId: string, text: string) => {
+			const original = messages.find((m) => m.id === msgId);
+			setEditing(null);
+			if (!original || original.text === text) return;
+			const upsert = (m: ChatMsg) => setLive((prev) => [m, ...prev.filter((x) => x.id !== m.id)]);
+			upsert({ ...original, text, edited: true });
+			let saved: CreateUpdateMessageMutation['createUpdateMessage'] | undefined;
+			let reason: string | undefined;
+			try {
+				const res = await formMutation<CreateUpdateMessageMutation, CreateUpdateMessageMutationVariables>(CREATE_UPDATE_MESSAGE, { input: { id: msgId, chatId: id, text } });
+				if (res.error) reason = res.error.graphQLErrors?.[0]?.message;
+				else saved = res.data?.createUpdateMessage;
+			} catch {}
+			if (saved) return upsert(saved as ChatMsg);
+			upsert(original);
+			toast.show({ type: 'error', text1: 'Couldn’t edit message', text2: reason ?? 'Check your connection and try again.' });
+		},
+		[id, messages]
+	);
+
+	const startReply = useCallback((m: ChatMsg) => {
+		setEditing(null);
+		setReplyTo({ id: m.id, text: m.text, messageType: m.messageType, isSender: m.isSender, sender: m.sender, assets: m.assets });
+	}, []);
+	const startEdit = useCallback((m: ChatMsg) => {
+		if (!canEditMessage(m)) return;
+		setReplyTo(null);
+		setEditing({ id: m.id, text: m.text });
+	}, []);
+
+	// Tap a quote: scroll to the original and tint it for a moment.
+	const rowsRef = useRef<Row[]>([]);
+	const jumpTo = useCallback((msgId: string) => {
+		const index = rowsRef.current.findIndex((r) => r.kind === 'msg' && r.m.id === msgId);
+		if (index < 0) {
+			toast.show({ type: 'info', text1: 'That message is further up', text2: 'Scroll up to load older messages.' });
+			return;
+		}
+		list.current?.scrollToIndex({ index, viewPosition: 0.5, animated: true });
+		setHighlighted(msgId);
+		setTimeout(() => setHighlighted((h) => (h === msgId ? null : h)), 1600);
+	}, []);
 
 	const retry = useCallback((m: ChatMsg) => deliver(m), [deliver]);
 	const discard = useCallback((m: ChatMsg) => setPending((p) => p.filter((x) => x.id !== m.id)), []);
 
-	const renderItem = useCallback(({ item }: { item: Row }) => (item.kind === 'day' ? <DayDivider iso={item.iso} /> : <MessageBubble m={item.m} last={item.last} onRetry={retry} onDiscard={discard} />), [retry, discard]);
+	const renderItem = useCallback(
+		({ item }: { item: Row }) =>
+			item.kind === 'day' ? (
+				<DayDivider iso={item.iso} />
+			) : (
+				<MessageBubble
+					m={item.m}
+					last={item.last}
+					highlighted={highlighted === item.m.id}
+					onRetry={retry}
+					onDiscard={discard}
+					onActions={setActionsFor}
+					onReply={item.m.messageType ? undefined : startReply}
+					onJumpTo={jumpTo}
+				/>
+			),
+		[retry, discard, startReply, jumpTo, highlighted]
+	);
 
 	const online = presence ? presence.online : !!other?.onlineUser?.online;
 	const lastSeen = presence?.lastSeen ?? other?.onlineUser?.lastSeen;
@@ -207,11 +293,9 @@ export default function Conversation() {
 				onVideo={() => router.push(buildCallURL(id, 'video', true))}
 			/>
 			<KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-				{subError ? (
+				{outage ? (
 					<View style={{ paddingHorizontal: gutter, paddingTop: 8 }}>
-						<Notice tone="warn" action="Refresh" onAction={refresh}>
-							Live updates paused. New messages may not appear until you refresh.
-						</Notice>
+						<Notice tone="info">Reconnecting… New messages will show up as soon as you’re back online.</Notice>
 					</View>
 				) : null}
 				{firstLoad ? (
@@ -256,12 +340,28 @@ export default function Conversation() {
 						keyboardShouldPersistTaps="handled"
 						keyboardDismissMode="interactive"
 						contentContainerStyle={[{ paddingHorizontal: gutter, paddingVertical: 12, flexGrow: 1 }, column ? { width: '100%', maxWidth: column, alignSelf: 'center' } : null]}
+						extraData={highlighted}
+						onScrollToIndexFailed={(info) => {
+							list.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
+							setTimeout(() => list.current?.scrollToIndex({ index: info.index, viewPosition: 0.5, animated: true }), 250);
+						}}
 						ListFooterComponent={hasNextPage && messages.length ? <View style={{ paddingVertical: 16 }}>{fetching ? <Spinner /> : null}</View> : intro}
 						showsVerticalScrollIndicator={false}
 					/>
 				)}
-				<Composer onSend={send} initial={draft} maxWidth={column} />
+				<Composer
+					onSend={send}
+					initial={draft}
+					maxWidth={column}
+					replyTo={replyTo}
+					onCancelReply={() => setReplyTo(null)}
+					editing={editing}
+					onSaveEdit={saveEdit}
+					onCancelEdit={() => setEditing(null)}
+				/>
 			</KeyboardAvoidingView>
+			<MessageActionsSheet message={actionsFor} onClose={() => setActionsFor(null)} onReply={startReply} onEdit={startEdit} />
+			<LinkSheetHost />
 		</View>
 	);
 }

@@ -9,22 +9,55 @@ import { cast } from '../types/utils';
 import { useCountUp } from './use-countup';
 import { useAudioPlayer } from 'expo-audio';
 import Daily, { DailyCall, DailyParticipant } from '@daily-co/react-native-daily-js';
-import notifee from '@notifee/react-native';
-import { stopRingtone } from '../utils/call';
-import { BackHandler, Platform } from 'react-native';
+import { clearRinging, playRingtone, stopRingtone } from '../utils/call';
+import { Alert, BackHandler, Platform } from 'react-native';
 import RNCallKeep from 'react-native-callkeep';
 import { useLockScreen } from './use-lock-screen';
 import { EventEmitter } from '../utils/event-emitter';
+import {
+  RING_WINDOW_MS,
+  getActiveCallScreen,
+  isCallEnded,
+  isRingFresh,
+  markCallEnded,
+  setActiveCallScreen,
+} from '../call/state';
+import { sendCallSignal } from '../call/signal';
+import { ensureMicForCall } from '../call/permissions';
+import { callError, callLog } from '../call/log';
+import { isCallKitAnswered } from '../call/ios';
 
 const callerRingtone = require('@/assets/audio/caller-ringtone.mp3');
-const receiverRingtone = require('@/assets/audio/ringtone.mp3');
 
+/** How long the caller rings before giving up. */
+const CALLER_RING_MS = 45_000;
+/** Callee joined but the caller never shows up (they hung up meanwhile). */
+const EMPTY_ROOM_MS = 20_000;
+
+type Phase = 'ringing' | 'connecting' | 'active';
+
+/**
+ * One call screen (voice or video), for both sides:
+ * - caller (initiate=true): rings the other person, joins the Daily room and
+ *   waits; gives up after 45 s.
+ * - callee: rings, or with accept=true joins at once (Answer on the
+ *   notification, the lock screen or CallKit). An Answer that arrives while
+ *   this screen is open joins it (call_answer), never a second screen.
+ *
+ * Every way out (decline, hang up, the other side leaving, cancel/decline
+ * pushes, CallKit end, errors, the ring timing out) goes through `leave`, which
+ * marks the call ended, stops the ringtone, tells the other side once, and
+ * closes the screen.
+ */
 export const useActiveCall = () => {
   const router = useRouter();
   const pathname = usePathname();
   const isVideoCall = pathname.endsWith('video');
   const callKind: 'voice' | 'video' = isVideoCall ? 'video' : 'voice';
-  const { id, initiate, accept, callId } = useLocalSearchParams();
+  const params = useLocalSearchParams<{ id: string; initiate?: string; accept?: string; callId: string; at?: string }>();
+  const id = String(params.id);
+  const callId = String(params.callId);
+  const isCaller = params.initiate === 'true';
   const { isLockScreenLaunch } = useLockScreen();
 
   const [call, setCall] = useState<DailyCall | null>(null);
@@ -32,318 +65,329 @@ export const useActiveCall = () => {
   const [remoteParticipant, setRemoteParticipant] = useState<DailyParticipant | null>(null);
   const [cameraEnabled, setCameraEnabled] = useState(isVideoCall);
   const [micEnabled, setMicEnabled] = useState(true);
-
-  const [isRinging, setIsRinging] = useState(true);
+  const [phase, setPhase] = useState<Phase>(params.accept === 'true' ? 'connecting' : 'ringing');
+  const [reconnecting, setReconnecting] = useState(false);
   const [isSpeakerOn, setIsSpeakerOn] = useState(isVideoCall);
   const [, sendNotification] = useSendChatCallNotificationMutation();
 
+  const isRinging = phase === 'ringing';
   const hasLeftRef = useRef(false);
-  const actionHandled = useRef(false);
-  // Callee side: ensure ANSWERED is signalled at most once per call
-  const answeredSentRef = useRef(false);
-  // Caller side: when the remote participant joined (call became active)
+  const joinStartedRef = useRef(false);
   const remoteJoinedAtRef = useRef<number | null>(null);
-  // Caller side: ensure ENDED is signalled at most once per call
-  const endedSentRef = useRef(false);
+  const callRef = useRef<DailyCall | null>(null);
+  callRef.current = call;
 
   const [{ data: chatData }] = useHostingChatQuery({
     variables: { chatId: cast(id) },
   });
 
-  useEffect(() => {
-    const cleanupNotification = async () => {
+  const { formatted: callDuration } = useCountUp(phase === 'active');
+
+  // Caller hears ringback; the callee's ringtone is the shared one in utils/call.
+  const ringback = useAudioPlayer(callerRingtone);
+
+  // ── Leaving ────────────────────────────────────────────────────────────────
+  const leave = useCallback(
+    async (reason: string, opts: { signal?: CallType; navigate?: boolean } = {}) => {
+      if (hasLeftRef.current) return;
+      hasLeftRef.current = true;
+      callLog('leave', { callId, reason, isCaller });
+      markCallEnded(callId, reason);
+      await clearRinging(id);
       try {
-        await stopRingtone();
-
-        await notifee.stopForegroundService();
-        if (id) {
-          await notifee.cancelNotification(String(id));
-        }
-      } catch (error) {
-        console.warn('Failed to cleanup background notification', error);
-      }
-    };
-
-    if (initiate !== 'true') {
-      cleanupNotification();
-    }
-  }, [id, initiate]);
-
-  const { formatted: callDuration } = useCountUp(!isRinging);
-
-  const player = useAudioPlayer(initiate === 'true' ? callerRingtone : receiverRingtone);
-
-  // Caller side only: if the call was answered, stamp the duration on the
-  // chat timeline by sending ENDED with the elapsed seconds. Once per call.
-  const sendCallEndedIfAnswered = useCallback(() => {
-    if (initiate !== 'true') return;
-    if (endedSentRef.current || remoteJoinedAtRef.current === null) return;
-    endedSentRef.current = true;
-
-    const durationSeconds = Math.max(
-      0,
-      Math.round((Date.now() - remoteJoinedAtRef.current) / 1000),
-    );
-    sendNotification({
-      chatId: cast(id),
-      callId: String(callId),
-      callType: CallType.Ended,
-      durationSeconds,
-      callKind,
-    }).catch((err) => console.warn('Failed to send call ended signal', err));
-  }, [initiate, id, callId, callKind, sendNotification]);
-
-  const handleLeave = useCallback(async () => {
-    if (hasLeftRef.current) return;
-    hasLeftRef.current = true;
-
-    sendCallEndedIfAnswered();
-
-    try {
-      player.pause();
-    } catch (e) {
-      console.warn(e);
-    }
-    try {
-      if (call) {
-        await call.leave();
-      }
-    } catch (e) {
-      console.warn('Error leaving call', e);
-    }
-
-    if (Platform.OS === 'ios' && callId) {
-      try {
-        RNCallKeep.endCall(String(callId));
+        ringback.pause();
       } catch {}
-    }
 
-    if (isLockScreenLaunch) {
-      BackHandler.exitApp();
-    } else {
+      // Tell the other side once: the caller stamps the duration of an answered
+      // call; otherwise the explicit signal (cancel / decline), if any.
+      if (isCaller && remoteJoinedAtRef.current !== null) {
+        const durationSeconds = Math.max(0, Math.round((Date.now() - remoteJoinedAtRef.current) / 1000));
+        sendCallSignal({ chatId: id, callId, callType: CallType.Ended, durationSeconds, callKind });
+      } else if (opts.signal) {
+        sendCallSignal({ chatId: id, callId, callType: opts.signal, callKind });
+      }
+
       try {
-        router.back();
+        await callRef.current?.leave();
       } catch (e) {
-        console.warn('handleLeave navigate:', e);
+        console.warn('Error leaving call', e);
       }
-    }
-  }, [call, callId, player, router, isLockScreenLaunch, sendCallEndedIfAnswered]);
 
-  const handleJoin = useCallback(async () => {
+      if (Platform.OS === 'ios') {
+        try {
+          RNCallKeep.endCall(callId);
+        } catch {}
+      }
+
+      if (opts.navigate === false) return;
+      if (isLockScreenLaunch) {
+        BackHandler.exitApp();
+        return;
+      }
+      try {
+        if (router.canGoBack()) router.back();
+        else router.replace(`/chats/${id}` as any);
+      } catch (e) {
+        console.warn('leave navigate:', e);
+      }
+    },
+    [callId, id, isCaller, callKind, ringback, router, isLockScreenLaunch],
+  );
+  const leaveRef = useRef(leave);
+  leaveRef.current = leave;
+
+  // ── Joining ────────────────────────────────────────────────────────────────
+  const join = useCallback(async () => {
+    const co = callRef.current;
+    if (!co || joinStartedRef.current || hasLeftRef.current) return;
+    joinStartedRef.current = true;
     try {
-      if (!call) return;
-
       const domain = process.env.EXPO_PUBLIC_DAILY_DOMAIN;
-      if (!domain) {
-        throw new Error('Missing EXPO_PUBLIC_DAILY_DOMAIN in .env');
-      }
-      if (!callId) {
-        throw new Error('Missing callId in route parameters');
-      }
-      const roomUrl = `https://${domain}/${callId}`;
-
-      await call.join({
-        url: roomUrl,
+      if (!domain) throw new Error('Missing EXPO_PUBLIC_DAILY_DOMAIN');
+      await ensureMicForCall();
+      callLog('join.start', { callId, isCaller });
+      await co.join({
+        url: `https://${domain}/${callId}`,
         videoSource: isVideoCall,
         audioSource: true,
       });
+      if (hasLeftRef.current) return;
+      // Never start muted: the mic is on whenever a call connects.
+      co.setLocalAudio(true);
+      setMicEnabled(true);
+      const all = co.participants();
+      callLog('join.ok', {
+        callId,
+        audio: all.local?.tracks?.audio?.state,
+        remotes: Object.keys(all).length - 1,
+      });
 
-      if (initiate !== 'true') {
-        setIsRinging(false);
-
-        // Callee accepted and joined the room — tell the server so it can
-        // post an "accepted_call" message (and cancel the missed-call timer).
-        if (!answeredSentRef.current) {
-          answeredSentRef.current = true;
-          sendNotification({
-            chatId: cast(id),
-            callId: String(callId),
-            callType: CallType.Answered,
-            callKind,
-          }).catch((err) => console.warn('Failed to send call answered signal', err));
-        }
+      if (!isCaller) {
+        setPhase('active');
+        sendCallSignal({ chatId: id, callId, callType: CallType.Answered, callKind });
       }
     } catch (e) {
-      console.error('Join failed', e);
+      callError('join.failed', e, { callId, isCaller });
+      if (!hasLeftRef.current) {
+        Alert.alert('Couldn’t connect the call', 'Check your connection and try again.');
+        leaveRef.current('join failed', { signal: isCaller ? CallType.Cancel : undefined });
+      }
     }
-  }, [call, isVideoCall, initiate, callId, id, callKind, sendNotification]);
+  }, [callId, id, isCaller, isVideoCall, callKind]);
 
+  /** Callee: answer (button on this screen, the notification, or CallKit). */
+  const answer = useCallback(async () => {
+    if (isCaller || hasLeftRef.current || joinStartedRef.current) return;
+    callLog('answer', { callId });
+    setPhase('connecting');
+    await clearRinging(id);
+    if (Platform.OS === 'ios' && !isCallKitAnswered(callId)) {
+      // Keep CallKit in step when the in-app button answers a CallKit call.
+      try {
+        RNCallKeep.answerIncomingCall(callId);
+      } catch {}
+    }
+    await join();
+  }, [isCaller, callId, id, join]);
+  const answerRef = useRef(answer);
+  answerRef.current = answer;
+
+  // ── Screen registration + stale-ring guard ────────────────────────────────
   useEffect(() => {
-    let callObj: DailyCall | null = null;
+    setActiveCallScreen(callId);
+    callLog('screen.open', { callId, isCaller, accept: params.accept === 'true' });
+    let cancelled = false;
+    if (!isCaller) {
+      isCallEnded(callId).then((ended) => {
+        if (cancelled) return;
+        // A call that's already over (or a ring older than the ring window)
+        // never shows a ringing screen, e.g. after relaunching a killed app.
+        if (ended || (params.accept !== 'true' && !isRingFresh(params.at))) {
+          leaveRef.current(ended ? 'already ended' : 'stale ring');
+        }
+      });
+    }
+    return () => {
+      cancelled = true;
+      if (getActiveCallScreen() === callId) setActiveCallScreen(null);
+      // Closed without leaving (e.g. a back gesture): still end the call.
+      if (!hasLeftRef.current) {
+        leaveRef.current('screen closed', {
+          signal: isCaller ? CallType.Cancel : CallType.Decline,
+          navigate: false,
+        });
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [callId]);
+
+  // ── Daily call object ─────────────────────────────────────────────────────
+  useEffect(() => {
+    let co: DailyCall | null = null;
     try {
-      callObj = Daily.createCallObject();
+      co = Daily.createCallObject();
     } catch (e) {
-      console.warn('DailyCall create failed:', e);
+      callError('daily.create', e, { callId });
       return;
     }
-    setCall(callObj);
+    setCall(co);
     return () => {
-      callObj?.destroy().catch(console.warn);
+      co?.destroy().catch(console.warn);
     };
-  }, []);
+  }, [callId]);
 
+  // ── Ringing: ringtone, timeouts ───────────────────────────────────────────
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout>;
-    if (initiate === 'true' && isRinging) {
-      timeoutId = setTimeout(() => {
-        sendNotification({
-          chatId: cast(id),
-          callId: String(callId),
-          callType: CallType.Cancel,
-          callKind,
-        }).catch((err) => console.error('Failed to send timeout cancel push', err));
-
-        handleLeave();
-      }, 45000);
+    if (!isRinging) {
+      try {
+        ringback.pause();
+      } catch {}
+      if (!isCaller) stopRingtone();
+      return;
     }
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [initiate, isRinging, id, callId, callKind, sendNotification, handleLeave]);
-
-  useEffect(() => {
-    const startRinging = async () => {
+    if (isCaller) {
       try {
-        if (isRinging) {
-          player.loop = true;
-          player.seekTo(0);
-          player.play();
-        } else {
-          player.pause();
-        }
-      } catch (err) {
-        console.error('Error loading ringtone', err);
-      }
-    };
-    startRinging();
-
-    return () => {
-      try {
-        player.pause();
+        ringback.loop = true;
+        ringback.seekTo(0);
+        ringback.play();
       } catch (e) {
-        console.warn(e);
+        console.warn('ringback', e);
       }
-    };
-  }, [player, isRinging]);
+      const t = setTimeout(() => leaveRef.current('no answer', { signal: CallType.Cancel }), CALLER_RING_MS);
+      return () => clearTimeout(t);
+    }
+    // Callee: keep ringing while the screen is up, then give up with the window.
+    playRingtone();
+    const at = Number(params.at) || Date.now();
+    const remaining = Math.max(1_000, RING_WINDOW_MS - (Date.now() - at));
+    const t = setTimeout(() => leaveRef.current('missed'), remaining);
+    return () => clearTimeout(t);
+  }, [isRinging, isCaller, ringback, params.at]);
 
+  // ── Daily events ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!call) return;
 
     const updateParticipants = () => {
       const p = call.participants();
       setLocalParticipant(p.local);
-
       const remoteIds = Object.keys(p).filter((pid) => pid !== 'local');
       if (remoteIds.length > 0) {
         setRemoteParticipant(p[remoteIds[0]]);
-        // Caller side: remember when the call became active so we can stamp
-        // the duration when it ends.
         if (remoteJoinedAtRef.current === null) {
           remoteJoinedAtRef.current = Date.now();
+          callLog('remote.joined', { callId });
         }
-        if (isRinging) setIsRinging(false);
+        setPhase('active');
       } else {
         setRemoteParticipant(null);
       }
     };
-
-    const handleLeft = () => {
-      if (hasLeftRef.current) return;
-      hasLeftRef.current = true;
-      sendCallEndedIfAnswered();
-      if (Platform.OS === 'ios') {
-        try {
-          RNCallKeep.endAllCalls();
-        } catch {}
-      }
-      try {
-        router.back();
-      } catch (e) {
-        console.warn('handleLeft navigate:', e);
+    const onParticipantLeft = () => leaveRef.current('remote left');
+    const onLeftMeeting = () => leaveRef.current('left meeting');
+    const onError = (e: any) => {
+      callError('daily.error', new Error(e?.errorMsg ?? 'Daily error'), { callId, error: e?.error });
+      leaveRef.current('daily error');
+    };
+    const onDeviceError = (e: any) => {
+      // Mic blocked or busy: say so instead of failing silently.
+      callError('daily.device', new Error(e?.errorMsg ?? 'Device error'), { callId, type: e?.error?.type });
+      if (e?.error?.type === 'permissions' || e?.error?.blockedMedia?.includes?.('audio')) ensureMicForCall();
+    };
+    const onNetwork = (e: any) => {
+      if (e?.event === 'interrupted') {
+        callLog('network.interrupted', { callId });
+        setReconnecting(true);
+      } else if (e?.event === 'connected') {
+        setReconnecting(false);
       }
     };
 
     call.on('joined-meeting', updateParticipants);
     call.on('participant-joined', updateParticipants);
     call.on('participant-updated', updateParticipants);
-
-    call.on('participant-left', handleLeft);
-    call.on('left-meeting', handleLeft);
-    call.on('error', handleLeft);
+    call.on('participant-left', onParticipantLeft);
+    call.on('left-meeting', onLeftMeeting);
+    call.on('error', onError);
+    call.on('camera-error', onDeviceError);
+    call.on('network-connection', onNetwork);
 
     return () => {
       call.off('joined-meeting', updateParticipants);
       call.off('participant-joined', updateParticipants);
       call.off('participant-updated', updateParticipants);
-      call.off('participant-left', handleLeft);
-      call.off('left-meeting', handleLeft);
-      call.off('error', handleLeft);
+      call.off('participant-left', onParticipantLeft);
+      call.off('left-meeting', onLeftMeeting);
+      call.off('error', onError);
+      call.off('camera-error', onDeviceError);
+      call.off('network-connection', onNetwork);
     };
-  }, [call, id, router, isRinging, sendCallEndedIfAnswered]);
+  }, [call, callId]);
 
-  // Dismiss call screen when the caller cancels or the remote party declines
+  // Callee in the room but the caller never arrives (they hung up meanwhile).
   useEffect(() => {
-    const onCallCancelled = () => {
-      handleLeave();
-    };
-    EventEmitter.on('call_cancelled', onCallCancelled);
+    if (isCaller || phase !== 'active' || remoteParticipant) return;
+    const t = setTimeout(() => {
+      if (!remoteJoinedAtRef.current) leaveRef.current('caller gone');
+    }, EMPTY_ROOM_MS);
+    return () => clearTimeout(t);
+  }, [isCaller, phase, remoteParticipant]);
+
+  // ── Signals from outside the screen ───────────────────────────────────────
+  useEffect(() => {
+    const mine = (cid?: string | null) => !cid || cid === callId;
+    const onCancelled = (cid?: string | null) => mine(cid) && leaveRef.current('remote ended');
+    const onEnded = (cid?: string | null) => cid === callId && leaveRef.current('ended elsewhere');
+    const onHangup = (cid?: string | null) => mine(cid) && leaveRef.current('callkit hangup');
+    const onAnswer = (cid?: string | null) => cid === callId && answerRef.current();
+    EventEmitter.on('call_cancelled', onCancelled);
+    EventEmitter.on('call_ended', onEnded);
+    EventEmitter.on('call_hangup', onHangup);
+    EventEmitter.on('call_answer', onAnswer);
     return () => {
-      EventEmitter.off('call_cancelled', onCallCancelled);
+      EventEmitter.off('call_cancelled', onCancelled);
+      EventEmitter.off('call_ended', onEnded);
+      EventEmitter.off('call_hangup', onHangup);
+      EventEmitter.off('call_answer', onAnswer);
     };
-  }, [handleLeave]);
+  }, [callId]);
 
+  // ── Start: caller rings out, an accepted call joins, video previews ───────
+  const startedRef = useRef(false);
   useEffect(() => {
-    if (!call || actionHandled.current) return;
-
-    const setupCall = async () => {
+    if (!call || startedRef.current) return;
+    startedRef.current = true;
+    (async () => {
       try {
-        if (initiate === 'true') {
-          actionHandled.current = true;
-
-          await sendNotification({
+        if (isCaller) {
+          callLog('ring.out', { callId, kind: callKind });
+          const res = await sendNotification({
             chatId: cast(id),
-            callId: String(callId),
+            callId,
             callType: isVideoCall ? CallType.Video : CallType.Voice,
           });
-
-          await handleJoin();
-        } else if (accept === 'true') {
-          actionHandled.current = true;
-          await handleJoin();
-        } else if (accept === 'false') {
-          actionHandled.current = true;
-          // Notify the caller immediately so they don't wait for the 45s timeout
-          await sendNotification({
-            chatId: cast(id),
-            callId: String(callId),
-            callType: CallType.Decline,
-            callKind,
-          }).catch((err) => console.warn('Failed to send decline signal', err));
-          await handleLeave();
-        } else {
-          if (isVideoCall) {
-            await call.startCamera();
+          if (res.error) {
+            callError('ring.out.failed', res.error, { callId });
+            Alert.alert(
+              'Couldn’t start the call',
+              res.error.graphQLErrors?.[0]?.message ?? 'Check your connection and try again.',
+            );
+            leaveRef.current('ring failed');
+            return;
           }
+          await join();
+        } else if (params.accept === 'true') {
+          await answerRef.current();
+        } else if (isVideoCall) {
+          await call.startCamera();
         }
       } catch (error) {
-        console.error('Failed to setup call:', error);
-        handleLeave();
+        callError('setup', error, { callId });
+        leaveRef.current('setup failed');
       }
-    };
-
-    setupCall();
-  }, [
-    call,
-    initiate,
-    accept,
-    callId,
-    handleJoin,
-    id,
-    handleLeave,
-    isVideoCall,
-    callKind,
-    sendNotification,
-  ]);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [call]);
 
   const toggleCamera = useCallback(() => {
     if (!call) return;
@@ -361,7 +405,6 @@ export const useActiveCall = () => {
 
   const toggleFacingCamera = useCallback(async () => {
     if (!call) return;
-
     try {
       await call.cycleCamera();
     } catch (e) {
@@ -371,14 +414,21 @@ export const useActiveCall = () => {
 
   const toggleSpeakerOn = () => setIsSpeakerOn((c) => !c);
 
+  const ringingOut = isCaller && phase === 'ringing';
+
   return {
     call,
     callDuration,
-    isCaller: initiate === 'true',
+    isCaller,
     recipient: chatData?.hostingChat.recipientUser,
-    leaveCall: handleLeave,
-    joinCall: handleJoin,
+    /** Hang up; while the caller is still ringing, this cancels the call. */
+    leaveCall: () => leave(ringingOut ? 'cancelled' : 'hangup', ringingOut ? { signal: CallType.Cancel } : {}),
+    /** Callee: decline the ringing call (the caller is told at once). */
+    declineCall: () => leave('declined', { signal: CallType.Decline }),
+    joinCall: answer,
     isRinging,
+    connecting: phase === 'connecting',
+    reconnecting,
     isSpeakerOn,
     toggleSpeakerOn,
     remoteParticipant,
