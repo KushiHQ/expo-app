@@ -66,6 +66,11 @@ export function onIosCallPush(data: Record<string, any> | undefined | null, from
   }
 }
 
+/** Did the user answer this call in CallKit's own UI? */
+export function isCallKitAnswered(callId: string) {
+  return answered.has(key(callId));
+}
+
 function onAnswer(callUUID: string) {
   const call = calls.get(key(callUUID));
   answered.add(key(callUUID));

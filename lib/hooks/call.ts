@@ -25,6 +25,7 @@ import {
 import { sendCallSignal } from '../call/signal';
 import { ensureMicForCall } from '../call/permissions';
 import { callError, callLog } from '../call/log';
+import { isCallKitAnswered } from '../call/ios';
 
 const callerRingtone = require('@/assets/audio/caller-ringtone.mp3');
 
@@ -180,7 +181,7 @@ export const useActiveCall = () => {
     callLog('answer', { callId });
     setPhase('connecting');
     await clearRinging(id);
-    if (Platform.OS === 'ios') {
+    if (Platform.OS === 'ios' && !isCallKitAnswered(callId)) {
       // Keep CallKit in step when the in-app button answers a CallKit call.
       try {
         RNCallKeep.answerIncomingCall(callId);
