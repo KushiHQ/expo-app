@@ -30,7 +30,7 @@ export default ({ config }) => ({
 			NSCameraUsageDescription:
 				"$(PRODUCT_NAME) needs camera access for identity verification.",
 			NSMicrophoneUsageDescription:
-				"$(PRODUCT_NAME) needs microphone access for video calls.",
+				"$(PRODUCT_NAME) uses your microphone for voice and video calls, so the other person can hear you.",
 			ITSAppUsesNonExemptEncryption: false,
 			UIBackgroundModes: ["remote-notification", "audio", "voip"],
 			NSUserActivityTypes: ["INSendMessageIntent", "INStartCallIntent"],
@@ -237,7 +237,7 @@ export default ({ config }) => ({
 				cameraPermission:
 					"$(PRODUCT_NAME) requires camera access in order to capture and transmit video",
 				microphonePermission:
-					"$(PRODUCT_NAME) requires microphone access in order to capture and transmit audio",
+					"$(PRODUCT_NAME) uses your microphone for voice and video calls, so the other person can hear you.",
 				runServiceOnBoot: true,
 			},
 		],

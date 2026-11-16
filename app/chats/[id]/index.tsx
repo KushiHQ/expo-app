@@ -19,6 +19,8 @@ import { formMutation } from '@/lib/services/graphql/utils/fetch';
 import { CREATE_UPDATE_MESSAGE } from '@/lib/services/graphql/requests/mutations/hosting-chat';
 import { K_CHAT } from '@/lib/services/graphql/requests/queries/k-manage';
 import { dismissChatNotifications } from '@/lib/k/app-badge';
+import { onLiveReconnected, useLiveOutage } from '@/lib/k/live-connection';
+import { primeMicPermission } from '@/lib/call/permissions';
 import {
 	useChatMessagesQuery,
 	useClearChatUrnreadMessagesMutation,
@@ -88,6 +90,20 @@ export default function Conversation() {
 	useEffect(() => {
 		if (subError) Sentry.captureException(subError, { tags: { area: 'chat-subscription', chatId: id } });
 	}, [subError, id]);
+
+	// Live updates drop and come back on their own (background, power saving,
+	// network changes). When they do, fetch the latest page so nothing sent in
+	// the gap is missed. Users only hear about it after a long outage.
+	const refreshRef = useRef(refresh);
+	refreshRef.current = refresh;
+	useEffect(() => onLiveReconnected(() => refreshRef.current()), []);
+	const outage = useLiveOutage();
+
+	// Ask for the microphone here, before any call: an incoming call is often
+	// answered from the lock screen, where no permission prompt can show.
+	useEffect(() => {
+		primeMicPermission();
+	}, []);
 
 	useOnlineUserSubscription({ variables: { userId: other?.id ?? '' }, pause: !other?.id }, (_prev: unknown, curr: OnlineUserSubscription) => {
 		setPresence(curr.onlineUser);
@@ -207,11 +223,9 @@ export default function Conversation() {
 				onVideo={() => router.push(buildCallURL(id, 'video', true))}
 			/>
 			<KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-				{subError ? (
+				{outage ? (
 					<View style={{ paddingHorizontal: gutter, paddingTop: 8 }}>
-						<Notice tone="warn" action="Refresh" onAction={refresh}>
-							Live updates paused. New messages may not appear until you refresh.
-						</Notice>
+						<Notice tone="info">Reconnecting… New messages will show up as soon as you’re back online.</Notice>
 					</View>
 				) : null}
 				{firstLoad ? (

@@ -12,10 +12,58 @@ index 054ef59..97c12bf 100644
  typedef void (^RNVoipPushNotificationCompletion)(void);
  
 diff --git a/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.m b/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.m
-index f4b3701..a7e440b 100644
+index f4b3701..15fa24f 100644
 --- a/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.m
 +++ b/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.m
-@@ -138,14 +138,28 @@ static NSMutableDictionary<NSString *, RNVoipPushNotificationCompletion> *comple
+@@ -13,6 +13,25 @@
+ #import <React/RCTBridge.h>
+ #import <React/RCTEventDispatcher.h>
+ #import <React/RCTLog.h>
++#import <CallKit/CallKit.h>
++
++// Kushi: RNCallKeep is looked up at runtime. Importing its header here breaks
++// framework builds ("include of non-modular header inside framework module").
++@protocol KushiCallKeep
+++ (void)reportNewIncomingCall:(NSString *)uuidString
++                       handle:(NSString *)handle
++                   handleType:(NSString *)handleType
++                     hasVideo:(BOOL)hasVideo
++          localizedCallerName:(NSString * _Nullable)localizedCallerName
++              supportsHolding:(BOOL)supportsHolding
++                 supportsDTMF:(BOOL)supportsDTMF
++             supportsGrouping:(BOOL)supportsGrouping
++           supportsUngrouping:(BOOL)supportsUngrouping
++                  fromPushKit:(BOOL)fromPushKit
++                      payload:(NSDictionary * _Nullable)payload
++        withCompletionHandler:(void (^_Nullable)(void))completion;
+++ (void)endCallWithUUID:(NSString *)uuidString reason:(int)reason;
++@end
+ 
+ NSString *const RNVoipPushRemoteNotificationsRegisteredEvent = @"RNVoipPushRemoteNotificationsRegisteredEvent";
+ NSString *const RNVoipPushRemoteNotificationReceivedEvent = @"RNVoipPushRemoteNotificationReceivedEvent";
+@@ -26,6 +45,21 @@ NSString *const RNVoipPushDidLoadWithEvents = @"RNVoipPushDidLoadWithEvents";
+ 
+ RCT_EXPORT_MODULE();
+ 
++// Kushi: register for VoIP pushes as soon as the app finishes launching, not
++// only when JS calls registerVoipToken(). When iOS launches a killed app for an
++// incoming call, the push is delivered to this registry right away, before the
++// JS bundle has loaded. (A C constructor, because RCT_EXPORT_MODULE already
++// defines +load.)
++__attribute__((constructor)) static void KushiVoipRegisterOnLaunch(void)
++{
++    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidFinishLaunchingNotification
++                                                      object:nil
++                                                       queue:[NSOperationQueue mainQueue]
++                                                  usingBlock:^(NSNotification * _Nonnull note) {
++        [RNVoipPushNotificationManager voipRegistration];
++    }];
++}
++
+ static bool _isVoipRegistered = NO;
+ static NSString *_lastVoipToken = @"";
+ static NSMutableDictionary<NSString *, RNVoipPushNotificationCompletion> *completionHandlers = nil;
+@@ -138,14 +172,95 @@ static NSMutableDictionary<NSString *, RNVoipPushNotificationCompletion> *comple
          dispatch_async(mainQueue, ^{
              // --- Create a push registry object
              PKPushRegistry * voipRegistry = [[PKPushRegistry alloc] initWithQueue: mainQueue];
@@ -37,10 +85,77 @@ index f4b3701..a7e440b 100644
 +
 +- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion
 +{
++    // Kushi: iOS 13+ requires every VoIP push to be reported to CallKit before
++    // this method returns, or it terminates the app (and after repeated misses
++    // stops delivering VoIP pushes). JS may not even be loaded yet on a cold
++    // start, so report natively here and let JS pick up the details.
 +    [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type];
-+    if (completion) {
-+        completion();
++
++    NSDictionary *data = payload.dictionaryPayload ?: @{};
++    NSString *intent = [data[@"intent"] isKindOfClass:[NSString class]] ? data[@"intent"] : @"";
++    NSString *callId = [data[@"callId"] isKindOfClass:[NSString class]] ? data[@"callId"] : nil;
++    NSString *caller = [data[@"caller"] isKindOfClass:[NSString class]] && [data[@"caller"] length] > 0 ? data[@"caller"] : @"Kushi call";
++    BOOL validId = callId != nil && [[NSUUID alloc] initWithUUIDString:callId] != nil;
++    BOOL isRing = [intent isEqualToString:@"voice-call"] || [intent isEqualToString:@"video-call"];
++    Class<KushiCallKeep> callKeep = (Class<KushiCallKeep>)NSClassFromString(@"RNCallKeep");
++    if (callKeep == nil) {
++        if (completion) {
++            completion();
++        }
++        return;
 +    }
++
++    if (isRing && validId) {
++        [callKeep reportNewIncomingCall:callId
++                                   handle:caller
++                               handleType:@"generic"
++                                 hasVideo:[intent isEqualToString:@"video-call"]
++                      localizedCallerName:caller
++                          supportsHolding:NO
++                             supportsDTMF:NO
++                         supportsGrouping:NO
++                       supportsUngrouping:NO
++                              fromPushKit:YES
++                                  payload:data
++                    withCompletionHandler:completion];
++        return;
++    }
++
++    // Cancel / decline (or a malformed push): end the matching call if CallKit
++    // still has it.
++    if (validId) {
++        NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:callId];
++        for (CXCall *call in [[CXCallObserver alloc] init].calls) {
++            if ([call.UUID isEqual:uuid] && !call.hasEnded) {
++                [callKeep endCallWithUUID:callId reason:2];
++                if (completion) {
++                    completion();
++                }
++                return;
++            }
++        }
++    }
++
++    // Nothing to end, but iOS still requires a reported call: report a
++    // placeholder and end it at once.
++    NSString *placeholder = [[NSUUID UUID] UUIDString];
++    [callKeep reportNewIncomingCall:placeholder
++                               handle:caller
++                           handleType:@"generic"
++                             hasVideo:NO
++                  localizedCallerName:caller
++                      supportsHolding:NO
++                         supportsDTMF:NO
++                     supportsGrouping:NO
++                   supportsUngrouping:NO
++                          fromPushKit:YES
++                              payload:nil
++                withCompletionHandler:^{
++        [callKeep endCallWithUUID:placeholder reason:3];
++        if (completion) {
++            completion();
++        }
++    }];
 +}
 +
  // --- should be called from `AppDelegate.didUpdatePushCredentials`
