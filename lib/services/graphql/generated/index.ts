@@ -1623,6 +1623,8 @@ export type HostingChatMessage = {
   isSender: Scalars['Boolean']['output'];
   lastUpdated: Scalars['String']['output'];
   messageType?: Maybe<Scalars['String']['output']>;
+  /** The message this one replies to, if it still exists. */
+  replyTo?: Maybe<HostingChatMessage>;
   sender: User;
   text: Scalars['String']['output'];
   unread: Scalars['Boolean']['output'];
@@ -1632,6 +1634,8 @@ export type HostingChatMessageInput = {
   assets?: InputMaybe<Array<Scalars['Upload']['input']>>;
   chatId: Scalars['String']['input'];
   id?: InputMaybe<Scalars['String']['input']>;
+  /** Swipe-to-reply: the message being answered (same chat). New messages only. */
+  replyToId?: InputMaybe<Scalars['String']['input']>;
   text: Scalars['String']['input'];
 };
 
@@ -3867,6 +3871,24 @@ export type PropertyTypeConfig = {
   value: Scalars['String']['output'];
 };
 
+/** A reward running now, as anyone can see it on the public rewards page. */
+export type PublicReward = {
+  __typename?: 'PublicReward';
+  amount: Scalars['Decimal']['output'];
+  /** Only listings created on or after this count. */
+  countsFrom?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  endsAt?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  kind: RewardKind;
+  /** Lowest verification level a listing needs to count. */
+  minTier: HostingVerificationTier;
+  /** Always null: how many places are left is for staff only. */
+  slotsLeft?: Maybe<Scalars['Int']['output']>;
+  targetCount: Scalars['Int']['output'];
+  title: Scalars['String']['output'];
+};
+
 /**
  * Public-facing profile of a user: their agent rating, the reviews others left,
  * and the live listings they've posted. Deliberately excludes private fields
@@ -4148,6 +4170,8 @@ export type Query = {
    */
   recommendedTenancyTemplate: TenancyRecommendation;
   resolveBankAccount: Scalars['String']['output'];
+  /** Rewards running now. Public: no sign-in, no one's progress. */
+  rewards: Array<PublicReward>;
   savedHosting: SavedHosting;
   savedHostingFolder: SavedHostingFolder;
   savedHostingFolders: Array<SavedHostingFolder>;
@@ -4727,7 +4751,10 @@ export type RewardProgress = {
   /** Lowest verification level a listing needs to count. */
   minTier: HostingVerificationTier;
   progress: Scalars['Int']['output'];
-  /** Rewards left to claim; null when there's no limit. */
+  /**
+   * Always null: how many places are left is for staff only. Kept so
+   * older apps still parse; a full reward is left out of the list instead.
+   */
   slotsLeft?: Maybe<Scalars['Int']['output']>;
   targetCount: Scalars['Int']['output'];
   title: Scalars['String']['output'];
@@ -5637,7 +5664,7 @@ export type CreateUpdateMessageMutationVariables = Exact<{
 }>;
 
 
-export type CreateUpdateMessageMutation = { __typename?: 'Mutations', createUpdateMessage: { __typename?: 'HostingChatMessage', id: string, text: string, messageType?: string | null, callType?: string | null, callId?: string | null, callDurationSeconds?: number | null, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
+export type CreateUpdateMessageMutation = { __typename?: 'Mutations', createUpdateMessage: { __typename?: 'HostingChatMessage', id: string, text: string, messageType?: string | null, callType?: string | null, callId?: string | null, callDurationSeconds?: number | null, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, replyTo?: { __typename?: 'HostingChatMessage', id: string, text: string, messageType?: string | null, isSender: boolean, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, contentType?: string | null } }> } | null, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
 
 export type ClearChatUrnreadMessagesMutationVariables = Exact<{
   chatId: Scalars['String']['input'];
@@ -6164,7 +6191,7 @@ export type ChatMessagesQueryVariables = Exact<{
 }>;
 
 
-export type ChatMessagesQuery = { __typename?: 'Query', chatMessages: Array<{ __typename?: 'HostingChatMessage', id: string, text: string, messageType?: string | null, callType?: string | null, callId?: string | null, callDurationSeconds?: number | null, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> }> };
+export type ChatMessagesQuery = { __typename?: 'Query', chatMessages: Array<{ __typename?: 'HostingChatMessage', id: string, text: string, messageType?: string | null, callType?: string | null, callId?: string | null, callDurationSeconds?: number | null, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string, image?: { __typename?: 'Asset', publicUrl: string } | null } }, replyTo?: { __typename?: 'HostingChatMessage', id: string, text: string, messageType?: string | null, isSender: boolean, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, contentType?: string | null } }> } | null, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> }> };
 
 export type HostingChatQueryVariables = Exact<{
   chatId: Scalars['String']['input'];
@@ -6505,7 +6532,7 @@ export type LatestHostingChatMessageSubscriptionVariables = Exact<{
 }>;
 
 
-export type LatestHostingChatMessageSubscription = { __typename?: 'Subscriptions', latestHostingChatMessage: { __typename?: 'HostingChatMessage', id: string, text: string, messageType?: string | null, callType?: string | null, callId?: string | null, callDurationSeconds?: number | null, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
+export type LatestHostingChatMessageSubscription = { __typename?: 'Subscriptions', latestHostingChatMessage: { __typename?: 'HostingChatMessage', id: string, text: string, messageType?: string | null, callType?: string | null, callId?: string | null, callDurationSeconds?: number | null, isSender: boolean, edited?: boolean | null, createdAt: string, lastUpdated: string, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, gender?: string | null, fullName: string } }, replyTo?: { __typename?: 'HostingChatMessage', id: string, text: string, messageType?: string | null, isSender: boolean, sender: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', id: string, fullName: string } }, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, contentType?: string | null } }> } | null, assets: Array<{ __typename?: 'HostingChatAsset', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, contentType?: string | null, originalFilename?: string | null } }> } };
 
 export type OnlineUserSubscriptionVariables = Exact<{
   userId: Scalars['String']['input'];
@@ -7383,6 +7410,26 @@ export const CreateUpdateMessageDocument = gql`
         id
         gender
         fullName
+      }
+    }
+    replyTo {
+      id
+      text
+      messageType
+      isSender
+      sender {
+        id
+        profile {
+          id
+          fullName
+        }
+      }
+      assets {
+        id
+        asset {
+          id
+          contentType
+        }
       }
     }
     edited
@@ -9089,6 +9136,26 @@ export const ChatMessagesDocument = gql`
         fullName
         image {
           publicUrl
+        }
+      }
+    }
+    replyTo {
+      id
+      text
+      messageType
+      isSender
+      sender {
+        id
+        profile {
+          id
+          fullName
+        }
+      }
+      assets {
+        id
+        asset {
+          id
+          contentType
         }
       }
     }
@@ -10909,6 +10976,26 @@ export const LatestHostingChatMessageDocument = gql`
         id
         gender
         fullName
+      }
+    }
+    replyTo {
+      id
+      text
+      messageType
+      isSender
+      sender {
+        id
+        profile {
+          id
+          fullName
+        }
+      }
+      assets {
+        id
+        asset {
+          id
+          contentType
+        }
       }
     }
     edited

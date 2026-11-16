@@ -36,6 +36,26 @@ export const CREATE_UPDATE_MESSAGE = gql`
           fullName
         }
       }
+      replyTo {
+        id
+        text
+        messageType
+        isSender
+        sender {
+          id
+          profile {
+            id
+            fullName
+          }
+        }
+        assets {
+          id
+          asset {
+            id
+            contentType
+          }
+        }
+      }
       edited
       createdAt
       lastUpdated
