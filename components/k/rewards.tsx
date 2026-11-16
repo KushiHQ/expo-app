@@ -72,7 +72,6 @@ export function Rewards() {
 								</View>
 								<KText v="xs">
 									Listings created from {day(r.countsFrom)} count. A property with units counts once.
-									{r.slotsLeft != null ? ` ${r.slotsLeft} reward${r.slotsLeft === 1 ? '' : 's'} left.` : ''}
 									{r.endsAt ? ` Ends ${day(r.endsAt)}.` : ''}
 								</KText>
 							</>
