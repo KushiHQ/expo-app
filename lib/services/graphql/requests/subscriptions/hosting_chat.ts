@@ -70,6 +70,26 @@ export const LATEST_HOSTING_CHAT_MESSAGES = gql`
           fullName
         }
       }
+      replyTo {
+        id
+        text
+        messageType
+        isSender
+        sender {
+          id
+          profile {
+            id
+            fullName
+          }
+        }
+        assets {
+          id
+          asset {
+            id
+            contentType
+          }
+        }
+      }
       edited
       createdAt
       lastUpdated

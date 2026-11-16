@@ -87,6 +87,26 @@ export const CHAT_MESSAGES_QUERY = gql`
           }
         }
       }
+      replyTo {
+        id
+        text
+        messageType
+        isSender
+        sender {
+          id
+          profile {
+            id
+            fullName
+          }
+        }
+        assets {
+          id
+          asset {
+            id
+            contentType
+          }
+        }
+      }
       edited
       createdAt
       lastUpdated
