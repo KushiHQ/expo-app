@@ -3,7 +3,7 @@
  * message bubbles (text, photos, documents, voice notes, call events) with
  * sending / failed states, day dividers, and the composer with attachments.
  */
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 import { Pressable } from '@/components/k/pressable';
 import { router } from 'expo-router';
@@ -13,7 +13,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as WebBrowser from 'expo-web-browser';
 import { Image } from 'expo-image';
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus, useAudioRecorder, useAudioRecorderState } from 'expo-audio';
-import { AlertCircle, ArrowLeft, Camera, Clock, FileText, Image as ImageIcon, Mic, Pause, Phone, PhoneMissed, Play, Plus, Send, Trash2, Video, X } from 'lucide-react-native';
+import { AlertCircle, ArrowLeft, Camera, Check, Clock, FileText, Image as ImageIcon, Mic, Pause, Pencil, Phone, PhoneMissed, Play, Plus, Send, Trash2, Video, X } from 'lucide-react-native';
 import { color, font, gutter, radius } from '@/lib/k/theme';
 import { naira, perInterval, place } from '@/lib/k/format';
 import { usePhotoGalleryScreen } from '@/lib/hooks/camera';
@@ -23,6 +23,7 @@ import { Avatar, Photo } from './surface';
 import { KText } from './text';
 import { Row } from './feedback';
 import { Sheet } from './sheet';
+import { ReplyQuote, RichText, SwipeToReply, type ReplyRef } from './chat-actions';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -37,6 +38,8 @@ export type ChatMsg = {
 	lastUpdated: string;
 	assets: ChatAsset[];
 	sender?: { id: string; profile?: { fullName?: string | null } | null } | null;
+	edited?: boolean | null;
+	replyTo?: ReplyRef | null;
 	/** Local-only: still uploading / failed to send. */
 	state?: 'sending' | 'failed';
 	/** Local-only: files picked for an unsent message. */
@@ -167,7 +170,22 @@ export function DayDivider({ iso }: { iso: string }) {
 	);
 }
 
-export const MessageBubble = memo(function MessageBubble({ m, last, onRetry, onDiscard }: { m: ChatMsg; last: boolean; onRetry?: (m: ChatMsg) => void; onDiscard?: (m: ChatMsg) => void }) {
+type BubbleProps = {
+	m: ChatMsg;
+	last: boolean;
+	/** Briefly tinted after jumping to it from a reply. */
+	highlighted?: boolean;
+	onRetry?: (m: ChatMsg) => void;
+	onDiscard?: (m: ChatMsg) => void;
+	/** Long press: reply / copy / edit menu. */
+	onActions?: (m: ChatMsg) => void;
+	/** Swipe right. */
+	onReply?: (m: ChatMsg) => void;
+	/** Tap a quoted message to scroll to it. */
+	onJumpTo?: (id: string) => void;
+};
+
+export const MessageBubble = memo(function MessageBubble({ m, last, highlighted, onRetry, onDiscard, onActions, onReply, onJumpTo }: BubbleProps) {
 	const { redirect: openGallery } = usePhotoGalleryScreen();
 	const mine = m.isSender;
 	const time = timeOf(m.createdAt);
@@ -192,10 +210,20 @@ export const MessageBubble = memo(function MessageBubble({ m, last, onRetry, onD
 	const localAudio = m.local?.find((x) => x.kind === 'audio');
 	const text = m.text?.trim();
 	const status = m.state === 'sending' ? 'Sending' : m.state === 'failed' ? 'Not sent' : '';
-	const label = `${mine ? 'You' : (m.sender?.profile?.fullName ?? 'Them')}: ${text || (images.length ? `${images.length} photo${images.length > 1 ? 's' : ''}` : audio || localAudio ? 'Voice note' : docs.length ? 'Document' : '')}, ${time}${status ? `, ${status}` : ''}`;
+	const longPress = onActions && !m.state ? () => onActions(m) : undefined;
+	const quote = m.replyTo ? <ReplyQuote reply={m.replyTo} mine={mine} onPress={onJumpTo ? () => onJumpTo(m.replyTo!.id) : undefined} /> : null;
+	const label = `${m.replyTo ? 'Reply. ' : ''}${mine ? 'You' : (m.sender?.profile?.fullName ?? 'Them')}: ${text || (images.length ? `${images.length} photo${images.length > 1 ? 's' : ''}` : audio || localAudio ? 'Voice note' : docs.length ? 'Document' : '')}, ${time}${m.edited ? ', edited' : ''}${status ? `, ${status}` : ''}`;
 
 	return (
-		<View style={{ alignSelf: mine ? 'flex-end' : 'flex-start', maxWidth: '82%', marginBottom: last ? 10 : 3, gap: 4, opacity: m.state === 'sending' ? 0.75 : 1 }} accessible accessibilityLabel={label}>
+		<SwipeToReply enabled={!!onReply && !m.state} onReply={() => onReply?.(m)}>
+		<View
+			style={[{ alignSelf: mine ? 'flex-end' : 'flex-start', maxWidth: '82%', marginBottom: last ? 10 : 3, gap: 4, opacity: m.state === 'sending' ? 0.75 : 1 }, highlighted && s.highlight]}
+			accessible
+			accessibilityLabel={label}
+			accessibilityActions={longPress ? [{ name: 'longpress', label: 'Message options' }, ...(onReply ? [{ name: 'activate', label: 'Reply' }] : [])] : undefined}
+			onAccessibilityAction={(e) => (e.nativeEvent.actionName === 'longpress' ? longPress?.() : e.nativeEvent.actionName === 'activate' ? onReply?.(m) : undefined)}
+		>
+			{quote && !text ? quote : null}
 			{images.length ? (
 				<View style={[s.images, images.length === 1 && { width: 240 }]}>
 					{images.slice(0, 4).map((uri, i) => (
@@ -203,6 +231,7 @@ export const MessageBubble = memo(function MessageBubble({ m, last, onRetry, onD
 							key={`${i}:${uri}`}
 							disabled={!!m.local}
 							onPress={() => openGallery({ redirect: '/inbox', images, activeIndex: i, viewOnly: true, push: true })}
+							onLongPress={longPress}
 							accessibilityRole="imagebutton"
 							accessibilityLabel={`Open photo ${i + 1} of ${images.length}`}
 							style={[{ width: images.length === 1 ? 240 : 118, height: images.length === 1 ? 180 : 118, borderRadius: radius.md, overflow: 'hidden', backgroundColor: color.surface }]}
@@ -218,7 +247,7 @@ export const MessageBubble = memo(function MessageBubble({ m, last, onRetry, onD
 				</View>
 			) : null}
 			{docs.map((d) => (
-				<Pressable key={d.key} disabled={!d.url} onPress={() => d.url && WebBrowser.openBrowserAsync(d.url).catch(() => {})} accessibilityRole="button" accessibilityLabel={`Open ${d.name}`} style={({ pressed }) => [s.doc, mine && s.docMine, pressed && { opacity: 0.8 }]}>
+				<Pressable key={d.key} disabled={!d.url} onPress={() => d.url && WebBrowser.openBrowserAsync(d.url).catch(() => {})} onLongPress={longPress} accessibilityRole="button" accessibilityLabel={`Open ${d.name}`} style={({ pressed }) => [s.doc, mine && s.docMine, pressed && { opacity: 0.8 }]}>
 					<FileText size={18} color={color.amber} />
 					<KText v="small" numberOfLines={1} style={{ flex: 1, color: color.fg }}>
 						{d.name}
@@ -226,16 +255,22 @@ export const MessageBubble = memo(function MessageBubble({ m, last, onRetry, onD
 				</Pressable>
 			))}
 			{audio || localAudio ? (
-				<View style={[s.bubble, mine ? s.mine : s.theirs]}>
+				<Pressable onLongPress={longPress} delayLongPress={350} style={[s.bubble, mine ? s.mine : s.theirs]}>
 					<VoiceNote url={audio?.asset.publicUrl ?? localAudio!.uri} mine={mine} />
-				</View>
+				</Pressable>
 			) : null}
 			{text ? (
-				<View style={[s.bubble, mine ? s.mine : s.theirs, m.state === 'failed' && { borderColor: color.danger, borderWidth: 1 }]}>
-					<KText v="body" selectable style={{ color: mine ? color.onAmber : color.fg, fontSize: 15, lineHeight: 21 }}>
-						{text}
-					</KText>
-				</View>
+				<Pressable onLongPress={longPress} delayLongPress={350} style={[s.bubble, mine ? s.mine : s.theirs, m.state === 'failed' && { borderColor: color.danger, borderWidth: 1 }, quote ? { gap: 6, paddingTop: 6, paddingHorizontal: 6 } : null]}>
+					{quote}
+					<View style={quote ? { paddingHorizontal: 8 } : null}>
+						<RichText text={text} mine={mine} />
+						{m.edited ? (
+							<KText v="xs" style={{ fontSize: 11, alignSelf: 'flex-end', color: mine ? color.onAmber : color.muted, opacity: 0.7 }}>
+								Edited
+							</KText>
+						) : null}
+					</View>
+				</Pressable>
 			) : null}
 			{m.state === 'failed' ? (
 				<View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, alignSelf: 'flex-end' }}>
@@ -263,6 +298,7 @@ export const MessageBubble = memo(function MessageBubble({ m, last, onRetry, onD
 				</View>
 			) : null}
 		</View>
+		</SwipeToReply>
 	);
 });
 
@@ -303,8 +339,22 @@ function VoiceNote({ url, mine }: { url: string; mine: boolean }) {
 
 // ── Composer ───────────────────────────────────────────────────
 
-export function Composer({ onSend, initial, maxWidth }: { onSend: (text: string, files: Attachment[]) => void; initial?: string; maxWidth?: number }) {
+type ComposerProps = {
+	onSend: (text: string, files: Attachment[]) => void;
+	initial?: string;
+	maxWidth?: number;
+	/** Quoted above the input; the next message is sent as a reply to it. */
+	replyTo?: ReplyRef | null;
+	onCancelReply?: () => void;
+	/** Editing one of your messages: the input holds its text and the button saves. */
+	editing?: { id: string; text: string } | null;
+	onSaveEdit?: (id: string, text: string) => void;
+	onCancelEdit?: () => void;
+};
+
+export function Composer({ onSend, initial, maxWidth, replyTo, onCancelReply, editing, onSaveEdit, onCancelEdit }: ComposerProps) {
 	const insets = useSafeAreaInsets();
+	const input = useRef<TextInput>(null);
 	const [text, setText] = useState(initial ?? '');
 	const [files, setFiles] = useState<Attachment[]>([]);
 	const [menu, setMenu] = useState(false);
@@ -312,10 +362,32 @@ export function Composer({ onSend, initial, maxWidth }: { onSend: (text: string,
 	useEffect(() => {
 		if (initial) setText(initial);
 	}, [initial]);
-	const canSend = text.trim().length > 0 || files.length > 0;
+	// Starting an edit loads the message (keeping any draft); leaving it puts the draft back.
+	const editId = editing?.id;
+	const draftBeforeEdit = useRef<string | null>(null);
+	useEffect(() => {
+		if (editId) {
+			if (draftBeforeEdit.current === null) draftBeforeEdit.current = text;
+			setText(editing!.text);
+			setTimeout(() => input.current?.focus(), 50);
+		} else if (draftBeforeEdit.current !== null) {
+			setText(draftBeforeEdit.current);
+			draftBeforeEdit.current = null;
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [editId]);
+	const replyId = replyTo?.id;
+	useEffect(() => {
+		if (replyId) setTimeout(() => input.current?.focus(), 50);
+	}, [replyId]);
+	const canSend = editing ? text.trim().length > 0 && text.trim() !== editing.text.trim() : text.trim().length > 0 || files.length > 0;
 
 	function send() {
 		if (!canSend) return;
+		if (editing) {
+			onSaveEdit?.(editing.id, text.trim());
+			return;
+		}
 		onSend(text.trim(), files);
 		setText('');
 		setFiles([]);
@@ -341,6 +413,24 @@ export function Composer({ onSend, initial, maxWidth }: { onSend: (text: string,
 	return (
 		<View style={[s.composerWrap, { paddingBottom: Math.max(insets.bottom, 10) }]}>
 			<View style={[{ gap: 8 }, maxWidth ? { width: '100%', maxWidth, alignSelf: 'center' } : null]}>
+				{editing ? (
+					<View style={s.editBar} accessibilityLiveRegion="polite">
+						<Pencil size={14} color={color.amber} />
+						<View style={{ flex: 1 }}>
+							<KText v="xs" style={{ color: color.amber, fontFamily: font.bodySemi }}>
+								Editing message
+							</KText>
+							<KText v="xs" numberOfLines={1}>
+								{editing.text}
+							</KText>
+						</View>
+						<Pressable onPress={onCancelEdit} hitSlop={10} accessibilityRole="button" accessibilityLabel="Cancel editing" style={{ padding: 4 }}>
+							<X size={16} color={color.fg2} />
+						</Pressable>
+					</View>
+				) : replyTo ? (
+					<ReplyQuote reply={replyTo} onClose={onCancelReply} />
+				) : null}
 				{files.length ? (
 					<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }} accessibilityLabel={`${files.length} attachment${files.length > 1 ? 's' : ''} ready to send`}>
 						{files.map((f, i) => (
@@ -372,10 +462,13 @@ export function Composer({ onSend, initial, maxWidth }: { onSend: (text: string,
 					/>
 				) : (
 					<View style={s.composer}>
-						<IconButton label="Add photo or file" onPress={() => setMenu(true)} size={40}>
-							<Plus size={19} color={color.fg} />
-						</IconButton>
+						{editing ? null : (
+							<IconButton label="Add photo or file" onPress={() => setMenu(true)} size={40}>
+								<Plus size={19} color={color.fg} />
+							</IconButton>
+						)}
 						<TextInput
+							ref={input}
 							value={text}
 							onChangeText={setText}
 							placeholder="Message"
@@ -387,7 +480,11 @@ export function Composer({ onSend, initial, maxWidth }: { onSend: (text: string,
 							accessibilityLabel="Message"
 							testID="chat-input"
 						/>
-						{canSend ? (
+						{editing ? (
+							<IconButton label="Save edit" tone="amber" onPress={send} size={40}>
+								<Check size={18} color={color.onAmber} />
+							</IconButton>
+						) : canSend ? (
 							<IconButton label="Send" tone="amber" onPress={send} size={40}>
 								<Send size={17} color={color.onAmber} />
 							</IconButton>
@@ -484,6 +581,8 @@ const s = StyleSheet.create({
 	composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
 	input: { flex: 1, minHeight: 40, maxHeight: 140, paddingHorizontal: 14, paddingTop: 10, paddingBottom: 10, borderRadius: 20, borderWidth: 1, borderColor: color.line2, backgroundColor: color.bg2, color: color.fg, fontFamily: font.body, fontSize: 15 },
 	tray: { width: 56, height: 56 },
+	highlight: { backgroundColor: color.amberSoft, borderRadius: 20 },
+	editBar: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6, paddingHorizontal: 10, borderRadius: radius.sm, borderWidth: 1, borderColor: color.amberLine, backgroundColor: color.bg2 },
 	trayDoc: { width: 56, height: 56, borderRadius: radius.sm, borderWidth: 1, borderColor: color.line2, backgroundColor: color.bg2, padding: 4, gap: 2, alignItems: 'center', justifyContent: 'center' },
 	trayX: { position: 'absolute', top: -6, right: -6, width: 18, height: 18, borderRadius: 9, backgroundColor: color.fg, alignItems: 'center', justifyContent: 'center' }
 });
