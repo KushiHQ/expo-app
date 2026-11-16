@@ -1,6 +1,7 @@
 import notifee, { EventType } from '@notifee/react-native';
 import * as Linking from 'expo-linking';
 import { isAppUpdateIntent, openAppStore } from '@/lib/utils/urls';
+import { handleCallNotificationPress, isRingIntent, stopRingtone } from '@/lib/utils/call';
 
 // ────────────────────────────────────────────────────────────────────────
 // Notifee background event handler
@@ -35,7 +36,15 @@ notifee.onBackgroundEvent(async (event) => {
       return;
     }
 
-    // Incoming call notifications are handled by CallKeep (iOS) /
-    // handleIncomingCall (Android) — no deep-link needed here.
+    // Incoming call (Android): Answer, Decline, a body tap or the full-screen
+    // intent while the app is in the background or killed. Answer parks a
+    // "join this call" request that the app acts on as soon as it can
+    // navigate; Decline tells the caller straight away, with no screen.
+    // (This used to do nothing, so Answer opened the app on whatever screen it
+    // was last on while the ringtone kept going.)
+    await handleCallNotificationPress(detail.pressAction?.id, data);
+  } else if (type === EventType.DISMISSED) {
+    const data = detail.notification?.data as Record<string, string> | undefined;
+    if (isRingIntent(data?.intent)) await stopRingtone();
   }
 });

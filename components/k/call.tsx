@@ -61,7 +61,15 @@ export function CallStage({ c, chatId, video }: { c: Call; chatId: string; video
 	const active = !c.isRinging;
 	const remoteVideo = video && active ? c.remoteParticipant?.tracks.video.track : null;
 	const remoteMuted = active && !!c.remoteParticipant && !c.remoteParticipant.tracks.audio.track;
-	const status = c.isRinging ? (c.isCaller ? 'Calling…' : `Incoming ${video ? 'video' : 'voice'} call`) : c.callDuration;
+	const status = c.isRinging
+		? c.isCaller
+			? 'Calling…'
+			: `Incoming ${video ? 'video' : 'voice'} call`
+		: c.connecting
+			? 'Connecting…'
+			: c.reconnecting
+				? 'Reconnecting…'
+				: c.callDuration;
 
 	// The speaker button changes the audio route (it used to only flip a flag).
 	useEffect(() => {
@@ -140,7 +148,7 @@ export function CallStage({ c, chatId, video }: { c: Call; chatId: string; video
 			<View style={[s.controls, { paddingBottom: insets.bottom + 24 }]}>
 				{incoming ? (
 					<>
-						<Control label="Decline" tone="danger" onPress={c.leaveCall}>
+						<Control label="Decline" tone="danger" onPress={c.declineCall}>
 							<PhoneOff size={26} color="#fff" />
 						</Control>
 						<Control label="Answer" tone="success" onPress={c.joinCall}>

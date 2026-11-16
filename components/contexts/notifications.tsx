@@ -1,5 +1,5 @@
 import React from 'react';
-import { CallType, useUpdatePushNotificationTokenMutation } from '@/lib/services/graphql/generated';
+import { useUpdatePushNotificationTokenMutation } from '@/lib/services/graphql/generated';
 import { useUser } from '@/lib/hooks/user';
 import {
   getMessaging,
@@ -12,11 +12,19 @@ import {
   AuthorizationStatus,
 } from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
-import { handleIncomingCall, handleNotifeeEvent } from '@/lib/utils/call';
+import { clearRinging, handleIncomingCall, handleNotifeeEvent, isEndIntent, isRingIntent } from '@/lib/utils/call';
+import {
+  callFromData,
+  canRing,
+  getActiveCallScreen,
+  requestCallRoute,
+  takeCallRoute,
+} from '@/lib/call/state';
+import { callLog } from '@/lib/call/log';
+import { useRootNavigationState } from 'expo-router';
 import { handleIncomingAppUpdate, handleIncomingChatMessage } from '@/lib/utils/notifications';
 import { isAppUpdateIntent, openAppStore } from '@/lib/utils/urls';
 import { useRouter } from '@/lib/hooks/use-router';
-import { CALL_TYPE_VALUE } from '@/lib/types/enums/hoting-chat';
 import { AppState, AppStateStatus, Platform } from 'react-native';
 import { useAudioPlayer } from 'expo-audio';
 import { EventEmitter } from '@/lib/utils/event-emitter';
@@ -66,7 +74,6 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
   const router = useRouter();
   const notificationPlayer = useAudioPlayer(require('@/assets/audio/message-notification.mp3'));
 
-  const handledCallId = React.useRef<string | null>(null);
   const pendingVoipTokenRef = React.useRef<string | null>(null);
   // Persists the VoIP token after it has been registered so onTokenRefresh can re-send both tokens together
   const savedVoipTokenRef = React.useRef<string | null>(null);
@@ -104,26 +111,48 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
     };
   }, [user.user?.id, client]);
 
-  const routeToCall = React.useCallback(
-    (data: any) => {
-      if (!data?.chatId || !data?.intent || !data?.callId) return;
-
-      const isVoice = data.intent === CALL_TYPE_VALUE[CallType.Voice];
-      const isVideo = data.intent === CALL_TYPE_VALUE[CallType.Video];
-
-      if (isVoice || isVideo) {
+  // ── Calls: one place turns "show this call" requests into navigation ──────
+  // Requests come from pushes, notification taps (foreground, background,
+  // cold start) and CallKit. They wait here until the navigator is mounted, so
+  // a cold-start Answer is never lost, and an Answer for the call already on
+  // screen joins it instead of stacking a second call screen.
+  const navReady = !!useRootNavigationState()?.key;
+  React.useEffect(() => {
+    if (!navReady) return;
+    let busy = false;
+    const drain = async () => {
+      if (busy) return;
+      busy = true;
+      try {
+        const route = await takeCallRoute();
+        if (!route) return;
+        if (getActiveCallScreen() === route.callId) {
+          if (route.answer) EventEmitter.emit('call_answer', route.callId);
+          return;
+        }
+        callLog('route.navigate', { callId: route.callId, answer: route.answer });
         router.push({
-          pathname: isVoice ? '/chats/[id]/call/voice' : '/chats/[id]/call/video',
+          pathname: route.kind === 'video' ? '/chats/[id]/call/video' : '/chats/[id]/call/voice',
           params: {
-            id: String(data.chatId),
+            id: route.chatId,
             initiate: 'false',
-            callId: String(data.callId),
+            callId: route.callId,
+            ...(route.answer ? { accept: 'true' } : {}),
+            ...(route.at ? { at: String(route.at) } : {}),
           },
         });
+      } finally {
+        busy = false;
       }
-    },
-    [router],
-  );
+    };
+    drain();
+    EventEmitter.on('call_route', drain);
+    const sub = AppState.addEventListener('change', (st) => st === 'active' && drain());
+    return () => {
+      EventEmitter.off('call_route', drain);
+      sub.remove();
+    };
+  }, [navReady, router]);
 
   React.useEffect(() => {
     const messagingInstance = getMessaging();
@@ -205,56 +234,22 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
       VoipPushNotification.registerVoipToken();
     }
 
-    // iOS: user answered the call from the native CallKit UI
-    const handleCallKeepAnswer = (callData: { callId: string; chatId: string; intent: string }) => {
-      const isVideo = callData.intent === 'video-call';
-      router.push({
-        pathname: isVideo ? '/chats/[id]/call/video' : '/chats/[id]/call/voice',
-        params: {
-          id: callData.chatId,
-          initiate: 'false',
-          accept: 'true',
-          callId: callData.callId,
-        },
-      });
-    };
-
-    // iOS: user declined the call from the native CallKit UI
-    const handleCallKeepEnd = (callData: { callId: string; chatId: string; intent: string }) => {
-      const isVideo = callData.intent === 'video-call';
-      router.push({
-        pathname: isVideo ? '/chats/[id]/call/video' : '/chats/[id]/call/voice',
-        params: {
-          id: callData.chatId,
-          initiate: 'false',
-          accept: 'false',
-          callId: callData.callId,
-        },
-      });
-    };
-
-    EventEmitter.on('callkeep_answer', handleCallKeepAnswer);
-    EventEmitter.on('callkeep_end', handleCallKeepEnd);
-
+    // Android: coming back to the app while a call notification is up shows
+    // the ringing screen, but only for a call that can still ring. A stale one
+    // (missed, cancelled, declined, or left over from a killed app) is cleared.
     const handleAppStateChange = async (nextAppState: AppStateStatus) => {
-      if (nextAppState === 'active') {
-        const notifications = await notifee.getDisplayedNotifications();
-
-        const ringingNotification = notifications.find(
-          (n) =>
-            n.notification.data?.intent === CALL_TYPE_VALUE[CallType.Voice] ||
-            n.notification.data?.intent === CALL_TYPE_VALUE[CallType.Video],
-        );
-
-        if (ringingNotification && ringingNotification.notification.data) {
-          const data = ringingNotification.notification.data;
-
-          if (handledCallId.current !== data.callId) {
-            handledCallId.current = String(data.callId);
-            routeToCall(data);
-          }
+      if (nextAppState !== 'active' || Platform.OS !== 'android') return;
+      const notifications = await notifee.getDisplayedNotifications();
+      for (const n of notifications) {
+        const data = n.notification.data;
+        if (!isRingIntent(data?.intent)) continue;
+        const call = callFromData(data as Record<string, unknown>);
+        if (!call) continue;
+        if (await canRing(call)) {
+          requestCallRoute({ ...call, answer: false });
         } else {
-          handledCallId.current = null;
+          callLog('ring.stale.cleared', { callId: call.callId });
+          await clearRinging(call.chatId);
         }
       }
     };
@@ -301,21 +296,20 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 
     const unsubscribeForeground = onMessage(messagingInstance, async (remoteMessage) => {
       requestBadgeSync();
-      if (
-        remoteMessage.data?.intent === 'cancel_call' ||
-        remoteMessage.data?.intent === 'decline_call'
-      ) {
+      // Caller cancelled or callee declined: clears the ring and closes the
+      // call screen (handleIncomingCall emits call_cancelled).
+      if (isEndIntent(remoteMessage.data?.intent)) {
         await handleIncomingCall(remoteMessage);
-        // Dismiss the call screen if it's open (caller cancelled or recipient declined)
-        EventEmitter.emit('call_cancelled');
         return;
       }
 
-      if (
-        remoteMessage.data?.intent === CALL_TYPE_VALUE[CallType.Voice] ||
-        remoteMessage.data?.intent === CALL_TYPE_VALUE[CallType.Video]
-      ) {
-        routeToCall(remoteMessage.data);
+      // Ringing while the app is open: straight to the ringing screen.
+      if (isRingIntent(remoteMessage.data?.intent)) {
+        const call = callFromData({ ...remoteMessage.data, receivedAt: Date.now() });
+        if (call && (await canRing(call))) {
+          callLog('ring.foreground', { callId: call.callId });
+          requestCallRoute({ ...call, answer: false });
+        }
         return;
       }
 
@@ -376,8 +370,6 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
       unsubscribeOpenedApp();
       unsubscribeTokenRefresh();
       EventEmitter.off('voip_token', handleVoipToken);
-      EventEmitter.off('callkeep_answer', handleCallKeepAnswer);
-      EventEmitter.off('callkeep_end', handleCallKeepEnd);
       if (Platform.OS === 'ios') {
         VoipPushNotification.removeEventListener('register');
       }

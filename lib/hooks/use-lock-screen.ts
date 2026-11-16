@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BackHandler, Platform } from 'react-native';
 import { usePathname } from 'expo-router';
 import notifee, { EventType } from '@notifee/react-native';
@@ -35,15 +35,19 @@ export const useLockScreen = () => {
     }
   }, []);
 
+  // Launched over the lock screen for a call: once that call screen closes, go
+  // back to the lock screen. (This used to exit 500 ms after launch unless a
+  // call screen was already showing, which a cold start rarely manages, so the
+  // app could close itself before the call ever appeared.)
+  const wasOnCall = useRef(false);
   useEffect(() => {
     if (!isLockScreenLaunch) return;
-
-    const timer = setTimeout(() => {
-      if (!pathname.includes('/call/')) {
-        BackHandler.exitApp();
-      }
-    }, 500);
-
+    if (pathname.includes('/call/')) {
+      wasOnCall.current = true;
+      return;
+    }
+    if (!wasOnCall.current) return;
+    const timer = setTimeout(() => BackHandler.exitApp(), 500);
     return () => clearTimeout(timer);
   }, [isLockScreenLaunch, pathname]);
 

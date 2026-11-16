@@ -1,0 +1,76 @@
+diff --git a/node_modules/@daily-co/react-native-daily-js/android/src/main/java/com/daily/reactlibrary/DailyNativeUtils.java b/node_modules/@daily-co/react-native-daily-js/android/src/main/java/com/daily/reactlibrary/DailyNativeUtils.java
+index 5d6d292..5d0b478 100644
+--- a/node_modules/@daily-co/react-native-daily-js/android/src/main/java/com/daily/reactlibrary/DailyNativeUtils.java
++++ b/node_modules/@daily-co/react-native-daily-js/android/src/main/java/com/daily/reactlibrary/DailyNativeUtils.java
+@@ -155,15 +155,13 @@ public class DailyNativeUtils extends ReactContextBaseJavaModule implements Perm
+         Context applicationContext = this.reactContext.getApplicationContext();
+         List<String> declaredPermissions = this.getDeclaredPermissions(applicationContext);
+         List<String> permissionList = new ArrayList<String>();
+-        if (declaredPermissions.contains(Manifest.permission.FOREGROUND_SERVICE_CAMERA)) {
+-            permissionList.add(Manifest.permission.CAMERA);
+-        }
++        // Kushi: only the microphone is needed to keep a call alive in the
++        // background. Requiring CAMERA (and notifications) meant a voice caller
++        // who never allowed the camera got no ongoing-call service, so the mic
++        // went silent as soon as the screen turned off.
+         if (declaredPermissions.contains(Manifest.permission.FOREGROUND_SERVICE_MICROPHONE)) {
+             permissionList.add(Manifest.permission.RECORD_AUDIO);
+         }
+-        if (Build.VERSION.SDK_INT >= 33) {
+-            permissionList.add(Manifest.permission.POST_NOTIFICATIONS);
+-        }
+ 
+         boolean allPermissionsGranted = true;
+         for (String permission : permissionList) {
+diff --git a/node_modules/@daily-co/react-native-daily-js/android/src/main/java/com/daily/reactlibrary/DailyOngoingMeetingForegroundService.java b/node_modules/@daily-co/react-native-daily-js/android/src/main/java/com/daily/reactlibrary/DailyOngoingMeetingForegroundService.java
+index 5330bd2..be5d270 100644
+--- a/node_modules/@daily-co/react-native-daily-js/android/src/main/java/com/daily/reactlibrary/DailyOngoingMeetingForegroundService.java
++++ b/node_modules/@daily-co/react-native-daily-js/android/src/main/java/com/daily/reactlibrary/DailyOngoingMeetingForegroundService.java
+@@ -8,6 +8,9 @@ import android.app.PendingIntent;
+ import android.app.Service;
+ import android.content.Context;
+ import android.content.Intent;
++import android.content.pm.PackageManager;
++import android.content.pm.ServiceInfo;
++import android.Manifest;
+ import android.os.Build;
+ import android.os.IBinder;
+ 
+@@ -86,7 +89,36 @@ public class DailyOngoingMeetingForegroundService extends Service {
+                 .setOnlyAlertOnce(true)
+                 .build();
+ 
+-        startForeground(NOTIFICATION_ID, notification);
++        // Kushi: start with the service types this call can actually use. The
++        // manifest declares camera|microphone, but Android 14+ refuses a camera
++        // type without the CAMERA permission, and a voice-only user never
++        // grants it. Microphone keeps the mic live with the screen off.
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
++            int types = 0;
++            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
++                types |= ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
++            }
++            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
++                types |= ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA;
++            }
++            try {
++                if (types != 0) {
++                    startForeground(NOTIFICATION_ID, notification, types);
++                } else {
++                    startForeground(NOTIFICATION_ID, notification);
++                }
++            } catch (RuntimeException e) {
++                android.util.Log.w(TAG, "Typed startForeground failed, retrying microphone only", e);
++                try {
++                    startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
++                } catch (RuntimeException e2) {
++                    android.util.Log.e(TAG, "Could not start the ongoing-call service", e2);
++                    stopSelf();
++                }
++            }
++        } else {
++            startForeground(NOTIFICATION_ID, notification);
++        }
+ 
+         return START_NOT_STICKY;
+     }
