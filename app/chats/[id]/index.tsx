@@ -56,6 +56,8 @@ export default function Conversation() {
 	const sendSound = useAudioPlayer(require('@/assets/audio/message-send-sound.mp3'));
 	const list = useRef<FlatList<Row>>(null);
 	const nearBottom = useRef(true);
+	// Rows as last rendered, for jumping to a quoted message. Declared before the rows memo, which writes it.
+	const rowsRef = useRef<Row[]>([]);
 
 	const [{ data: chatData, error: chatError }] = useQuery<KChat>({ query: K_CHAT, variables: { chatId: id }, requestPolicy: 'cache-and-network' });
 	const chat = chatData?.hostingChat;
@@ -209,7 +211,6 @@ export default function Conversation() {
 	}, []);
 
 	// Tap a quote: scroll to the original and tint it for a moment.
-	const rowsRef = useRef<Row[]>([]);
 	const jumpTo = useCallback((msgId: string) => {
 		const index = rowsRef.current.findIndex((r) => r.kind === 'msg' && r.m.id === msgId);
 		if (index < 0) {
