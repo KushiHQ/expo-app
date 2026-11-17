@@ -257,7 +257,7 @@ const NATIVE_PRESS: Record<CallAction['action'], string | undefined> = {
  * native says there is something new.
  */
 export function drainCallActions() {
-  if (!CallNotification) return;
+  if (Platform.OS !== 'android' || !CallNotification) return;
   let actions: CallAction[] = [];
   try {
     actions = CallNotification.takeActions();
@@ -284,6 +284,7 @@ export function drainCallActions() {
 
 /** Calls whose native notification is still showing (Android). */
 export function activeCallNotifications(): Record<string, string>[] {
+  if (Platform.OS !== 'android') return [];
   try {
     return CallNotification?.active() ?? [];
   } catch {
