@@ -11,7 +11,7 @@ export default ({ config }) => ({
 	...config,
 	name: "Kushi Housing",
 	slug: "kushi",
-	version: "1.4.7",
+	version: "1.4.8",
 	orientation: "default",
 	icon: "./assets/icons/icon.png",
 	scheme: "kushi",
