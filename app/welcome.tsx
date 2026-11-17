@@ -55,8 +55,8 @@ export default function Welcome() {
 		<Animated.View entering={FadeInDown.delay(500).duration(600)} style={{ gap: 10 }}>
 			<Button title="Start exploring" size="lg" block onPress={() => done('/')} testID="welcome-explore" />
 			<View style={{ flexDirection: 'row', gap: 10 }}>
-				<Button title="Create account" variant="ghost" style={{ flex: 1 }} onPress={() => done('/auth/sign-up')} />
-				<Button title="Sign in" variant="ghost" style={{ flex: 1 }} onPress={() => done('/auth/sign-in')} />
+				<Button title="Create account" variant="ghost" style={{ flex: 1, paddingHorizontal: 12 }} onPress={() => done('/auth/sign-up')} />
+				<Button title="Sign in" variant="ghost" style={{ flex: 1, paddingHorizontal: 12 }} onPress={() => done('/auth/sign-in')} />
 			</View>
 		</Animated.View>
 	);

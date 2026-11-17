@@ -50,7 +50,11 @@ export function Button({ title, variant = 'amber', size = 'md', loading, block, 
 			) : (
 				<View style={s.row}>
 					{icon}
-					<KText style={[s.label, { color: FG[variant], fontSize: size === 'lg' ? 17 : size === 'sm' ? 14 : 16 }]}>{title}</KText>
+					{/* A label never wraps: the pill has a fixed height. It shrinks a little to fit a narrow
+					    button (two side by side on a 360dp phone) and barely grows with the phone's text size. */}
+					<KText numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} maxFontSizeMultiplier={1.15} style={[s.label, { color: FG[variant], fontSize: size === 'lg' ? 17 : size === 'sm' ? 14 : 16 }]}>
+						{title}
+					</KText>
 					{trailing}
 				</View>
 			)}
@@ -83,8 +87,8 @@ export function IconButton({ children, label, onPress, tone = 'ghost', size = 42
 
 const s = StyleSheet.create({
 	base: { borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
-	row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-	label: { fontFamily: font.bodySemi },
+	row: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 },
+	label: { fontFamily: font.bodySemi, flexShrink: 1, textAlign: 'center' },
 	amber: { backgroundColor: color.amber },
 	solid: { backgroundColor: color.fg },
 	ghost: { borderWidth: 1, borderColor: color.line2, backgroundColor: 'transparent' },
