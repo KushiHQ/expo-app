@@ -24,6 +24,7 @@ import {
 import {
   callFromData,
   canRing,
+  firstRingAt,
   hasCallScreen,
   markAnswerRequested,
   markCallScreenOpening,
@@ -353,7 +354,9 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
 
       // Ringing while the app is open: straight to the ringing screen.
       if (isRingIntent(remoteMessage.data?.intent)) {
-        const call = callFromData({ ...remoteMessage.data, receivedAt: Date.now() });
+        const callId = remoteMessage.data?.callId;
+        const receivedAt = typeof callId === 'string' ? await firstRingAt(callId) : Date.now();
+        const call = callFromData({ ...remoteMessage.data, receivedAt });
         if (call && (await canRing(call))) {
           callLog('ring.foreground', { callId: call.callId });
           requestCallRoute({ ...call, answer: false });

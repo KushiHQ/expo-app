@@ -18,6 +18,7 @@ import {
   RING_WINDOW_MS,
   callFromData,
   canRing,
+  firstRingAt,
   isCallEnded,
   isRingFresh,
   markCallEnded,
@@ -145,11 +146,14 @@ async function showNotifeeCallNotification(data: any, receivedAt: number, channe
 export const handleIncomingCall = async (remoteMessage: any) => {
   const data = remoteMessage?.data;
   if (isRingIntent(data?.intent)) {
-    const receivedAt = Date.now();
+    if (typeof data?.callId !== 'string') return;
+    // The first time this device saw the call: a push Android replays later
+    // must not ring again as a new call.
+    const receivedAt = await firstRingAt(data.callId);
     const call = callFromData({ ...data, receivedAt });
     if (!call) return;
     if (!(await canRing(call))) {
-      callLog('ring.ignored', { callId: call.callId, reason: 'ended' });
+      callLog('ring.ignored', { callId: call.callId, reason: isRingFresh(receivedAt) ? 'ended' : 'old ring' });
       return;
     }
     callLog('ring.notify', { callId: call.callId, chatId: call.chatId });

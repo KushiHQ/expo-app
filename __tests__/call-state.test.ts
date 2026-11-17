@@ -24,6 +24,8 @@ jest.mock('@sentry/react-native', () => ({ addBreadcrumb: jest.fn(), captureExce
 
 import {
   RING_WINDOW_MS,
+  canRing,
+  firstRingAt,
   hasCallScreen,
   markCallEnded,
   markCallScreenOpening,
@@ -121,6 +123,31 @@ describe('takeCallRoute', () => {
     expect(await takeCallRoute()).not.toBeNull();
     requestCallRoute({ ...call('h'), answer: true });
     expect(await takeCallRoute()).toBeNull();
+  });
+});
+
+describe('firstRingAt', () => {
+  it('keeps the time of the first ring, so a replayed push is not a new call', async () => {
+    const t0 = Date.now();
+    const first = await firstRingAt('r', t0);
+    // Android redelivers the same push a minute later, to a restarted app.
+    await Promise.resolve();
+    const onDisk = new Map(mockStore);
+    resetCallStateForTests();
+    onDisk.forEach((value, key) => mockStore.set(key, value));
+    const replay = await firstRingAt('r', t0 + 60_000);
+    expect(replay).toBe(first);
+    jest.useFakeTimers({ doNotFake: ['setTimeout', 'nextTick', 'setImmediate'] });
+    jest.setSystemTime(t0 + 60_000);
+    expect(await canRing({ callId: 'r', at: replay })).toBe(false);
+  });
+
+  it('lets a new call ring', async () => {
+    jest.useFakeTimers({ doNotFake: ['setTimeout', 'nextTick', 'setImmediate'] });
+    jest.setSystemTime(2_000_000);
+    const at = await firstRingAt('s');
+    expect(at).toBe(2_000_000);
+    expect(await canRing({ callId: 's', at })).toBe(true);
   });
 });
 

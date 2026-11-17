@@ -95,6 +95,43 @@ export async function canRing(call: Pick<IncomingCall, 'callId' | 'at'>) {
   return isRingFresh(call.at);
 }
 
+// ── First ring ─────────────────────────────────────────────────────────────
+// Android can hand the same ring push to the app again (it redelivers pushes
+// to a process that was killed while handling them). The ring window is
+// measured from the first time this device saw the call, so a replayed push
+// can't ring again as if the call had just started.
+
+const RINGS_KEY = 'kushi.call.rings';
+const rings = new Map<string, number>();
+let ringsLoaded: Promise<void> | null = null;
+
+function loadRings() {
+  if (!ringsLoaded) {
+    ringsLoaded = AsyncStorage.getItem(RINGS_KEY)
+      .then((raw) => {
+        if (!raw) return;
+        const now = Date.now();
+        for (const [id, at] of Object.entries(JSON.parse(raw) as Record<string, number>)) {
+          if (now - at < ENDED_TTL_MS && !rings.has(id)) rings.set(id, at);
+        }
+      })
+      .catch(() => {});
+  }
+  return ringsLoaded;
+}
+
+/** When this device first received a ring for the call (now, if this is the first). */
+export async function firstRingAt(callId: string, now = Date.now()): Promise<number> {
+  await loadRings();
+  const seen = rings.get(callId);
+  if (seen) return seen;
+  rings.set(callId, now);
+  const out: Record<string, number> = {};
+  for (const [id, at] of rings) if (now - at < ENDED_TTL_MS) out[id] = at;
+  AsyncStorage.setItem(RINGS_KEY, JSON.stringify(out)).catch(() => {});
+  return now;
+}
+
 /** Reads a push / notification payload into an IncomingCall. */
 export function callFromData(data: Record<string, unknown> | undefined | null): IncomingCall | null {
   if (!data) return null;
@@ -266,6 +303,8 @@ export async function takeCallRoute(): Promise<TakenRoute | null> {
 export function resetCallStateForTests() {
   ended.clear();
   endedLoaded = null;
+  rings.clear();
+  ringsLoaded = null;
   pending = null;
   pendingLoaded = null;
   handled.clear();
