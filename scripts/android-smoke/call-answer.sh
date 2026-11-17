@@ -14,6 +14,7 @@
 #   shade         Answer tapped in the notification shade, not the banner
 #   body          the notification itself tapped (opens the ringing screen)
 #   decline       Decline tapped: no app launch, the caller is told
+#   cold-decline  Decline tapped after the app was killed mid-ring
 #   locked        screen off and locked when the call arrives
 #
 # The call ids are made up, so Daily has no room to join: "join.start" is the
@@ -23,7 +24,7 @@
 # Usage: [INSTALL_APK=app.apk] call-answer.sh <out-dir> [cases…]
 set -u
 OUT="$1"; shift
-CASES="${*:-bg-alive fcm-started-3 fcm-started-6 fcm-started-12 cold-tap late shade body decline locked}"
+CASES="${*:-bg-alive fcm-started-3 fcm-started-6 fcm-started-12 cold-tap late shade body decline cold-decline locked}"
 PKG=com.kushicorp.kushi
 mkdir -p "$OUT/shots"
 LOG="$OUT/logcat-calls.txt"
@@ -45,6 +46,9 @@ echo "Android API $API_LEVEL" | tee -a "$RESULT"
 shot() { adb exec-out screencap -p > "$OUT/shots/$1.png" 2>/dev/null || true; }
 
 push() {
+  # A real high-priority FCM push lets the app start its handler from the
+  # background for a short while; an injected broadcast needs that granted.
+  adb shell cmd deviceidle tempwhitelist -d 30000 "$PKG" >/dev/null 2>&1 || true
   adb shell am broadcast -a com.google.android.c2dm.intent.RECEIVE -p "$PKG" \
     --es google.message_id "smoke-$RANDOM$RANDOM" --es from 1 --es google.delivered_priority high \
     --es google.original_priority high "$@" >/dev/null
@@ -68,6 +72,8 @@ tap_label() {
     fi
     sleep 1
   done
+  # Keep what was on screen, to see why the label was not found.
+  adb shell cat /sdcard/kushi-ui.xml > "$OUT/ui-not-found-$(date +%H%M%S).xml" 2>/dev/null || true
   return 1
 }
 
@@ -167,7 +173,8 @@ for c in $CASES; do
       ;;
     body)
       kill_app
-      ring "$id"; sleep 4
+      ring "$id"; sleep 6
+      adb shell cmd statusbar expand-notifications; sleep 2; shot "call-$c-1-shade"
       tap_label "Ada" || tap_label "Incoming voice call" || echo "      notification not found" >> "$RESULT"
       sleep 10; shot "call-$c-2-ringing-screen"
       verdict "$c" "tap on the notification → ringing screen (not answered)" "screen\.open" "join\.start"
@@ -179,6 +186,15 @@ for c in $CASES; do
       sleep 8; shot "call-$c-2-after-decline"
       echo "      call notifications left: $(notification_up)" >> "$RESULT"
       verdict "$c" "Decline on the ${where:-?} → call ended, no call screen" "tap\.decline" "screen\.open"
+      ;;
+    cold-decline)
+      to_background
+      ring "$id"; sleep 4
+      adb shell am kill "$PKG"; sleep 3; echo "      pid before tap: '$(pid)'" >> "$RESULT"
+      where=$(tap_notification "Decline") || echo "      no Decline button found" >> "$RESULT"
+      sleep 12; shot "call-$c-2-after-decline"
+      echo "      call notifications left: $(notification_up)" >> "$RESULT"
+      verdict "$c" "Decline after the app was killed mid-ring → call ended, app not opened" "tap\.decline" "screen\.open"
       ;;
     locked)
       kill_app

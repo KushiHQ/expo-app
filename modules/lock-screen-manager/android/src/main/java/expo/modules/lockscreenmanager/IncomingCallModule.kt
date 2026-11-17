@@ -31,11 +31,6 @@ class IncomingCallModule : Module() {
       CallActions.listener = null
     }
 
-    // Answer / a tap on the notification while the app's activity already exists.
-    OnNewIntent { intent ->
-      if (CallActions.fromIntent(intent)) CallActions.listener?.invoke()
-    }
-
     Function("show") { call: Map<String, Any?> ->
       IncomingCallNotification.show(context, call)
     }
@@ -51,8 +46,6 @@ class IncomingCallModule : Module() {
 
     // Everything the user did with a call notification since the last pull.
     Function("takeActions") {
-      // A cold start from Answer / a tap carries the action on the launch intent.
-      CallActions.fromIntent(appContext.currentActivity?.intent)
       CallActions.drain().map {
         mapOf(
           "id" to it.getInt("id"),

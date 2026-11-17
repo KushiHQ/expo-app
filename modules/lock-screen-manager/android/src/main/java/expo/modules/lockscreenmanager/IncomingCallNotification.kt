@@ -21,10 +21,11 @@ import androidx.core.app.Person
  * - Android 8–11 has no call style, so the same two buttons are drawn with a
  *   custom layout.
  *
- * Answer, a tap on the notification and the full-screen launch open the app's
- * activity directly with the action on the intent; Decline is a broadcast, so
- * it never opens the app. Either way the action waits in CallActions until
- * JavaScript pulls it.
+ * Answer and a tap on the notification go through IncomingCallActivity, which
+ * records the action and opens the app; the full-screen launch (locked phone)
+ * goes to the app's activity, where IncomingCallPackage records it; Decline is
+ * a broadcast, so it never opens the app. In every case the action waits in
+ * CallActions until JavaScript pulls it.
  */
 object IncomingCallNotification {
   private const val CHANNEL = "incoming-call-v3"
@@ -46,7 +47,7 @@ object IncomingCallNotification {
 
     val answer = activity(context, chatId, CallActions.ANSWER, data)
     val open = activity(context, chatId, CallActions.OPEN, data)
-    val fullScreen = activity(context, chatId, CallActions.FULL_SCREEN, data)
+    val fullScreen = fullScreenIntent(context, chatId, data)
     val decline = broadcast(context, chatId, CallActions.DECLINE, data)
     val dismiss = broadcast(context, chatId, CallActions.DISMISS, data)
 
@@ -70,6 +71,9 @@ object IncomingCallNotification {
         .setContentIntent(open)
         .setDeleteIntent(dismiss)
         .setFullScreenIntent(fullScreen, true)
+        // Its own group, so Android never folds a ringing call into a bundle
+        // of the app's other notifications (where its buttons are hidden).
+        .setGroup("kushi-call-$chatId")
         .addExtras(Bundle().apply { putBundle(CallActions.EXTRA_DATA, data) })
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -144,24 +148,34 @@ object IncomingCallNotification {
       setOnClickPendingIntent(R.id.kushi_call_decline, decline)
     }
 
-  /** Opens the app's own activity with the action on the intent. */
+  /** Answer / tap / full-screen launch: through IncomingCallActivity, which opens the app. */
   private fun activity(context: Context, chatId: String, action: String, data: Bundle): PendingIntent {
-    val launch = context.packageManager.getLaunchIntentForPackage(context.packageName)
-    // A custom action (not MAIN/LAUNCHER), so Android delivers the intent to
-    // the running activity instead of only bringing the task forward.
     val intent =
-      Intent(ACTION_PREFIX + action).apply {
-        component = launch?.component
-        setPackage(context.packageName)
-        addFlags(
-          Intent.FLAG_ACTIVITY_NEW_TASK or
-            Intent.FLAG_ACTIVITY_SINGLE_TOP or
-            Intent.FLAG_ACTIVITY_CLEAR_TOP
-        )
+      Intent(context, IncomingCallActivity::class.java).apply {
+        setAction(ACTION_PREFIX + action)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION)
         putExtra(CallActions.EXTRA_ACTION, action)
         putExtra(CallActions.EXTRA_DATA, data)
       }
     return PendingIntent.getActivity(context, requestCode(chatId, action), intent, FLAGS)
+  }
+
+  /**
+   * The full-screen launch (phone locked or asleep) goes straight to the app's
+   * own activity, so it can show over the lock screen from its first frame;
+   * IncomingCallPackage picks the action up there.
+   */
+  private fun fullScreenIntent(context: Context, chatId: String, data: Bundle): PendingIntent {
+    val launch = context.packageManager.getLaunchIntentForPackage(context.packageName)
+    val intent =
+      Intent(ACTION_PREFIX + CallActions.FULL_SCREEN).apply {
+        component = launch?.component
+        setPackage(context.packageName)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        putExtra(CallActions.EXTRA_ACTION, CallActions.FULL_SCREEN)
+        putExtra(CallActions.EXTRA_DATA, data)
+      }
+    return PendingIntent.getActivity(context, requestCode(chatId, CallActions.FULL_SCREEN), intent, FLAGS)
   }
 
   private fun broadcast(context: Context, chatId: String, action: String, data: Bundle): PendingIntent {

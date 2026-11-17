@@ -182,8 +182,8 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
         running = false;
       }
     };
-    // Android: pick up what was tapped on the call notification (a cold start
-    // from Answer carries it on the launch intent), then route it.
+    // Android: pick up what was tapped on the call notification (native keeps
+    // it until asked, so a cold start from Answer finds it here), then route it.
     const pull = () => {
       drainCallActions();
       drain();

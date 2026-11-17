@@ -2,7 +2,6 @@ package expo.modules.lockscreenmanager
 
 import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import com.facebook.react.ReactApplication
@@ -64,19 +63,6 @@ object CallActions {
       holds.remove(id)?.finish()
     } catch (_: Throwable) {
     }
-  }
-
-  /**
-   * Reads a call action off an activity intent, once: the extra is removed so
-   * a later look at the same intent (a remount) does not replay it.
-   */
-  fun fromIntent(intent: Intent?): Boolean {
-    val action = intent?.getStringExtra(EXTRA_ACTION) ?: return false
-    val data = intent.getBundleExtra(EXTRA_DATA)
-    intent.removeExtra(EXTRA_ACTION)
-    intent.removeExtra(EXTRA_DATA)
-    push(action, data)
-    return true
   }
 
   /** Get JavaScript to pull: poke the live module, or start React in a killed app. */
