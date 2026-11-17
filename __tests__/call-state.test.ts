@@ -25,6 +25,7 @@ jest.mock('@sentry/react-native', () => ({ addBreadcrumb: jest.fn(), captureExce
 import {
   RING_WINDOW_MS,
   canRing,
+  isCallEnded,
   firstRingAt,
   hasCallScreen,
   markCallEnded,
@@ -123,6 +124,25 @@ describe('takeCallRoute', () => {
     expect(await takeCallRoute()).not.toBeNull();
     requestCallRoute({ ...call('h'), answer: true });
     expect(await takeCallRoute()).toBeNull();
+  });
+});
+
+describe('ended calls', () => {
+  it('are still remembered after a fresh launch ends another call first', async () => {
+    markCallEnded('one', 'hangup');
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    // New process: before anything has been read back, a cancel push arrives.
+    const onDisk = new Map(mockStore);
+    resetCallStateForTests();
+    onDisk.forEach((value, key) => mockStore.set(key, value));
+    markCallEnded('two', 'cancel_call');
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    // And another launch: both must still count as ended.
+    const later = new Map(mockStore);
+    resetCallStateForTests();
+    later.forEach((value, key) => mockStore.set(key, value));
+    expect(await isCallEnded('one')).toBe(true);
+    expect(await isCallEnded('two')).toBe(true);
   });
 });
 

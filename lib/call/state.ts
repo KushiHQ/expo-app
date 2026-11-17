@@ -56,10 +56,15 @@ function loadEnded() {
 }
 
 function saveEnded() {
-  const now = Date.now();
-  const out: Record<string, number> = {};
-  for (const [id, at] of ended) if (now - at < ENDED_TTL_MS) out[id] = at;
-  AsyncStorage.setItem(ENDED_KEY, JSON.stringify(out)).catch(() => {});
+  // Read what's stored first. A freshly started app that ends a call before it
+  // has loaded the stored set would otherwise overwrite it with just that one
+  // call, and calls that ended earlier could ring again.
+  loadEnded().then(() => {
+    const now = Date.now();
+    const out: Record<string, number> = {};
+    for (const [id, at] of ended) if (now - at < ENDED_TTL_MS) out[id] = at;
+    AsyncStorage.setItem(ENDED_KEY, JSON.stringify(out)).catch(() => {});
+  });
 }
 
 /** The call is over for this device: never ring or route to it again. */

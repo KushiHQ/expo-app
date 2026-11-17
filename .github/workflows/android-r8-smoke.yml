@@ -160,7 +160,7 @@ jobs:
           disk-size: 6000M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
-          script: APK="${{ env.APK }}" bash scripts/android-smoke/call-answer.sh smoke-out/android-11 bg-alive fcm-started-6 cold-tap shade decline
+          script: INSTALL_APK="${{ env.APK }}" bash scripts/android-smoke/call-answer.sh smoke-out/android-11 bg-alive fcm-started-6 cold-tap shade body decline
 
       - name: Upload smoke results
         if: always()

@@ -24,7 +24,7 @@ import {
   setLockScreenLaunch,
   wasAnswerRequested,
 } from '../call/state';
-import { callEndedNotice } from '../call/notice';
+import { callEndedNotice, callFailedNotice } from '../call/notice';
 import { sendCallSignal } from '../call/signal';
 import { ensureMicForCall } from '../call/permissions';
 import { callError, callLog } from '../call/log';
@@ -107,6 +107,9 @@ export const useActiveCall = () => {
       // hung up meanwhile): say so rather than just closing the screen.
       if (!isCaller && answeredRef.current && remoteJoinedAtRef.current === null && ENDED_BEFORE_CONNECT.has(reason)) {
         callEndedNotice();
+      } else if (reason === 'daily error' && remoteJoinedAtRef.current === null) {
+        // The call service refused the call before anyone connected.
+        callFailedNotice();
       }
       await clearRinging(id);
       try {
