@@ -228,7 +228,9 @@ export function ReplyQuote({ reply, mine, onPress, onClose }: { reply: ReplyRef;
 			style={[s.quote, inBubble ? { backgroundColor: mine ? 'rgba(18,12,2,0.10)' : 'rgba(255,255,255,0.06)' } : s.quoteBar]}
 		>
 			<View style={[s.quoteEdge, { backgroundColor: inBubble && mine ? color.onAmber : color.amber }]} />
-			<View style={{ flex: 1, gap: 1 }}>
+			{/* In a bubble the quote must size to its own words: `flex: 1` has no width of its own, so a reply
+			    with a short message ("Whoa") squeezed the quote into a sliver. Above the composer it fills the row. */}
+			<View style={inBubble ? { flexShrink: 1, gap: 1 } : { flex: 1, gap: 1 }}>
 				<KText v="xs" style={{ color: inBubble && mine ? color.onAmber : color.amber, fontFamily: font.bodySemi }} numberOfLines={1}>
 					{onClose ? `Replying to ${who}` : who}
 				</KText>

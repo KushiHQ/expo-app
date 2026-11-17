@@ -260,7 +260,7 @@ export const MessageBubble = memo(function MessageBubble({ m, last, highlighted,
 				</Pressable>
 			) : null}
 			{text ? (
-				<Pressable onLongPress={longPress} delayLongPress={350} style={[s.bubble, mine ? s.mine : s.theirs, m.state === 'failed' && { borderColor: color.danger, borderWidth: 1 }, quote ? { gap: 6, paddingTop: 6, paddingHorizontal: 6 } : null]}>
+				<Pressable onLongPress={longPress} delayLongPress={350} style={[s.bubble, mine ? s.mine : s.theirs, m.state === 'failed' && { borderColor: color.danger, borderWidth: 1 }, quote ? { gap: 6, paddingTop: 6, paddingHorizontal: 6, minWidth: 150 } : null]}>
 					{quote}
 					<View style={quote ? { paddingHorizontal: 8 } : null}>
 						<RichText text={text} mine={mine} />
