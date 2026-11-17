@@ -10,3 +10,10 @@ android {
     versionName "1.0.0"
   }
 }
+
+dependencies {
+  // NotificationCompat.CallStyle (incoming-call notification).
+  implementation "androidx.core:core-ktx:1.13.1"
+  // ReactApplication / ReactHost: Decline can start the JS runtime in a killed app.
+  implementation 'com.facebook.react:react-android'
+}

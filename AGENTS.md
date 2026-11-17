@@ -23,7 +23,7 @@ There is **no test setup** — no test runner, no jest config, no test script.
 - **Styling:** NativeWind (TailwindCSS for RN) with `jsxImportSource: "nativewind"` in Babel. Dynamic theme colors via `useThemeColor` hook.
 - **API Layer:** Urql (GraphQL client) for queries/mutations/subscriptions + TanStack React Query for caching/async state.
 - **State:** Zustand stores with AsyncStorage persistence in `lib/stores/`.
-- **Calls:** Daily.co (WebRTC), react-native-callkeep (iOS VoIP), lock-screen-manager (Android native module).
+- **Calls:** Daily.co (WebRTC), react-native-callkeep (iOS VoIP), lock-screen-manager (Android native module: call screen over the lock screen, and the incoming-call notification with its Answer/Decline taps — `IncomingCallNotification.kt`, `CallActions.kt`). All call entry points go through `lib/call/state.ts`; `scripts/android-smoke/call-answer.sh` taps the notification on an emulator in every app state.
 - **Notifications:** Firebase Cloud Messaging + Notifee for local display + foreground service.
 - **New Architecture enabled** (Fabric, TurboModules), Hermes JS engine.
 

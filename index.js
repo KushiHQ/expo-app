@@ -6,7 +6,7 @@ import './lib/notifications/background-handler';
 import 'expo-router/entry';
 import messaging from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
-import { handleIncomingCall } from './lib/utils/call';
+import { handleIncomingCall, startCallActions } from './lib/utils/call';
 import {
   handleIncomingAppUpdate,
   handleIncomingChatMessage,
@@ -18,6 +18,11 @@ import { onIosCallPush, setupIosCalls } from './lib/call/ios';
 // iOS: PushKit + CallKit (lib/call/ios.ts). Registered at bundle load so
 // CallKit events queued during a cold start are picked up.
 setupIosCalls();
+
+// Android: taps on the incoming-call notification (Answer, Decline, the
+// lock-screen launch) are kept natively until JS asks for them. Asking here, at
+// bundle load, covers an app that was started by the tap itself.
+startCallActions();
 
 messaging().setBackgroundMessageHandler(async (remoteMessage) => {
   const data = remoteMessage.data;

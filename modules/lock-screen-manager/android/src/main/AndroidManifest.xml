@@ -1,2 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application>
+    <!-- Decline (and a swipe-away) on the incoming-call notification: handled
+         without opening the app. -->
+    <receiver
+      android:name=".IncomingCallReceiver"
+      android:exported="false" />
+  </application>
 </manifest>

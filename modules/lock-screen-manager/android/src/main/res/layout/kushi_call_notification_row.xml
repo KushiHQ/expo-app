@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Incoming call on Android 8–11, collapsed (a 64dp row, also what the lock
+     screen shows): who is calling on the left, Decline and Answer on the right. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="64dp"
+  android:gravity="center_vertical"
+  android:orientation="horizontal"
+  android:paddingStart="16dp"
+  android:paddingEnd="16dp">
+
+  <LinearLayout
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:orientation="vertical">
+
+    <TextView
+      android:id="@+id/kushi_call_title"
+      style="@style/TextAppearance.Compat.Notification.Title"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:ellipsize="end"
+      android:singleLine="true" />
+
+    <TextView
+      android:id="@+id/kushi_call_text"
+      style="@style/TextAppearance.Compat.Notification.Info"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:ellipsize="end"
+      android:singleLine="true" />
+  </LinearLayout>
+
+  <TextView
+    android:id="@+id/kushi_call_decline"
+    android:layout_width="wrap_content"
+    android:layout_height="40dp"
+    android:layout_marginStart="12dp"
+    android:background="@drawable/kushi_call_decline"
+    android:gravity="center"
+    android:minWidth="88dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:text="Decline"
+    android:textColor="#FFFFFF"
+    android:textSize="15sp"
+    android:textStyle="bold" />
+
+  <TextView
+    android:id="@+id/kushi_call_answer"
+    android:layout_width="wrap_content"
+    android:layout_height="40dp"
+    android:layout_marginStart="8dp"
+    android:background="@drawable/kushi_call_answer"
+    android:gravity="center"
+    android:minWidth="88dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:text="Answer"
+    android:textColor="#FFFFFF"
+    android:textSize="15sp"
+    android:textStyle="bold" />
+</LinearLayout>

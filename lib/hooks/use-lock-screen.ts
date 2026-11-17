@@ -1,38 +1,36 @@
 import { useEffect, useRef, useState } from 'react';
 import { BackHandler, Platform } from 'react-native';
 import { usePathname } from 'expo-router';
-import notifee, { EventType } from '@notifee/react-native';
 import { setShowWhenLocked } from 'lock-screen-manager';
+import { isLockScreenLaunch as lockScreenLaunch, setLockScreenLaunch } from '../call/state';
+import { EventEmitter } from '../utils/event-emitter';
 
-export const useLockScreen = () => {
+/**
+ * Android: lets the call screen show over the lock screen, and sends the phone
+ * back to its lock screen once a call that was launched from there closes.
+ *
+ * Whether the app was launched over the lock screen comes from the call state
+ * (set when the notification's full-screen launch is handled). This hook used
+ * to read Notifee's launch notification itself, which Notifee hands out only
+ * once, so the notification provider's cold-start handling never saw it.
+ *
+ * `root`: the one instance in the root layout, which owns the exit.
+ */
+export const useLockScreen = ({ root = false }: { root?: boolean } = {}) => {
   const pathname = usePathname();
-  const [isLockScreenLaunch, setIsLockScreenLaunch] = useState(false);
+  const [isLockScreenLaunch, setIsLockScreenLaunch] = useState(lockScreenLaunch());
 
   // Enable lock screen display only while on a call screen.
   useEffect(() => {
-    if (Platform.OS !== 'android') return;
+    if (Platform.OS !== 'android' || !root) return;
     setShowWhenLocked(pathname.includes('/call/'));
-  }, [pathname]);
+  }, [pathname, root]);
 
   useEffect(() => {
-    if (Platform.OS === 'android') {
-      notifee.getInitialNotification().then((initial) => {
-        if (initial?.pressAction?.id === 'full_screen') {
-          setIsLockScreenLaunch(true);
-        }
-      });
-
-      const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {
-        if (
-          (type === EventType.PRESS || type === EventType.ACTION_PRESS) &&
-          detail.pressAction?.id === 'full_screen'
-        ) {
-          setIsLockScreenLaunch(true);
-        }
-      });
-
-      return unsubscribe;
-    }
+    if (Platform.OS !== 'android') return;
+    setIsLockScreenLaunch(lockScreenLaunch());
+    EventEmitter.on('lock_screen_launch', setIsLockScreenLaunch);
+    return () => EventEmitter.off('lock_screen_launch', setIsLockScreenLaunch);
   }, []);
 
   // Launched over the lock screen for a call: once that call screen closes, go
@@ -41,15 +39,20 @@ export const useLockScreen = () => {
   // app could close itself before the call ever appeared.)
   const wasOnCall = useRef(false);
   useEffect(() => {
-    if (!isLockScreenLaunch) return;
+    if (!root || !isLockScreenLaunch) return;
     if (pathname.includes('/call/')) {
       wasOnCall.current = true;
       return;
     }
     if (!wasOnCall.current) return;
-    const timer = setTimeout(() => BackHandler.exitApp(), 500);
+    const timer = setTimeout(() => {
+      // The next launch of the app is an ordinary one.
+      wasOnCall.current = false;
+      setLockScreenLaunch(false);
+      BackHandler.exitApp();
+    }, 500);
     return () => clearTimeout(timer);
-  }, [isLockScreenLaunch, pathname]);
+  }, [root, isLockScreenLaunch, pathname]);
 
   return { isLockScreenLaunch };
 };

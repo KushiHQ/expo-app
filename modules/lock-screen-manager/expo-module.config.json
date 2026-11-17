@@ -1,6 +1,9 @@
 {
   "platforms": ["android"],
   "android": {
-    "modules": ["expo.modules.lockscreenmanager.LockScreenManagerModule"]
+    "modules": [
+      "expo.modules.lockscreenmanager.LockScreenManagerModule",
+      "expo.modules.lockscreenmanager.IncomingCallModule"
+    ]
   }
 }

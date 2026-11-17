@@ -21,7 +21,10 @@ import {
   isRingFresh,
   markCallEnded,
   setActiveCallScreen,
+  setLockScreenLaunch,
+  wasAnswerRequested,
 } from '../call/state';
+import { callEndedNotice } from '../call/notice';
 import { sendCallSignal } from '../call/signal';
 import { ensureMicForCall } from '../call/permissions';
 import { callError, callLog } from '../call/log';
@@ -33,6 +36,8 @@ const callerRingtone = require('@/assets/audio/caller-ringtone.mp3');
 const CALLER_RING_MS = 45_000;
 /** Callee joined but the caller never shows up (they hung up meanwhile). */
 const EMPTY_ROOM_MS = 20_000;
+/** Ways an answered call can end before it connects that the callee didn't choose. */
+const ENDED_BEFORE_CONNECT = new Set(['already ended', 'remote ended', 'ended elsewhere', 'caller gone', 'remote left']);
 
 type Phase = 'ringing' | 'connecting' | 'active';
 
@@ -58,6 +63,9 @@ export const useActiveCall = () => {
   const id = String(params.id);
   const callId = String(params.callId);
   const isCaller = params.initiate === 'true';
+  // Answer was tapped before this screen opened: on the notification (the
+  // route carries accept=true) or while the screen was on its way up.
+  const accepted = params.accept === 'true' || wasAnswerRequested(callId);
   const { isLockScreenLaunch } = useLockScreen();
 
   const [call, setCall] = useState<DailyCall | null>(null);
@@ -65,7 +73,7 @@ export const useActiveCall = () => {
   const [remoteParticipant, setRemoteParticipant] = useState<DailyParticipant | null>(null);
   const [cameraEnabled, setCameraEnabled] = useState(isVideoCall);
   const [micEnabled, setMicEnabled] = useState(true);
-  const [phase, setPhase] = useState<Phase>(params.accept === 'true' ? 'connecting' : 'ringing');
+  const [phase, setPhase] = useState<Phase>(accepted ? 'connecting' : 'ringing');
   const [reconnecting, setReconnecting] = useState(false);
   const [isSpeakerOn, setIsSpeakerOn] = useState(isVideoCall);
   const [, sendNotification] = useSendChatCallNotificationMutation();
@@ -73,6 +81,8 @@ export const useActiveCall = () => {
   const isRinging = phase === 'ringing';
   const hasLeftRef = useRef(false);
   const joinStartedRef = useRef(false);
+  /** The callee answered (any way); set even before the call object exists. */
+  const answeredRef = useRef(accepted);
   const remoteJoinedAtRef = useRef<number | null>(null);
   const callRef = useRef<DailyCall | null>(null);
   callRef.current = call;
@@ -93,6 +103,11 @@ export const useActiveCall = () => {
       hasLeftRef.current = true;
       callLog('leave', { callId, reason, isCaller });
       markCallEnded(callId, reason);
+      // Answered, but the call was gone before anyone connected (the caller
+      // hung up meanwhile): say so rather than just closing the screen.
+      if (!isCaller && answeredRef.current && remoteJoinedAtRef.current === null && ENDED_BEFORE_CONNECT.has(reason)) {
+        callEndedNotice();
+      }
       await clearRinging(id);
       try {
         ringback.pause();
@@ -121,6 +136,8 @@ export const useActiveCall = () => {
 
       if (opts.navigate === false) return;
       if (isLockScreenLaunch) {
+        // Back to the lock screen; the next launch is an ordinary one.
+        setLockScreenLaunch(false);
         BackHandler.exitApp();
         return;
       }
@@ -178,9 +195,13 @@ export const useActiveCall = () => {
   /** Callee: answer (button on this screen, the notification, or CallKit). */
   const answer = useCallback(async () => {
     if (isCaller || hasLeftRef.current || joinStartedRef.current) return;
-    callLog('answer', { callId });
+    callLog('answer', { callId, ready: !!callRef.current });
+    answeredRef.current = true;
     setPhase('connecting');
     await clearRinging(id);
+    // No call object yet (Answer landed while the screen was mounting): the
+    // start effect joins as soon as there is one.
+    if (!callRef.current) return;
     if (Platform.OS === 'ios' && !isCallKitAnswered(callId)) {
       // Keep CallKit in step when the in-app button answers a CallKit call.
       try {
@@ -195,14 +216,14 @@ export const useActiveCall = () => {
   // ── Screen registration + stale-ring guard ────────────────────────────────
   useEffect(() => {
     setActiveCallScreen(callId);
-    callLog('screen.open', { callId, isCaller, accept: params.accept === 'true' });
+    callLog('screen.open', { callId, isCaller, accept: accepted });
     let cancelled = false;
     if (!isCaller) {
       isCallEnded(callId).then((ended) => {
         if (cancelled) return;
         // A call that's already over (or a ring older than the ring window)
         // never shows a ringing screen, e.g. after relaunching a killed app.
-        if (ended || (params.accept !== 'true' && !isRingFresh(params.at))) {
+        if (ended || (!answeredRef.current && !isRingFresh(params.at))) {
           leaveRef.current(ended ? 'already ended' : 'stale ring');
         }
       });
@@ -376,7 +397,7 @@ export const useActiveCall = () => {
             return;
           }
           await join();
-        } else if (params.accept === 'true') {
+        } else if (answeredRef.current || wasAnswerRequested(callId)) {
           await answerRef.current();
         } else if (isVideoCall) {
           await call.startCamera();

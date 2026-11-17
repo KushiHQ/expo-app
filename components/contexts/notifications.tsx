@@ -12,15 +12,27 @@ import {
   AuthorizationStatus,
 } from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
-import { clearRinging, handleIncomingCall, handleNotifeeEvent, isEndIntent, isRingIntent } from '@/lib/utils/call';
+import {
+  activeCallNotifications,
+  clearRinging,
+  drainCallActions,
+  handleIncomingCall,
+  handleNotifeeEvent,
+  isEndIntent,
+  isRingIntent,
+} from '@/lib/utils/call';
 import {
   callFromData,
   canRing,
-  getActiveCallScreen,
+  hasCallScreen,
+  markAnswerRequested,
+  markCallScreenOpening,
   requestCallRoute,
+  setLockScreenLaunch,
   takeCallRoute,
 } from '@/lib/call/state';
 import { callLog } from '@/lib/call/log';
+import { callEndedNotice } from '@/lib/call/notice';
 import { useRootNavigationState } from 'expo-router';
 import { handleIncomingAppUpdate, handleIncomingChatMessage } from '@/lib/utils/notifications';
 import { isAppUpdateIntent, openAppStore } from '@/lib/utils/urls';
@@ -119,35 +131,65 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
   const navReady = !!useRootNavigationState()?.key;
   React.useEffect(() => {
     if (!navReady) return;
-    let busy = false;
+    let running = false;
+    let again = false;
+    const routeNext = async () => {
+      const taken = await takeCallRoute();
+      if (!taken) return;
+      const { route, status } = taken;
+      if (status !== 'ok') {
+        // Answer was tapped, but the call is over: say so.
+        callEndedNotice(route.caller);
+        return;
+      }
+      if (route.answer) markAnswerRequested(route.callId);
+      if (hasCallScreen(route.callId)) {
+        // The screen is up (or opening): it joins; never a second screen.
+        if (route.answer) EventEmitter.emit('call_answer', route.callId);
+        return;
+      }
+      callLog('route.navigate', { callId: route.callId, answer: route.answer });
+      markCallScreenOpening(route.callId);
+      router.push({
+        pathname: route.kind === 'video' ? '/chats/[id]/call/video' : '/chats/[id]/call/voice',
+        params: {
+          id: route.chatId,
+          initiate: 'false',
+          callId: route.callId,
+          ...(route.answer ? { accept: 'true' } : {}),
+          ...(route.at ? { at: String(route.at) } : {}),
+        },
+      });
+    };
+    // One request at a time; a request that arrives meanwhile is routed right
+    // after. (It used to be skipped, and could then sit parked until the app
+    // was next brought to the foreground.)
     const drain = async () => {
-      if (busy) return;
-      busy = true;
+      if (running) {
+        again = true;
+        return;
+      }
+      running = true;
       try {
-        const route = await takeCallRoute();
-        if (!route) return;
-        if (getActiveCallScreen() === route.callId) {
-          if (route.answer) EventEmitter.emit('call_answer', route.callId);
-          return;
-        }
-        callLog('route.navigate', { callId: route.callId, answer: route.answer });
-        router.push({
-          pathname: route.kind === 'video' ? '/chats/[id]/call/video' : '/chats/[id]/call/voice',
-          params: {
-            id: route.chatId,
-            initiate: 'false',
-            callId: route.callId,
-            ...(route.answer ? { accept: 'true' } : {}),
-            ...(route.at ? { at: String(route.at) } : {}),
-          },
-        });
+        do {
+          again = false;
+          await routeNext();
+        } while (again);
+      } catch (e) {
+        console.warn('call route:', e);
       } finally {
-        busy = false;
+        running = false;
       }
     };
-    drain();
+    // Android: pick up what was tapped on the call notification (a cold start
+    // from Answer carries it on the launch intent), then route it.
+    const pull = () => {
+      drainCallActions();
+      drain();
+    };
+    pull();
     EventEmitter.on('call_route', drain);
-    const sub = AppState.addEventListener('change', (st) => st === 'active' && drain());
+    const sub = AppState.addEventListener('change', (st) => st === 'active' && pull());
     return () => {
       EventEmitter.off('call_route', drain);
       sub.remove();
@@ -239,11 +281,16 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
     // (missed, cancelled, declined, or left over from a killed app) is cleared.
     const handleAppStateChange = async (nextAppState: AppStateStatus) => {
       if (nextAppState !== 'active' || Platform.OS !== 'android') return;
-      const notifications = await notifee.getDisplayedNotifications();
-      for (const n of notifications) {
-        const data = n.notification.data;
+      // The native call notification, plus Notifee's for a build without it.
+      const shown: Record<string, unknown>[] = activeCallNotifications();
+      try {
+        for (const n of await notifee.getDisplayedNotifications()) {
+          if (n.notification.data) shown.push(n.notification.data);
+        }
+      } catch {}
+      for (const data of shown) {
         if (!isRingIntent(data?.intent)) continue;
-        const call = callFromData(data as Record<string, unknown>);
+        const call = callFromData(data);
         if (!call) continue;
         if (await canRing(call)) {
           requestCallRoute({ ...call, answer: false });
@@ -262,6 +309,7 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
     notifee.getInitialNotification().then(async (initialNotification) => {
       if (initialNotification) {
         const isAction = initialNotification.pressAction?.id !== 'default';
+        if (initialNotification.pressAction?.id === 'full_screen') setLockScreenLaunch(true);
 
         await handleNotifeeEvent({
           type: isAction ? EventType.ACTION_PRESS : EventType.PRESS,

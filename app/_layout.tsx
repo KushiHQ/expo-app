@@ -65,7 +65,7 @@ function RootLayout() {
   const pathname = usePathname();
   const params = useLocalSearchParams();
 
-  useLockScreen();
+  useLockScreen({ root: true });
 
   // Configure a baseline playback audio session on launch. Without this, every
   // expo-audio play() (message-send sound, notification sound, call ringtone,
