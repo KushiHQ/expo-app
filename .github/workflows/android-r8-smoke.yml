@@ -7,6 +7,12 @@ name: Android · R8 smoke test
 # Run it by hand (Actions → Run workflow) after changing keep rules or native libraries.
 on:
   workflow_dispatch:
+    inputs:
+      r8:
+        description: 'Which builds to test'
+        type: choice
+        default: both
+        options: [both, 'on', 'off']
 
 concurrency:
   group: android-r8-smoke-${{ github.ref }}
@@ -20,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        r8: ['on', 'off']
+        r8: ${{ fromJSON(inputs.r8 == 'both' && '["on","off"]' || format('["{0}"]', inputs.r8)) }}
     env:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
@@ -140,6 +146,22 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -camera-back emulated -camera-front emulated
           script: bash scripts/android-smoke/run.sh "${{ env.APK }}" smoke-out
 
+      # The incoming-call notification is drawn differently before Android 12
+      # (no system call style), so check it there too.
+      - name: Incoming-call notification on Android 11
+        if: matrix.r8 == 'on'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel_4
+          ram-size: 4096M
+          disk-size: 6000M
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          script: APK="${{ env.APK }}" bash scripts/android-smoke/call-answer.sh smoke-out/android-11 bg-alive fcm-started-6 cold-tap shade decline
+
       - name: Upload smoke results
         if: always()
         uses: actions/upload-artifact@v4
@@ -153,4 +175,10 @@ jobs:
         run: |
           echo "Smoke test failed: $SMOKE_FAILED"
           cat smoke-out/crashes.txt || true
+          exit 1
+
+      - name: Fail if an incoming-call check failed
+        if: env.CALL_ANSWER_FAILED != ''
+        run: |
+          cat smoke-out/call-answer.txt smoke-out/android-11/call-answer.txt || true
           exit 1

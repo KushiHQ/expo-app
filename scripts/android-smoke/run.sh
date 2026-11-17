@@ -109,6 +109,9 @@ push --es intent cancel_call --es chatId smoke-call --es callId smoke-call
 sleep 5; shot 24-call-cancelled
 notifications call-cancelled
 
+# ── Incoming call: Answer / Decline on the notification, in every app state ──
+bash "$HERE/call-answer.sh" "$OUT"
+
 sleep 5
 kill $LOGCAT_PID 2>/dev/null || true
 
