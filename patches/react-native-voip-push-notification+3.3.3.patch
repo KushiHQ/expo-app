@@ -12,7 +12,7 @@ index 054ef59..97c12bf 100644
  typedef void (^RNVoipPushNotificationCompletion)(void);
  
 diff --git a/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.m b/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.m
-index f4b3701..15fa24f 100644
+index f4b3701..3af5c50 100644
 --- a/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.m
 +++ b/node_modules/react-native-voip-push-notification/ios/RNVoipPushNotification/RNVoipPushNotificationManager.m
 @@ -13,6 +13,25 @@
@@ -41,7 +41,7 @@ index f4b3701..15fa24f 100644
  
  NSString *const RNVoipPushRemoteNotificationsRegisteredEvent = @"RNVoipPushRemoteNotificationsRegisteredEvent";
  NSString *const RNVoipPushRemoteNotificationReceivedEvent = @"RNVoipPushRemoteNotificationReceivedEvent";
-@@ -26,6 +45,21 @@ NSString *const RNVoipPushDidLoadWithEvents = @"RNVoipPushDidLoadWithEvents";
+@@ -26,7 +45,24 @@ NSString *const RNVoipPushDidLoadWithEvents = @"RNVoipPushDidLoadWithEvents";
  
  RCT_EXPORT_MODULE();
  
@@ -61,9 +61,12 @@ index f4b3701..15fa24f 100644
 +}
 +
  static bool _isVoipRegistered = NO;
++// Kushi: PushKit only delivers to a registry the app keeps a strong reference to.
++static PKPushRegistry *_voipRegistry = nil;
  static NSString *_lastVoipToken = @"";
  static NSMutableDictionary<NSString *, RNVoipPushNotificationCompletion> *completionHandlers = nil;
-@@ -138,14 +172,95 @@ static NSMutableDictionary<NSString *, RNVoipPushNotificationCompletion> *comple
+ 
+@@ -138,14 +174,96 @@ static NSMutableDictionary<NSString *, RNVoipPushNotificationCompletion> *comple
          dispatch_async(mainQueue, ^{
              // --- Create a push registry object
              PKPushRegistry * voipRegistry = [[PKPushRegistry alloc] initWithQueue: mainQueue];
@@ -73,6 +76,7 @@ index f4b3701..15fa24f 100644
 +            voipRegistry.delegate = [RNVoipPushNotificationManager sharedInstance];
              // ---  Set the push type to VoIP
              voipRegistry.desiredPushTypes = [NSSet setWithObject:PKPushTypeVoIP];
++            _voipRegistry = voipRegistry;
          });
      }
  }

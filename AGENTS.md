@@ -45,7 +45,8 @@ Config: `codegen.ts` — schema `https://devapi.kushicorp.com/graphql`. Run `pnp
 
 - **Gradle pinned to 8.13** via custom config plugin (`withGradleVersion`). Do not upgrade — 8.14 breaks the build.
 - **JVM heap set to 6GB** (`withGradleJvmArgs`) for dex merging and R8; the JVM exits on OOM instead of hanging.
-- `react-native-callkeep` is **Android-only** (nulled on iOS in `react-native.config.js`).
+- `react-native-callkeep` is **iOS-only** (nulled on Android in `react-native.config.js`). iOS VoIP → CallKit reporting is native, in `patches/react-native-voip-push-notification+3.3.3.patch`.
+- Android Play hardware checks: `lib/plugins/withOptionalHardware.js` marks library-implied features (portrait screen, Wi-Fi) as not required.
 - Prebuild step may be needed: `npx expo prebuild` before `expo run:android`/`expo run:ios`.
 
 ## Config Sources
