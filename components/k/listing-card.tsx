@@ -6,6 +6,7 @@ import { Heart, Star } from 'lucide-react-native';
 import { color, font, radius } from '@/lib/k/theme';
 import { naira, perInterval, place } from '@/lib/k/format';
 import { TIERS } from '@/lib/k/tiers';
+import { shownAssetId } from '@/lib/k/listing';
 import { isSignedIn, requireSignIn } from '@/lib/k/session';
 import { useCreateUpdateSavedHostingMutation, useDeleteSavedHostingMutation, type HostingsQuery } from '@/lib/services/graphql/generated';
 import { Photo } from './surface';
@@ -30,7 +31,7 @@ export function useSaveToggle(id: string, initial?: boolean | null) {
 }
 
 function photosOf(h: CardHosting): string[] {
-	const ids = [h.coverImage?.asset?.id, ...(h.images ?? []).map((i) => i.asset?.id)].filter(Boolean) as string[];
+	const ids = [shownAssetId(h.coverImage), ...(h.images ?? []).map((i) => shownAssetId(i))].filter(Boolean) as string[];
 	return [...new Set(ids)].slice(0, 5);
 }
 

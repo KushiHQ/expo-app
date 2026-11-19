@@ -32,7 +32,7 @@ import { color, font, gutter, radius } from '@/lib/k/theme';
 import { centered, maxWidth, useLayout } from '@/lib/k/layout';
 import { date, duration, humanize, intervalAdverb, isShortLet, naira, perInterval, place } from '@/lib/k/format';
 import { TIERS, TIER_ORDER, tierRank } from '@/lib/k/tiers';
-import { listingMode, listingPhotos, roomLabel, shareUrl, type Listing } from '@/lib/k/listing';
+import { listingMode, listingPhotos, roomLabel, shareUrl, shownAssetId, type Listing } from '@/lib/k/listing';
 import { isSignedIn, requireSignIn } from '@/lib/k/session';
 import { useUserStore } from '@/lib/stores/users';
 import { toast } from '@/lib/hooks/use-toast';
@@ -285,16 +285,16 @@ function Detail({ h }: { h: Listing }) {
 						contentContainerStyle={{ gap: 12 }}
 						renderItem={({ item: r }) => (
 							<Pressable
-								disabled={!r.images?.[0]?.asset?.id}
+								disabled={!shownAssetId(r.images?.[0])}
 								onPress={() => {
-									const start = Math.max(0, photos.findIndex((p) => p.id === r.images?.[0]?.asset?.id));
+									const start = Math.max(0, photos.findIndex((p) => p.id === shownAssetId(r.images?.[0])));
 									router.push({ pathname: '/hostings/[id]/gallery', params: { id: h.id, start: String(start) } });
 								}}
 								accessibilityRole="button"
 								accessibilityLabel={`See photos of ${roomLabel(r.name)}`}
 								style={({ pressed }) => [{ width: 160, gap: 6 }, pressed && { opacity: 0.8 }]}
 							>
-								<Photo assetId={r.images?.[0]?.asset?.id} w={400} h={300} style={{ width: 160, height: 116 }} />
+								<Photo assetId={shownAssetId(r.images?.[0])} w={400} h={300} style={{ width: 160, height: 116 }} />
 								<KText v="smallStrong">
 									{roomLabel(r.name)}
 									{(r.count ?? 1) > 1 ? ` × ${r.count}` : ''}
@@ -331,7 +331,7 @@ function Detail({ h }: { h: Listing }) {
 					<KText v="heading">Units in this property</KText>
 					{(h.children ?? []).map((u) => (
 						<Pressable key={u.id} onPress={() => router.push(`/hostings/${u.id}`)} style={({ pressed }) => [s.unit, pressed && { opacity: 0.8 }]}>
-							<Photo assetId={u.coverImage?.asset?.id} w={300} h={220} style={{ width: 84, height: 64 }} />
+							<Photo assetId={shownAssetId(u.coverImage)} w={300} h={220} style={{ width: 84, height: 64 }} />
 							<View style={{ flex: 1, gap: 2 }}>
 								<KText v="smallStrong" numberOfLines={1}>
 									{u.title}

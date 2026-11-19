@@ -116,6 +116,10 @@ export const HOSTING_QUERY = gql`
             lastUpdated
             originalFilename
           }
+          enhancedAsset {
+            id
+            publicUrl
+          }
         }
       }
       title
@@ -157,6 +161,10 @@ export const HOSTING_QUERY = gql`
             publicUrl
             lastUpdated
           }
+          enhancedAsset {
+            id
+            publicUrl
+          }
         }
       }
       host {
@@ -196,6 +204,10 @@ export const HOSTING_QUERY = gql`
           publicUrl
           lastUpdated
         }
+        enhancedAsset {
+          id
+          publicUrl
+        }
       }
       hostingImages(variant: POSTER) {
         id
@@ -225,6 +237,10 @@ export const HOSTING_QUERY = gql`
           publicUrl
           lastUpdated
           originalFilename
+        }
+        enhancedAsset {
+          id
+          publicUrl
         }
       }
       paymentDetails {
@@ -383,6 +399,10 @@ export const HOSTINGS_QUERY = gql`
           publicUrl
           lastUpdated
         }
+        enhancedAsset {
+          id
+          publicUrl
+        }
       }
       images(limit: 4) {
         id
@@ -391,6 +411,10 @@ export const HOSTINGS_QUERY = gql`
           publicUrl
           lastUpdated
           originalFilename
+        }
+        enhancedAsset {
+          id
+          publicUrl
         }
       }
       paymentInterval

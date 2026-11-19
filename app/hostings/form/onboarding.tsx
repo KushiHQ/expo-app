@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { BarChart3, Copy, CopyPlus, ExternalLink, Inbox, MoreHorizontal, Plus, Rocket, ShieldCheck, Trash2 } from 'lucide-react-native';
+import { BarChart3, Copy, CopyPlus, ExternalLink, Inbox, MoreHorizontal, Plus, Rocket, ShieldCheck, Sparkles, Trash2 } from 'lucide-react-native';
 import { useMutation } from 'urql';
 import { Button, Card, Check, Divider, Empty, Eyebrow, Header, IconButton, KText, Notice, Photo, Pill, Row, Screen, Sheet, Skeleton, Stepper } from '@/components/k';
 import { HostListingRow, PUBLISH } from '@/components/k/host-bits';
@@ -194,6 +194,8 @@ export default function ListingHub() {
 					<>
 						<Divider />
 						<Row icon={<Rocket size={17} color={color.fg} />} title="Boost" detail="Show up higher in search for a while" onPress={() => router.push(`/hostings/${id}/boost` as Href)} />
+						<Divider />
+						<Row icon={<Sparkles size={17} color={color.fg} />} title="Improved photos" detail="Photos Kushi improved; choose what renters see" onPress={() => router.push(`/hostings/${id}/photos` as Href)} />
 					</>
 				) : null}
 			</View>

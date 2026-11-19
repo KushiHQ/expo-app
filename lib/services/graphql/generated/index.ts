@@ -664,6 +664,98 @@ export type AdminVerificationTierResponse = {
   message: Scalars['String']['output'];
 };
 
+export type AgentEditRule = {
+  __typename?: 'AgentEditRule';
+  description: Scalars['String']['output'];
+  key: Scalars['String']['output'];
+};
+
+export type AgentKey = {
+  __typename?: 'AgentKey';
+  /** Not expired and not revoked. */
+  active: Scalars['Boolean']['output'];
+  createdAt: Scalars['String']['output'];
+  createdByName?: Maybe<Scalars['String']['output']>;
+  expiresAt: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  lastUsedAt?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+  /** The first characters of the key, to recognise it by. */
+  prefix: Scalars['String']['output'];
+  revokedAt?: Maybe<Scalars['String']['output']>;
+  uploads: Scalars['Int']['output'];
+  useCount: Scalars['Int']['output'];
+};
+
+export type AgentKeyCall = {
+  __typename?: 'AgentKeyCall';
+  createdAt: Scalars['String']['output'];
+  endpoint?: Maybe<Scalars['String']['output']>;
+  error?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  ip?: Maybe<Scalars['String']['output']>;
+  ok: Scalars['Boolean']['output'];
+  operation?: Maybe<Scalars['String']['output']>;
+};
+
+export type AgentListing = {
+  __typename?: 'AgentListing';
+  city?: Maybe<Scalars['String']['output']>;
+  createdAt: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  /** Room photos on the listing. */
+  photos: Scalars['Int']['output'];
+  /** Room photos with no Pending or Approved enhanced version yet. */
+  photosToDo: Scalars['Int']['output'];
+  propertyType?: Maybe<Scalars['String']['output']>;
+  state?: Maybe<Scalars['String']['output']>;
+  title?: Maybe<Scalars['String']['output']>;
+  url: Scalars['String']['output'];
+  /** Times the listing page was opened. */
+  views: Scalars['Int']['output'];
+};
+
+export type AgentListingDetail = {
+  __typename?: 'AgentListingDetail';
+  listing: AgentListing;
+  photos: Array<AgentPhoto>;
+};
+
+export type AgentListingPage = {
+  __typename?: 'AgentListingPage';
+  items: Array<AgentListing>;
+  total: Scalars['Int']['output'];
+};
+
+export enum AgentListingSort {
+  MostViewed = 'MOST_VIEWED',
+  Newest = 'NEWEST'
+}
+
+export type AgentPhoto = {
+  __typename?: 'AgentPhoto';
+  contentType?: Maybe<Scalars['String']['output']>;
+  /** The original, full size. Public URL; download it as it is. */
+  downloadUrl: Scalars['String']['output'];
+  /** Use this id to upload the enhanced version. */
+  id: Scalars['String']['output'];
+  isCover: Scalars['Boolean']['output'];
+  /** The newest enhanced version of the current photo, if any. */
+  latest?: Maybe<PhotoEnhancement>;
+  /** True when this photo still needs an enhanced version from you. */
+  needsWork: Scalars['Boolean']['output'];
+  /** Why earlier versions were rejected (newest first). Fix exactly that. */
+  rejectionNotes: Array<Scalars['String']['output']>;
+  /** The room's label, e.g. "Bedroom 1", "Kitchen". */
+  room: Scalars['String']['output'];
+  roomDescription?: Maybe<Scalars['String']['output']>;
+  roomId: Scalars['String']['output'];
+  sequence: Scalars['Int']['output'];
+  sizeBytes: Scalars['Int']['output'];
+  /** Why you left it as it was, if you skipped it. */
+  skippedReason?: Maybe<Scalars['String']['output']>;
+};
+
 /** A single review left on an agent (with the reviewer's public identity). */
 export type AgentReview = {
   __typename?: 'AgentReview';
@@ -1112,6 +1204,13 @@ export type CreateHostLeadInput = {
   note?: InputMaybe<Scalars['String']['input']>;
   phone: Scalars['String']['input'];
   propertyType?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type CreatedAgentKey = {
+  __typename?: 'CreatedAgentKey';
+  key: AgentKey;
+  /** The key itself. Shown this once; it is never stored or shown again. */
+  token: Scalars['String']['output'];
 };
 
 /** How the property's electricity is billed — a key renter concern in Nigeria. */
@@ -1927,8 +2026,16 @@ export type HostingRoomImagesArgs = {
 
 export type HostingRoomImage = {
   __typename?: 'HostingRoomImage';
+  /** The photo as the host uploaded it (always the original). */
   asset: Asset;
   createdAt: Scalars['String']['output'];
+  /**
+   * An improved version of this photo (better light, colour, sharpness),
+   * made by Kushi's photo editor, approved by staff and kept by the host.
+   * Show it to guests instead of `asset`, with a way to see the original.
+   * Null when there is none.
+   */
+  enhancedAsset?: Maybe<Asset>;
   id: Scalars['String']['output'];
   lastUpdated: Scalars['String']['output'];
   /** Display ordering key — higher sorts first; the highest is the cover. */
@@ -2285,6 +2392,8 @@ export type Mutations = {
   adminCancelPayout: Scalars['Boolean']['output'];
   /** Complete an interaction with a structured outcome + summary note. */
   adminCompleteFieldInteraction: FieldInteractionResponse;
+  /** Make a key for an outside agent. The key is returned this once. */
+  adminCreateAgentKey: CreatedAgentKey;
   /** Create a standalone contact (lead). */
   adminCreateContact: ContactResponse;
   /**
@@ -2381,6 +2490,14 @@ export type Mutations = {
    */
   adminRetryPayout: Scalars['Boolean']['output'];
   adminReviewHostingVerificationRequest: HostingVerificationRequestResponse;
+  /**
+   * Approve or reject enhanced photos. Approving shows the enhanced version
+   * to guests (the original stays) and tells the host; rejecting needs a
+   * note saying what's wrong, which the agent reads.
+   */
+  adminReviewPhotoEnhancements: Array<PhotoEnhancement>;
+  /** Revoke a key. It stops working straight away. */
+  adminRevokeAgentKey: Scalars['Boolean']['output'];
   /** Withdraw an invitation that hasn't been accepted. Needs `staff.invite`. */
   adminRevokeStaffInvitation: Scalars['Boolean']['output'];
   /**
@@ -2491,6 +2608,17 @@ export type Mutations = {
    */
   adminUpdateUserStatus: Scalars['Boolean']['output'];
   adminUpdateVerificationTier: AdminVerificationTierResponse;
+  /**
+   * Leave a photo as it is (already good, or not fixable without changing
+   * the property). It won't be offered again unless the host replaces it.
+   */
+  agentSkipPhoto: Scalars['Boolean']['output'];
+  /**
+   * Upload an enhanced version of a room photo. It is stored next to the
+   * original (which is never changed) as Pending, until staff review it.
+   * A newer upload for the same photo replaces a Pending one.
+   */
+  agentUploadEnhancedPhoto: PhotoEnhancement;
   appleLogin: AuthTokenResponse;
   appleSignUp: AuthTokenResponse;
   cancelBooking: MessageResponse;
@@ -2680,6 +2808,10 @@ export type Mutations = {
    * at 5 minutes. Reuses the video-walkthrough record (shown in the gallery).
    */
   setHostingVideo: VideoWalkthroughResponse;
+  /** Use the improved versions of every photo on a listing (true) or all your originals (false). */
+  setListingPhotoEnhancementsInUse: Scalars['Int']['output'];
+  /** Show guests the improved photo (true) or your original (false). */
+  setPhotoEnhancementInUse: PhotoEnhancement;
   signUp: UserResponse;
   submitFeedback: Feedback;
   submitNps: Npsscore;
@@ -2783,6 +2915,12 @@ export type MutationsAdminCancelPayoutArgs = {
 
 export type MutationsAdminCompleteFieldInteractionArgs = {
   input: AdminCompleteFieldInteractionInput;
+};
+
+
+export type MutationsAdminCreateAgentKeyArgs = {
+  days: Scalars['Int']['input'];
+  name: Scalars['String']['input'];
 };
 
 
@@ -2932,6 +3070,18 @@ export type MutationsAdminReviewHostingVerificationRequestArgs = {
 };
 
 
+export type MutationsAdminReviewPhotoEnhancementsArgs = {
+  approve: Scalars['Boolean']['input'];
+  ids: Array<Scalars['String']['input']>;
+  note?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationsAdminRevokeAgentKeyArgs = {
+  id: Scalars['String']['input'];
+};
+
+
 export type MutationsAdminRevokeStaffInvitationArgs = {
   invitationId: Scalars['String']['input'];
 };
@@ -3060,6 +3210,20 @@ export type MutationsAdminUpdateUserStatusArgs = {
 
 export type MutationsAdminUpdateVerificationTierArgs = {
   input: AdminVerificationTierInput;
+};
+
+
+export type MutationsAgentSkipPhotoArgs = {
+  photoId: Scalars['String']['input'];
+  reason: Scalars['String']['input'];
+};
+
+
+export type MutationsAgentUploadEnhancedPhotoArgs = {
+  edits: Array<Scalars['String']['input']>;
+  file: Scalars['Upload']['input'];
+  notes: Scalars['String']['input'];
+  photoId: Scalars['String']['input'];
 };
 
 
@@ -3454,6 +3618,18 @@ export type MutationsSetHostingVideoArgs = {
 };
 
 
+export type MutationsSetListingPhotoEnhancementsInUseArgs = {
+  hostingId: Scalars['String']['input'];
+  inUse: Scalars['Boolean']['input'];
+};
+
+
+export type MutationsSetPhotoEnhancementInUseArgs = {
+  id: Scalars['String']['input'];
+  inUse: Scalars['Boolean']['input'];
+};
+
+
 export type MutationsSignUpArgs = {
   input: SignUpInput;
 };
@@ -3739,6 +3915,54 @@ export type PhotoCaptureInput = {
   longitude: Scalars['Float']['input'];
 };
 
+export type PhotoEnhancement = {
+  __typename?: 'PhotoEnhancement';
+  createdAt: Scalars['String']['output'];
+  edits: Array<Scalars['String']['output']>;
+  enhancedUrl: Scalars['String']['output'];
+  /** The host switched this photo back to their original. */
+  hostReverted: Scalars['Boolean']['output'];
+  hostingId: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  keyName?: Maybe<Scalars['String']['output']>;
+  listingTitle?: Maybe<Scalars['String']['output']>;
+  listingUrl: Scalars['String']['output'];
+  /** What guests see now: approved, current, and the host kept it. */
+  live: Scalars['Boolean']['output'];
+  notes?: Maybe<Scalars['String']['output']>;
+  /** The host has replaced the photo since; this version no longer applies. */
+  originalChanged: Scalars['Boolean']['output'];
+  originalUrl: Scalars['String']['output'];
+  /** The room photo this is a version of. */
+  photoId: Scalars['String']['output'];
+  reviewNote?: Maybe<Scalars['String']['output']>;
+  reviewedAt?: Maybe<Scalars['String']['output']>;
+  reviewerName?: Maybe<Scalars['String']['output']>;
+  room: Scalars['String']['output'];
+  status: PhotoEnhancementStatus;
+  /** A newer upload for the same photo replaced this one. */
+  superseded: Scalars['Boolean']['output'];
+};
+
+export type PhotoEnhancementCounts = {
+  __typename?: 'PhotoEnhancementCounts';
+  approved: Scalars['Int']['output'];
+  pending: Scalars['Int']['output'];
+  rejected: Scalars['Int']['output'];
+};
+
+export type PhotoEnhancementPage = {
+  __typename?: 'PhotoEnhancementPage';
+  items: Array<PhotoEnhancement>;
+  total: Scalars['Int']['output'];
+};
+
+export enum PhotoEnhancementStatus {
+  Approved = 'APPROVED',
+  Pending = 'PENDING',
+  Rejected = 'REJECTED'
+}
+
 /** Location check of one room photo, for the verification review. */
 export type PhotoLocationCheck = {
   __typename?: 'PhotoLocationCheck';
@@ -3931,6 +4155,10 @@ export type Query = {
   __typename?: 'Query';
   /** The active script for an interaction type, with its ordered steps. */
   adminActiveFieldScript: FieldScript;
+  /** Every call made with a key, newest first. */
+  adminAgentKeyCalls: Array<AgentKeyCall>;
+  /** Agent keys, newest first. Never includes the keys themselves. */
+  adminAgentKeys: Array<AgentKey>;
   /** The forced update policy for every mobile platform (iOS first). */
   adminAppVersionPolicies: Array<AppVersionPolicy>;
   adminAsset: Asset;
@@ -4037,6 +4265,11 @@ export type Query = {
    * app_config and payouts).
    */
   adminPermissions: Array<Scalars['String']['output']>;
+  /** The edit rules agents work to (for the reviewer's checklist). */
+  adminPhotoEditRules: Array<AgentEditRule>;
+  adminPhotoEnhancementCounts: PhotoEnhancementCounts;
+  /** Enhanced photos for review. Pending = waiting for staff (oldest first). */
+  adminPhotoEnhancements: PhotoEnhancementPage;
   /** Every property type (including inactive) for the admin editor. */
   adminPropertyTypes: Array<AdminPropertyType>;
   /**
@@ -4076,6 +4309,17 @@ export type Query = {
   adminUsersCount: Scalars['Int']['output'];
   adminVerificationTier?: Maybe<AdminVerificationTier>;
   adminVerificationTiers: Array<AdminVerificationTier>;
+  /** What an edit may and may not do. */
+  agentEditRules: Array<AgentEditRule>;
+  /**
+   * One listing with all its room photos: ids, room labels, download URLs
+   * and where each stands.
+   */
+  agentListing: AgentListingDetail;
+  /** Live listings with room photos that still need an enhanced version. */
+  agentListings: AgentListingPage;
+  /** Enhanced photos uploaded by agents, newest first, with where each stands. */
+  agentUploads: PhotoEnhancementPage;
   /**
    * Suggest an AI-generated title and description for a hosting, built from
    * as much of the hosting's own context as is available (type, location,
@@ -4149,6 +4393,11 @@ export type Query = {
    */
   listingBoostCatalogue: Array<ListingTierOption>;
   me: User;
+  /**
+   * Your listing's photos that Kushi improved (approved by staff), with
+   * whether guests see the improved version or your original.
+   */
+  myPhotoEnhancements: Array<PhotoEnhancement>;
   /** Rewards running now, plus any this person has claimed, with progress. */
   myRewards: Array<RewardProgress>;
   mySupportChats: Array<SupportChat>;
@@ -4215,6 +4464,13 @@ export type Query = {
 
 export type QueryAdminActiveFieldScriptArgs = {
   interactionType: Scalars['String']['input'];
+};
+
+
+export type QueryAdminAgentKeyCallsArgs = {
+  keyId: Scalars['String']['input'];
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -4413,6 +4669,14 @@ export type QueryAdminPendingDisbursementsArgs = {
 };
 
 
+export type QueryAdminPhotoEnhancementsArgs = {
+  hostingId?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  status?: InputMaybe<PhotoEnhancementStatus>;
+};
+
+
 export type QueryAdminPublishCheckArgs = {
   hostingId: Scalars['String']['input'];
 };
@@ -4480,6 +4744,25 @@ export type QueryAdminUsersCountArgs = {
 
 export type QueryAdminVerificationTierArgs = {
   tier: Scalars['String']['input'];
+};
+
+
+export type QueryAgentListingArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryAgentListingsArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  sort?: InputMaybe<AgentListingSort>;
+};
+
+
+export type QueryAgentUploadsArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  status?: InputMaybe<PhotoEnhancementStatus>;
 };
 
 
@@ -4596,6 +4879,11 @@ export type QueryHostingVerificationTierArgs = {
 export type QueryHostingsArgs = {
   filters?: InputMaybe<HostingFilterInput>;
   pagination?: InputMaybe<PaginationInput>;
+};
+
+
+export type QueryMyPhotoEnhancementsArgs = {
+  hostingId: Scalars['String']['input'];
 };
 
 
@@ -6255,7 +6543,7 @@ export type HostingQueryVariables = Exact<{
 }>;
 
 
-export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, unitStructure: UnitStructure, managementType: ManagementType, childCount: number, priceFrom?: any | null, isBookable: boolean, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, cautionFee?: any | null, serviceCharge?: any | null, maxOccupants?: number | null, electricityBilling?: ElectricityBilling | null, electricityOutstandingBalance?: any | null, electricityBalanceCleared?: boolean | null, bookingApplicationsCount: number, parent?: { __typename?: 'Hosting', id: string, title?: string | null, unitStructure: UnitStructure } | null, children: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, childCount: number, title?: string | null, state?: string | null, city?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, listingType?: ListingType | null, managementType: ManagementType, publishStatus?: PublishStatus | null, isBookable: boolean, bookingApplicationsCount: number, pendingBookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } } | null }>, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } }> }>, host: { __typename?: 'Host', id: string, createdAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, phoneNumber?: string | null, kyc: { __typename?: 'Kyc', bvnVerified?: boolean | null, ninVerified?: boolean | null }, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string, image?: { __typename?: 'Asset', publicUrl: string, lastUpdated: string } | null } }, signature?: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } | null }, coverImage?: { __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } } | null, hostingImages: Array<{ __typename?: 'HostingImage', id: string, variant: HostingImageVariant, caption?: string | null, sequence: number, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } }>, video?: { __typename?: 'VideoWalkthrough', id: string, durationSeconds: number, recordedAt: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } } | null, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } }>, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, createdAt: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null, image?: { __typename?: 'Asset', publicUrl: string, lastUpdated: string } | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null }, tenancyAgreementTemplate?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, priority: number, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, verification?: { __typename?: 'HostingVerificationData', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, titleType?: string | null, titleNumber?: string | null, landlordPhone?: string | null, landlordEmail?: string | null, landlordConfirmationStatus: LandlordConfirmationStatus, listedByAgent: boolean, createdAt: string, lastUpdated: string, tierTooltip: string } | null, fees: Array<{ __typename?: 'HostingFee', id: string, feeType: FeeType, label: string, description: string, amount?: any | null, ratePercent?: any | null, setByKushi: boolean, perPeriod: boolean, shownInRent: boolean, payoutAccount?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, bankDetails?: { __typename?: 'Bank', name: string } | null } | null }> } };
+export type HostingQuery = { __typename?: 'Query', hosting: { __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, unitStructure: UnitStructure, managementType: ManagementType, childCount: number, priceFrom?: any | null, isBookable: boolean, title?: string | null, propertyType?: string | null, listingType?: ListingType | null, description?: string | null, categories?: Array<string> | null, postalCode?: string | null, city?: string | null, street?: string | null, state?: string | null, country?: string | null, longitude?: string | null, latitude?: string | null, landmarks?: string | null, contact?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, facilities?: Array<string> | null, averageRating?: number | null, totalRatings?: number | null, publishStatus?: PublishStatus | null, createdAt: string, lastUpdated: string, saved: boolean, cautionFee?: any | null, serviceCharge?: any | null, maxOccupants?: number | null, electricityBilling?: ElectricityBilling | null, electricityOutstandingBalance?: any | null, electricityBalanceCleared?: boolean | null, bookingApplicationsCount: number, parent?: { __typename?: 'Hosting', id: string, title?: string | null, unitStructure: UnitStructure } | null, children: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, parentId?: string | null, childCount: number, title?: string | null, state?: string | null, city?: string | null, price?: any | null, paymentInterval?: PaymentInterval | null, listingType?: ListingType | null, managementType: ManagementType, publishStatus?: PublishStatus | null, isBookable: boolean, bookingApplicationsCount: number, pendingBookingApplicationsCount: number, createdAt: string, lastUpdated: string, coverImage?: { __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null }, enhancedAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null } | null }>, rooms: Array<{ __typename?: 'HostingRoom', id: string, name: string, count?: number | null, description?: string | null, createdAt: string, lastUpdated: string, images: Array<{ __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string }, enhancedAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null }> }>, host: { __typename?: 'Host', id: string, createdAt: string, user: { __typename?: 'User', id: string, email: string, kushiId: string, phoneNumber?: string | null, kyc: { __typename?: 'Kyc', bvnVerified?: boolean | null, ninVerified?: boolean | null }, profile: { __typename?: 'Profile', fullName: string, gender?: string | null, id: string, image?: { __typename?: 'Asset', publicUrl: string, lastUpdated: string } | null } }, signature?: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } | null }, coverImage?: { __typename?: 'HostingRoomImage', id: string, createdAt: string, lastUpdated: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string }, enhancedAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null } | null, hostingImages: Array<{ __typename?: 'HostingImage', id: string, variant: HostingImageVariant, caption?: string | null, sequence: number, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } }>, video?: { __typename?: 'VideoWalkthrough', id: string, durationSeconds: number, recordedAt: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } } | null, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null }, enhancedAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null }>, paymentDetails?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, createdAt: string, lastUpdated: string, bankDetails?: { __typename?: 'Bank', name: string, slug: string, code: string, active: boolean, currency: string, image: string } | null } | null, reviews: Array<{ __typename?: 'HostingReview', averageRating?: number | null, description?: string | null, lastUpdated: string, id: string, user: { __typename?: 'User', id: string, profile: { __typename?: 'Profile', fullName: string, id: string, gender?: string | null, image?: { __typename?: 'Asset', publicUrl: string, lastUpdated: string } | null } } }>, reviewAverage: { __typename?: 'HostingReviewAverage', cleanliness?: number | null, accuracy?: number | null, communication?: number | null, location?: number | null, checkIn?: number | null, value?: number | null }, tenancyAgreementTemplate?: { __typename?: 'TenancyTemplate', totalSections: number, sections: Array<{ __typename?: 'TenancySection', id: string, title: string, description: string, priority: number, preamble?: string | null, subClauses: Array<{ __typename?: 'SubClause', id: string, title: string, description: string, content: string, isMandatory: boolean, isActive: boolean, priority: number, isCustom: boolean, requiredVariables: Array<{ __typename?: 'SubClauseVariable', name: string, type: VariableType }>, providedValues: Array<{ __typename?: 'SubClauseValue', key: string, value: string }> }> }> } | null, verification?: { __typename?: 'HostingVerificationData', id: string, landlordFullName: string, landlordAddress: string, verificationTier: HostingVerificationTier, propertyRelationship: HostingPropertyRelationship, declOwnership: boolean, declLitigation: boolean, declIndemnity: boolean, titleType?: string | null, titleNumber?: string | null, landlordPhone?: string | null, landlordEmail?: string | null, landlordConfirmationStatus: LandlordConfirmationStatus, listedByAgent: boolean, createdAt: string, lastUpdated: string, tierTooltip: string } | null, fees: Array<{ __typename?: 'HostingFee', id: string, feeType: FeeType, label: string, description: string, amount?: any | null, ratePercent?: any | null, setByKushi: boolean, perPeriod: boolean, shownInRent: boolean, payoutAccount?: { __typename?: 'HostAccountDetails', id: string, accountNumber: string, accountName?: string | null, bankCode: string, bankDetails?: { __typename?: 'Bank', name: string } | null } | null }> } };
 
 export type HostingsQueryVariables = Exact<{
   filters?: InputMaybe<HostingFilterInput>;
@@ -6263,7 +6551,7 @@ export type HostingsQueryVariables = Exact<{
 }>;
 
 
-export type HostingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, childCount: number, priceFrom?: any | null, isBookable: boolean, price?: any | null, listingType?: ListingType | null, managementType: ManagementType, totalRatings?: number | null, averageRating?: number | null, country?: string | null, state?: string | null, title?: string | null, city?: string | null, street?: string | null, landmarks?: string | null, saved: boolean, publishStatus?: PublishStatus | null, latitude?: string | null, longitude?: string | null, paymentInterval?: PaymentInterval | null, createdAt: string, verification?: { __typename?: 'HostingVerificationData', id: string, verificationTier: HostingVerificationTier, tierTooltip: string } | null, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string } } | null, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null } }> }> };
+export type HostingsQuery = { __typename?: 'Query', hostings: Array<{ __typename?: 'Hosting', id: string, kind: HostingKind, childCount: number, priceFrom?: any | null, isBookable: boolean, price?: any | null, listingType?: ListingType | null, managementType: ManagementType, totalRatings?: number | null, averageRating?: number | null, country?: string | null, state?: string | null, title?: string | null, city?: string | null, street?: string | null, landmarks?: string | null, saved: boolean, publishStatus?: PublishStatus | null, latitude?: string | null, longitude?: string | null, paymentInterval?: PaymentInterval | null, createdAt: string, verification?: { __typename?: 'HostingVerificationData', id: string, verificationTier: HostingVerificationTier, tierTooltip: string } | null, coverImage?: { __typename?: 'HostingRoomImage', asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string }, enhancedAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null } | null, images: Array<{ __typename?: 'HostingRoomImage', id: string, asset: { __typename?: 'Asset', id: string, publicUrl: string, lastUpdated: string, originalFilename?: string | null }, enhancedAsset?: { __typename?: 'Asset', id: string, publicUrl: string } | null }> }> };
 
 export type SavedHostingFoldersQueryVariables = Exact<{
   pagination?: InputMaybe<PaginationInput>;
@@ -9414,6 +9702,10 @@ export const HostingDocument = gql`
           lastUpdated
           originalFilename
         }
+        enhancedAsset {
+          id
+          publicUrl
+        }
       }
     }
     title
@@ -9455,6 +9747,10 @@ export const HostingDocument = gql`
           publicUrl
           lastUpdated
         }
+        enhancedAsset {
+          id
+          publicUrl
+        }
       }
     }
     host {
@@ -9494,6 +9790,10 @@ export const HostingDocument = gql`
         publicUrl
         lastUpdated
       }
+      enhancedAsset {
+        id
+        publicUrl
+      }
     }
     hostingImages(variant: POSTER) {
       id
@@ -9523,6 +9823,10 @@ export const HostingDocument = gql`
         publicUrl
         lastUpdated
         originalFilename
+      }
+      enhancedAsset {
+        id
+        publicUrl
       }
     }
     paymentDetails {
@@ -9683,6 +9987,10 @@ export const HostingsDocument = gql`
         publicUrl
         lastUpdated
       }
+      enhancedAsset {
+        id
+        publicUrl
+      }
     }
     images(limit: 4) {
       id
@@ -9691,6 +9999,10 @@ export const HostingsDocument = gql`
         publicUrl
         lastUpdated
         originalFilename
+      }
+      enhancedAsset {
+        id
+        publicUrl
       }
     }
     paymentInterval
