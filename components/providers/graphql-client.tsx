@@ -10,6 +10,7 @@ import { graphcacheExchange } from '@/lib/services/graphql/cache';
 import { createClient as createWSClient } from 'graphql-ws';
 import { router } from 'expo-router';
 import { findUpgradeRequired } from '@/lib/k/app-version';
+import { isCallScreenUp } from '@/lib/call/state';
 import { APP_VERSION_HEADERS, reportUpgradeRequired } from '@/lib/k/app-version-store';
 import { READ_MUTATIONS, requestBadgeSync } from '@/lib/k/app-badge';
 import {
@@ -282,7 +283,8 @@ const createClient = (ws: WS) => {
               tokens = null;
               clearAuthTokens();
               useUserStore.getState().reset();
-              router.replace('/auth');
+              // Not while a call screen is up: the replace would close the call.
+              if (!isCallScreenUp()) router.replace('/auth');
             }
           },
         };

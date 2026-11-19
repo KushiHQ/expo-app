@@ -186,6 +186,16 @@ export function hasCallScreen(callId: string) {
   return opening?.callId === callId && Date.now() - opening.at < OPENING_MS;
 }
 
+/**
+ * Is any call screen up, or on its way? App-wide redirects (launch routing,
+ * sign-out) must not run then: a `router.replace` swaps out the top screen,
+ * which would close the call the user just answered.
+ */
+export function isCallScreenUp() {
+  if (activeScreenCallId) return true;
+  return !!opening && Date.now() - opening.at < OPENING_MS;
+}
+
 // The user asked to answer this call (notification, lock screen, CallKit). The
 // call screen reads this when it mounts and when its call object is ready, so
 // an Answer that lands while the screen is still opening is not lost.

@@ -158,6 +158,7 @@ export default ({ config }) => ({
 		},
 		"./lib/plugins/withNotifeeForeground.js",
 		"./lib/plugins/withTrimForegroundServices.js",
+		"./lib/plugins/withOptionalHardware.js",
 		"./lib/plugins/withNotificationIcon.js",
 		"./lib/plugins/withAndroidSigning.js",
 		"./lib/plugins/withLockScreen.js",

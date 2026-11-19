@@ -3,6 +3,7 @@ import { Tabs, router } from 'expo-router';
 import { Compass, Heart, Home, MessageCircle, UserRound } from 'lucide-react-native';
 import { KTabBar } from '@/components/k/tab-bar';
 import { hasSeenWelcome } from '@/lib/k/session';
+import { isCallScreenUp } from '@/lib/call/state';
 import { useUserStore } from '@/lib/stores/users';
 import { UserType } from '@/lib/types/users';
 
@@ -12,6 +13,9 @@ let routedOnLaunch = false;
 /** Guest mode: Explore · Saved · Homes · Inbox · You. Signed-out tabs show a sign-in prompt in place. */
 export default function GuestTabs() {
 	useEffect(() => {
+		// Opened by answering a call: the call screen is on top, and a replace
+		// here would close it.
+		if (isCallScreenUp()) return;
 		if (!routedOnLaunch) {
 			routedOnLaunch = true;
 			const st = useUserStore.getState().user;
