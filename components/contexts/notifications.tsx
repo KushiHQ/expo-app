@@ -32,7 +32,7 @@ import {
   setLockScreenLaunch,
   takeCallRoute,
 } from '@/lib/call/state';
-import { callLog } from '@/lib/call/log';
+import { callDelivery, callLog } from '@/lib/call/log';
 import { callEndedNotice } from '@/lib/call/notice';
 import { useRootNavigationState } from 'expo-router';
 import { handleIncomingAppUpdate, handleIncomingChatMessage } from '@/lib/utils/notifications';
@@ -319,8 +319,23 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
       }
     });
 
+    // iOS: a call that arrived as the server's fallback notification
+    // ("Incoming voice call"), tapped in the tray: the ringing screen, if the
+    // call can still ring; otherwise say it's over.
+    const openTappedCall = async (data?: Record<string, unknown>) => {
+      const callId = data?.callId;
+      if (!isRingIntent(data?.intent) || typeof callId !== 'string') return false;
+      callDelivery('fcm-alert-tap', callId);
+      const call = callFromData({ ...data, receivedAt: await firstRingAt(callId) });
+      if (!call) return false;
+      if (await canRing(call)) requestCallRoute({ ...call, answer: false });
+      else callEndedNotice(call.caller);
+      return true;
+    };
+
     // Handle tapping an FCM system-tray notification from a cold start
-    getInitialNotification(messagingInstance).then((remoteMessage) => {
+    getInitialNotification(messagingInstance).then(async (remoteMessage) => {
+      if (await openTappedCall(remoteMessage?.data)) return;
       if (remoteMessage?.data?.intent === 'notification' && remoteMessage.data?.id) {
         router.push(`/chats/${remoteMessage.data.id}` as any);
       } else if (isAppUpdateIntent(remoteMessage?.data?.intent as string)) {
@@ -332,7 +347,8 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
     });
 
     // Handle tapping an FCM system-tray notification while app is backgrounded
-    const unsubscribeOpenedApp = onNotificationOpenedApp(messagingInstance, (remoteMessage) => {
+    const unsubscribeOpenedApp = onNotificationOpenedApp(messagingInstance, async (remoteMessage) => {
+      if (await openTappedCall(remoteMessage?.data)) return;
       if (remoteMessage?.data?.intent === 'notification' && remoteMessage.data?.id) {
         router.push(`/chats/${remoteMessage.data.id}` as any);
       } else if (isAppUpdateIntent(remoteMessage?.data?.intent as string)) {
@@ -357,6 +373,7 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
         const callId = remoteMessage.data?.callId;
         const receivedAt = typeof callId === 'string' ? await firstRingAt(callId) : Date.now();
         const call = callFromData({ ...remoteMessage.data, receivedAt });
+        if (call && Platform.OS === 'ios') callDelivery('fcm-foreground', call.callId);
         if (call && (await canRing(call))) {
           callLog('ring.foreground', { callId: call.callId });
           requestCallRoute({ ...call, answer: false });

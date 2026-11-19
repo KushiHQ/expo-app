@@ -7,7 +7,7 @@ import { EventEmitter } from '../utils/event-emitter';
 import { isEndIntent, isRingIntent } from '../utils/call';
 import { IncomingCall, callFromData, isCallEndedSync, markCallEnded, requestCallRoute } from './state';
 import { sendCallSignal } from './signal';
-import { callError, callLog } from './log';
+import { callDelivery, callError, callLog } from './log';
 
 /**
  * iOS calls: PushKit (VoIP push) + CallKit (react-native-callkeep).
@@ -53,6 +53,7 @@ export function onIosCallPush(data: Record<string, any> | undefined | null, from
   const call = remember(data);
   if (!call) return;
   callLog('ring.callkit', { callId: call.callId, fromJs });
+  callDelivery(fromJs ? 'fcm-background' : 'voip', call.callId);
   if (isCallEndedSync(call.callId)) {
     // A repeat push for a call we already finished: take it down again.
     try {

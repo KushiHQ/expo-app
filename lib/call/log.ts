@@ -12,6 +12,22 @@ export function callLog(step: string, data?: Record<string, unknown>) {
   console.info('[call]', step, data ? JSON.stringify(data) : '');
 }
 
+/**
+ * How an iOS call reached the phone (VoIP push, FCM fallback, notification
+ * tap), sent to Sentry as its own small event: breadcrumbs alone only show up
+ * when something fails, and "the call never rang" fails silently.
+ */
+export function callDelivery(path: 'voip' | 'fcm-background' | 'fcm-foreground' | 'fcm-alert-tap', callId?: string) {
+  try {
+    Sentry.captureMessage(`call.delivery: ${path}`, {
+      level: 'info',
+      tags: { area: 'call', step: 'delivery', path },
+      extra: { callId },
+    });
+  } catch {}
+  console.info('[call]', 'delivery', path, callId ?? '');
+}
+
 /** A call step that went wrong: reported to Sentry with the call tags. */
 export function callError(step: string, error: unknown, data?: Record<string, unknown>) {
   try {
