@@ -1,0 +1,50 @@
+# Listing map for CI: no sign-in needed (listings are public). Opens the QA test
+# listing (Kushi-managed, has a pin), checks the Location section and Directions,
+# taps the map for the full-screen map, then Directions shows the maps chooser.
+appId: com.kushicorp.kushi
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Explore homes"
+    timeout: 180000
+- takeScreenshot: shots/00-welcome
+- tapOn:
+    id: "welcome-explore"
+- extendedWaitUntil:
+    visible:
+      id: "tab-index"
+    timeout: 90000
+- openLink: "kushi://hostings/e3ab9468-fd8b-4e99-8321-b1aaac05c6d6"
+- extendedWaitUntil:
+    visible:
+      id: "listing-cta"
+    timeout: 60000
+- takeScreenshot: shots/01-listing
+- scrollUntilVisible:
+    element:
+      id: "listing-directions"
+    timeout: 30000
+- assertVisible: "Location"
+- takeScreenshot: shots/02-listing-location
+- tapOn:
+    id: "listing-map"
+- extendedWaitUntil:
+    visible:
+      id: "listing-map-directions"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/03-full-map
+- tapOn:
+    id: "listing-map-directions"
+- extendedWaitUntil:
+    visible: "Apple Maps"
+    timeout: 10000
+- assertVisible: "Google Maps"
+- takeScreenshot: shots/04-directions-choice
+- tapOn: "Cancel"
+- waitForAnimationToEnd
+- takeScreenshot: shots/05-after-cancel
