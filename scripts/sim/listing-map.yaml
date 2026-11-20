@@ -12,10 +12,17 @@ appId: com.kushicorp.kushi
     visible: "Explore homes"
     timeout: 180000
 - takeScreenshot: shots/00-welcome
-- tapOn: "Explore homes"
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn: "Explore homes"
 - waitForAnimationToEnd:
     timeout: 15000
 - openLink: "kushi://hostings/e3ab9468-fd8b-4e99-8321-b1aaac05c6d6"
+# iOS asks "Open in “Kushi Housing”?" for a custom-scheme link.
+- tapOn:
+    text: "Open"
+    optional: true
 - extendedWaitUntil:
     visible: "Description"
     timeout: 90000
