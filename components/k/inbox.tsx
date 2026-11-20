@@ -64,7 +64,7 @@ export function Inbox() {
 		return (
 			<View style={{ flex: 1, backgroundColor: color.bg, justifyContent: 'center', paddingHorizontal: gutter }}>
 				<View style={centered(layout.max('form'))}>
-					<SignedOut eyebrow="Inbox" title="Talk to hosts directly" body="Ask about a home, arrange viewings and the key handover — sign in to start a conversation." />
+					<SignedOut title="Sign in to see messages" body="Ask about a home, arrange viewings and the key handover — sign in to start a conversation." />
 				</View>
 			</View>
 		);
@@ -134,7 +134,7 @@ export function Inbox() {
 							))}
 						</View>
 					) : (
-						<Empty eyebrow="Quiet channel" title={q ? 'No conversations match' : 'No conversations yet'} body={q ? undefined : 'Message a host from any home to ask a question or arrange a viewing.'} />
+						<Empty title={q ? 'No conversations match' : 'No conversations yet'} body={q ? undefined : 'Message a host from any home to ask a question or arrange a viewing.'} />
 					)
 				}
 			/>

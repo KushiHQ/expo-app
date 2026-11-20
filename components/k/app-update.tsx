@@ -1,6 +1,6 @@
 /**
  * App update UI, mounted once in the root layout:
- *  - hard gate: full-screen, non-dismissible "Update Kushi to continue"
+ *  - hard gate: full-screen, non-dismissible "Update required"
  *    (rendered in a Modal so it sits above every screen, native modals
  *    included, and swallows the Android back button);
  *  - soft prompt: a dismissible sheet when a newer version is out.
@@ -54,9 +54,9 @@ function UpdateGate({ current, required, storeUrl, message }: { current: string 
 								<Mark size={44} />
 							</View>
 							<View style={{ gap: 12, alignItems: 'center', maxWidth: 420 }}>
-								<Eyebrow>Update required</Eyebrow>
+								<Eyebrow>Kushi</Eyebrow>
 								<KText v="display" center accessibilityRole="header">
-									Update Kushi to continue
+									Update required
 								</KText>
 								<KText v="lead" center>
 									{message || FORCE_COPY}
@@ -92,7 +92,7 @@ function UpdatePrompt({ latest, storeUrl, message }: { latest: string; storeUrl:
 			open={open}
 			onClose={later}
 			eyebrow={`Version ${latest}`}
-			title="A new version of Kushi is available"
+			title="Update available"
 			footer={
 				<View style={{ gap: 10 }}>
 					<Button

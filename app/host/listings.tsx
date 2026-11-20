@@ -55,7 +55,7 @@ export default function Listings() {
 							))}
 						</View>
 					) : (
-						<Empty eyebrow={all.length ? 'None here' : 'No listings yet'} title={all.length ? 'Nothing in this view' : 'Put your first property on the map'} body={all.length ? undefined : 'Listing is free. Kushi verifies it, brings verified renters and handles the agreement and escrow.'} action={all.length ? undefined : 'Create a listing'} onAction={() => router.push('/hostings/form')} />
+						<Empty title={all.length ? 'No listings in this view' : 'No listings yet'} body={all.length ? undefined : 'Listing is free. Kushi verifies it, brings verified renters and handles the agreement and escrow.'} action={all.length ? undefined : 'Create a listing'} onAction={() => router.push('/hostings/form')} />
 					)
 				}
 			/>

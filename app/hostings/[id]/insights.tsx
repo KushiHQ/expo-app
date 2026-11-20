@@ -46,7 +46,7 @@ export default function Insights() {
 					<Skeleton style={{ height: 200 }} />
 				</View>
 			) : error && !a ? (
-				<Empty eyebrow="Offline" title="Insights didn’t load" body={cleanError(error.message)} action="Try again" onAction={() => refetch({ requestPolicy: 'network-only' })} />
+				<Empty title="Insights didn’t load" body={cleanError(error.message)} action="Try again" onAction={() => refetch({ requestPolicy: 'network-only' })} />
 			) : a ? (
 				<>
 					<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
@@ -86,7 +86,7 @@ export default function Insights() {
 					</Card>
 					{live ? (
 						<Card tone="amber">
-							<KText v="bodyStrong">Want more eyes on it?</KText>
+							<KText v="bodyStrong">Boost</KText>
 							<KText v="small">A boost moves it up in search and the home feed for a few days.</KText>
 							<Button title="Boost this listing" size="sm" icon={<Rocket size={14} color={color.onAmber} />} onPress={() => router.push(`/hostings/${id}/boost`)} style={{ alignSelf: 'flex-start' }} />
 						</Card>

@@ -94,7 +94,7 @@ export default function LocationStep() {
 			primary={{ title: 'Save and continue', onPress: next, loading: busy, testID: 'step-next' }}
 			footnote={tried && !valid ? <KText v="xs" c="danger" center>{errors.pin ?? errors.area ?? errors.contact}</KText> : null}
 		>
-			<Block title="Where is it?" sub="Drag the pin if it isn’t exactly on the property.">
+			<Block title="Map location" sub="Drag the pin if it isn’t exactly on the property.">
 				<View style={s.map}>
 					{pinned ? (
 						<MapView

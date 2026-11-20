@@ -10,7 +10,7 @@ appId: com.kushicorp.kushi
     permissions:
       all: allow
 - extendedWaitUntil:
-    visible: "Start exploring"
+    visible: "Explore homes"
     timeout: 180000
 - tapOn: "Sign in"
 - tapOn:

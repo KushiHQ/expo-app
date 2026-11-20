@@ -20,7 +20,7 @@ export const VERIFICATION_STATUS_CONFIG: Record<HostingVerificationRequestStatus
     Icon: Clock,
   },
   [HostingVerificationRequestStatus.UnderReview]: {
-    label: 'Under Review',
+    label: 'In review',
     containerClass: 'bg-blue-500/10 border border-blue-500/30',
     accentClass: 'text-blue-500',
     Icon: Loader,

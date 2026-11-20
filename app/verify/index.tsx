@@ -29,7 +29,7 @@ export default function VerifyHub() {
 		<Screen header={<Header eyebrow="You" title="Verification" />} width="form" footer={footer} onRefresh={v.refresh} refreshing={false}>
 			<View style={{ gap: 10, paddingTop: 20 }}>
 				<Eyebrow c={v.complete ? 'success' : 'muted'}>{v.complete ? 'Verified' : 'About 3 minutes'}</Eyebrow>
-				<KText v="display">{v.complete ? 'You’re verified.' : v.host ? 'Verify once, then list with confidence.' : 'Verify once, then apply anywhere.'}</KText>
+				<KText v="display">{v.complete ? 'Verified' : 'Verify your identity'}</KText>
 				<KText v="small">
 					{v.complete
 						? 'Everything Kushi needs is done. You can update your phone number here any time.'
@@ -42,7 +42,7 @@ export default function VerifyHub() {
 
 			{!v.complete ? (
 				<Card>
-					<KText v="heading">What this unlocks</KText>
+					<KText v="heading">Benefits</KText>
 					{(v.host ? UNLOCKS.host : UNLOCKS.guest).map((t) => (
 						<View key={t} style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
 							<Check size={16} color={color.amber} style={{ marginTop: 2 }} />

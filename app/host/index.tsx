@@ -64,7 +64,7 @@ export default function Today() {
 
 			<Rewards />
 
-			<Section title="Applications to review" action={pending.length ? <Button title="All" variant="quiet" size="sm" onPress={() => router.navigate('/host/applications')} /> : undefined}>
+			<Section title="Pending applications" action={pending.length ? <Button title="All" variant="quiet" size="sm" onPress={() => router.navigate('/host/applications')} /> : undefined}>
 				{pending.length ? (
 					pending.map((x) => <ApplicationRow key={x.id} a={x} />)
 				) : (
@@ -74,11 +74,11 @@ export default function Today() {
 				)}
 			</Section>
 
-			<Section title="Your listings" action={listings.length ? <Button title="Manage" variant="quiet" size="sm" onPress={() => router.navigate('/host/listings')} /> : undefined}>
+			<Section title="Listings" action={listings.length ? <Button title="Manage" variant="quiet" size="sm" onPress={() => router.navigate('/host/listings')} /> : undefined}>
 				{listings.length ? (
 					listings.map((l) => <HostListingRow key={l.id} l={l} />)
 				) : (
-					<Empty eyebrow="First listing" title="Put your property on the map" body="List it in minutes. Kushi verifies it, finds verified renters and handles the agreement and payment." action="Create a listing" onAction={() => router.push('/hostings/form')} />
+					<Empty title="No listings yet" body="List it in minutes. Kushi verifies it, finds verified renters and handles the agreement and payment." action="Create a listing" onAction={() => router.push('/hostings/form')} />
 				)}
 			</Section>
 

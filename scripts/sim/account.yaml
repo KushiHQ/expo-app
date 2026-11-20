@@ -8,7 +8,7 @@ appId: com.kushicorp.kushi
     permissions:
       all: allow
 - extendedWaitUntil:
-    visible: "Start exploring"
+    visible: "Explore homes"
     timeout: 180000
 - extendedWaitUntil:
     visible: "Allow"
@@ -153,7 +153,7 @@ appId: com.kushicorp.kushi
     timeout: 8000
 - takeScreenshot: shots/a17-support
 - tapOn:
-    text: "Your conversations"
+    text: "Conversations"
     optional: true
 - tapOn:
     point: "50%,62%"

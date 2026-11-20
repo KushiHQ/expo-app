@@ -8,7 +8,7 @@ const OLD = ['step-1', 'step-2', 'step-2-video', 'step-3', 'step-4', 'step-5', '
 
 /** A step that throws shows a recoverable screen instead of crashing the app. */
 export function ErrorBoundary(props: ErrorBoundaryProps) {
-  return <RouteError {...props} title="Something went wrong on this step" />;
+  return <RouteError {...props} title="Something went wrong" />;
 }
 
 export default function Layout() {

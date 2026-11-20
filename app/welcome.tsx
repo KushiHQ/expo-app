@@ -28,7 +28,7 @@ export default function Welcome() {
 
 	const hero = (
 		<Animated.View entering={FadeInDown.duration(700)} style={{ gap: 14 }}>
-			<Eyebrow>Finding your way</Eyebrow>
+			<Eyebrow>Kushi Housing</Eyebrow>
 			<KText v="hero" style={layout.compact ? undefined : s.heroBig}>
 				A home you can{' '}
 				<KText v="hero" c="amber" style={layout.compact ? undefined : s.heroBig}>
@@ -53,7 +53,7 @@ export default function Welcome() {
 	);
 	const actions = (
 		<Animated.View entering={FadeInDown.delay(500).duration(600)} style={{ gap: 10 }}>
-			<Button title="Start exploring" size="lg" block onPress={() => done('/')} testID="welcome-explore" />
+			<Button title="Explore homes" size="lg" block onPress={() => done('/')} testID="welcome-explore" />
 			<View style={{ flexDirection: 'row', gap: 10 }}>
 				<Button title="Create account" variant="ghost" style={{ flex: 1, paddingHorizontal: 12 }} onPress={() => done('/auth/sign-up')} />
 				<Button title="Sign in" variant="ghost" style={{ flex: 1, paddingHorizontal: 12 }} onPress={() => done('/auth/sign-in')} />

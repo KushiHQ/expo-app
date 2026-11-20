@@ -11,7 +11,7 @@ import { useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useMutation, useQuery } from 'urql';
 import { HandCoins, Landmark, ShieldCheck } from 'lucide-react-native';
-import { Button, Card, Eyebrow, KText, Pill, Sheet } from '@/components/k';
+import { Button, Card, KText, Pill, Sheet } from '@/components/k';
 import { Field } from '@/components/k/form';
 import { color, font, radius } from '@/lib/k/theme';
 import { date, naira } from '@/lib/k/format';
@@ -176,7 +176,7 @@ export function GuestCaution({
 				<KText v="small">
 					Tell Kushi why you disagree with the host’s claim of {disputing ? naira(num(disputing.amountRequested)) : ''}. Kushi reads both sides, may ask for photos, and decides. Nothing is paid while it’s being reviewed.
 				</KText>
-				<Field label="Why you dispute it" multiline value={reason} onChangeText={setReason} placeholder="e.g. The crack in the wall was there when I moved in." />
+				<Field label="Reason" multiline value={reason} onChangeText={setReason} placeholder="e.g. The crack in the wall was there when I moved in." />
 				<Button title="Send dispute to Kushi" size="lg" block disabled={!reason.trim()} loading={busy} onPress={() => disputing && answer(disputing, false)} />
 			</Sheet>
 
@@ -245,7 +245,7 @@ function RefundSheet({ open, resend, onClose, bookingId, onDone }: { open: boole
 							{resolving ? 'Checking account…' : name ? `Account name: ${name}` : 'We couldn’t verify that account.'}
 						</KText>
 					) : null}
-					<Eyebrow>The account must be in your name; we check it with your bank first.</Eyebrow>
+					<KText v="xs">The account must be in your name; we check it with your bank first.</KText>
 					<Button
 						title={resend ? 'Send new details' : 'Request refund'}
 						size="lg"
@@ -356,7 +356,7 @@ export function HostCaution({ applicationId, guestName }: { applicationId: strin
 					hint={tooMuch ? undefined : `Up to ${naira(available)}`}
 					error={tooMuch ? `You can claim up to ${naira(available)}.` : undefined}
 				/>
-				<Field label="What it’s for" multiline value={reason} onChangeText={setReason} placeholder="e.g. Broken bedroom door (₦30,000 repair) and an unpaid electricity bill (₦15,000)." />
+				<Field label="Reason" multiline value={reason} onChangeText={setReason} placeholder="e.g. Broken bedroom door (₦30,000 repair) and an unpaid electricity bill (₦15,000)." />
 				<Button title={`Send claim for ${value > 0 ? naira(value) : '…'}`} size="lg" block disabled={value <= 0 || tooMuch || !reason.trim()} onPress={() => setConfirming(true)} />
 			</Sheet>
 

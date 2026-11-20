@@ -15,7 +15,9 @@ import {
 	Heart,
 	Landmark,
 	MapPin,
+	Maximize2,
 	MessageCircle,
+	Navigation,
 	PlayCircle,
 	Share2,
 	ShieldCheck,
@@ -36,6 +38,7 @@ import { listingMode, listingPhotos, roomLabel, shareUrl, shownAssetId, type Lis
 import { isSignedIn, requireSignIn } from '@/lib/k/session';
 import { useUserStore } from '@/lib/stores/users';
 import { toast } from '@/lib/hooks/use-toast';
+import { openDirections } from '@/lib/utils/urls';
 import { ListingEventKind, useHostingQuery, useInitiateHostingChatMutation, useRecordListingEventMutation } from '@/lib/services/graphql/generated';
 
 const MAX: Record<string, number> = { NIGHTLY: 60, WEEKLY: 26, MONTHLY: 24, ANUALLY: 5, ONE_TIME_PAYMENT: 1 };
@@ -62,7 +65,7 @@ export default function ListingScreen() {
 					</View>
 				) : (
 					<View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: gutter }}>
-						<Empty eyebrow="Off the map" title={error ? 'We couldn’t load this home' : 'This home isn’t listed anymore'} body="It may have been taken off Kushi. There are plenty more verified homes waiting." action={error ? 'Try again' : 'Explore homes'} onAction={() => (error ? refetch({ requestPolicy: 'network-only' }) : router.replace('/'))} />
+						<Empty title={error ? 'We couldn’t load this home' : 'This home isn’t listed anymore'} body="It may have been taken off Kushi. There are plenty more verified homes waiting." action={error ? 'Try again' : 'Explore homes'} onAction={() => (error ? refetch({ requestPolicy: 'network-only' }) : router.replace('/'))} />
 					</View>
 				)}
 			</View>
@@ -218,7 +221,7 @@ function Detail({ h }: { h: Listing }) {
 	);
 	const ownerCard = isOwner ? (
 		<Card tone="signal">
-			<KText v="bodyStrong">This is your listing</KText>
+			<KText v="bodyStrong">Your listing</KText>
 			<KText v="small">Manage photos, price and applications from hosting.</KText>
 			<Button title="Manage listing" variant="ghost" size="sm" onPress={() => router.push({ pathname: '/hostings/form/onboarding', params: { id: h.id } })} />
 		</Card>
@@ -256,7 +259,7 @@ function Detail({ h }: { h: Listing }) {
 		<>
 			{h.description ? (
 				<View style={{ gap: 10 }}>
-					<KText v="heading">About this home</KText>
+					<KText v="heading">Description</KText>
 					<KText v="body" numberOfLines={more ? undefined : 6} style={{ color: color.fg2 }}>
 						{h.description}
 					</KText>
@@ -276,7 +279,7 @@ function Detail({ h }: { h: Listing }) {
 
 			{(h.rooms ?? []).length ? (
 				<View style={{ gap: 12 }}>
-					<KText v="heading">Inside</KText>
+					<KText v="heading">Rooms</KText>
 					<FlatList
 						horizontal
 						data={h.rooms}
@@ -312,7 +315,7 @@ function Detail({ h }: { h: Listing }) {
 
 			{(h.facilities ?? []).length ? (
 				<View style={{ gap: 12 }}>
-					<KText v="heading">What’s here</KText>
+					<KText v="heading">Amenities</KText>
 					<View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 10 }}>
 						{(h.facilities ?? []).map((f) => (
 							<View key={f} style={{ width: '50%', flexDirection: 'row', alignItems: 'center', gap: 8, paddingRight: 8 }}>
@@ -328,7 +331,7 @@ function Detail({ h }: { h: Listing }) {
 
 			{(h.children ?? []).length ? (
 				<View style={{ gap: 12 }}>
-					<KText v="heading">Units in this property</KText>
+					<KText v="heading">Units</KText>
 					{(h.children ?? []).map((u) => (
 						<Pressable key={u.id} onPress={() => router.push(`/hostings/${u.id}`)} style={({ pressed }) => [s.unit, pressed && { opacity: 0.8 }]}>
 							<Photo assetId={shownAssetId(u.coverImage)} w={300} h={220} style={{ width: 84, height: 64 }} />
@@ -351,7 +354,7 @@ function Detail({ h }: { h: Listing }) {
 
 			{/* Trust */}
 			<View style={{ gap: 12 }}>
-				<KText v="heading">What Kushi has checked</KText>
+				<KText v="heading">Verification</KText>
 				{TIER_ORDER.slice(1).map((t, i) => {
 					const done = rank >= i + 1;
 					return (
@@ -379,7 +382,7 @@ function Detail({ h }: { h: Listing }) {
 
 			{mode === 'book' ? (
 				<Card>
-					<Eyebrow>How renting on Kushi works</Eyebrow>
+					<Eyebrow>How it works</Eyebrow>
 					{[
 						[ShieldCheck, 'Apply and sign on your phone', 'Verify your identity once, then apply and sign the tenancy agreement.'],
 						[Landmark, 'Pay into escrow', 'When the host accepts, you pay Kushi. The money is held — not sent to the host yet.'],
@@ -401,25 +404,49 @@ function Detail({ h }: { h: Listing }) {
 
 			{/* Location */}
 			<View style={{ gap: 10 }}>
-				<KText v="heading">Where you’ll be</KText>
+				<KText v="heading">Location</KText>
 				<KText v="small">
 					{where}
 					{h.landmarks ? ` · Near ${h.landmarks}` : ''}
 				</KText>
 				{h.latitude && h.longitude ? (
-					<View style={{ height: 200, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: color.surface }}>
-						<MapView
-							style={StyleSheet.absoluteFill}
-							userInterfaceStyle="dark"
-							scrollEnabled={false}
-							zoomEnabled={false}
-							pitchEnabled={false}
-							rotateEnabled={false}
-							initialRegion={{ latitude: Number(h.latitude), longitude: Number(h.longitude), latitudeDelta: 0.025, longitudeDelta: 0.025 }}
+					<>
+						<Pressable
+							onPress={() => router.push(`/hostings/${h.id}/map`)}
+							accessibilityRole="button"
+							accessibilityLabel="Open full-screen map"
+							testID="listing-map"
+							style={{ height: 200, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: color.surface }}
 						>
-							<Circle center={{ latitude: Number(h.latitude), longitude: Number(h.longitude) }} radius={450} strokeColor={color.amber} fillColor="rgba(245,158,11,0.18)" />
-						</MapView>
-					</View>
+							{/* pointerEvents off so the whole map is one tap target that opens the full map. */}
+							<View pointerEvents="none" style={StyleSheet.absoluteFill}>
+								<MapView
+									style={StyleSheet.absoluteFill}
+									userInterfaceStyle="dark"
+									scrollEnabled={false}
+									zoomEnabled={false}
+									pitchEnabled={false}
+									rotateEnabled={false}
+									toolbarEnabled={false}
+									initialRegion={{ latitude: Number(h.latitude), longitude: Number(h.longitude), latitudeDelta: 0.025, longitudeDelta: 0.025 }}
+								>
+									<Circle center={{ latitude: Number(h.latitude), longitude: Number(h.longitude) }} radius={450} strokeColor={color.amber} fillColor="rgba(245,158,11,0.18)" />
+								</MapView>
+							</View>
+							<View style={s.mapExpand}>
+								<Maximize2 size={16} color={color.fg} />
+							</View>
+						</Pressable>
+						<Button
+							title="Directions"
+							variant="ghost"
+							size="sm"
+							icon={<Navigation size={16} color={color.fg} />}
+							onPress={() => openDirections({ latitude: Number(h.latitude), longitude: Number(h.longitude), label: h.title ?? undefined })}
+							style={{ alignSelf: 'flex-start' }}
+							testID="listing-directions"
+						/>
+					</>
 				) : null}
 			</View>
 
@@ -626,6 +653,7 @@ function VideoTour({ uri, seconds }: { uri: string; seconds?: number | null }) {
 }
 
 const s = StyleSheet.create({
+	mapExpand: { position: 'absolute', right: 10, top: 10, width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(7,8,11,0.72)' },
 	galleryTop: { position: 'absolute', left: gutter, right: gutter, flexDirection: 'row', justifyContent: 'space-between' },
 	counter: { position: 'absolute', right: gutter, bottom: 14, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill, backgroundColor: 'rgba(7,8,11,0.65)' },
 	facts: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },

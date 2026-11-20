@@ -13,7 +13,7 @@ appId: com.kushicorp.kushi
     text: "Wait"
     optional: true
 - extendedWaitUntil:
-    visible: "Start exploring"
+    visible: "Explore homes"
     timeout: 180000
 - takeScreenshot: shots/01-welcome
 - tapOn: "Sign in"

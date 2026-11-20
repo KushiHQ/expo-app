@@ -76,20 +76,20 @@ export type TenancyStep = 'accepted' | 'paid' | 'released';
 
 /** Where an accepted tenancy is, for the host. */
 export function tenancyStage(b: TenancyBooking | null | undefined): { step: TenancyStep; label: string; tone: 'live' | 'info' | 'success' | 'danger' | 'neutral'; ended?: boolean } {
-	if (!b) return { step: 'accepted', label: 'Waiting for payment', tone: 'live' };
+	if (!b) return { step: 'accepted', label: 'Pending payment', tone: 'live' };
 	if (b.status === 'CANCELED') return { step: 'accepted', label: 'Cancelled', tone: 'neutral', ended: true };
 	if (b.paymentStatus === 'FAILED') return { step: 'accepted', label: 'Payment failed', tone: 'danger' };
-	if (b.paymentStatus !== 'PAID') return { step: 'accepted', label: 'Waiting for payment', tone: 'live' };
+	if (b.paymentStatus !== 'PAID') return { step: 'accepted', label: 'Pending payment', tone: 'live' };
 	if (b.status === 'COMPLETED') return { step: 'released', label: 'Paid out', tone: 'success' };
-	return { step: 'paid', label: 'Paid into escrow', tone: 'info' };
+	return { step: 'paid', label: 'In escrow', tone: 'info' };
 }
 
 export const PAYOUT: Record<string, { label: string; tone: 'live' | 'info' | 'success' | 'danger' | 'neutral' }> = {
-	PENDING: { label: 'Queued', tone: 'live' },
-	PROCESSING: { label: 'On its way', tone: 'info' },
-	SUCCESS: { label: 'Paid to your bank', tone: 'success' },
-	FAILED: { label: 'Failed — Kushi will retry', tone: 'danger' },
-	NEEDS_RECONCILIATION: { label: 'Held — support is on it', tone: 'danger' },
+	PENDING: { label: 'Pending', tone: 'live' },
+	PROCESSING: { label: 'Processing', tone: 'info' },
+	SUCCESS: { label: 'Paid', tone: 'success' },
+	FAILED: { label: 'Failed', tone: 'danger' },
+	NEEDS_RECONCILIATION: { label: 'On hold', tone: 'danger' },
 	CANCELLED: { label: 'Cancelled', tone: 'neutral' },
 	REFUNDED: { label: 'Refunded', tone: 'neutral' }
 };

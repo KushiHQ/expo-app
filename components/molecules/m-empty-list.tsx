@@ -9,7 +9,7 @@ type Props = {
 };
 
 const EmptyList: React.FC<Props> = ({ message, buttonTitle, onButtonPress }) => (
-  <Empty eyebrow="Nothing yet" title={capitalize(message)} body="When there’s something here, you’ll see it straight away." action={buttonTitle} onAction={onButtonPress} />
+  <Empty title={capitalize(message)} action={buttonTitle} onAction={onButtonPress} />
 );
 
 export default EmptyList;

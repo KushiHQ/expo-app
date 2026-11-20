@@ -51,8 +51,8 @@ export default function NewListing() {
 				</Card>
 			) : !kyc.kycComplete ? (
 				<Card tone="amber">
-					<Eyebrow c="amber">Before you start</Eyebrow>
-					<KText v="bodyStrong">Verify your identity first</KText>
+					<Eyebrow c="amber">Identity</Eyebrow>
+					<KText v="bodyStrong">Verification required</KText>
 					<KText v="small">Kushi checks every host so renters know who they are dealing with. It takes a few minutes and you only do it once.</KText>
 					<View style={{ gap: 8 }}>
 						<KycLine ok={kyc.bvnVerified} label="BVN" />
@@ -71,7 +71,7 @@ export default function NewListing() {
 
 			{drafts.length && !parent ? (
 				<View style={{ gap: 10 }}>
-					<Eyebrow>Pick up where you left off</Eyebrow>
+					<Eyebrow>Drafts</Eyebrow>
 					{drafts.map((d, i) => (
 						<HostListingRow key={d.id} l={d} testID={`draft-${i}`} />
 					))}
@@ -79,15 +79,15 @@ export default function NewListing() {
 			) : null}
 
 			<View style={{ gap: 12 }}>
-				<Eyebrow>Have these ready</Eyebrow>
-				<Need icon={<MapPin size={17} color={color.amber} />} title="Be at the property" body="Photos are taken with the Kushi camera and stamped with the location, so renters know they’re real." />
-				<Need icon={<FileSignature size={17} color={color.amber} />} title="The owner’s details" body="If you’re letting it, you’ll confirm who owns it and that you’re allowed to let it, then sign the tenancy terms." />
-				<Need icon={<Landmark size={17} color={color.amber} />} title="Your bank account" body="Rent is held safely by Kushi and paid out to this account." />
+				<Eyebrow>Requirements</Eyebrow>
+				<Need icon={<MapPin size={17} color={color.amber} />} title="On-site photos" body="Photos are taken with the Kushi camera and stamped with the location, so renters know they’re real." />
+				<Need icon={<FileSignature size={17} color={color.amber} />} title="Owner details" body="If you’re letting it, you’ll confirm who owns it and that you’re allowed to let it, then sign the tenancy terms." />
+				<Need icon={<Landmark size={17} color={color.amber} />} title="Bank account" body="Rent is held safely by Kushi and paid out to this account." />
 			</View>
 
 			<View style={{ gap: 12 }}>
 				<Eyebrow>How it works</Eyebrow>
-				<Stage n="1" title="Set it up" body="Seven short steps. Each one saves as you go." />
+				<Stage n="1" title="Set up" body="Seven short steps. Each one saves as you go." />
 				<Stage n="2" title="Publish" body="Once every step is done, publishing puts it in front of renters straight away." />
 				<Stage n="3" title="Get verified" body="Optional but worth it: send documents for trust badges. Kushi reviews each request within 3–5 business days." last />
 			</View>

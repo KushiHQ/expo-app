@@ -80,13 +80,13 @@ export default function Basics() {
 		>
 			{/* Only a choice while advert-only listings are switched on; otherwise every listing is Kushi managed. */}
 			{showAdvert ? (
-				<Block title="Who manages it?" sub="This decides how renters deal with you.">
+				<Block title="Management" sub="This decides how renters deal with you.">
 					<Choice title="Kushi managed" detail="Kushi verifies the property, handles the agreement and signing, and holds payment safely until move-in." on={management === ManagementType.KushiManaged} onPress={() => updateInput({ managementType: ManagementType.KushiManaged })} />
 					<Choice title="Advert only" detail="People contact you and you close the deal off Kushi. No agreement or payment here, and your exact address stays hidden." on={management === ManagementType.AgentManaged} onPress={() => updateInput({ managementType: ManagementType.AgentManaged })} />
 				</Block>
 			) : null}
 
-			<Block title="Rent or sale?">
+			<Block title="Listing type">
 				<View style={{ gap: 10 }}>
 					<Choice title="For rent" detail="Let it to a tenant, or as a short-let." on={input.listingType === ListingType.Rent} onPress={() => updateInput({ listingType: ListingType.Rent })} />
 					<Choice title="For sale" detail="Sell the property outright." on={input.listingType === ListingType.Sale} onPress={() => updateInput({ listingType: ListingType.Sale })} />
@@ -98,15 +98,15 @@ export default function Basics() {
 				) : null}
 			</Block>
 
-			<Block title="What kind of property?">
+			<Block title="Property type">
 				<SelectField label="Property type" value={typeLabel} placeholder="Flat, shop, land…" onPress={() => setTypeOpen(true)} error={tried ? errors.type : null} testID="field-property-type" />
 			</Block>
 
-			<Block title="Is it one place, or several units?">
+			<Block title="Units">
 				<View style={{ gap: 10, opacity: kindLocked ? 0.5 : 1 }} pointerEvents={kindLocked ? 'none' : 'auto'}>
 					<Choice title="One property" detail="A single flat, house, shop or plot." on={kind === HostingKind.Standalone} onPress={() => updateInput({ kind: HostingKind.Standalone, parentId: null })} />
-					<Choice title="A property with units" detail="A block of flats, an estate or a plaza. You’ll add each unit after." on={kind === HostingKind.Parent} onPress={() => updateInput({ kind: HostingKind.Parent, parentId: null })} />
-					<Choice title="A unit in one of my properties" detail="It shares the property’s location, owner details and terms." on={kind === HostingKind.Child} onPress={() => updateInput({ kind: HostingKind.Child })} />
+					<Choice title="Property with units" detail="A block of flats, an estate or a plaza. You’ll add each unit after." on={kind === HostingKind.Parent} onPress={() => updateInput({ kind: HostingKind.Parent, parentId: null })} />
+					<Choice title="Unit in a property" detail="It shares the property’s location, owner details and terms." on={kind === HostingKind.Child} onPress={() => updateInput({ kind: HostingKind.Child })} />
 				</View>
 				{kindLocked ? <KText v="xs">This property already has units, so this can’t change.</KText> : null}
 				{kind === HostingKind.Child ? (
@@ -114,9 +114,9 @@ export default function Basics() {
 				) : null}
 				{kind === HostingKind.Parent ? (
 					<View style={{ gap: 10 }}>
-						<KText v="label">How are the units offered?</KText>
-						<Choice title="One by one" detail="Renters pick a unit." on={structure === UnitStructure.Individual} onPress={() => updateInput({ unitStructure: UnitStructure.Individual })} />
-						<Choice title="All together" detail="The whole property goes to one renter or buyer." on={structure === UnitStructure.Group} onPress={() => updateInput({ unitStructure: UnitStructure.Group })} />
+						<KText v="label">Offered as</KText>
+						<Choice title="Individual units" detail="Renters pick a unit." on={structure === UnitStructure.Individual} onPress={() => updateInput({ unitStructure: UnitStructure.Individual })} />
+						<Choice title="Whole property" detail="The whole property goes to one renter or buyer." on={structure === UnitStructure.Group} onPress={() => updateInput({ unitStructure: UnitStructure.Group })} />
 					</View>
 				) : null}
 			</Block>

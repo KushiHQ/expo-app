@@ -63,7 +63,7 @@ export default function Agreement() {
 	if (hosting && !showTenancySteps(hosting.listingType, hosting.propertyType, hosting.managementType))
 		return (
 			<StepScreen stepKey="agreement" hosting={hosting} onBack={f.toHub} primary={{ title: 'Continue', onPress: () => f.advance() }}>
-				<Notice tone="info" title="Nothing to do here">
+				<Notice tone="info" title="Not required">
 					Sales, land and advert-only listings don’t use a Kushi tenancy agreement.
 				</Notice>
 			</StepScreen>
@@ -79,7 +79,7 @@ export default function Agreement() {
 			primary={{ title: 'Save and continue', onPress: next, loading: busy || t.mutating, testID: 'step-next' }}
 			footnote={tried && !valid ? <KText v="xs" c="danger" center>{errors.mandate ?? errors.terms ?? errors.signature}</KText> : null}
 		>
-			<Block title="Your right to let it" sub="The owner’s details go into the agreement.">
+			<Block title="Ownership" sub="The owner’s details go into the agreement.">
 				<MandateFields v={v} update={updateVerificationInput} tried={tried} agentFee={(hosting?.fees ?? []).some((x) => x.feeType === FeeType.AgentFee && Number(x.amount) > 0)} />
 			</Block>
 
@@ -106,7 +106,7 @@ export default function Agreement() {
 				</Card>
 				{t.tenancySummary.length ? (
 					<View style={{ gap: 8 }}>
-						<Eyebrow>In plain English</Eyebrow>
+						<Eyebrow>Summary</Eyebrow>
 						{t.tenancySummary.map((p, i) => (
 							<View key={i} style={{ flexDirection: 'row', gap: 8 }}>
 								<KText v="small" c="amber">
@@ -167,7 +167,7 @@ export default function Agreement() {
 				)}
 			</Block>
 
-			<Block title="Your signature" sub="It’s added to every agreement for this listing. You sign once.">
+			<Block title="Signature" sub="It’s added to every agreement for this listing. You sign once.">
 				<SignaturePad existingUrl={signature ?? undefined} onSave={t.handleHostSignatureSave} uploading={t.loading} />
 				{tried && errors.signature ? (
 					<KText v="xs" c="danger">

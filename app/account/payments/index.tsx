@@ -52,7 +52,7 @@ export default function Payments() {
 						<View style={s.explain}>
 							<ShieldCheck size={20} color={color.amber} />
 							<View style={{ flex: 1, gap: 4 }}>
-								<KText v="smallStrong">How Kushi holds your money</KText>
+								<KText v="smallStrong">Escrow</KText>
 								<KText v="xs">Rent you pay sits in escrow. The host is paid only after you confirm your move-in, or automatically 14 days after payment if you don’t raise a problem.</KText>
 							</View>
 						</View>
@@ -84,7 +84,7 @@ export default function Payments() {
 							))}
 						</View>
 					) : error ? null : (
-						<Empty eyebrow="No payments" title="Nothing paid yet" body="When you pay for a home, the receipt and its reference live here — along with where the money is." />
+						<Empty title="No payments yet" body="When you pay for a home, the receipt and its reference live here — along with where the money is." />
 					)
 				}
 				ListFooterComponent={fetching && rows.length ? <View style={{ paddingVertical: 16 }}><Spinner /></View> : null}

@@ -149,7 +149,7 @@ export function PrivacyNote({ compact }: { compact?: boolean }) {
 		<View style={s.privacy}>
 			<View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
 				<Lock size={15} color={color.fg2} />
-				<KText v="smallStrong">Your details stay private</KText>
+				<KText v="smallStrong">Privacy</KText>
 			</View>
 			{compact ? (
 				<KText v="xs">Checked by our licensed partner Dojah against government records. Hosts only see that you’re verified — never your NIN, BVN or selfie.</KText>

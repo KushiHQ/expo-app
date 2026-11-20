@@ -28,10 +28,10 @@ const TIER_NEEDS: Record<T, string> = {
 };
 
 const STATUS: Record<S, { label: string; tone: 'info' | 'success' | 'danger' | 'neutral' }> = {
-	[S.Pending]: { label: 'Waiting', tone: 'info' },
-	[S.UnderReview]: { label: 'Being reviewed', tone: 'info' },
+	[S.Pending]: { label: 'Pending', tone: 'info' },
+	[S.UnderReview]: { label: 'In review', tone: 'info' },
 	[S.Verified]: { label: 'Approved', tone: 'success' },
-	[S.Rejected]: { label: 'Not approved', tone: 'danger' }
+	[S.Rejected]: { label: 'Rejected', tone: 'danger' }
 };
 
 /** Trust badges for one listing: where it stands, what each level needs, and every request so far. */
@@ -60,7 +60,7 @@ export default function VerificationOverview() {
 						<Skeleton style={{ height: 300 }} />
 					</View>
 				) : (
-					<Empty eyebrow="Off the map" title="We couldn’t load this" body={he ? cleanError(he.message) : 'Pull down to try again.'} action="Try again" onAction={refresh} />
+					<Empty title="We couldn’t load this" body={he ? cleanError(he.message) : 'Pull down to try again.'} action="Try again" onAction={refresh} />
 				)
 			) : (
 				<>
@@ -85,7 +85,7 @@ export default function VerificationOverview() {
 					) : null}
 
 					<View style={{ gap: 4 }}>
-						<Eyebrow>The levels</Eyebrow>
+						<Eyebrow>Levels</Eyebrow>
 						{TIER_ORDER.filter((t) => t !== T.Unverified).map((t, i, list) => {
 							const r = tierRank(t);
 							const done = r <= rank;
@@ -163,8 +163,8 @@ function MandateFirst({ hostingId, onDone }: { hostingId: string; onDone: () => 
 	}
 	return (
 		<Card tone="amber">
-			<Eyebrow c="amber">First</Eyebrow>
-			<KText v="bodyStrong">Confirm your right to list it</KText>
+			<Eyebrow c="amber">Required</Eyebrow>
+			<KText v="bodyStrong">Ownership</KText>
 			<KText v="small">Kushi needs the owner’s details before it can verify this listing.</KText>
 			<MandateFields v={v} update={(p) => setV((x) => ({ ...x, ...p }))} tried={tried} />
 			<Button title="Save and continue" loading={fetching} onPress={save} />

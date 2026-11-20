@@ -118,7 +118,7 @@ export default function Publish() {
 				</Notice>
 			) : null}
 
-			<Block title="Name and describe it" sub="Say what makes it worth a visit: size, condition, the street, what’s nearby.">
+			<Block title="Title and description" sub="Say what makes it worth a visit: size, condition, the street, what’s nearby.">
 				<Button title={drafting ? 'Writing…' : 'Draft it for me'} variant="ghost" size="sm" icon={<Sparkles size={15} color={color.amber} />} loading={drafting} onPress={() => { setAiOpen(true); draft({ requestPolicy: 'network-only' }); }} style={{ alignSelf: 'flex-start' }} />
 				{aiOpen && !drafting && (ai?.aiHostingContentSuggestion || aiError) ? (
 					aiError ? (
@@ -141,7 +141,7 @@ export default function Publish() {
 				<Field label="Description" multiline value={input.description ?? ''} onChangeText={(description) => updateInput({ description })} maxLength={DESCRIPTION_MAX} placeholder="Bright 3-bedroom flat on a quiet, gated street. 24-hour power from a shared inverter, borehole water, and parking for two cars…" error={tried && !descOk ? `Write at least ${MIN_DESCRIPTION} characters.` : null} hint={`${(input.description ?? '').length}/${DESCRIPTION_MAX}`} style={{ minHeight: 140 }} testID="field-description" />
 			</Block>
 
-			<Block title="Final check" sub={blocking.length ? 'Tap a step to finish it.' : 'Everything’s in place.'}>
+			<Block title="Checklist" sub={blocking.length ? 'Tap a step to finish it.' : 'Everything’s in place.'}>
 				<View>
 					{others.map((s) => (
 						<StepRow key={s.key} step={s} onPress={() => f.id && router.push(stepHref(s.key, f.id))} />
@@ -151,10 +151,10 @@ export default function Publish() {
 			</Block>
 
 			{!live ? (
-				<Block title="What happens when you publish">
-					<Next icon={<Eye size={16} color={color.amber} />} title="It goes live straight away" body="Renters can find it in search and on the map." />
+				<Block title="After publishing">
+					<Next icon={<Eye size={16} color={color.amber} />} title="Live immediately" body="Renters can find it in search and on the map." />
 					<Next icon={<CheckIcon size={16} color={color.amber} />} title={agent ? 'People contact you directly' : 'Renters apply through Kushi'} body={agent ? 'Enquiries come to your contact number and Kushi inbox.' : 'You’ll be notified of each application. Nothing is agreed until you accept it.'} />
-					{!agent ? <Next icon={<ShieldCheck size={16} color={color.amber} />} title="Get verified to stand out" body="Send documents for trust badges. Kushi reviews each request within 3–5 business days." /> : null}
+					{!agent ? <Next icon={<ShieldCheck size={16} color={color.amber} />} title="Verification" body="Send documents for trust badges. Kushi reviews each request within 3–5 business days." /> : null}
 				</Block>
 			) : null}
 
@@ -175,7 +175,7 @@ export default function Publish() {
 				</View>
 			) : (
 				<Card>
-					<KText v="bodyStrong">Take it off Kushi for now?</KText>
+					<KText v="bodyStrong">Unpublish</KText>
 					<KText v="small">Unpublishing hides it from renters until you publish it again.</KText>
 					<Button title="Unpublish" variant="ghost" size="sm" onPress={() => setUnpublish(true)} style={{ alignSelf: 'flex-start' }} />
 				</Card>
@@ -187,16 +187,16 @@ export default function Publish() {
 				<Button title="Keep it live" variant="ghost" block onPress={() => setUnpublish(false)} />
 			</Sheet>
 
-			<Sheet open={done} onClose={() => f.toHub()} title="You’re live" eyebrow="Published" dismissible={false}>
+			<Sheet open={done} onClose={() => f.toHub()} title="Listing published" dismissible={false}>
 				{busy ? <Spinner /> : null}
 				<KText v="small">{input.title?.trim()} is now on Kushi. We’ll let you know when someone {agent ? 'gets in touch' : 'applies'}.</KText>
 				{!agent ? (
-					<Notice tone="info" title="Next: get verified">
+					<Notice tone="info" title="Get verified">
 						Verified listings show a trust badge and rank higher. Upload the documents for each level and Kushi reviews them within 3–5 business days.
 					</Notice>
 				) : null}
 				{!agent ? <Button title="Get verified" block onPress={() => { setDone(false); router.replace(`/hostings/form/verification/overview?id=${f.id}` as Href); }} /> : null}
-				<Button title="See my listing" variant="ghost" block onPress={() => { setDone(false); router.replace(`/hostings/${f.id}` as Href); }} />
+				<Button title="View listing" variant="ghost" block onPress={() => { setDone(false); router.replace(`/hostings/${f.id}` as Href); }} />
 				<Button title="Done" variant="quiet" block onPress={() => { setDone(false); f.toHub(); }} />
 			</Sheet>
 		</StepScreen>

@@ -13,7 +13,7 @@ import { KText } from './text';
  * unmounts the whole app: a blank grey screen on Android and a hard crash on
  * iOS. Export it from a route or layout as `ErrorBoundary`.
  */
-export function RouteError({ error, retry, title = 'Something went wrong on this screen', home = '/' }: ErrorBoundaryProps & { title?: string; home?: string }) {
+export function RouteError({ error, retry, title = 'Something went wrong', home = '/' }: ErrorBoundaryProps & { title?: string; home?: string }) {
 	const insets = useSafeAreaInsets();
 	useEffect(() => {
 		Sentry.captureException(error, { tags: { area: 'route-error-boundary' } });

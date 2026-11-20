@@ -80,7 +80,7 @@ export default function Explore() {
 				<Search size={18} color={color.muted} />
 				<View style={{ flex: 1 }}>
 					<KText v="bodyStrong" numberOfLines={1}>
-						{filter.search || filter.state || 'Where do you want to live?'}
+						{filter.search || filter.state || 'Search city or area'}
 					</KText>
 					<KText v="xs" numberOfLines={1}>
 						{filter.listingType === ListingType.Sale ? 'Buying' : filter.listingType === ListingType.Rent ? 'Renting' : 'Rent or buy'} · {filter.propertyType ?? 'Any type'}
@@ -140,7 +140,7 @@ export default function Explore() {
 						</View>
 					) : showEmpty ? (
 						<Empty
-							title="Uncharted territory"
+							title="No homes found"
 							body="No homes match yet. Widen your search or clear filters — new verified homes are added every week."
 							action={Object.keys(filter).length ? 'Clear search & filters' : undefined}
 							onAction={() => setFilter({})}
@@ -207,7 +207,7 @@ function SearchSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
 		onClose();
 	};
 	return (
-		<Sheet open={open} onClose={onClose} title="Where to?">
+		<Sheet open={open} onClose={onClose} title="Search">
 			<View style={s.qBox}>
 				<Search size={18} color={color.muted} />
 				<TextInput

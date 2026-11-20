@@ -65,8 +65,8 @@ export function ApplicationsBoard({ listingId, listingTitle }: { listingId?: str
 				value={tab}
 				onChange={setTab}
 				options={[
-					{ value: 'todo', label: `To review ${groups.todo.length}` },
-					{ value: 'accepted', label: `Accepted ${groups.accepted.length}` },
+					{ value: 'todo', label: `Pending ${groups.todo.length}` },
+					{ value: 'accepted', label: `Approved ${groups.accepted.length}` },
 					{ value: 'closed', label: 'Closed' }
 				]}
 			/>
@@ -99,8 +99,7 @@ export function ApplicationsBoard({ listingId, listingTitle }: { listingId?: str
 			</Notice>
 		) : (
 			<Empty
-				eyebrow="All clear"
-				title={tab === 'todo' ? 'No applications waiting' : tab === 'accepted' ? 'No accepted renters yet' : 'Nothing closed yet'}
+				title={tab === 'todo' ? 'No pending applications' : tab === 'accepted' ? 'No approved applications' : 'No closed applications'}
 				body={tab === 'todo' ? 'When a verified renter applies, they appear here and we notify you.' : undefined}
 			/>
 		);
@@ -131,7 +130,7 @@ export function ApplicationsBoard({ listingId, listingTitle }: { listingId?: str
 							<ApplicationReview key={selected} id={selected} embedded onChanged={reload} />
 						) : (
 							<View style={{ flex: 1, justifyContent: 'center' }}>
-								<Empty eyebrow="Applications" title="Pick an application" body="Choose someone on the left to see their details and decide." />
+								<Empty title="No application selected" body="Choose someone on the left to see their details and decide." />
 							</View>
 						)}
 					</View>

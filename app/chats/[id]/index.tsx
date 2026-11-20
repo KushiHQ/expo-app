@@ -261,7 +261,7 @@ export default function Conversation() {
 					<Photo assetId={chat.hosting.coverImage?.asset?.id} w={200} h={200} style={{ width: 56, height: 56 }} />
 					<View style={{ flex: 1, justifyContent: 'center', gap: 2 }}>
 						<KText v="micro" c="amber">
-							About this home
+							Listing
 						</KText>
 						<KText v="bodyStrong" numberOfLines={1}>
 							{chat.hosting.title}

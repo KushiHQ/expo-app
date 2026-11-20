@@ -75,9 +75,9 @@ export default function ImprovedPhotos() {
 					<Skeleton style={{ height: 220 }} />
 				</View>
 			) : error && !data ? (
-				<Empty eyebrow="Offline" title="Photos didn’t load" body={cleanError(error.message)} action="Try again" onAction={() => refetch({ requestPolicy: 'network-only' })} />
+				<Empty title="Photos didn’t load" body={cleanError(error.message)} action="Try again" onAction={() => refetch({ requestPolicy: 'network-only' })} />
 			) : !items.length ? (
-				<Empty eyebrow="Nothing yet" title="No improved photos yet" body="When Kushi improves photos of this listing, they appear here and we let you know." />
+				<Empty title="No improved photos yet" body="When Kushi improves photos of this listing, they appear here and we let you know." />
 			) : (
 				<>
 					<KText v="xs">

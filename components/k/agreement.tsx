@@ -43,7 +43,7 @@ export function Agreement({ agreement, hosting, application, summary = [] }: { a
 		<View style={{ gap: 16 }}>
 			{summary.length ? (
 				<View style={s.summary}>
-					<Eyebrow>The key terms, in plain English</Eyebrow>
+					<Eyebrow>Summary</Eyebrow>
 					{summary.map((p, i) => (
 						<View key={i} style={{ flexDirection: 'row', gap: 8 }}>
 							<KText v="small" c="amber">

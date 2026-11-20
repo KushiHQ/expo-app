@@ -84,7 +84,7 @@ export default function Boost() {
 		>
 			<View style={{ gap: 8 }}>
 				<Rocket size={26} color={color.amber} />
-				<KText v="title">Get seen by more renters</KText>
+				<KText v="title">Listing boost</KText>
 				<KText v="small">A boost puts this listing nearer the top of search and the home feed for the days you choose. It doesn’t change your price or verification.</KText>
 			</View>
 			{!live && hd ? <Notice tone="warn" title="Publish first">Only live listings can be boosted.</Notice> : null}
@@ -94,13 +94,13 @@ export default function Boost() {
 					<Skeleton style={{ height: 72 }} />
 				</View>
 			) : error ? (
-				<Empty eyebrow="Offline" title="Boosts didn’t load" body={cleanError(error.message)} action="Try again" onAction={() => refetch({ requestPolicy: 'network-only' })} />
+				<Empty title="Boosts didn’t load" body={cleanError(error.message)} action="Try again" onAction={() => refetch({ requestPolicy: 'network-only' })} />
 			) : (
 				options.map((o) => <Choice key={o.tier} title={`${o.label} · ${naira(Number(o.price))}`} detail={`${o.durationDays} days${o.description ? ` — ${o.description}` : ''}`} on={tier === o.tier} onPress={() => setTier(o.tier)} />)
 			)}
 			<KText v="xs">Payment is handled securely by Flutterwave.</KText>
 
-			<Sheet open={success} onClose={() => setSuccess(false)} title="Boost is on" eyebrow="Paid">
+			<Sheet open={success} onClose={() => setSuccess(false)} title="Boost active">
 				<View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
 					<TrendingUp size={18} color={color.success} />
 					<KText v="small" style={{ flex: 1 }}>

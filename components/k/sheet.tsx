@@ -82,7 +82,7 @@ export function OtpSheet({ open, onClose, title, body, action = 'Confirm', dange
 		} else onClose();
 	}
 	return (
-		<Sheet open={open} onClose={onClose} title={title} eyebrow="Confirm with code">
+		<Sheet open={open} onClose={onClose} title={title} eyebrow="Verification code">
 			<KText v="small">{body}</KText>
 			<OtpField value={code} onChange={setCode} onComplete={go} invalid={!!error} />
 			{error ? (

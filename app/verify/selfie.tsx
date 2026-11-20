@@ -43,7 +43,7 @@ export default function VerifySelfie() {
 			) : (
 				<>
 					<View style={{ gap: 8, paddingTop: 20 }}>
-						<Eyebrow>Why a selfie</Eyebrow>
+						<Eyebrow>Selfie</Eyebrow>
 						<KText v="title">We match it to the photo on your NIN.</KText>
 						<KText v="small">It proves the ID belongs to you. It takes under a minute and you only do it once.</KText>
 					</View>
@@ -53,7 +53,7 @@ export default function VerifySelfie() {
 						</Notice>
 					) : null}
 					<Card>
-						<KText v="heading">For a photo that passes first time</KText>
+						<KText v="heading">Tips</KText>
 						{TIPS.map(({ I, t }) => (
 							<View key={t} style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
 								<I size={18} color={color.amber} />

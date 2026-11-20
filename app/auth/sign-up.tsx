@@ -71,7 +71,7 @@ export default function SignUp() {
 
 	if (step === 'code')
 		return (
-			<AuthShell eyebrow="One last step" title="Check your email" sub={`Enter the 6-digit code we sent to ${email || 'your email'}.`}>
+			<AuthShell eyebrow="Verify email" title="Check your email" sub={`Enter the 6-digit code we sent to ${email || 'your email'}.`}>
 				{!params.email && !email ? <Field label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" /> : null}
 				{error ? <Notice tone="danger">{error}</Notice> : null}
 				<OtpField value={code} onChange={setCode} onComplete={confirm} invalid={!!error} />

@@ -117,7 +117,6 @@ export default function Collection() {
 							</Notice>
 						) : (
 							<Empty
-								eyebrow="Empty collection"
 								title="No homes here yet"
 								body={candidates.length ? 'Add homes you’ve saved to compare them side by side.' : 'Save homes from Explore with the heart, then add them here.'}
 								action={candidates.length ? 'Add saved homes' : 'Explore homes'}

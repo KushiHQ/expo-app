@@ -10,7 +10,7 @@ appId: com.kushicorp.kushi
     permissions:
       all: allow
 - extendedWaitUntil:
-    visible: "Start exploring"
+    visible: "Explore homes"
     timeout: 180000
 - tapOn: "Sign in"
 - tapOn:
@@ -29,7 +29,7 @@ appId: com.kushicorp.kushi
 - tapOn:
     id: "tab-trips"
 - extendedWaitUntil:
-    visible: "Applications & homes"
+    visible: "Homes"
     timeout: 30000
 - waitForAnimationToEnd:
     timeout: 8000
@@ -147,3 +147,39 @@ appId: com.kushicorp.kushi
 - takeScreenshot: shots/13-under-review
 - scroll
 - takeScreenshot: shots/14-under-review-lower
+# ── Listing map: tap the map for full screen, Directions opens the maps chooser ──
+# QA Test listing on the test API (Kushi-managed, has a pin).
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "tab-index"
+    timeout: 60000
+- openLink: "kushi://hostings/e3ab9468-fd8b-4e99-8321-b1aaac05c6d6"
+- extendedWaitUntil:
+    visible:
+      id: "listing-cta"
+    timeout: 60000
+- scrollUntilVisible:
+    element:
+      id: "listing-directions"
+    timeout: 30000
+- assertVisible: "Location"
+- takeScreenshot: shots/15-listing-location
+- tapOn:
+    id: "listing-map"
+- extendedWaitUntil:
+    visible:
+      id: "listing-map-directions"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: shots/16-listing-full-map
+- tapOn:
+    id: "listing-map-directions"
+- extendedWaitUntil:
+    visible: "Apple Maps"
+    timeout: 10000
+- assertVisible: "Google Maps"
+- takeScreenshot: shots/17-directions-choice
+- tapOn: "Cancel"

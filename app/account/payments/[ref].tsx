@@ -68,7 +68,6 @@ export default function ReceiptScreen() {
 					</View>
 				) : (
 					<Empty
-						eyebrow={error ? 'Couldn’t load' : 'Not found'}
 						title={error ? 'We couldn’t open this receipt' : 'No receipt with that reference'}
 						body={error ? cleanError(error.message) || 'Check your connection and try again.' : 'It may belong to another account. Your payments list has every receipt that’s yours.'}
 						action={error ? 'Try again' : 'See my payments'}
@@ -115,7 +114,7 @@ export default function ReceiptScreen() {
 
 			{isRent && fees.length ? (
 				<Card>
-					<KText v="heading">What you paid for</KText>
+					<KText v="heading">Breakdown</KText>
 					{fees.map((f) => (
 						<KV key={f.key} k={f.label} v={naira(Number(f.amount))} />
 					))}
@@ -148,11 +147,11 @@ export default function ReceiptScreen() {
 				<View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
 					<Headset size={20} color={color.amber} />
 					<View style={{ flex: 1, gap: 2 }}>
-						<KText v="bodyStrong">Something wrong with this payment?</KText>
+						<KText v="bodyStrong">Payment issue</KText>
 						<KText v="xs">Our team sees this receipt when you message from here.</KText>
 					</View>
 				</View>
-				<Button title="Get help with this payment" variant="ghost" loading={starting} onPress={help} testID="receipt-help" />
+				<Button title="Contact support" variant="ghost" loading={starting} onPress={help} testID="receipt-help" />
 			</Card>
 			<Button title="Share receipt (PDF)" variant="quiet" loading={sharing} onPress={share} icon={<Share2 size={16} color={color.fg2} />} />
 		</Screen>
@@ -164,9 +163,9 @@ function EscrowTrail({ t, state }: { t: Receipt; state: MoneyState }) {
 	const released = state.key === 'released';
 	const due = t.booking?.autoFinalizeAt;
 	const steps = [
-		{ title: 'You paid', when: shortDate(t.createdAt), done: true },
-		{ title: 'Kushi holds it in escrow', when: released ? 'Done' : 'Now', done: released, active: !released },
-		{ title: 'Released to the host', when: released ? shortDate(t.booking?.hostTransaction?.createdAt) : due ? `By ${shortDate(due)} at the latest` : 'After you confirm your move-in', done: released }
+		{ title: 'Paid', when: shortDate(t.createdAt), done: true },
+		{ title: 'Held in escrow', when: released ? 'Done' : 'Now', done: released, active: !released },
+		{ title: 'Released to host', when: released ? shortDate(t.booking?.hostTransaction?.createdAt) : due ? `By ${shortDate(due)} at the latest` : 'After you confirm your move-in', done: released }
 	];
 	return (
 		<Card>

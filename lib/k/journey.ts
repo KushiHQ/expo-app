@@ -31,18 +31,18 @@ export function stageOf(j: JourneyInput): Stage {
 }
 
 export const STAGE: Record<Stage, { label: string; tone: Tone; next: string }> = {
-	draft: { label: 'Not submitted', tone: 'neutral', next: 'Finish your application to send it to the host.' },
-	review: { label: 'Under review', tone: 'info', next: 'Kushi and the host are reviewing your application.' },
-	accepted: { label: 'Accepted — pay now', tone: 'live', next: 'The host said yes. Pay into escrow to secure the home.' },
-	paid: { label: 'Paid · awaiting keys', tone: 'warn', next: 'Arrange the handover with your host, then confirm you have your keys.' },
+	draft: { label: 'Draft', tone: 'neutral', next: 'Finish your application to send it to the host.' },
+	review: { label: 'In review', tone: 'info', next: 'Kushi and the host are reviewing your application.' },
+	accepted: { label: 'Approved', tone: 'live', next: 'The host said yes. Pay into escrow to secure the home.' },
+	paid: { label: 'Paid', tone: 'warn', next: 'Arrange the handover with your host, then confirm you have your keys.' },
 	completed: { label: 'Moved in', tone: 'success', next: 'Your tenancy is active. Enjoy your new home.' },
 	ended: { label: 'Closed', tone: 'neutral', next: 'This application is no longer active.' }
 };
 
 export const JOURNEY = [
 	{ key: 'applied', label: 'Applied' },
-	{ key: 'accepted', label: 'Host accepted' },
-	{ key: 'paid', label: 'Paid into escrow' },
+	{ key: 'accepted', label: 'Approved' },
+	{ key: 'paid', label: 'Paid' },
 	{ key: 'keys', label: 'Keys received' }
 ] as const;
 
@@ -52,8 +52,8 @@ export function progress(stage: Stage): number {
 }
 
 export function endedReason(appStatus?: string | null, bookingStatus?: string | null): string {
-	if (bookingStatus === 'CANCELED') return 'This booking was cancelled.';
-	if (appStatus === 'REJECTED') return 'The host chose another applicant this time.';
-	if (appStatus === 'CANCELLED') return 'You withdrew this application.';
-	return 'Closed.';
+	if (bookingStatus === 'CANCELED') return 'Cancelled';
+	if (appStatus === 'REJECTED') return 'Rejected';
+	if (appStatus === 'CANCELLED') return 'Withdrawn';
+	return 'Closed';
 }

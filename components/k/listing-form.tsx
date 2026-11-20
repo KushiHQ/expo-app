@@ -213,7 +213,7 @@ export function PhotoTile({ uri, size, status, cover, selected, onPress, onRetry
 				<View style={[StyleSheet.absoluteFill, s.veil]}>
 					<ActivityIndicator color={color.fg} />
 					<KText v="micro" style={{ color: color.fg }}>
-						{status === 'queued' ? 'Waiting' : 'Uploading'}
+						{status === 'queued' ? 'Pending' : 'Uploading'}
 					</KText>
 				</View>
 			) : null}
@@ -221,7 +221,7 @@ export function PhotoTile({ uri, size, status, cover, selected, onPress, onRetry
 				<Pressable accessibilityRole="button" accessibilityLabel="Retry upload" onPress={onRetry} style={[StyleSheet.absoluteFill, s.veil, { backgroundColor: 'rgba(240,82,79,0.45)' }]}>
 					{status === 'dead' ? <AlertTriangle size={18} color="#fff" /> : <RotateCcw size={18} color="#fff" />}
 					<KText v="micro" style={{ color: '#fff' }}>
-						{status === 'dead' ? 'Lost' : 'Retry'}
+						{status === 'dead' ? 'Failed' : 'Retry'}
 					</KText>
 				</Pressable>
 			) : null}

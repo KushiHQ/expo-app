@@ -200,7 +200,7 @@ export default function CameraScreen() {
 				<View style={[s.center, { flex: 1, gap: 14 }]}>
 					<Camera size={36} color={color.amber} />
 					<KText v="title" center>
-						Allow the camera
+						Camera access
 					</KText>
 					<KText v="small" center style={{ maxWidth: 320 }}>
 						Listing photos are taken in the app, at the property, so renters can trust they’re real.

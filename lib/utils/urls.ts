@@ -63,6 +63,38 @@ export const openGoogleMaps = async (coordinates: Coordinates) => {
   }
 };
 
+/**
+ * Open the phone's maps app with directions to a point.
+ * iOS asks Apple Maps or Google Maps (Google falls back to the web if the app
+ * isn't installed); Android opens Google Maps, then any maps app via geo:.
+ */
+export const openDirections = async ({ latitude, longitude, label }: Coordinates & { label?: string }) => {
+  const to = `${latitude},${longitude}`;
+  const web = `https://www.google.com/maps/dir/?api=1&destination=${to}`;
+  const tryOpen = async (...urls: string[]) => {
+    for (const url of urls) {
+      try {
+        await Linking.openURL(url);
+        return;
+      } catch {
+        // Try the next one.
+      }
+    }
+    alert('Couldn’t open maps', 'Install a maps app, or try again later.');
+  };
+
+  if (Platform.OS === 'ios') {
+    alert('Directions', undefined, [
+      { text: 'Apple Maps', onPress: () => tryOpen(`http://maps.apple.com/?daddr=${to}&dirflg=d`, web) },
+      { text: 'Google Maps', onPress: () => tryOpen(`comgooglemaps://?daddr=${to}&directionsmode=driving`, web) },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+    return;
+  }
+  const name = label ? `(${encodeURIComponent(label)})` : '';
+  await tryOpen(web, `geo:${to}?q=${to}${name}`);
+};
+
 export const getDefaultProfileImageUrl = (name: string) => {
   return `https://ui-avatars.com/api/?name=${name.toUpperCase().split(' ').join('+')}=random`;
 };

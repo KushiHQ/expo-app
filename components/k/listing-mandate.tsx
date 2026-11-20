@@ -9,9 +9,9 @@ import { color } from '@/lib/k/theme';
 import { HostingPropertyRelationship, type HostingVerificationInput } from '@/lib/services/graphql/generated';
 
 const ROLES: { value: HostingPropertyRelationship; title: string; detail: string }[] = [
-	{ value: HostingPropertyRelationship.Landlord, title: 'I own it', detail: 'You are the legal owner with full rights to let or sell it.' },
-	{ value: HostingPropertyRelationship.Agent, title: 'I’m the owner’s agent', detail: 'You have a written mandate or power of attorney from the owner.' },
-	{ value: HostingPropertyRelationship.Subletter, title: 'I’m subletting', detail: 'You rent it, and your landlord has agreed in writing that you can sublet.' }
+	{ value: HostingPropertyRelationship.Landlord, title: 'Owner', detail: 'You are the legal owner with full rights to let or sell it.' },
+	{ value: HostingPropertyRelationship.Agent, title: 'Owner’s agent', detail: 'You have a written mandate or power of attorney from the owner.' },
+	{ value: HostingPropertyRelationship.Subletter, title: 'Subletter', detail: 'You rent it, and your landlord has agreed in writing that you can sublet.' }
 ];
 
 const DECLS: { key: 'declOwnership' | 'declLitigation' | 'declIndemnity'; text: string }[] = [
@@ -32,7 +32,7 @@ export function mandateComplete(v: V, agentFee = false) {
 export function MandateFields({ v, update, tried, agentFee = false }: { v: V; update: (p: V) => void; tried?: boolean; agentFee?: boolean }) {
 	return (
 		<View style={{ gap: 12 }}>
-			<KText v="label">You are…</KText>
+			<KText v="label">Your role</KText>
 			{ROLES.map((r) => (
 				<Choice key={r.value} title={r.title} detail={r.detail} on={v.propertyRelationship === r.value} onPress={() => update({ propertyRelationship: r.value })} />
 			))}
