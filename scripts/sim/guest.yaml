@@ -97,6 +97,9 @@ appId: com.kushicorp.kushi
 # ── An accepted (unpaid) home → pay screen ────────────
 - stopApp
 - launchApp
+- tapOn:
+    text: "Open"
+    optional: true
 - extendedWaitUntil:
     visible:
       id: "tab-index"
@@ -126,6 +129,10 @@ appId: com.kushicorp.kushi
       id: "tab-index"
     timeout: 60000
 - openLink: "kushi://bookings"
+# iOS sometimes asks "Open in Kushi Housing?" and the alert stays over later screens.
+- tapOn:
+    text: "Open"
+    optional: true
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: shots/12-old-bookings-link

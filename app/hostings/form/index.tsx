@@ -78,6 +78,16 @@ export default function NewListing() {
 
 			<Rewards />
 
+			{/* A returning host usually wants a draft, not a new listing. */}
+			{drafts.length && !parent ? (
+				<View style={{ gap: 10 }}>
+					<Eyebrow>Drafts</Eyebrow>
+					{drafts.map((d, i) => (
+						<HostListingRow key={d.id} l={d} testID={`draft-${i}`} />
+					))}
+				</View>
+			) : null}
+
 			{asks ? (
 				<View style={{ gap: 10 }}>
 					<Eyebrow>Role</Eyebrow>
@@ -101,17 +111,8 @@ export default function NewListing() {
 				<Need icon={<MapPin size={17} color={color.amber} />} title="On-site photos" body="Taken with the Kushi camera at the property." />
 				<Need icon={<FileSignature size={17} color={color.amber} />} title="Owner details" body={role ? OWNER_NEED[role] : 'Who owns it, and that you’re allowed to let it.'} />
 				<Need icon={<Landmark size={17} color={color.amber} />} title="Bank account" body="Rent is held by Kushi and paid out to this account." />
-				{!kycDone ? <Need icon={<IdCard size={17} color={color.amber} />} title="Identity" body="Selfie, NIN and BVN, before you publish. About 3 minutes." /> : null}
+				{!kycDone ? <Need icon={<IdCard size={17} color={color.amber} />} title="Identity" body="Selfie, NIN and BVN, once, before your first listing goes live. About 3 minutes." /> : null}
 			</View>
-
-			{drafts.length && !parent ? (
-				<View style={{ gap: 10 }}>
-					<Eyebrow>Drafts</Eyebrow>
-					{drafts.map((d, i) => (
-						<HostListingRow key={d.id} l={d} testID={`draft-${i}`} />
-					))}
-				</View>
-			) : null}
 		</Screen>
 	);
 }
