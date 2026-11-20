@@ -9,10 +9,18 @@ appId: com.kushicorp.kushi
     permissions:
       all: allow
 - extendedWaitUntil:
-    visible: "Explore homes"
+    visible:
+      id: "welcome-explore"
     timeout: 180000
 - takeScreenshot: shots/00-welcome
-- tapOn: "Explore homes"
+- tapOn:
+    id: "welcome-explore"
+- extendedWaitUntil:
+    visible:
+      id: "location-skip"
+    timeout: 30000
+- tapOn:
+    id: "location-skip"
 - waitForAnimationToEnd:
     timeout: 15000
 - openLink: "kushi://hostings/e3ab9468-fd8b-4e99-8321-b1aaac05c6d6"

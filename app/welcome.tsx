@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
+import { Fade } from '@/components/k/fade';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
@@ -8,7 +10,7 @@ import { Button, Eyebrow, KText, Logo, Mark } from '@/components/k';
 import { Contours } from '@/components/k/contours';
 import { color, gutter, radius } from '@/lib/k/theme';
 import { maxWidth, useLayout } from '@/lib/k/layout';
-import { markWelcomed } from '@/lib/k/session';
+import { markWelcomed, setHostIntent } from '@/lib/k/session';
 
 const POINTS = [
 	{ icon: BadgeCheck, t: 'Verified homes', d: 'Every listing shows exactly what Kushi has checked.' },
@@ -16,14 +18,28 @@ const POINTS = [
 	{ icon: KeyRound, t: 'Signed on your phone', d: 'A real tenancy agreement — no paperwork chase.' }
 ];
 
-/** First launch only. Guests can explore straight away; an account is needed only to apply. */
+/**
+ * First launch only. The two buttons are the app's only "renter or host" question: Find a home goes to
+ * the optional Location screen, then Explore (no account needed to browse); List a property goes to
+ * sign-up, then straight into hosting on New listing.
+ */
 export default function Welcome() {
 	const insets = useSafeAreaInsets();
 	const layout = useLayout();
-	const done = async (to: '/' | '/auth/sign-up' | '/auth/sign-in') => {
+	const findHome = async () => {
 		await markWelcomed();
-		if (to === '/') router.back();
-		else router.replace(to);
+		await setHostIntent(false);
+		router.replace('/search-location');
+	};
+	const listProperty = async () => {
+		await markWelcomed();
+		await setHostIntent(true);
+		router.replace({ pathname: '/auth/sign-up', params: { mode: 'host' } });
+	};
+	const signIn = async () => {
+		await markWelcomed();
+		await setHostIntent(false);
+		router.replace('/auth/sign-in');
 	};
 
 	const hero = (
@@ -53,21 +69,27 @@ export default function Welcome() {
 	);
 	const actions = (
 		<Animated.View entering={FadeInDown.delay(500).duration(600)} style={{ gap: 10 }}>
-			<Button title="Explore homes" size="lg" block onPress={() => done('/')} testID="welcome-explore" />
-			<View style={{ flexDirection: 'row', gap: 10 }}>
-				<Button title="Create account" variant="ghost" style={{ flex: 1, paddingHorizontal: 12 }} onPress={() => done('/auth/sign-up')} />
-				<Button title="Sign in" variant="ghost" style={{ flex: 1, paddingHorizontal: 12 }} onPress={() => done('/auth/sign-in')} />
-			</View>
+			<Button title="Find a home" size="lg" block onPress={findHome} testID="welcome-explore" />
+			<Button title="List a property" variant="ghost" size="lg" block onPress={listProperty} testID="welcome-host" />
+			<Pressable onPress={signIn} style={{ alignSelf: 'center', paddingVertical: 8, paddingHorizontal: 12 }} testID="welcome-sign-in">
+				<KText v="small">
+					Have an account? <KText v="smallStrong" style={{ color: color.fg, textDecorationLine: 'underline', textDecorationColor: color.amber }}>Sign in</KText>
+				</KText>
+			</Pressable>
 		</Animated.View>
 	);
 
 	if (layout.compact)
 		return (
 			<View style={{ flex: 1, backgroundColor: color.bg }}>
-				<Contours />
+				{/* A home at dusk behind the logo, fading into the page. Decoration only: not a Kushi listing. */}
+				<Animated.View entering={FadeIn.duration(900)} style={[s.photo, { height: Math.round(layout.height * 0.46) }]} pointerEvents="none">
+					<Image source={require('@/assets/images/onboarding/welcome.png')} style={StyleSheet.absoluteFill} contentFit="cover" contentPosition={{ top: '35%' }} accessible={false} />
+					<Fade colors={['rgba(7,8,11,0.6)', 'rgba(7,8,11,0)', 'rgba(7,8,11,0)', 'rgba(7,8,11,0.92)', color.bg]} locations={[0, 0.24, 0.5, 0.82, 1]} />
+				</Animated.View>
 				<View style={{ flex: 1, paddingHorizontal: gutter, paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20, justifyContent: 'space-between' }}>
 					<Logo height={22} />
-					<View style={{ gap: 22 }}>
+					<View style={{ gap: layout.height < 700 ? 16 : 22 }}>
 						{hero}
 						{points}
 					</View>
@@ -127,6 +149,7 @@ function MapPanel() {
 
 const s = StyleSheet.create({
 	heroBig: { fontSize: 56, lineHeight: 58, letterSpacing: -3 },
+	photo: { position: 'absolute', left: 0, right: 0, top: 0 },
 	split: { flex: 1, width: '100%', alignSelf: 'center', flexDirection: 'row', alignItems: 'stretch', gap: 56, paddingTop: 28 },
 	panel: { flex: 1, borderRadius: radius.xl, borderWidth: 1, borderColor: color.line2, backgroundColor: color.bg2, overflow: 'hidden' },
 	markWrap: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },

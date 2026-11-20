@@ -93,7 +93,8 @@ if [ -n "${INSTALL_APK:-}" ]; then
   adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1 || true
   adb shell am start -n "$PKG/.MainActivity" >/dev/null; sleep 45
   tap_label "Wait" >/dev/null 2>&1 || true
-  tap_label "Explore homes" >/dev/null 2>&1 || true
+  tap_label "Find a home" >/dev/null 2>&1 || true
+  sleep 3; tap_label "Skip" >/dev/null 2>&1 || true
   sleep 6; shot "call-0-first-launch"
 fi
 

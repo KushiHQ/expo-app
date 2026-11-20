@@ -12,6 +12,7 @@ import { TIERS } from '@/lib/k/tiers';
 import { agentManaged, roomPhotoCount, stepHref, stepsFor, type Hosting, type StepKey } from '@/lib/k/listing-steps';
 import { CREATE_UNITS_FROM_HOSTING, type CreateUnitsResult } from '@/lib/services/graphql/requests/mutations/units';
 import { cleanError } from '@/lib/k/use-listing-step';
+import { intentFor } from '@/lib/k/listing-intent';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { toast } from '@/lib/hooks/use-toast';
 import { HostingKind, HostingVerificationTier, PublishStatus, useDeleteHostingMutation, useDuplicateHostingMutation } from '@/lib/services/graphql/generated';
@@ -65,7 +66,9 @@ export default function ListingHub() {
 	const units = (h.children ?? []).filter((u) => u.publishStatus !== PublishStatus.Archived);
 	const tier = h.verification?.verificationTier ?? HostingVerificationTier.Unverified;
 	const agent = agentManaged(h);
-	const nextUp = left.find((s) => s.key !== 'publish') ?? left[0];
+	// A host who said they're not at the property does photos last (they're stamped with where they were taken).
+	const away = intentFor(id)?.where === 'away';
+	const nextUp = left.find((s) => s.key !== 'publish' && !(away && s.key === 'photos')) ?? left.find((s) => s.key !== 'publish') ?? left[0];
 	const go = (key: StepKey) => router.push(stepHref(key, id));
 
 	async function onDuplicate() {
@@ -139,7 +142,7 @@ export default function ListingHub() {
 				<Card tone="amber">
 					<Eyebrow c="amber">Next step</Eyebrow>
 					<KText v="bodyStrong">{nextUp.title}</KText>
-					<KText v="small">{nextUp.left.join(' · ')}</KText>
+					<KText v="small">{nextUp.left.join(' · ')}{away && nextUp.key === 'photos' ? '. Take them at the property.' : ''}</KText>
 					<Button title={`Continue: ${nextUp.title.toLowerCase()}`} onPress={() => go(nextUp.key)} style={{ alignSelf: 'flex-start' }} testID="hub-continue" />
 				</Card>
 			) : (

@@ -8,7 +8,7 @@ import { Check, Choice, Field, KText } from '@/components/k';
 import { color } from '@/lib/k/theme';
 import { HostingPropertyRelationship, type HostingVerificationInput } from '@/lib/services/graphql/generated';
 
-const ROLES: { value: HostingPropertyRelationship; title: string; detail: string }[] = [
+export const ROLES: { value: HostingPropertyRelationship; title: string; detail: string }[] = [
 	{ value: HostingPropertyRelationship.Landlord, title: 'Owner', detail: 'You are the legal owner with full rights to let or sell it.' },
 	{ value: HostingPropertyRelationship.Agent, title: 'Owner’s agent', detail: 'You have a written mandate or power of attorney from the owner.' },
 	{ value: HostingPropertyRelationship.Subletter, title: 'Subletter', detail: 'You rent it, and your landlord has agreed in writing that you can sublet.' }

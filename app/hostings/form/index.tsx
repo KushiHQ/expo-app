@@ -1,23 +1,43 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { Check, Clock, FileSignature, Landmark, MapPin, X } from 'lucide-react-native';
-import { Button, Card, Eyebrow, Header, KText, Screen, Skeleton, Waypoint } from '@/components/k';
+import { FileSignature, IdCard, Landmark, MapPin } from 'lucide-react-native';
+import { Button, Choice, Eyebrow, Header, KText, Screen } from '@/components/k';
 import { HostListingRow } from '@/components/k/host-bits';
+import { ROLES } from '@/components/k/listing-mandate';
+import { Rewards } from '@/components/k/rewards';
 import { color } from '@/lib/k/theme';
 import { useUserStore } from '@/lib/stores/users';
 import { useActiveFormHosingStore, useHostingRoomsStore } from '@/lib/stores/hostings';
-import { useHostListingsQuery, useKycStatusQuery } from '@/lib/services/graphql/generated';
+import { useListingIntent, type Whereabouts } from '@/lib/k/listing-intent';
+import { HostingPropertyRelationship, useHostListingsQuery, useKycStatusQuery } from '@/lib/services/graphql/generated';
 
-/** Start a new listing: identity check, what you'll need, how it works, and drafts to resume. */
+const PLACES: { value: Whereabouts; title: string; detail: string }[] = [
+	{ value: 'here', title: 'At the property', detail: 'Start with photos. Each one is stamped with where it was taken.' },
+	{ value: 'away', title: 'Somewhere else', detail: 'Start with the details and price. Take the photos when you’re there.' }
+];
+
+const OWNER_NEED: Record<HostingPropertyRelationship, string> = {
+	[HostingPropertyRelationship.Landlord]: 'Your address, and three short declarations.',
+	[HostingPropertyRelationship.Agent]: 'The owner’s full name, address and phone number. Kushi may call the owner.',
+	[HostingPropertyRelationship.Subletter]: 'Your landlord’s name and address, and three short declarations.'
+};
+
+/**
+ * Start a new listing. Two questions that change the flow (role, and whether the host is at the
+ * property), what they'll need, and drafts to resume. No identity check here: hosts verify once,
+ * later in set-up (Ownership, or Publish for listings without that step).
+ */
 export default function NewListing() {
 	const { parent } = useLocalSearchParams<{ parent?: string }>();
 	const me = useUserStore((s) => s.user.user?.id);
-	// cache-and-network: KycStatus has no id, so the cache never learns a host just finished KYC.
-	const [{ data: kycData, fetching, error }, refetchKyc] = useKycStatusQuery({ requestPolicy: 'cache-and-network' });
-	const kyc = kycData?.kycStatus;
-	const [{ data: mine }] = useHostListingsQuery({ variables: { filters: { creatorId: me }, pagination: { limit: 50, offset: 0 } }, pause: !me, requestPolicy: 'cache-and-network' });
+	const [{ data: kycData }] = useKycStatusQuery({ requestPolicy: 'cache-and-network' });
+	const kycDone = !!kycData?.kycStatus?.kycComplete;
+	const [{ data: mine }, refetch] = useHostListingsQuery({ variables: { filters: { creatorId: me }, pagination: { limit: 50, offset: 0 } }, pause: !me, requestPolicy: 'cache-and-network' });
 	const drafts = (mine?.hostings ?? []).filter((h) => (h.publishStatus ?? 'DRAFT') === 'DRAFT' && h.kind !== 'CHILD').slice(0, 3);
+	const [role, setRole] = useState<HostingPropertyRelationship | null>(null);
+	const [where, setWhere] = useState<Whereabouts | null>(null);
+	const [tried, setTried] = useState(false);
 
 	// This entry point never carries a listing id: anything left in the form store belongs to another listing.
 	useEffect(() => {
@@ -25,49 +45,64 @@ export default function NewListing() {
 		useHostingRoomsStore.getState().setRooms([]);
 	}, []);
 
-	const start = () => router.replace((parent ? `/hostings/form/basics?parent=${parent}` : '/hostings/form/basics') as Href);
+	// A unit belongs to a property that has already answered these.
+	const asks = !parent;
+	const valid = !asks || (!!role && !!where);
+
+	const start = () => {
+		setTried(true);
+		if (!valid) return;
+		useListingIntent.getState().setPending(asks && role && where ? { role, where } : null);
+		router.replace((parent ? `/hostings/form/basics?parent=${parent}` : '/hostings/form/basics') as Href);
+	};
 
 	return (
 		<Screen
 			width="form"
 			header={<Header eyebrow="Hosting" title={parent ? 'Add a unit' : 'New listing'} />}
 			refreshing={false}
-			onRefresh={() => refetchKyc({ requestPolicy: 'network-only' })}
+			onRefresh={() => refetch({ requestPolicy: 'network-only' })}
 			contentStyle={{ paddingTop: 20 }}
-			footer={<Button title={kyc?.kycComplete ? 'Start my listing' : 'Verify my identity'} size="lg" block disabled={!kyc && fetching} onPress={kyc?.kycComplete ? start : () => router.push('/kyc')} testID="listing-start" />}
+			footer={
+				<View style={{ gap: 8 }}>
+					{tried && !valid ? (
+						<KText v="xs" c="danger" center>
+							Choose your role and where you are.
+						</KText>
+					) : null}
+					<Button title="Start listing" size="lg" block onPress={start} testID="listing-start" />
+				</View>
+			}
 		>
-			<View style={{ gap: 8 }}>
-				<KText v="display">{parent ? 'Add a unit to your property' : 'List your property on Kushi'}</KText>
-				<KText v="lead">Listing is free. It takes about 15 minutes, and everything saves as a draft, so you can stop and come back.</KText>
-			</View>
+			<KText v="lead">Listing is free. It takes about 15 minutes and saves as you go, so you can stop and come back.</KText>
 
-			{!kyc && fetching ? (
-				<Skeleton style={{ height: 120 }} />
-			) : !kyc ? (
-				<Card tone="danger">
-					<KText v="bodyStrong">We couldn’t check your identity status</KText>
-					<KText v="small">{error ? 'Check your connection, then try again.' : 'Pull down to try again.'}</KText>
-					<Button title="Try again" variant="ghost" size="sm" onPress={() => refetchKyc({ requestPolicy: 'network-only' })} style={{ alignSelf: 'flex-start' }} />
-				</Card>
-			) : !kyc.kycComplete ? (
-				<Card tone="amber">
-					<Eyebrow c="amber">Identity</Eyebrow>
-					<KText v="bodyStrong">Verification required</KText>
-					<KText v="small">Kushi checks every host so renters know who they are dealing with. It takes a few minutes and you only do it once.</KText>
-					<View style={{ gap: 8 }}>
-						<KycLine ok={kyc.bvnVerified} label="BVN" />
-						<KycLine ok={kyc.ninVerified} label="NIN" />
-						<KycLine ok={kyc.hasLiveness} label="Selfie check" />
-					</View>
-				</Card>
-			) : (
-				<Card tone="signal">
-					<View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-						<Check size={18} color={color.success} />
-						<KText v="smallStrong">Your identity is verified. You’re ready to list.</KText>
-					</View>
-				</Card>
-			)}
+			<Rewards />
+
+			{asks ? (
+				<View style={{ gap: 10 }}>
+					<Eyebrow>Role</Eyebrow>
+					{ROLES.map((r) => (
+						<Choice key={r.value} title={r.title} detail={r.detail} on={role === r.value} onPress={() => setRole(r.value)} />
+					))}
+				</View>
+			) : null}
+
+			{asks ? (
+				<View style={{ gap: 10 }}>
+					<Eyebrow>Current location</Eyebrow>
+					{PLACES.map((p) => (
+						<Choice key={p.value} title={p.title} detail={p.detail} on={where === p.value} onPress={() => setWhere(p.value)} />
+					))}
+				</View>
+			) : null}
+
+			<View style={{ gap: 12 }}>
+				<Eyebrow>Requirements</Eyebrow>
+				<Need icon={<MapPin size={17} color={color.amber} />} title="On-site photos" body="Taken with the Kushi camera at the property." />
+				<Need icon={<FileSignature size={17} color={color.amber} />} title="Owner details" body={role ? OWNER_NEED[role] : 'Who owns it, and that you’re allowed to let it.'} />
+				<Need icon={<Landmark size={17} color={color.amber} />} title="Bank account" body="Rent is held by Kushi and paid out to this account." />
+				{!kycDone ? <Need icon={<IdCard size={17} color={color.amber} />} title="Identity" body="Selfie, NIN and BVN, before you publish. About 3 minutes." /> : null}
+			</View>
 
 			{drafts.length && !parent ? (
 				<View style={{ gap: 10 }}>
@@ -77,36 +112,7 @@ export default function NewListing() {
 					))}
 				</View>
 			) : null}
-
-			<View style={{ gap: 12 }}>
-				<Eyebrow>Requirements</Eyebrow>
-				<Need icon={<MapPin size={17} color={color.amber} />} title="On-site photos" body="Photos are taken with the Kushi camera and stamped with the location, so renters know they’re real." />
-				<Need icon={<FileSignature size={17} color={color.amber} />} title="Owner details" body="If you’re letting it, you’ll confirm who owns it and that you’re allowed to let it, then sign the tenancy terms." />
-				<Need icon={<Landmark size={17} color={color.amber} />} title="Bank account" body="Rent is held safely by Kushi and paid out to this account." />
-			</View>
-
-			<View style={{ gap: 12 }}>
-				<Eyebrow>How it works</Eyebrow>
-				<Stage n="1" title="Set up" body="Seven short steps. Each one saves as you go." />
-				<Stage n="2" title="Publish" body="Once every step is done, publishing puts it in front of renters straight away." />
-				<Stage n="3" title="Get verified" body="Optional but worth it: send documents for trust badges. Kushi reviews each request within 3–5 business days." last />
-			</View>
-			<View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-				<Clock size={14} color={color.muted} />
-				<KText v="xs">About 15 minutes in total.</KText>
-			</View>
 		</Screen>
-	);
-}
-
-function KycLine({ ok, label }: { ok: boolean; label: string }) {
-	return (
-		<View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }} accessibilityLabel={`${label}: ${ok ? 'done' : 'not done'}`}>
-			{ok ? <Check size={16} color={color.success} /> : <X size={16} color={color.danger} />}
-			<KText v="small" style={{ color: ok ? color.fg2 : color.fg }}>
-				{label} {ok ? 'verified' : 'needed'}
-			</KText>
-		</View>
 	);
 }
 
@@ -116,25 +122,6 @@ function Need({ icon, title, body }: { icon: React.ReactNode; title: string; bod
 			<View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: color.amberSoft, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
 			<View style={{ flex: 1, gap: 2 }}>
 				<KText v="smallStrong">{title}</KText>
-				<KText v="xs">{body}</KText>
-			</View>
-		</View>
-	);
-}
-
-function Stage({ n, title, body, last }: { n: string; title: string; body: string; last?: boolean }) {
-	return (
-		<View style={{ flexDirection: 'row', gap: 14 }}>
-			<View style={{ alignItems: 'center', width: 20 }}>
-				<View style={{ paddingTop: 5 }}>
-					<Waypoint active />
-				</View>
-				{!last ? <View style={{ flex: 1, width: 1, backgroundColor: color.line2, marginTop: 6 }} /> : null}
-			</View>
-			<View style={{ flex: 1, gap: 2, paddingBottom: last ? 0 : 6 }}>
-				<KText v="smallStrong">
-					{n}. {title}
-				</KText>
 				<KText v="xs">{body}</KText>
 			</View>
 		</View>

@@ -8,6 +8,7 @@ import { usePropertyTypeConfig } from '@/lib/hooks/use-property-type-config';
 import { usePlatformFeatures } from '@/lib/k/platform-features';
 import { useUserStore } from '@/lib/stores/users';
 import { place } from '@/lib/k/format';
+import { useListingIntent } from '@/lib/k/listing-intent';
 import { HostingKind, ListingType, ManagementType, PublishStatus, UnitStructure, useHostListingsQuery } from '@/lib/services/graphql/generated';
 
 /** Step 1 — who manages it, rent or sale, what kind of property, and whether it has units. */
@@ -64,8 +65,12 @@ export default function Basics() {
 		setBusy(false);
 		if (!id) return;
 		// A new listing gets its hub underneath, so "back" from any later step lands there.
-		if (isNew) router.replace(`/hostings/form/onboarding?id=${id}&next=photos` as Href);
-		else f.advance(id);
+		if (isNew) {
+			// New listing's answers: keep them with this listing; a host away from the property starts with location, not photos.
+			const where = useListingIntent.getState().pending?.where;
+			useListingIntent.getState().attach(id);
+			router.replace(`/hostings/form/onboarding?id=${id}&next=${where === 'away' ? 'location' : 'photos'}` as Href);
+		} else f.advance(id);
 	}
 
 	return (

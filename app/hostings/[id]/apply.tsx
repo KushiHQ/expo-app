@@ -16,6 +16,8 @@ import { QuoteLines, useQuote } from '@/components/k/quote';
 import { IdentityCheck } from '@/components/k/verify/identity';
 import { PhoneStep } from '@/components/k/verify/nin-phone';
 import { SignaturePad } from '@/components/k/signature';
+import { NotificationsCard } from '@/components/k/notifications-card';
+import { takeCard } from '@/lib/k/push';
 import { NEEDS_GUARANTOR } from '@/lib/k/booking';
 import { centered, useLayout } from '@/lib/k/layout';
 import { usePropertyTypeConfig } from '@/lib/hooks/use-property-type-config';
@@ -236,6 +238,12 @@ export default function Apply() {
 	const signOk = !!signature && consent && consentData && !!agreement;
 	const alreadyApplied = !!app && app.status !== 'IN_PROGRESS' && app.status !== 'CANCELLED';
 
+	// Application sent: ask for notifications here if the chat card never got its yes (once per install).
+	const [appliedCard, setAppliedCard] = useState(false);
+	useEffect(() => {
+		if (step === 'done') takeCard('applied').then(setAppliedCard);
+	}, [step]);
+
 	if (step === 'done')
 		return (
 			<ScrollView style={{ flex: 1, backgroundColor: color.bg }} contentContainerStyle={{ paddingTop: insets.top + 40, paddingBottom: insets.bottom + 24, paddingHorizontal: gutter }}>
@@ -262,6 +270,7 @@ export default function Apply() {
 							</View>
 						</View>
 					))}
+					{appliedCard ? <NotificationsCard body="Get a notification when the host decides, and when it’s time to pay." testID="apply-notifications" /> : null}
 					<Button title="Track your application" size="lg" block onPress={() => router.replace(app ? `/trips/${app.id}` : '/trips')} />
 					<Button title="Keep exploring" variant="ghost" size="lg" block onPress={() => router.replace('/')} />
 				</Animated.View>

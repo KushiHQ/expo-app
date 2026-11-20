@@ -8,7 +8,8 @@ appId: com.kushicorp.kushi
       all: allow
 # Settle in portrait first (alerts in landscape confuse Maestro's hierarchy), then rotate.
 - extendedWaitUntil:
-    visible: "Explore homes"
+    visible:
+      id: "welcome-explore"
     timeout: 180000
 # The notification permission alert can appear a moment after launch; dismiss it.
 - extendedWaitUntil:
@@ -20,12 +21,20 @@ appId: com.kushicorp.kushi
     optional: true
 - setOrientation: LANDSCAPE_LEFT
 - extendedWaitUntil:
-    visible: "Explore homes"
+    visible:
+      id: "welcome-explore"
     timeout: 30000
 - waitForAnimationToEnd:
     timeout: 5000
 - takeScreenshot: shots-landscape/01-welcome
-- tapOn: "Explore homes"
+- tapOn:
+    id: "welcome-explore"
+- extendedWaitUntil:
+    visible:
+      id: "location-skip"
+    timeout: 30000
+- tapOn:
+    id: "location-skip"
 - extendedWaitUntil:
     visible:
       id: "search"

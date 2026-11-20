@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Room } from '../types/enums/hostings';
 import {
   HostingFilterInput,
@@ -157,27 +159,62 @@ export const useHostingRoomsStore = create<HostingRoomsStore>((set, get) => ({
 
 interface HostingFilterStore {
   filter: HostingFilterInput;
+  /** The state/city in `filter` came from the phone's location ("Use my location"). */
+  nearMe: boolean;
   setFilter: (filter: HostingFilterInput) => void;
   updateFilter: (partialFilter: Partial<HostingFilterInput>) => void;
+  /** Filter by where the phone is: its state and city, no area text. */
+  setNearMe: (place: { state: string; city?: string }) => void;
   resetFilter: () => void;
 }
 
-export const useHostingFilterStore = create<HostingFilterStore>((set) => ({
-  filter: {},
-  setFilter: (filter) => set({ filter }),
-  updateFilter: (partialFilter) =>
-    set((state) => {
-      const hasChanged = Object.entries(partialFilter).some(([key, value]) => {
-        const current = state.filter[key as keyof HostingFilterInput];
-        return JSON.stringify(current) !== JSON.stringify(value);
-      });
+/** Location keys: changing any of these by hand ends "near me". */
+const PLACE_KEYS: (keyof HostingFilterInput)[] = ['state', 'city', 'search'];
+/** Only the location + price choices are kept between launches. */
+const SAVED_KEYS: (keyof HostingFilterInput)[] = ['state', 'city', 'search', 'minPrice', 'maxPrice'];
 
-      if (!hasChanged) return state;
+export const useHostingFilterStore = create<HostingFilterStore>()(
+  persist(
+    (set) => ({
+      filter: {},
+      nearMe: false,
+      setFilter: (filter) => set({ filter, nearMe: false }),
+      updateFilter: (partialFilter) =>
+        set((state) => {
+          const changed = Object.entries(partialFilter)
+            .filter(([key, value]) => {
+              const current = state.filter[key as keyof HostingFilterInput];
+              return JSON.stringify(current) !== JSON.stringify(value);
+            })
+            .map(([key]) => key as keyof HostingFilterInput);
 
-      return { filter: { ...state.filter, ...partialFilter } };
+          // A hand-picked place (even the same state) replaces the phone's location,
+          // including the city it set.
+          const picksPlace = Object.keys(partialFilter).some((k) => PLACE_KEYS.includes(k as keyof HostingFilterInput));
+          if (state.nearMe && picksPlace) {
+            return { filter: { ...state.filter, city: undefined, ...partialFilter }, nearMe: false };
+          }
+
+          if (!changed.length) return state;
+          return { filter: { ...state.filter, ...partialFilter } };
+        }),
+      setNearMe: ({ state, city }) =>
+        set((s) => ({ filter: { ...s.filter, state, city: city || undefined, search: undefined }, nearMe: true })),
+      resetFilter: () => set({ filter: {}, nearMe: false }),
     }),
-  resetFilter: () => set({ filter: {} }),
-}));
+    {
+      name: 'explore-filter',
+      version: 1,
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (s) => ({
+        filter: Object.fromEntries(
+          SAVED_KEYS.filter((k) => s.filter[k] !== undefined && s.filter[k] !== null).map((k) => [k, s.filter[k]]),
+        ) as HostingFilterInput,
+        nearMe: s.nearMe,
+      }),
+    },
+  ),
+);
 
 interface ActiveFormHostingStore {
   input: HostingInput;

@@ -13,6 +13,7 @@ import { useLayout } from '@/lib/k/layout';
 import { LINKS } from '@/lib/k/account';
 import { useUserStore } from '@/lib/stores/users';
 import { UserType } from '@/lib/types/users';
+import { setHostIntent } from '@/lib/k/session';
 import { Rewards } from '@/components/k/rewards';
 
 /** The You tab: profile, verification status and every account setting in one tidy list. */
@@ -39,7 +40,13 @@ export function You({ mode = 'guest' }: { mode?: 'guest' | 'host' }) {
 				<PageTitle title="You" sub="Sign in to apply for homes, message hosts and keep track of everything in one place." />
 				<Button title="Sign in" size="lg" block onPress={() => router.push('/auth/sign-in')} testID="you-sign-in" />
 				<Button title="Create an account" variant="ghost" size="lg" block onPress={() => router.push('/auth/sign-up')} />
-				<HostCard onPress={() => router.push('/auth/sign-up')} />
+				<HostCard
+					onPress={async () => {
+						// After sign-up this opens in hosting, on New listing (not back in renter mode).
+						await setHostIntent(true);
+						router.push({ pathname: '/auth/sign-up', params: { mode: 'host' } });
+					}}
+				/>
 				<Legal />
 			</Screen>
 		);

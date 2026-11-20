@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Linking, View } from 'react-native';
-import { router, useLocalSearchParams, type Href } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
 import { Check as CheckIcon, Eye, ShieldCheck, Sparkles } from 'lucide-react-native';
 import { Button, Card, Check, Eyebrow, Field, KText, Notice, Photo, Pill, Sheet, Spinner } from '@/components/k';
 import { Block, StepRow, StepScreen } from '@/components/k/listing-form';
@@ -11,7 +11,9 @@ import { useListingStep, cleanError } from '@/lib/k/use-listing-step';
 import { MIN_DESCRIPTION, PLACEHOLDER_TITLE, stepHref, stepsFor, type Hosting } from '@/lib/k/listing-steps';
 import { isAgentManaged } from '@/lib/constants/hosting/step-rules';
 import { useUploadStore } from '@/lib/stores/uploads';
-import { PublishStatus, useAiHostingContentSuggestionQuery, useHostingPublishBlocksQuery } from '@/lib/services/graphql/generated';
+import { PublishStatus, useAiHostingContentSuggestionQuery, useHostingPublishBlocksQuery, useKycStatusQuery } from '@/lib/services/graphql/generated';
+import { NotificationsCard } from '@/components/k/notifications-card';
+import { pushAllowed } from '@/lib/k/push';
 
 const TITLE_MAX = 80;
 const DESCRIPTION_MAX = 1500;
@@ -32,6 +34,15 @@ export default function Publish() {
 	// Reasons the server won't let it go live (e.g. it matches a listing already on Kushi).
 	const [{ data: blockData }, refetchBlocks] = useHostingPublishBlocksQuery({ variables: { hostingId: f.id ?? '' }, pause: !f.id, requestPolicy: 'network-only' });
 	const blocks = blockData?.hosting?.publishBlocks ?? [];
+	// Hosts verify their identity once, here at the end, instead of before starting a listing.
+	// cache-and-network + refetch on focus: KycStatus has no id, so the cache never learns it changed.
+	const [{ data: kycData }, refetchKyc] = useKycStatusQuery({ requestPolicy: 'cache-and-network' });
+	const kycDone = kycData?.kycStatus?.kycComplete ?? true;
+	useFocusEffect(useCallback(() => refetchKyc({ requestPolicy: 'network-only' }), [refetchKyc]));
+	const [pushOff, setPushOff] = useState(false);
+	useEffect(() => {
+		if (done) pushAllowed().then((on) => setPushOff(!on));
+	}, [done]);
 
 	const status = hosting?.publishStatus ?? PublishStatus.Draft;
 	const live = status === PublishStatus.Live;
@@ -74,7 +85,8 @@ export default function Publish() {
 		if (id) f.toHub(id);
 	}
 
-	const primary = live ? { title: 'Save changes', onPress: saveOnly } : ready ? { title: 'Publish listing', onPress: publish, disabled: tried && (!agree.truth || !agree.terms) } : { title: 'Save draft', onPress: saveOnly };
+	const verify = () => router.push('/verify' as Href);
+	const primary = live ? { title: 'Save changes', onPress: saveOnly } : ready && !kycDone ? { title: 'Verify identity', onPress: verify } : ready ? { title: 'Publish listing', onPress: publish, disabled: tried && (!agree.truth || !agree.terms) } : { title: 'Save draft', onPress: saveOnly };
 	const st = PUBLISH[status] ?? PUBLISH.DRAFT;
 
 	return (
@@ -88,6 +100,10 @@ export default function Publish() {
 				!live && !ready ? (
 					<KText v="xs" center style={{ color: color.fg2 }}>
 						{uploading ? 'Wait for your photos to finish uploading.' : blocking.length ? `Finish ${blocking.length} more step${blocking.length === 1 ? '' : 's'} to publish.` : 'Add a title and description to publish.'}
+					</KText>
+				) : !live && !kycDone ? (
+					<KText v="xs" center style={{ color: color.fg2 }}>
+						Verify your identity to publish.
 					</KText>
 				) : tried && !live && (!agree.truth || !agree.terms) ? (
 					<KText v="xs" c="danger" center>
@@ -147,6 +163,13 @@ export default function Publish() {
 						<StepRow key={s.key} step={s} onPress={() => f.id && router.push(stepHref(s.key, f.id))} />
 					))}
 				</View>
+				{!live && !kycDone ? (
+					<Card tone="amber">
+						<Eyebrow c="amber">Identity</Eyebrow>
+						<KText v="small">Kushi checks every host once before their first listing goes live, so renters know who they are dealing with. It takes about 3 minutes and you won’t be asked again.</KText>
+						<Button title="Verify identity" size="sm" onPress={verify} style={{ alignSelf: 'flex-start' }} testID="publish-verify" />
+					</Card>
+				) : null}
 				{uploading ? <Notice tone="info" title="Photos still uploading">You can publish once they’re done, so the listing never goes out with missing pictures.</Notice> : null}
 			</Block>
 
@@ -190,6 +213,7 @@ export default function Publish() {
 			<Sheet open={done} onClose={() => f.toHub()} title="Listing published" dismissible={false}>
 				{busy ? <Spinner /> : null}
 				<KText v="small">{input.title?.trim()} is now on Kushi. We’ll let you know when someone {agent ? 'gets in touch' : 'applies'}.</KText>
+				{pushOff ? <NotificationsCard body="Applications, messages and calls from renters reach you as notifications, so you can answer while the renter is still looking." testID="published-notifications" /> : null}
 				{!agent ? (
 					<Notice tone="info" title="Get verified">
 						Verified listings show a trust badge and rank higher. Upload the documents for each level and Kushi reviews them within 3–5 business days.

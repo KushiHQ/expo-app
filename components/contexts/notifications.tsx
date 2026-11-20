@@ -8,9 +8,8 @@ import {
   onTokenRefresh,
   onNotificationOpenedApp,
   getInitialNotification,
-  requestPermission,
-  AuthorizationStatus,
 } from '@react-native-firebase/messaging';
+import { PUSH_GRANTED, pushAllowed } from '@/lib/k/push';
 import notifee, { EventType } from '@notifee/react-native';
 import {
   activeCallNotifications,
@@ -200,13 +199,11 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
   React.useEffect(() => {
     const messagingInstance = getMessaging();
 
+    // Never asks: the phone's prompt only comes from a "Turn on" card
+    // (lib/k/push.ts), which emits PUSH_GRANTED so this runs again.
     const setupMessaging = async () => {
       try {
-        await notifee.requestPermission();
-        const authStatus = await requestPermission(messagingInstance);
-        const enabled =
-          authStatus === AuthorizationStatus.AUTHORIZED ||
-          authStatus === AuthorizationStatus.PROVISIONAL;
+        const enabled = await pushAllowed();
 
         if (enabled) {
           const fcmToken = await getToken(messagingInstance);
@@ -238,6 +235,7 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
     };
 
     setupMessaging();
+    EventEmitter.on(PUSH_GRANTED, setupMessaging);
 
     // Re-register whenever Firebase rotates the FCM token (reinstall, app update, token expiry).
     // Without this the server keeps a dead token and every notification fails with UNREGISTERED.
@@ -438,6 +436,7 @@ export const NotificationProvider: React.FC<{ children?: React.ReactNode }> = ({
       unsubscribeOpenedApp();
       unsubscribeTokenRefresh();
       EventEmitter.off('voip_token', handleVoipToken);
+      EventEmitter.off(PUSH_GRANTED, setupMessaging);
       if (Platform.OS === 'ios') {
         VoipPushNotification.removeEventListener('register');
       }

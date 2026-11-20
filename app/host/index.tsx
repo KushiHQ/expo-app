@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { Bell, Building2, Inbox, Landmark, Plus, Wallet } from 'lucide-react-native';
 import { ApplicationRow, DECIDABLE, HostListingRow } from '@/components/k/host-bits';
 import { Rewards } from '@/components/k/rewards';
+import { SetupCard } from '@/components/k/setup-card';
 import { Button, Card, Empty, Eyebrow, IconButton, KText, Notice, Screen, Section, Skeleton } from '@/components/k';
 import { color, font, radius } from '@/lib/k/theme';
 import { naira } from '@/lib/k/format';
@@ -22,6 +23,10 @@ export default function Today() {
 	const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 	const k = kyc?.kycStatus;
 	const kycReady = k ? k.ninVerified && k.bvnVerified && k.hasLiveness : true;
+	// Until the first listing is live: a Set-up card (next step, one button) instead of tiles at 0 and ₦0.
+	const anyLive = listings.some((l) => l.publishStatus === 'LIVE') || (a?.totalListings ?? 0) > listings.length;
+	const settingUp = !!ls && !anyLive;
+	const draft = listings.find((l) => (l.publishStatus ?? 'DRAFT') === 'DRAFT' && l.kind !== 'CHILD');
 
 	const stats = [
 		{ icon: Inbox, k: 'Waiting for you', v: String(a?.pendingApplications ?? pending.length), sub: 'applications' },
@@ -45,13 +50,15 @@ export default function Today() {
 				</IconButton>
 			</View>
 
-			{!kycReady ? (
+			{settingUp ? <SetupCard draftId={draft?.id} /> : null}
+
+			{!kycReady && !settingUp ? (
 				<Notice tone="warn" title="Verify yourself to get listings verified" action="Verify now" onAction={() => router.push('/verify')}>
 					Kushi needs your selfie, NIN and BVN before it can verify a property and pay you out.
 				</Notice>
 			) : null}
 
-			<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+			<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, display: settingUp ? 'none' : 'flex' }}>
 				{stats.map((s) => (
 					<View key={s.k} style={{ width: '48%', flexGrow: 1, gap: 4, padding: 14, borderRadius: radius.lg, borderWidth: 1, borderColor: color.line, backgroundColor: color.bg2 }}>
 						<s.icon size={17} color={color.amber} />
@@ -74,13 +81,15 @@ export default function Today() {
 				)}
 			</Section>
 
-			<Section title="Listings" action={listings.length ? <Button title="Manage" variant="quiet" size="sm" onPress={() => router.navigate('/host/listings')} /> : undefined}>
-				{listings.length ? (
-					listings.map((l) => <HostListingRow key={l.id} l={l} />)
-				) : (
-					<Empty title="No listings yet" body="List it in minutes. Kushi verifies it, finds verified renters and handles the agreement and payment." action="Create a listing" onAction={() => router.push('/hostings/form')} />
-				)}
-			</Section>
+			{listings.length || !settingUp ? (
+				<Section title="Listings" action={listings.length ? <Button title="Manage" variant="quiet" size="sm" onPress={() => router.navigate('/host/listings')} /> : undefined}>
+					{listings.length ? (
+						listings.map((l) => <HostListingRow key={l.id} l={l} />)
+					) : (
+						<Empty title="No listings yet" body="List it in minutes. Kushi verifies it, finds verified renters and handles the agreement and payment." action="Create a listing" onAction={() => router.push('/hostings/form')} />
+					)}
+				</Section>
+			) : null}
 
 			{listings.length ? <Button title="New listing" variant="ghost" icon={<Plus size={16} color={color.fg} />} onPress={() => router.push('/hostings/form')} /> : null}
 		</Screen>

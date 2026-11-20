@@ -8,7 +8,8 @@ appId: com.kushicorp.kushi
     permissions:
       all: allow
 - extendedWaitUntil:
-    visible: "Explore homes"
+    visible:
+      id: "welcome-explore"
     timeout: 180000
 - extendedWaitUntil:
     visible: "Allow"
@@ -17,7 +18,8 @@ appId: com.kushicorp.kushi
 - tapOn:
     text: "Allow"
     optional: true
-- tapOn: "Sign in"
+- tapOn:
+    id: "welcome-sign-in"
 - tapOn:
     id: "email"
 - inputText: "qa.guest@kushi.test"

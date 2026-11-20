@@ -35,7 +35,8 @@ import { centered, maxWidth, useLayout } from '@/lib/k/layout';
 import { date, duration, humanize, intervalAdverb, isShortLet, naira, perInterval, place } from '@/lib/k/format';
 import { TIERS, TIER_ORDER, tierRank } from '@/lib/k/tiers';
 import { listingMode, listingPhotos, roomLabel, shareUrl, shownAssetId, type Listing } from '@/lib/k/listing';
-import { isSignedIn, requireSignIn } from '@/lib/k/session';
+import { isSignedIn } from '@/lib/k/session';
+import { askForAccount, usePendingAction } from '@/lib/k/pending-action';
 import { useUserStore } from '@/lib/stores/users';
 import { toast } from '@/lib/hooks/use-toast';
 import { openDirections } from '@/lib/utils/urls';
@@ -82,7 +83,7 @@ function Detail({ h }: { h: Listing }) {
 	const isOwner = !!me && h.host?.user?.id === me;
 	const photos = useMemo(() => listingPhotos(h), [h]);
 	const [page, setPage] = useState(0);
-	const { saved, toggle } = useSaveToggle(h.id, h.saved);
+	const { saved, toggle, ensureSaved } = useSaveToggle(h.id, h.saved);
 	const [, record] = useRecordListingEventMutation();
 	const [{ fetching: opening }, initiateChat] = useInitiateHostingChatMutation();
 	const [more, setMore] = useState(false);
@@ -101,7 +102,7 @@ function Detail({ h }: { h: Listing }) {
 		await Share.share({ message: `${h.title} on Kushi — ${shareUrl(h)}`, url: shareUrl(h) }).catch(() => {});
 	}
 	async function message() {
-		if (!isSignedIn()) return requireSignIn(`/hostings/${h.id}`);
+		if (!isSignedIn()) return askForAccount({ kind: 'message', hostingId: h.id, returnTo: `/hostings/${h.id}` });
 		const r = await initiateChat({ hostingId: h.id });
 		const cid = r.data?.initiateHostingChat?.id;
 		if (!cid) return toast.show({ type: 'error', text1: 'Couldn’t open chat', text2: (r.error?.message ?? '').replace('[GraphQL] ', '') || 'Try again in a moment.' });
@@ -109,10 +110,25 @@ function Detail({ h }: { h: Listing }) {
 		router.push(`/chats/${cid}`);
 	}
 	function apply() {
-		if (!isSignedIn()) return requireSignIn(`/hostings/${h.id}`);
 		setQuoteOpen(false);
+		if (!isSignedIn()) {
+			// Let the quote sheet finish closing first: two modals at once don't present on iOS.
+			setTimeout(() => askForAccount({ kind: 'apply', hostingId: h.id, returnTo: `/hostings/${h.id}`, periods }), 350);
+			return;
+		}
 		router.push({ pathname: '/hostings/[id]/apply', params: { id: h.id, periods: String(periods) } });
 	}
+	// Save / Message / Apply tapped while signed out: finish it now they're signed in.
+	usePendingAction(h.id, (a) => {
+		if (isOwner) return;
+		if (a.kind === 'save') {
+			ensureSaved().then((ok) => (ok ? toast.show({ type: 'success', text2: 'Home saved.' }) : toast.show({ type: 'error', text1: 'Couldn’t save', text2: 'Tap the heart to try again.' })));
+		} else if (a.kind === 'message') {
+			message();
+		} else {
+			router.push({ pathname: '/hostings/[id]/apply', params: { id: h.id, periods: String(a.periods ?? 1) } });
+		}
+	});
 
 	const facts = [
 		{ icon: Building2, k: 'Type', v: humanize(h.propertyType) },
