@@ -105,7 +105,7 @@ export default function SupportChat() {
 			scroll={false}
 			padded={false}
 			keyboard
-			header={<Header eyebrow={closed ? 'Closed' : 'Kushi Support'} title={chat?.itemType ? `About a ${humanize(chat.itemType).toLowerCase()}` : 'Support'} />}
+			header={<Header eyebrow={closed ? 'Closed' : 'Kushi Support'} title={chat?.itemType ? humanize(chat.itemType) : 'Support'} />}
 		>
 			<FlatList
 				ref={list}
@@ -177,7 +177,7 @@ function Context({ chat }: { chat: ChatData }) {
 	if (!h && !chat.transaction) return null;
 	return (
 		<Card>
-			<KText v="label">This conversation is about</KText>
+			<KText v="label">Subject</KText>
 			{h ? (
 				<View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
 					<Photo uri={h.coverImage?.asset?.publicUrl} style={{ width: 52, height: 52 }} />

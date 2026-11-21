@@ -115,7 +115,7 @@ function ClaimSheet({ reward, onClose, onClaimed }: { reward: Reward | null; onC
 	}
 
 	return (
-		<Sheet open={open} onClose={onClose} title="Claim your reward" eyebrow={reward ? naira(Number(reward.amount)) : undefined}>
+		<Sheet open={open} onClose={onClose} title="Claim reward" eyebrow={reward ? naira(Number(reward.amount)) : undefined}>
 			<KText v="small">The account must be in your own name. Kushi’s team checks the claim, then pays it.</KText>
 			<SelectField label="Bank" value={bank?.name} placeholder="Choose your bank" onPress={() => setPick((v) => !v)} />
 			{pick ? (

@@ -13,10 +13,12 @@ appId: com.kushicorp.kushi
     text: "Wait"
     optional: true
 - extendedWaitUntil:
-    visible: "Start exploring"
+    visible:
+      id: "welcome-explore"
     timeout: 180000
 - takeScreenshot: shots/01-welcome
-- tapOn: "Sign in"
+- tapOn:
+    id: "welcome-sign-in"
 - tapOn:
     id: "email"
 - inputText: "qa.guest@kushi.test"

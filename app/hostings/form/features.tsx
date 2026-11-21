@@ -68,7 +68,7 @@ export default function Features() {
 				</View>
 				<View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-end' }}>
 					<View style={{ flex: 1 }}>
-						<Field label="Something else?" value={custom} onChangeText={setCustom} placeholder="e.g. Rooftop terrace" returnKeyType="done" onSubmitEditing={addCustom} />
+						<Field label="Other feature" value={custom} onChangeText={setCustom} placeholder="e.g. Rooftop terrace" returnKeyType="done" onSubmitEditing={addCustom} />
 					</View>
 					<IconButton label="Add feature" size={52} disabled={!custom.trim()} onPress={addCustom}>
 						<Plus size={20} color={color.fg} />
@@ -91,8 +91,8 @@ export default function Features() {
 			</Block>
 
 			{input.listingType !== ListingType.Sale ? (
-				<Block title="Who it suits">
-					<CountField label="Most people who can live here" optional value={input.maxOccupants} onChange={(maxOccupants) => updateInput({ maxOccupants })} hint="Shown on the listing and written into the tenancy agreement." />
+				<Block title="Occupancy">
+					<CountField label="Maximum occupants" optional value={input.maxOccupants} onChange={(maxOccupants) => updateInput({ maxOccupants })} hint="Shown on the listing and written into the tenancy agreement." />
 				</Block>
 			) : null}
 		</StepScreen>

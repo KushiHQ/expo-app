@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react';
-import { View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Linking, View } from 'react-native';
+import { Camera as CameraPerms } from 'expo-camera';
+import * as Location from 'expo-location';
 import { useLocalSearchParams } from 'expo-router';
 import { useShallow } from 'zustand/react/shallow';
 import { Camera, CloudOff, Copy, FolderInput, MapPin, MoreHorizontal, PenLine, Plus, Star, Trash2 } from 'lucide-react-native';
-import { Button, Card, Field, IconButton, KText, Notice, Row, Sheet, Spinner } from '@/components/k';
+import { Button, Card, Eyebrow, Field, IconButton, KText, Notice, Row, Sheet, Spinner } from '@/components/k';
 import { Block, PhotoTile, PickerSheet, StepScreen } from '@/components/k/listing-form';
 import { VideoTourEditor } from '@/components/k/listing-video';
 import { ListingPosters } from '@/components/k/listing-posters';
@@ -49,6 +51,28 @@ export default function Photos() {
 	const [copyRoom, setCopyRoom] = useState<{ id: string; name: string } | null>(null);
 	const [, deleteRoom] = useDeleteHostingRoomMutation();
 	const [deleting, setDeleting] = useState(false);
+	// Camera and location are explained once, in Kushi's words, right before the phone asks for them.
+	const [needPerms, setNeedPerms] = useState(false);
+	useEffect(() => {
+		Promise.all([CameraPerms.getCameraPermissionsAsync(), Location.getForegroundPermissionsAsync()])
+			.then(([c, l]) => setNeedPerms(!c.granted || !l.granted))
+			.catch(() => {});
+	}, []);
+	async function allowAndShoot() {
+		const c = await CameraPerms.requestCameraPermissionsAsync().catch(() => null);
+		const l = await Location.requestForegroundPermissionsAsync().catch(() => null);
+		if (!c?.granted || !l?.granted) {
+			// Refused before: only Settings can change it now.
+			if ((c && !c.granted && !c.canAskAgain) || (l && !l.granted && !l.canAskAgain)) Linking.openSettings().catch(() => {});
+			return;
+		}
+		setNeedPerms(false);
+		const first = r.rooms.findIndex((x) => !!x.id && !(x.images ?? []).length);
+		const any = r.rooms.findIndex((x) => !!x.id);
+		if (first >= 0) r.handleRoomImageEdit(first);
+		else if (any >= 0) r.handleRoomImageEdit(any);
+		else setAddOpen(true);
+	}
 
 	const land = isLand(hosting?.propertyType);
 	const cols = layout.compact ? 3 : layout.expanded ? 5 : 4;
@@ -105,6 +129,16 @@ export default function Photos() {
 				</KText>
 			}
 		>
+			{needPerms ? (
+				<Card tone="amber">
+					<Eyebrow c="amber">Camera and location</Eyebrow>
+					<KText v="small">Kushi’s camera stamps each photo with where it was taken, so renters know the pictures are of this property. Your phone will ask for camera and location next. Allow both, or the photos can’t be used.</KText>
+					<Button title="Open camera" icon={<Camera size={16} color={color.onAmber} />} onPress={allowAndShoot} testID="photos-allow" />
+					<Pressable onPress={() => f.advance(id)} style={{ alignSelf: 'center', padding: 8 }} testID="photos-later">
+						<KText v="smallStrong">Do this later</KText>
+					</Pressable>
+				</Card>
+			) : null}
 			{pending || failed ? (
 				<Notice tone={failed ? 'danger' : 'info'} title={failed ? `${failed} photo${failed === 1 ? '' : 's'} didn’t upload` : `Uploading ${pending} photo${pending === 1 ? '' : 's'}`} action={failed ? 'Retry all' : undefined} onAction={retryAll}>
 					{failed ? 'Tap a red photo to retry it, or retry them all. They’re saved on this phone until they go through.' : 'You can keep going — uploads carry on in the background and resume if you lose signal.'}

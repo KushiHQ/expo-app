@@ -46,9 +46,9 @@ const STATE = {
 
 const ROW_META: Record<ImageUploadStatus, { label: string; color: string }> = {
   uploading: { label: 'Uploading…', color: '#F59E0B' },
-  queued: { label: 'Waiting…', color: '#9AA0A6' },
-  error: { label: 'Failed — tap retry', color: '#F87171' },
-  dead: { label: "Couldn't upload — remove it", color: '#9AA0A6' },
+  queued: { label: 'Pending', color: '#9AA0A6' },
+  error: { label: 'Failed', color: '#F87171' },
+  dead: { label: 'Upload failed', color: '#9AA0A6' },
 };
 
 /**

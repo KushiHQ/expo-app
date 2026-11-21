@@ -109,7 +109,7 @@ export default function Notifications() {
 	if (!signedIn)
 		return (
 			<Screen header={<Header title="Notifications" />}>
-				<Empty eyebrow="Signed out" title="Sign in to see updates" body="Applications, payments and messages show up here once you’re signed in." action="Sign in" onAction={() => router.push('/auth/sign-in')} />
+				<Empty title="Sign in to see notifications" body="Applications, payments and messages show up here once you’re signed in." action="Sign in" onAction={() => router.push('/auth/sign-in')} />
 			</Screen>
 		);
 
@@ -200,7 +200,7 @@ export default function Notifications() {
 							))}
 						</View>
 					) : error ? null : (
-						<Empty eyebrow="All quiet" title="You’re all caught up" body="Updates about applications, payments and messages will appear here." />
+						<Empty title="No notifications" body="Updates about applications, payments and messages will appear here." />
 					)
 				}
 				ListFooterComponent={fetching && list.length ? <View style={{ paddingVertical: 16 }}><Spinner /></View> : null}

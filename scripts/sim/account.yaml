@@ -8,7 +8,8 @@ appId: com.kushicorp.kushi
     permissions:
       all: allow
 - extendedWaitUntil:
-    visible: "Start exploring"
+    visible:
+      id: "welcome-explore"
     timeout: 180000
 - extendedWaitUntil:
     visible: "Allow"
@@ -17,7 +18,8 @@ appId: com.kushicorp.kushi
 - tapOn:
     text: "Allow"
     optional: true
-- tapOn: "Sign in"
+- tapOn:
+    id: "welcome-sign-in"
 - tapOn:
     id: "email"
 - inputText: "qa.guest@kushi.test"
@@ -153,7 +155,7 @@ appId: com.kushicorp.kushi
     timeout: 8000
 - takeScreenshot: shots/a17-support
 - tapOn:
-    text: "Your conversations"
+    text: "Conversations"
     optional: true
 - tapOn:
     point: "50%,62%"

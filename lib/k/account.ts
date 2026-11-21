@@ -166,29 +166,29 @@ export function moneyState(t: Pick<Receipt, 'type' | 'status'> & { createdAt?: s
 		return { key: 'failed', label: 'Not completed', tone: 'neutral', body: 'This payment was started but the bank never confirmed it, so no money moved to the host. If your account was debited, contact support with the reference below.' };
 	if (st === 'PENDING' || st === 'PROCESSING' || st === 'NEEDS_RECONCILIATION') {
 		if (txKind(type).incoming)
-			return { key: 'payout_pending', label: 'On its way', tone: 'info', body: 'Kushi has started sending this money to you. Banks usually settle it within one working day.' };
+			return { key: 'payout_pending', label: 'Processing', tone: 'info', body: 'Kushi has started sending this money to you. Banks usually settle it within one working day.' };
 		return { key: 'processing', label: 'Processing', tone: 'info', body: 'We’re confirming this payment with the bank. It usually takes a few minutes.' };
 	}
 	if (st === 'FAILED' || st === 'CANCELLED') {
 		if (txKind(type).incoming)
 			return { key: 'payout_failed', label: 'Payout failed', tone: 'danger', body: 'The bank didn’t accept this transfer. Check the account details you gave us, then contact support so we can resend it.' };
-		return { key: 'failed', label: st === 'FAILED' ? 'Didn’t go through' : 'Cancelled', tone: 'danger', body: 'No money moved to the host. If your account was debited anyway, your bank normally reverses it within 24 hours — contact support with the reference if it doesn’t.' };
+		return { key: 'failed', label: st === 'FAILED' ? 'Failed' : 'Cancelled', tone: 'danger', body: 'No money moved to the host. If your account was debited anyway, your bank normally reverses it within 24 hours — contact support with the reference if it doesn’t.' };
 	}
 	if (st === 'REFUNDED') return { key: 'refunded', label: 'Refunded', tone: 'neutral', body: 'This money has been sent back to you.' };
 	if (type === 'booking_payment') {
 		const b = t.booking;
 		if (b?.status === 'CANCELED') return { key: 'refunded', label: 'Cancelled', tone: 'neutral', body: 'This booking was cancelled. Any refund you’re owed shows as a separate “Refund” in your payments.' };
 		if (b?.status === 'COMPLETED' || b?.hostTransaction)
-			return { key: 'released', label: 'Released to host', tone: 'success', body: 'You confirmed your move-in (or the hold period ended), so Kushi released the rent to the host.' };
+			return { key: 'released', label: 'Released', tone: 'success', body: 'You confirmed your move-in (or the hold period ended), so Kushi released the rent to the host.' };
 		return {
 			key: 'escrow',
-			label: 'Held in escrow',
+			label: 'In escrow',
 			tone: 'live',
 			body: `Kushi is holding this money safely. The host gets it only after you confirm your move-in${b?.autoFinalizeAt ? ` or on ${shortDate(b.autoFinalizeAt)}, whichever comes first` : ''}. If something is wrong, open the booking and raise it before then.`
 		};
 	}
 	if (type === 'guest_cancellation_refund') return { key: 'refunded', label: 'Refunded', tone: 'success', body: 'Refunded to the account you paid from. Banks can take up to 5 working days to show it.' };
-	if (txKind(type).incoming) return { key: 'received', label: 'Paid to you', tone: 'success', body: 'Sent to your payout account.' };
+	if (txKind(type).incoming) return { key: 'received', label: 'Received', tone: 'success', body: 'Sent to your payout account.' };
 	return { key: 'paid', label: 'Paid', tone: 'success', body: 'Payment received by Kushi.' };
 }
 

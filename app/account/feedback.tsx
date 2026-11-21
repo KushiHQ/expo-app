@@ -9,10 +9,10 @@ import { cleanError } from '@/lib/k/account';
 import { FeedbackType, useSubmitFeedbackMutation } from '@/lib/services/graphql/generated';
 
 const TYPES: { value: FeedbackType; title: string; detail: string }[] = [
-	{ value: FeedbackType.BugReport, title: 'Something isn’t working', detail: 'A screen, button or payment that went wrong' },
-	{ value: FeedbackType.FeatureRequest, title: 'An idea', detail: 'Something Kushi should do or do better' },
-	{ value: FeedbackType.Complaint, title: 'A complaint', detail: 'About a host, renter, home or our service' },
-	{ value: FeedbackType.General, title: 'Something else', detail: 'Anything you want us to know' }
+	{ value: FeedbackType.BugReport, title: 'Bug report', detail: 'A screen, button or payment that went wrong' },
+	{ value: FeedbackType.FeatureRequest, title: 'Feature request', detail: 'Something Kushi should do or do better' },
+	{ value: FeedbackType.Complaint, title: 'Complaint', detail: 'About a host, renter, home or our service' },
+	{ value: FeedbackType.General, title: 'Other', detail: 'Anything you want us to know' }
 ];
 
 /** Feedback to the Kushi team (not a support conversation). */
@@ -39,7 +39,7 @@ export default function Feedback() {
 				<View style={{ alignItems: 'center', gap: 12, paddingTop: 48 }}>
 					<MessageSquareHeart size={40} color={color.amber} strokeWidth={1.5} />
 					<KText v="title" center>
-						Thank you — we read every one.
+						Feedback sent
 					</KText>
 					<KText v="small" center style={{ maxWidth: 340 }}>
 						{consent ? 'If we need more detail, someone from the team will email you.' : 'You asked us not to contact you, so we won’t reply — but it still counts.'}
@@ -60,19 +60,19 @@ export default function Feedback() {
 			footer={<Button title="Send feedback" size="lg" block loading={fetching} disabled={body.trim().length < 10} onPress={send} testID="feedback-send" />}
 		>
 			<View style={{ gap: 8, paddingTop: 20 }}>
-				<Eyebrow>Help us improve Kushi</Eyebrow>
+				<Eyebrow>Feedback</Eyebrow>
 				<KText v="small">This goes to the product team. For help with a booking or payment, message Kushi Support — they’ll reply in the app.</KText>
-				<Button title="Message Kushi Support instead" variant="quiet" size="sm" onPress={() => router.push('/support')} style={{ alignSelf: 'flex-start', paddingHorizontal: 0 }} />
+				<Button title="Contact support" variant="quiet" size="sm" onPress={() => router.push('/support')} style={{ alignSelf: 'flex-start', paddingHorizontal: 0 }} />
 			</View>
 			<View style={{ gap: 10 }} accessibilityRole="radiogroup">
-				<KText v="label">What’s it about?</KText>
+				<KText v="label">Topic</KText>
 				{TYPES.map((t) => (
 					<Choice key={t.value} title={t.title} detail={t.detail} on={type === t.value} onPress={() => setType(t.value)} />
 				))}
 			</View>
 			<Field label="Short summary" optional value={title} onChangeText={setTitle} maxLength={120} placeholder="e.g. Payment page froze" />
 			<Field
-				label="Tell us more"
+				label="Details"
 				value={body}
 				onChangeText={setBody}
 				multiline

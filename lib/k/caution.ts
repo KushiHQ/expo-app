@@ -111,19 +111,19 @@ export function breakdown(cautionFee: unknown, custodyFee: unknown, claims: Clai
 export function claimForGuest(c: Claim): { label: string; tone: Tone; detail?: string } {
 	switch (c.status) {
 		case 'PENDING_GUEST_RESPONSE':
-			return { label: 'Needs your answer', tone: 'warn' };
+			return { label: 'Action required', tone: 'warn' };
 		case 'GUEST_APPROVED':
-			return { label: c.transactionId ? 'You accepted · paying your host' : 'You accepted', tone: 'info' };
+			return { label: 'Approved', tone: 'info' };
 		case 'GUEST_DISPUTED':
 			return c.escalatedAt
-				? { label: 'Kushi is reviewing', tone: 'warn', detail: `You didn’t answer within ${ANSWER_DAYS} days, so Kushi is deciding. We may contact you.` }
-				: { label: 'You disputed · Kushi is reviewing', tone: 'warn' };
+				? { label: 'In review', tone: 'warn', detail: `You didn’t answer within ${ANSWER_DAYS} days, so Kushi is deciding. We may contact you.` }
+				: { label: 'Disputed', tone: 'warn', detail: 'Kushi is reviewing your dispute.' };
 		case 'ADMIN_APPROVED':
-			return { label: 'Kushi approved it · paying your host', tone: 'info' };
+			return { label: 'Approved', tone: 'info' };
 		case 'ADMIN_DECLINED':
-			return { label: 'Kushi declined it', tone: 'success', detail: 'Your deposit is unaffected.' };
+			return { label: 'Rejected', tone: 'success', detail: 'Your deposit is unaffected.' };
 		case 'RELEASED':
-			return { label: 'Paid to your host', tone: 'neutral' };
+			return { label: 'Paid out', tone: 'neutral' };
 		default:
 			return { label: c.status, tone: 'neutral' };
 	}
@@ -133,19 +133,19 @@ export function claimForGuest(c: Claim): { label: string; tone: Tone; detail?: s
 export function claimForHost(c: Claim): { label: string; tone: Tone; detail?: string } {
 	switch (c.status) {
 		case 'PENDING_GUEST_RESPONSE':
-			return { label: 'Waiting for the guest', tone: 'warn', detail: `They have until ${answerBy(c.createdAt).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })} to answer; then Kushi reviews it.` };
+			return { label: 'Pending', tone: 'warn', detail: `They have until ${answerBy(c.createdAt).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' })} to answer; then Kushi reviews it.` };
 		case 'GUEST_APPROVED':
-			return { label: 'Guest accepted · paying you', tone: 'info' };
+			return { label: 'Approved', tone: 'info' };
 		case 'GUEST_DISPUTED':
 			return c.escalatedAt
-				? { label: 'Kushi is reviewing', tone: 'warn', detail: `The guest didn’t answer within ${ANSWER_DAYS} days.` }
-				: { label: 'Guest disputed · Kushi is reviewing', tone: 'warn' };
+				? { label: 'In review', tone: 'warn', detail: `The guest didn’t answer within ${ANSWER_DAYS} days.` }
+				: { label: 'Disputed', tone: 'warn', detail: 'The guest disputed this claim. Kushi is reviewing it.' };
 		case 'ADMIN_APPROVED':
-			return { label: 'Kushi approved · paying you', tone: 'info' };
+			return { label: 'Approved', tone: 'info' };
 		case 'ADMIN_DECLINED':
-			return { label: 'Kushi declined it', tone: 'danger' };
+			return { label: 'Rejected', tone: 'danger' };
 		case 'RELEASED':
-			return { label: 'Paid to you', tone: 'success' };
+			return { label: 'Paid out', tone: 'success' };
 		default:
 			return { label: c.status, tone: 'neutral' };
 	}
@@ -155,15 +155,15 @@ export function claimForHost(c: Claim): { label: string; tone: Tone; detail?: st
 export function refundForGuest(r: Refund): { label: string; tone: Tone } {
 	switch (r.status) {
 		case 'REQUESTED':
-			return { label: 'Waiting for Kushi to approve', tone: 'warn' };
+			return { label: 'Pending', tone: 'warn' };
 		case 'BLOCKED':
 			return { label: 'On hold', tone: 'neutral' };
 		case 'PROCESSING':
-			return { label: 'On its way to your bank', tone: 'info' };
+			return { label: 'Processing', tone: 'info' };
 		case 'COMPLETED':
 			return { label: 'Refunded', tone: 'success' };
 		case 'FAILED':
-			return { label: 'Your bank rejected this account', tone: 'danger' };
+			return { label: 'Failed', tone: 'danger' };
 		default:
 			return { label: r.status, tone: 'neutral' };
 	}

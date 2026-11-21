@@ -9,13 +9,19 @@ import { Button, Check, Field, KText, Notice, OtpField, PasswordField } from '@/
 import { AuthShell } from '@/components/k/auth-shell';
 import { OrDivider, SocialButtons } from '@/components/k/social-buttons';
 import { color } from '@/lib/k/theme';
-import { startSession } from '@/lib/k/session';
+import { setHostIntent, startSession } from '@/lib/k/session';
 import { useLoginMutation, useResendEmailVerificationOtpMutation, useSignUpMutation, useVerifyEmailMutation } from '@/lib/services/graphql/generated';
 
 const clean = (m?: string) => (m ?? '').replace('[GraphQL] ', '');
 
 export default function SignUp() {
-	const params = useLocalSearchParams<{ email?: string; verify?: string }>();
+	const params = useLocalSearchParams<{ email?: string; verify?: string; mode?: string }>();
+	// From "List a property": same form, hosting wording. Where it lands after is set by setHostIntent.
+	const hosting = params.mode === 'host';
+	// A plain sign-up (not the code step of an earlier one) is a renter's: forget an old "List a property".
+	useEffect(() => {
+		if (!hosting && !params.verify) setHostIntent(false).catch(() => {});
+	}, [hosting, params.verify]);
 	const [step, setStep] = useState<'details' | 'code'>(params.verify ? 'code' : 'details');
 	const [name, setName] = useState('');
 	const [email, setEmail] = useState(params.email ?? '');
@@ -71,7 +77,7 @@ export default function SignUp() {
 
 	if (step === 'code')
 		return (
-			<AuthShell eyebrow="One last step" title="Check your email" sub={`Enter the 6-digit code we sent to ${email || 'your email'}.`}>
+			<AuthShell eyebrow="Verify email" title="Check your email" sub={`Enter the 6-digit code we sent to ${email || 'your email'}.`}>
 				{!params.email && !email ? <Field label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" /> : null}
 				{error ? <Notice tone="danger">{error}</Notice> : null}
 				<OtpField value={code} onChange={setCode} onComplete={confirm} invalid={!!error} />
@@ -86,7 +92,11 @@ export default function SignUp() {
 		);
 
 	return (
-		<AuthShell eyebrow="Join Kushi" title="Create your account" sub="Save homes, message hosts and apply in minutes. It’s free.">
+		<AuthShell
+			eyebrow={hosting ? 'Hosting' : 'Join Kushi'}
+			title={hosting ? 'Create account' : 'Create your account'}
+			sub={hosting ? 'Listing on Kushi is free. Your account is where renters reach you and where Kushi pays your rent out.' : 'Save homes, message hosts and apply in minutes. It’s free.'}
+		>
 			<SocialButtons mode="signup" />
 			<OrDivider />
 			{error ? <Notice tone="danger">{error}</Notice> : null}

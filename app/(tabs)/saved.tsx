@@ -36,7 +36,7 @@ export default function Saved() {
 		return (
 			<View style={{ flex: 1, backgroundColor: color.bg, paddingTop: insets.top }}>
 				<View style={[{ flex: 1, justifyContent: 'center', paddingHorizontal: gutter }, centered(layout.max('form'))]}>
-					<SignedOut eyebrow="Saved" title="Keep homes on your map" body="Tap the heart on any home to save it. Sign in so your saved homes follow you everywhere." />
+					<SignedOut title="Sign in to see saved homes" body="Tap the heart on any home to save it. Sign in so your saved homes follow you everywhere." />
 				</View>
 			</View>
 		);
@@ -62,7 +62,7 @@ export default function Saved() {
 				refreshing={false}
 				ListHeaderComponent={
 					<View style={{ gap: 16, paddingBottom: 20 }}>
-						<PageTitle eyebrow="Saved" title="Homes on your map" sub={items.length ? `${items.length} home${items.length === 1 ? '' : 's'}` : undefined} />
+						<PageTitle title="Saved" sub={items.length ? `${items.length} home${items.length === 1 ? '' : 's'}` : undefined} />
 						{loaded ? (
 							<View style={{ gap: 10 }}>
 								<KText v="label">Collections</KText>
@@ -98,7 +98,7 @@ export default function Saved() {
 							Check your connection and try again.
 						</Notice>
 					) : (
-						<Empty eyebrow="Nothing pinned" title="Save homes as you explore" body="Compare them here later, or come back when you’re ready to apply." action="Explore homes" onAction={() => router.navigate('/')} />
+						<Empty title="No saved homes" body="Compare them here later, or come back when you’re ready to apply." action="Explore homes" onAction={() => router.navigate('/')} />
 					)
 				}
 			/>

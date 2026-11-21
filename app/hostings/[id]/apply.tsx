@@ -16,6 +16,8 @@ import { QuoteLines, useQuote } from '@/components/k/quote';
 import { IdentityCheck } from '@/components/k/verify/identity';
 import { PhoneStep } from '@/components/k/verify/nin-phone';
 import { SignaturePad } from '@/components/k/signature';
+import { NotificationsCard } from '@/components/k/notifications-card';
+import { takeCard } from '@/lib/k/push';
 import { NEEDS_GUARANTOR } from '@/lib/k/booking';
 import { centered, useLayout } from '@/lib/k/layout';
 import { usePropertyTypeConfig } from '@/lib/hooks/use-property-type-config';
@@ -97,7 +99,7 @@ export default function Apply() {
 	const commercial = useClassFor(h?.propertyType) === 'commercial';
 	const needsKyc = !me?.kyc?.ninVerified;
 	const STEPS: Step[] = needsKyc ? ['kyc', 'details', 'about', 'sign', 'review'] : ['details', 'about', 'sign', 'review'];
-	const LABEL: Record<Step, string> = { kyc: 'Verify', details: 'Details', about: 'About you', sign: 'Sign', review: 'Submit', done: 'Done' };
+	const LABEL: Record<Step, string> = { kyc: 'Identity', details: 'Details', about: 'About you', sign: 'Agreement', review: 'Review', done: 'Done' };
 	const [step, setStep] = useState<Step>(needsKyc ? 'kyc' : 'details');
 	const scroll = useRef<ScrollView>(null);
 
@@ -236,6 +238,12 @@ export default function Apply() {
 	const signOk = !!signature && consent && consentData && !!agreement;
 	const alreadyApplied = !!app && app.status !== 'IN_PROGRESS' && app.status !== 'CANCELLED';
 
+	// Application sent: ask for notifications here if the chat card never got its yes (once per install).
+	const [appliedCard, setAppliedCard] = useState(false);
+	useEffect(() => {
+		if (step === 'done') takeCard('applied').then(setAppliedCard);
+	}, [step]);
+
 	if (step === 'done')
 		return (
 			<ScrollView style={{ flex: 1, backgroundColor: color.bg }} contentContainerStyle={{ paddingTop: insets.top + 40, paddingBottom: insets.bottom + 24, paddingHorizontal: gutter }}>
@@ -262,6 +270,7 @@ export default function Apply() {
 							</View>
 						</View>
 					))}
+					{appliedCard ? <NotificationsCard body="Get a notification when the host decides, and when it’s time to pay." testID="apply-notifications" /> : null}
 					<Button title="Track your application" size="lg" block onPress={() => router.replace(app ? `/trips/${app.id}` : '/trips')} />
 					<Button title="Keep exploring" variant="ghost" size="lg" block onPress={() => router.replace('/')} />
 				</Animated.View>
@@ -270,7 +279,7 @@ export default function Apply() {
 
 	return (
 		<KeyboardAvoidingView style={{ flex: 1, backgroundColor: color.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-			<Header eyebrow="Apply to rent" title={h?.title ?? 'Application'} />
+			<Header eyebrow="Application" title={h?.title ?? 'Application'} />
 			{/* progress */}
 			<View style={[{ flexDirection: 'row', gap: 6, paddingHorizontal: gutter, paddingVertical: 12 }, column]} accessibilityLabel={`Step ${idx + 1} of ${STEPS.length}: ${LABEL[step]}`}>
 				{STEPS.map((s, i) => (
@@ -303,10 +312,10 @@ export default function Apply() {
 						<Button title="Try again" variant="ghost" onPress={boot} />
 					</>
 				) : alreadyApplied ? (
-					<Empty eyebrow="Already applied" title="Your application is in" body="Follow its status, message the host and pay once you’re accepted." action="See where it stands" onAction={() => router.replace(app ? `/trips/${app.id}` : '/trips')} />
+					<Empty title="Application sent" body="Follow its status, message the host and pay once you’re accepted." action="View application" onAction={() => router.replace(app ? `/trips/${app.id}` : '/trips')} />
 				) : step === 'kyc' ? (
 					<Animated.View entering={FadeIn} style={{ gap: 14 }}>
-						<KText v="title">First, verify it’s you</KText>
+						<KText v="title">Identity</KText>
 						<KText v="small">Kushi checks every renter once. It protects hosts from fraud and puts your verified name on the agreement. About a minute.</KText>
 						<IdentityCheck onVerified={() => (go('details'), boot())} />
 					</Animated.View>
@@ -338,10 +347,10 @@ export default function Apply() {
 				) : step === 'about' ? (
 					<Animated.View entering={FadeIn} style={{ gap: 18 }}>
 						<View style={{ gap: 6 }}>
-							<KText v="title">A little about you</KText>
+							<KText v="title">About you</KText>
 							<KText v="small">Hosts use this to decide quickly. Shared only with this home’s host.</KText>
 						</View>
-						<KText v="label">What do you do?</KText>
+						<KText v="label">Occupation</KText>
 						{EMP.map((o) => (
 							<Choice key={o.v} title={o.l} detail={o.d} on={emp === o.v} onPress={() => (setEmp(o.v), NEEDS_GUARANTOR.includes(o.v) && setGuar(true))} />
 						))}
@@ -357,7 +366,7 @@ export default function Apply() {
 						) : null}
 						{commercial ? null : (
 							<>
-								<KText v="label">Who’ll live here?</KText>
+								<KText v="label">Occupants</KText>
 								<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
 									{OCC.map((o) => (
 										<Chip key={o.v} label={o.l} on={occ === o.v} onPress={() => setOcc(o.v)} />
@@ -392,7 +401,7 @@ export default function Apply() {
 				) : step === 'sign' ? (
 					<Animated.View entering={FadeIn} style={{ gap: 18 }}>
 						<View style={{ gap: 6 }}>
-							<KText v="title">Read and sign</KText>
+							<KText v="title">Agreement</KText>
 							<KText v="small">The tenancy agreement between you and the host, prepared by Kushi. It takes effect only once the host accepts and you pay.</KText>
 						</View>
 						{tpl === undefined && !app.bookingAggrement ? null : !agreement ? (
@@ -427,7 +436,7 @@ export default function Apply() {
 				) : (
 					<Animated.View entering={FadeIn} style={{ gap: 16 }}>
 						<View style={{ gap: 6 }}>
-							<KText v="title">Review and submit</KText>
+							<KText v="title">Review</KText>
 							<KText v="small">You won’t be charged now — you pay only after the host accepts.</KText>
 						</View>
 						<Card>
@@ -440,7 +449,7 @@ export default function Apply() {
 							<KV k="Guarantor" v={guar && gName ? `${gName} (${REL.find((r) => r.v === gRel)?.l})` : 'None'} />
 						</Card>
 						<Card>
-							<KText v="heading">Due after acceptance</KText>
+							<KText v="heading">Due after approval</KText>
 							<QuoteLines quote={quote} fetching={quoting} />
 						</Card>
 						<Notice tone="info">

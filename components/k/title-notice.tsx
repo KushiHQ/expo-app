@@ -17,7 +17,7 @@ export function TitleNotice({
 	const agent = !!verification?.listedByAgent;
 	const confirmed = verification?.landlordConfirmationStatus === 'CONFIRMED';
 	return (
-		<Notice tone="info" title="Kushi hasn’t checked the property title yet">
+		<Notice tone="info" title="Title not verified">
 			This listing is {TIERS[tier].label.toLowerCase()}.{agent ? ` It’s listed by an agent for the owner${confirmed ? ', and Kushi has spoken to the owner' : ''}.` : ''} Before you pay, view the home and ask for proof that{' '}
 			{agent ? 'the owner has authorised the agent to let it' : 'it’s theirs to let'}. Your payment stays with Kushi until you confirm you have the keys.
 		</Notice>

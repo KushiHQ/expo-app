@@ -12,6 +12,7 @@ import { TIERS } from '@/lib/k/tiers';
 import { agentManaged, roomPhotoCount, stepHref, stepsFor, type Hosting, type StepKey } from '@/lib/k/listing-steps';
 import { CREATE_UNITS_FROM_HOSTING, type CreateUnitsResult } from '@/lib/services/graphql/requests/mutations/units';
 import { cleanError } from '@/lib/k/use-listing-step';
+import { intentFor } from '@/lib/k/listing-intent';
 import { useHostingForm } from '@/lib/hooks/hosting-form';
 import { toast } from '@/lib/hooks/use-toast';
 import { HostingKind, HostingVerificationTier, PublishStatus, useDeleteHostingMutation, useDuplicateHostingMutation } from '@/lib/services/graphql/generated';
@@ -51,7 +52,7 @@ export default function ListingHub() {
 						<Skeleton style={{ height: 300 }} />
 					</View>
 				) : (
-					<Empty eyebrow="Off the map" title="We couldn’t load this listing" body="Check your connection and pull down to try again." action="Try again" onAction={refetch} />
+					<Empty title="We couldn’t load this listing" body="Check your connection and pull down to try again." action="Try again" onAction={refetch} />
 				)}
 			</Screen>
 		);
@@ -65,7 +66,9 @@ export default function ListingHub() {
 	const units = (h.children ?? []).filter((u) => u.publishStatus !== PublishStatus.Archived);
 	const tier = h.verification?.verificationTier ?? HostingVerificationTier.Unverified;
 	const agent = agentManaged(h);
-	const nextUp = left.find((s) => s.key !== 'publish') ?? left[0];
+	// A host who said they're not at the property does photos last (they're stamped with where they were taken).
+	const away = intentFor(id)?.where === 'away';
+	const nextUp = left.find((s) => s.key !== 'publish' && !(away && s.key === 'photos')) ?? left.find((s) => s.key !== 'publish') ?? left[0];
 	const go = (key: StepKey) => router.push(stepHref(key, id));
 
 	async function onDuplicate() {
@@ -127,27 +130,27 @@ export default function ListingHub() {
 
 			{live ? (
 				<Card tone="signal">
-					<KText v="bodyStrong">Live on Kushi</KText>
+					<KText v="bodyStrong">Live</KText>
 					<KText v="small">{agent ? 'Renters can find it and contact you.' : 'Renters can find it and apply. You decide who gets it.'}</KText>
-					<Button title="See it as renters do" variant="ghost" size="sm" icon={<ExternalLink size={14} color={color.fg} />} onPress={() => router.push(`/hostings/${id}` as Href)} style={{ alignSelf: 'flex-start' }} />
+					<Button title="View listing" variant="ghost" size="sm" icon={<ExternalLink size={14} color={color.fg} />} onPress={() => router.push(`/hostings/${id}` as Href)} style={{ alignSelf: 'flex-start' }} />
 				</Card>
 			) : status === PublishStatus.Rejected ? (
-				<Notice tone="danger" title="Kushi asked for changes">Check each step, update what’s wrong, then publish again. Contact support if you’re not sure what to change.</Notice>
+				<Notice tone="danger" title="Changes requested">Check each step, update what’s wrong, then publish again. Contact support if you’re not sure what to change.</Notice>
 			) : status === PublishStatus.Inreview ? (
-				<Notice tone="info" title="Being reviewed">Kushi is checking this listing. You’ll get a notification when it’s done.</Notice>
+				<Notice tone="info" title="In review">Kushi is checking this listing. You’ll get a notification when it’s done.</Notice>
 			) : nextUp && nextUp.key !== 'publish' ? (
 				<Card tone="amber">
-					<Eyebrow c="amber">Next up</Eyebrow>
+					<Eyebrow c="amber">Next step</Eyebrow>
 					<KText v="bodyStrong">{nextUp.title}</KText>
-					<KText v="small">{nextUp.left.join(' · ')}</KText>
+					<KText v="small">{nextUp.left.join(' · ')}{away && nextUp.key === 'photos' ? '. Take them at the property.' : ''}</KText>
 					<Button title={`Continue: ${nextUp.title.toLowerCase()}`} onPress={() => go(nextUp.key)} style={{ alignSelf: 'flex-start' }} testID="hub-continue" />
 				</Card>
 			) : (
 				<Card tone="amber">
-					<Eyebrow c="amber">Almost there</Eyebrow>
-					<KText v="bodyStrong">Name it and publish</KText>
+					<Eyebrow c="amber">Last step</Eyebrow>
+					<KText v="bodyStrong">Publish</KText>
 					<KText v="small">Everything else is done. Add a title and description, then go live.</KText>
-					<Button title="Name and publish" onPress={() => go('publish')} style={{ alignSelf: 'flex-start' }} testID="hub-continue" />
+					<Button title="Continue" onPress={() => go('publish')} style={{ alignSelf: 'flex-start' }} testID="hub-continue" />
 				</Card>
 			)}
 
@@ -201,7 +204,7 @@ export default function ListingHub() {
 			</View>
 
 			<Sheet open={menu} onClose={() => setMenu(false)} title="Listing options">
-				<Row icon={<ExternalLink size={17} color={color.fg} />} title="View as renters see it" onPress={() => { setMenu(false); router.push(`/hostings/${id}` as Href); }} />
+				<Row icon={<ExternalLink size={17} color={color.fg} />} title="View listing" onPress={() => { setMenu(false); router.push(`/hostings/${id}` as Href); }} />
 				<Row icon={<Copy size={17} color={color.fg} />} title={duplicating ? 'Copying…' : 'Make a copy'} detail="Starts a new draft with the same details" onPress={onDuplicate} />
 				<Row icon={<Trash2 size={17} color={color.danger} />} title="Delete listing" danger onPress={() => { setMenu(false); setTimeout(() => setConfirmDelete(true), 380); }} />
 			</Sheet>
@@ -210,7 +213,7 @@ export default function ListingHub() {
 					Each new unit gets this property’s rooms, photos, price and details{units.length ? `, numbered after your ${units.length} existing unit${units.length === 1 ? '' : 's'}` : ''}. You can still change any unit afterwards, like its price or a photo.
 				</KText>
 				<View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-					<KText v="bodyStrong">How many units?</KText>
+					<KText v="bodyStrong">Number of units</KText>
 					<Stepper value={copyCount} onChange={setCopyCount} min={1} max={50} />
 				</View>
 				<Check on={copyPublish} onPress={() => setCopyPublish((v) => !v)}>

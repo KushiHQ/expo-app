@@ -14,6 +14,8 @@ import { StatusBar } from 'expo-status-bar';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import ToastContainer from '@/components/atoms/a-toast-container';
 import { DialogHost } from '@/components/k/dialog';
+import { AccountSheetHost } from '@/components/k/account-sheet';
+import { hasSeenWelcome } from '@/lib/k/session';
 import UploadProgress from '@/components/organisms/o-upload-progress';
 import { NotificationProvider } from '@/components/contexts/notifications';
 import GraphqlClientProvider from '@/components/providers/graphql-client';
@@ -128,7 +130,11 @@ function RootLayout() {
 
   React.useEffect(() => {
     if (loaded || error) {
-      SplashScreen.hideAsync();
+      // First launch: keep the launch screen up while the welcome screen fades in over Explore,
+      // so Explore never flashes first.
+      hasSeenWelcome()
+        .then((seen) => setTimeout(() => SplashScreen.hideAsync(), seen ? 0 : 600))
+        .catch(() => SplashScreen.hideAsync());
     }
   }, [loaded, error]);
 
@@ -150,11 +156,13 @@ function RootLayout() {
                         <Stack.Screen name="camera" options={MODAL_SCREEN_OPTIONS} />
                         <Stack.Screen name="photo-gallery" options={MODAL_SCREEN_OPTIONS} />
                         <Stack.Screen name="welcome" options={{ animation: 'fade' }} />
+                        <Stack.Screen name="search-location" options={{ animation: 'fade' }} />
                       </Stack>
                       <StatusBar style="light" />
                       <UploadProgress />
                       <ToastContainer />
                       <DialogHost />
+                      <AccountSheetHost />
                       {/* Forced/optional update — above every screen, signed in or out. */}
                       <AppUpdate />
                     </ThemeProvider>

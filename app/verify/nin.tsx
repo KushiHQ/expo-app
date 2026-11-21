@@ -41,7 +41,7 @@ export default function VerifyNin() {
 				/>
 			)}
 			<View style={{ gap: 10 }}>
-				<KText v="smallStrong">Don’t have your NIN to hand?</KText>
+				<KText v="smallStrong">Find your NIN</KText>
 				<Tips items={['Dial *346# from the phone line you used to register your NIN.', 'Or open the NIMC MWS app — your NIN is on the home screen.', 'Use the 11-digit NIN, not the tracking ID on your enrolment slip.']} />
 			</View>
 			<PrivacyNote compact />

@@ -9,7 +9,7 @@ import { humanize, relative } from '@/lib/k/format';
 import { toast } from '@/lib/hooks/use-toast';
 import { useInitiateSupportChatMutation, useMySupportChatsQuery } from '@/lib/services/graphql/generated';
 
-const TOPIC: Record<string, string> = { BOOKING: 'About a booking', HOSTING: 'About a listing', TRANSACTION: 'About a payment' };
+const TOPIC: Record<string, string> = { BOOKING: 'Booking', HOSTING: 'Listing', TRANSACTION: 'Payment' };
 
 export default function SupportInbox() {
 	const [{ data, fetching }, refetch] = useMySupportChatsQuery({ variables: { pagination: { limit: 50, offset: 0 } }, requestPolicy: 'cache-and-network' });
@@ -37,13 +37,13 @@ export default function SupportInbox() {
 					<View style={{ gap: 16, paddingBottom: 14 }}>
 						<View style={s.hero}>
 							<Headset size={22} color={color.amber} />
-							<KText v="heading">Talk to a real person</KText>
+							<KText v="heading">Contact support</KText>
 							<KText v="small">
 								Questions about a home, a payment or your keys? Our team answers right here. For anything about a specific booking, open it from Homes and tap Get help so we see the details.
 							</KText>
 							<Button title="Start a conversation" icon={<MessageCirclePlus size={16} color={color.onAmber} />} loading={starting} onPress={begin} />
 						</View>
-						{chats.length ? <KText v="label">Your conversations</KText> : null}
+						{chats.length ? <KText v="label">Conversations</KText> : null}
 					</View>
 				}
 				renderItem={({ item: c }) => {
@@ -54,7 +54,7 @@ export default function SupportInbox() {
 							<View style={{ flex: 1, gap: 4 }}>
 								<View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
 									<KText v="bodyStrong" numberOfLines={1} style={{ flex: 1 }}>
-										{c.itemType ? (TOPIC[c.itemType] ?? humanize(c.itemType)) : 'General question'}
+										{c.itemType ? (TOPIC[c.itemType] ?? humanize(c.itemType)) : 'General'}
 									</KText>
 									<KText v="xs">{relative(c.lastUpdated)}</KText>
 								</View>

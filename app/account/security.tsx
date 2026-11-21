@@ -17,7 +17,7 @@ export default function Security() {
 	return (
 		<Screen header={<Header eyebrow="You" title="Security" />} width="form">
 			<View style={{ gap: 8, paddingTop: 20 }}>
-				<Eyebrow>Keep your account safe</Eyebrow>
+				<Eyebrow>Safety</Eyebrow>
 				<KText v="small">Kushi never asks for your password, OTP codes or bank PIN by phone, WhatsApp or email. If someone does, it isn’t us.</KText>
 			</View>
 

@@ -7,27 +7,36 @@ import { color, font, radius } from '@/lib/k/theme';
 import { naira, perInterval, place } from '@/lib/k/format';
 import { TIERS } from '@/lib/k/tiers';
 import { shownAssetId } from '@/lib/k/listing';
-import { isSignedIn, requireSignIn } from '@/lib/k/session';
+import { isSignedIn } from '@/lib/k/session';
+import { askForAccount } from '@/lib/k/pending-action';
 import { useCreateUpdateSavedHostingMutation, useDeleteSavedHostingMutation, type HostingsQuery } from '@/lib/services/graphql/generated';
 import { Photo } from './surface';
 import { KText } from './text';
 
 export type CardHosting = HostingsQuery['hostings'][number];
 
-/** Save / unsave a listing; signed-out people are sent to sign in first. */
+/** Save / unsave a listing; signed-out people get the account sheet, and the home is saved once they're in. */
 export function useSaveToggle(id: string, initial?: boolean | null) {
 	const [saved, setSaved] = useState(!!initial);
 	const [, save] = useCreateUpdateSavedHostingMutation();
 	const [, unsave] = useDeleteSavedHostingMutation();
 	async function toggle() {
-		if (!isSignedIn()) return requireSignIn(`/hostings/${id}`);
+		if (!isSignedIn()) return askForAccount({ kind: 'save', hostingId: id, returnTo: `/hostings/${id}` });
 		const next = !saved;
 		setSaved(next);
 		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
 		const r = next ? await save({ input: { hostingId: id } }) : await unsave({ hostingId: id });
 		if (r.error) setSaved(!next);
 	}
-	return { saved, toggle };
+	/** Save (never unsave) — for finishing a Save tapped before sign-in. Resolves true when saved. */
+	async function ensureSaved() {
+		setSaved(true);
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+		const r = await save({ input: { hostingId: id } });
+		if (r.error) setSaved(!!initial);
+		return !r.error;
+	}
+	return { saved, toggle, ensureSaved };
 }
 
 function photosOf(h: CardHosting): string[] {

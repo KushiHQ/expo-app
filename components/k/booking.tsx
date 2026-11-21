@@ -167,7 +167,7 @@ export function AgreementSheet({ open, onClose, bookingId, pdfUrl }: { open: boo
 export function CancelSheet({ open, onClose, booking, onContinue, busy }: { open: boolean; onClose: () => void; booking: TripBooking; onContinue: () => void; busy?: boolean }) {
 	const r = cancelRefund(booking);
 	return (
-		<Sheet open={open} onClose={onClose} title="Cancel this booking?" eyebrow="Before you decide">
+		<Sheet open={open} onClose={onClose} title="Cancel this booking?" eyebrow="Cancel booking">
 			<KText v="small">You can cancel until the booking completes — when you confirm the handover, or {GRACE_DAYS} days after paying. Here’s what you’d get back:</KText>
 			<Card>
 				<KV k="Refund to your card" v={naira(r.refund)} strong />
@@ -177,7 +177,7 @@ export function CancelSheet({ open, onClose, booking, onContinue, busy }: { open
 				{r.kept.custody > 0 ? <KV k="Caution custody fee" v={`− ${naira(r.kept.custody)}`} /> : null}
 			</Card>
 			<KText v="xs">Everything else — 90% of the rent, service charge, legal fee, stamp duty and your caution deposit — comes back to the card you paid with within {REFUND_DAYS}. Part of the cancellation fee goes to the host for holding the home.</KText>
-			<Button title="Email me a code to cancel" variant="danger" size="lg" block loading={busy} onPress={onContinue} testID="cancel-continue" />
+			<Button title="Send code" variant="danger" size="lg" block loading={busy} onPress={onContinue} testID="cancel-continue" />
 			<Button title="Keep my booking" variant="quiet" block onPress={onClose} />
 		</Sheet>
 	);
@@ -250,7 +250,7 @@ function Holding({ failed, onRetry }: { failed?: boolean; onRetry?: () => void }
 	return (
 		<View style={[s.full, { padding: 24 }]}>
 			{failed ? (
-				<Empty eyebrow="Off the map" title="We couldn’t open that" body="Check your connection and try again, or find it under Homes." action="Try again" onAction={onRetry} />
+				<Empty title="We couldn’t open that" body="Check your connection and try again, or find it under Homes." action="Try again" onAction={onRetry} />
 			) : (
 				<Spinner size="large" />
 			)}

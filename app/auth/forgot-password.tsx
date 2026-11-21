@@ -45,7 +45,7 @@ export default function ForgotPassword() {
 
 	if (step === 'email')
 		return (
-			<AuthShell eyebrow="Reset password" title="Forgot it? No wahala." sub="Enter the email on your account and we’ll send you a code.">
+			<AuthShell eyebrow="Reset password" title="Forgot password" sub="Enter the email on your account and we’ll send you a code.">
 				{error ? <Notice tone="danger">{error}</Notice> : null}
 				<Field label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
 				<Button title="Send code" size="lg" block loading={sending} disabled={!/.+@.+\..+/.test(email)} onPress={send} />

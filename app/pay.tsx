@@ -67,9 +67,9 @@ export default function Pay() {
 
 	const tripId = b?.bookingApplication?.id;
 	return (
-		<Screen width="form" header={<Header eyebrow="Secure your home" title="Pay into escrow" />}>
+		<Screen width="form" header={<Header eyebrow="Booking" title="Payment" />}>
 			{!bkId ? (
-				<Empty eyebrow="Nothing to pay" title="We couldn’t find that payment" body="Open the home from Homes to pay." action="Go to Homes" onAction={() => router.replace('/trips')} />
+				<Empty title="We couldn’t find that payment" body="Open the home from Homes to pay." action="Go to Homes" onAction={() => router.replace('/trips')} />
 			) : !b && loadError && !loading ? (
 				<View style={{ gap: 12, paddingTop: 24 }}>
 					<Notice tone="danger" title="We couldn’t load your booking">
@@ -84,12 +84,12 @@ export default function Pay() {
 					<Skeleton style={{ height: 160 }} />
 				</View>
 			) : closed ? (
-				<Empty eyebrow="Nothing to pay" title={b.status === 'CANCELED' ? 'This booking was cancelled' : 'This booking is already complete'} body="There’s nothing to pay here." action="Go to your home" onAction={() => router.replace(tripId ? `/trips/${tripId}` : '/trips')} />
+				<Empty title={b.status === 'CANCELED' ? 'This booking was cancelled' : 'This booking is already complete'} body="There’s nothing to pay here." action="Go to your home" onAction={() => router.replace(tripId ? `/trips/${tripId}` : '/trips')} />
 			) : already ? (
 				<View style={{ gap: 16, paddingTop: 30 }}>
 					<BadgeCheck size={40} color={color.success} />
 					<Eyebrow>Payment secured</Eyebrow>
-					<KText v="display">{paid ? 'Paid. Your home is secured.' : 'This booking is already paid.'}</KText>
+					<KText v="display">{paid ? 'Payment complete' : 'Already paid'}</KText>
 					<KText v="lead">{naira(amount)} is held in Kushi escrow. Message your host to arrange the handover, then confirm in Kushi once you have your keys.</KText>
 					<Card>
 						<KText v="smallStrong">The next {GRACE_DAYS} days</KText>

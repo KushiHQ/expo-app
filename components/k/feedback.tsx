@@ -6,8 +6,8 @@ import { color, radius } from '@/lib/k/theme';
 import { Button } from './button';
 import { KText, Eyebrow } from './text';
 
-/** Empty / uncharted state with the radar motif. */
-export function Empty({ eyebrow = 'Uncharted', title, body, action, onAction }: { eyebrow?: string; title: string; body?: string; action?: string; onAction?: () => void }) {
+/** Empty state with the radar motif. The eyebrow is optional; most empty states don't need one. */
+export function Empty({ eyebrow, title, body, action, onAction }: { eyebrow?: string; title: string; body?: string; action?: string; onAction?: () => void }) {
 	return (
 		<View style={{ alignItems: 'center', gap: 12, paddingVertical: 40, paddingHorizontal: 12 }}>
 			<Svg width={96} height={96} viewBox="-60 -60 120 120">
@@ -18,7 +18,7 @@ export function Empty({ eyebrow = 'Uncharted', title, body, action, onAction }: 
 				<Path d="M0 0 L0 -56 A56 56 0 0 1 36 -43 Z" fill="rgba(245,158,11,0.16)" />
 				<Path d="M-5 0 L0 -5 L5 0 L0 5 Z" fill={color.amber} />
 			</Svg>
-			<Eyebrow>{eyebrow}</Eyebrow>
+			{eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
 			<KText v="title" center>
 				{title}
 			</KText>

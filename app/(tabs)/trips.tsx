@@ -54,7 +54,7 @@ export default function Trips() {
 	if (!signedIn)
 		return (
 			<Screen tabbed scroll={false} contentStyle={{ justifyContent: 'center' }}>
-				<SignedOut eyebrow="Your homes" title="Track every step to your keys" body="Applications, payments and the homes you live in — all in one place once you sign in." />
+				<SignedOut title="Sign in to see your homes" body="Applications, payments and the homes you live in — all in one place once you sign in." />
 			</Screen>
 		);
 
@@ -76,7 +76,7 @@ export default function Trips() {
 
 	return (
 		<Screen tabbed width={cols > 1 ? 'content' : 'reading'} refreshing={false} onRefresh={refresh}>
-			<PageTitle eyebrow="Your homes" title="Applications & homes" sub={items.length ? 'Every step from applying to getting your keys.' : undefined} />
+			<PageTitle title="Homes" sub={items.length ? 'Every step from applying to getting your keys.' : undefined} />
 			{failed ? (
 				<View style={{ gap: 12 }}>
 					<Notice tone="danger" title="We couldn’t load your homes">
@@ -91,7 +91,7 @@ export default function Trips() {
 					))}
 				</View>
 			) : !items.length ? (
-				<Empty eyebrow="Nothing yet" title="Your next home starts here" body="When you apply for a home, you’ll follow every step here — from the host’s answer to getting your keys." action="Explore homes" onAction={() => router.navigate('/')} />
+				<Empty title="No applications yet" body="When you apply for a home, you’ll follow every step here — from the host’s answer to getting your keys." action="Explore homes" onAction={() => router.navigate('/')} />
 			) : (
 				<>
 					{group('In progress', active)}

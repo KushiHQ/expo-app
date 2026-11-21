@@ -125,14 +125,14 @@ export function FeeList({
 					/>
 					{opt ? <KText v="xs">{opt.description}</KText> : null}
 					{opt?.agentsOnly && !isAgent ? (
-						<Notice tone="warn" title="Only for agents">
-							In Verification, choose “I’m the owner’s agent” and add the owner’s phone number. Kushi calls the owner to confirm, and the listing can’t go live until that’s done.
+						<Notice tone="warn" title="Agents only">
+							In Verification, choose “Owner’s agent” and add the owner’s phone number. Kushi calls the owner to confirm, and the listing can’t go live until that’s done.
 						</Notice>
 					) : null}
 					{opt && (opt.needsPayoutAccount || opt.feeType === FeeType.ServiceCharge) ? (
 						<View style={{ gap: 8 }}>
 							<KText v="label">{opt.needsPayoutAccount ? 'Pay this fee to' : 'Pay this fee to (optional)'}</KText>
-							{!opt.needsPayoutAccount ? <Choice title="With the rent" detail="Paid into the rent account" on={!form.account} onPress={() => setForm((x) => (x ? { ...x, account: null } : x))} /> : null}
+							{!opt.needsPayoutAccount ? <Choice title="Rent account" detail="Paid into the rent account" on={!form.account} onPress={() => setForm((x) => (x ? { ...x, account: null } : x))} /> : null}
 							<PayoutPicker value={form.account} onChange={(account) => setForm((x) => (x ? { ...x, account } : x))} error={tried && opt.needsPayoutAccount && !form.account ? 'Choose the account for this fee.' : null} />
 						</View>
 					) : null}

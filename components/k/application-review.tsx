@@ -178,7 +178,7 @@ export function ApplicationReview({ id, embedded, onChanged }: { id: string; emb
 				</View>
 			</View>
 			{canDecide ? (
-				<Notice tone="warn" title="Waiting for your decision">
+				<Notice tone="warn" title="Pending">
 					{`Move in ${date(a.commencementDate)} for ${duration(periods, interval)}. Verification: ${level.label.toLowerCase()} (${level.score} of ${checks.length} checks).`}
 				</Notice>
 			) : a.status === 'REJECTED' || a.status === 'CANCELLED' ? (
@@ -211,7 +211,7 @@ export function ApplicationReview({ id, embedded, onChanged }: { id: string; emb
 			</Card>
 
 			<Card>
-				<KText v="heading">The stay</KText>
+				<KText v="heading">Stay details</KText>
 				<KV k="Move in" v={date(a.commencementDate)} />
 				{ends ? <KV k="Ends" v={date(ends)} /> : null}
 				<KV k="Length" v={duration(periods, interval)} />
@@ -220,7 +220,7 @@ export function ApplicationReview({ id, embedded, onChanged }: { id: string; emb
 			</Card>
 
 			<Card>
-				<KText v="heading">About {first}</KText>
+				<KText v="heading">Applicant</KText>
 				<KV k="Work" v={g ? employmentStatusLabel(g.employmentStatus) : '—'} />
 				{g?.incomeRanges ? <KV k="Income" v={INCOME[g.incomeRanges] ?? humanize(g.incomeRanges)} /> : null}
 				<KV k="Household" v={g?.occupancyTypes ? (OCC[g.occupancyTypes] ?? humanize(g.occupancyTypes)) : '—'} />
@@ -244,7 +244,7 @@ export function ApplicationReview({ id, embedded, onChanged }: { id: string; emb
 			<Card>
 				<KText v="heading">Documents</KText>
 				<KText v="small">{accepted ? `The tenancy agreement ${first} signed is in force.` : `${first} has read and signed your tenancy agreement. It takes effect once you accept and they pay.`}</KText>
-				<Button title="Read the signed agreement" variant="ghost" size="sm" onPress={() => setAgreementOpen(true)} testID="app-agreement" />
+				<Button title="View agreement" variant="ghost" size="sm" onPress={() => setAgreementOpen(true)} testID="app-agreement" />
 			</Card>
 
 			{accepted ? <HostCaution applicationId={a.id} guestName={a.fullName ?? ''} /> : null}
@@ -255,8 +255,8 @@ export function ApplicationReview({ id, embedded, onChanged }: { id: string; emb
 		<View style={{ gap: 10 }}>
 			{canDecide ? (
 				<View style={{ flexDirection: 'row', gap: 10 }}>
-					<Button title="Decline" variant="ghost" icon={<X size={16} color={color.fg} />} onPress={() => setDeclineOpen(true)} style={{ flex: 1 }} testID="app-decline" />
-					<Button title={`Accept ${first}`} icon={<CheckIcon size={18} color={color.onAmber} />} onPress={() => setConfirmAccept(true)} style={{ flex: 1.4 }} testID="app-accept" />
+					<Button title="Reject" variant="ghost" icon={<X size={16} color={color.fg} />} onPress={() => setDeclineOpen(true)} style={{ flex: 1 }} testID="app-decline" />
+					<Button title="Approve" icon={<CheckIcon size={18} color={color.onAmber} />} onPress={() => setConfirmAccept(true)} style={{ flex: 1.4 }} testID="app-accept" />
 				</View>
 			) : null}
 			<Button title={`Message ${first}`} variant={canDecide ? 'quiet' : 'ghost'} size={canDecide ? 'sm' : 'md'} icon={<MessageCircle size={16} color={color.fg} />} loading={opening} onPress={message} testID="app-message" />
@@ -265,11 +265,11 @@ export function ApplicationReview({ id, embedded, onChanged }: { id: string; emb
 
 	const sheets = (
 		<>
-			<Sheet open={confirmAccept} onClose={() => setConfirmAccept(false)} eyebrow="Accept" title={`Accept ${first}?`}>
+			<Sheet open={confirmAccept} onClose={() => setConfirmAccept(false)} eyebrow="Approve" title={`Approve ${first}?`}>
 				<KText v="small">{first} will be asked to pay into Kushi escrow. You get paid once they move in and confirm (or automatically after 14 days). Other pending applications for this home are declined automatically.</KText>
 				<KText v="small">We’ll email you a 6-digit code to confirm.</KText>
 				<Button
-					title="Send me the code"
+					title="Send code"
 					size="lg"
 					block
 					loading={starting}
@@ -281,7 +281,7 @@ export function ApplicationReview({ id, embedded, onChanged }: { id: string; emb
 					}}
 				/>
 			</Sheet>
-			<Sheet open={declineOpen} onClose={() => setDeclineOpen(false)} eyebrow="Decline" title={`Decline ${first}?`}>
+			<Sheet open={declineOpen} onClose={() => setDeclineOpen(false)} eyebrow="Reject" title={`Reject ${first}?`}>
 				<KText v="small">Pick a reason so {first} knows what happened. Declining can’t be undone; they can apply again.</KText>
 				<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
 					{DECLINE_REASONS.map((r) => (
@@ -292,14 +292,14 @@ export function ApplicationReview({ id, embedded, onChanged }: { id: string; emb
 				<Check on={tell} onPress={() => setTell((v) => !v)}>
 					<KText v="small">Send this to {first} in Messages</KText>
 				</Check>
-				<Button title="Decline application" variant="danger" size="lg" block loading={declining} onPress={decline} />
+				<Button title="Reject application" variant="danger" size="lg" block loading={declining} onPress={decline} />
 			</Sheet>
 			<OtpSheet
 				open={otp}
 				onClose={() => setOtp(false)}
-				title="Confirm acceptance"
+				title="Confirm approval"
 				body="Enter the code we emailed you. Accepting creates the booking and asks the renter to pay into escrow."
-				action="Accept application"
+				action="Approve application"
 				onResend={async () => void (await initAccept({ applicationId: a.id }))}
 				onSubmit={async (code) => {
 					const r = await accept({ applicationId: a.id, otp: code });
@@ -336,9 +336,9 @@ export function ApplicationReview({ id, embedded, onChanged }: { id: string; emb
 function Tenancy({ booking, first }: { booking: TenancyBooking | null; first: string }) {
 	const stage = tenancyStage(booking);
 	const steps: { key: string; label: string }[] = [
-		{ key: 'accepted', label: 'You accepted' },
-		{ key: 'paid', label: 'Paid into escrow' },
-		{ key: 'released', label: 'Paid out to you' }
+		{ key: 'accepted', label: 'Approved' },
+		{ key: 'paid', label: 'In escrow' },
+		{ key: 'released', label: 'Paid out' }
 	];
 	const at = steps.findIndex((x) => x.key === stage.step);
 	const payout = booking?.hostTransaction ? (PAYOUT[booking.hostTransaction.status] ?? { label: humanize(booking.hostTransaction.status), tone: 'neutral' as const }) : null;

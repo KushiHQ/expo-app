@@ -23,6 +23,10 @@ import { K_CHAT } from '@/lib/services/graphql/requests/queries/k-manage';
 import { dismissChatNotifications } from '@/lib/k/app-badge';
 import { onLiveReconnected, useLiveOutage } from '@/lib/k/live-connection';
 import { primeMicPermission } from '@/lib/call/permissions';
+import { NotificationsCard } from '@/components/k/notifications-card';
+import { takeCard } from '@/lib/k/push';
+import { useUserStore } from '@/lib/stores/users';
+import { UserType } from '@/lib/types/users';
 import {
 	useChatMessagesQuery,
 	useClearChatUrnreadMessagesMutation,
@@ -78,6 +82,10 @@ export default function Conversation() {
 	const [editing, setEditing] = useState<{ id: string; text: string } | null>(null);
 	const [highlighted, setHighlighted] = useState<string | null>(null);
 	const [, clearUnread] = useClearChatUrnreadMessagesMutation();
+	// After the first message sent: the in-chat ask for notifications (once per install, only if they're off).
+	const [pushCard, setPushCard] = useState(false);
+	const asked = useRef(false);
+	const hosting = useUserStore((st) => st.user.userType === UserType.Host);
 
 	useEffect(() => {
 		setActiveChatId(id);
@@ -174,6 +182,10 @@ export default function Conversation() {
 				sendSound.play();
 			} catch {}
 			deliver(msg);
+			if (!asked.current) {
+				asked.current = true;
+				takeCard('chat').then((show) => show && setPushCard(true));
+			}
 		},
 		[deliver, sendSound, replyTo]
 	);
@@ -247,6 +259,7 @@ export default function Conversation() {
 	const online = presence ? presence.online : !!other?.onlineUser?.online;
 	const lastSeen = presence?.lastSeen ?? other?.onlineUser?.lastSeen;
 	const name = other?.profile?.fullName ?? (chatData ? 'Kushi user' : undefined);
+	const firstName = other?.profile?.fullName?.trim().split(/\s+/)[0] || 'the other person';
 	const firstLoad = fetching && !messages.length;
 	const loadFailed = !!error && !messages.length;
 
@@ -261,7 +274,7 @@ export default function Conversation() {
 					<Photo assetId={chat.hosting.coverImage?.asset?.id} w={200} h={200} style={{ width: 56, height: 56 }} />
 					<View style={{ flex: 1, justifyContent: 'center', gap: 2 }}>
 						<KText v="micro" c="amber">
-							About this home
+							Listing
 						</KText>
 						<KText v="bodyStrong" numberOfLines={1}>
 							{chat.hosting.title}
@@ -346,6 +359,19 @@ export default function Conversation() {
 							list.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
 							setTimeout(() => list.current?.scrollToIndex({ index: info.index, viewPosition: 0.5, animated: true }), 250);
 						}}
+						ListHeaderComponent={
+							pushCard ? (
+								<View style={{ paddingTop: 12 }}>
+									<NotificationsCard
+										body={
+											hosting
+												? `Get a notification when ${firstName} replies or calls you, and when someone applies for your listing.`
+												: `Get a notification when ${firstName} replies or calls you, and when an application you send is approved.`
+										}
+									/>
+								</View>
+							) : null
+						}
 						ListFooterComponent={hasNextPage && messages.length ? <View style={{ paddingVertical: 16 }}>{fetching ? <Spinner /> : null}</View> : intro}
 						showsVerticalScrollIndicator={false}
 					/>

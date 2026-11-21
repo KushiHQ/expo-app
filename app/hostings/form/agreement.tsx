@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
 import { ChevronDown, ListChecks, Sparkles } from 'lucide-react-native';
 import { Button, Card, Check, Eyebrow, Field, KText, Notice, Pill, Sheet, Skeleton } from '@/components/k';
 import { Pressable } from '@/components/k/pressable';
@@ -17,7 +17,8 @@ import { useTenancyTermsForm } from '@/lib/hooks/forms/use-tenancy-terms-form';
 import { cleanupAgreementTemplateInput } from '@/lib/utils/hosting/tenancyAgreement';
 import { showTenancySteps } from '@/lib/constants/hosting/step-rules';
 import { toast } from '@/lib/hooks/use-toast';
-import { FeeType, VariableType, type HostingVerificationInput, type SubClause, type TenancySection } from '@/lib/services/graphql/generated';
+import { FeeType, VariableType, useKycStatusQuery, type HostingVerificationInput, type SubClause, type TenancySection } from '@/lib/services/graphql/generated';
+import { intentFor } from '@/lib/k/listing-intent';
 
 const varLabel = (name: string) => name.replace(/_/g, ' ').toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
 const filled = (c: SubClause, name: string) => !!c.providedValues.find((p) => p.key === name)?.value?.trim();
@@ -32,6 +33,17 @@ export default function Agreement() {
 	const [busy, setBusy] = useState(false);
 	const [open, setOpen] = useState<Record<string, boolean>>({});
 	const [editing, setEditing] = useState(false);
+	// The server saves owner details only for a host who has verified their identity, so this is where a
+	// new host meets that check (after photos, location and price), not before starting the listing.
+	const [{ data: kycData }, refetchKyc] = useKycStatusQuery({ requestPolicy: 'cache-and-network' });
+	const kycDone = kycData?.kycStatus?.kycComplete ?? true;
+	useFocusEffect(useCallback(() => refetchKyc({ requestPolicy: 'network-only' }), [refetchKyc]));
+	// Role answered on New listing pre-fills Ownership.
+	useEffect(() => {
+		if (!f.ready || v.propertyRelationship || hosting?.verification?.propertyRelationship) return;
+		const role = intentFor(f.id)?.role;
+		if (role) updateVerificationInput({ propertyRelationship: role });
+	}, [f.ready, f.id, v.propertyRelationship, hosting?.verification?.propertyRelationship, updateVerificationInput]);
 
 	const sections = (t.input.tenancyAgreementTemplate?.sections ?? []) as TenancySection[];
 	const signature = t.hostQueryData?.authHost.signature?.secureUrl ?? t.hostQueryData?.authHost.signature?.publicUrl;
@@ -49,6 +61,7 @@ export default function Agreement() {
 	async function next() {
 		setTried(true);
 		if (!valid || !f.id) return;
+		if (!kycDone) return router.push('/verify' as Href);
 		setBusy(true);
 		const m = await f.verificationMutate({ input: { ...v, hostingId: f.id } as HostingVerificationInput });
 		if (m.error) {
@@ -63,7 +76,7 @@ export default function Agreement() {
 	if (hosting && !showTenancySteps(hosting.listingType, hosting.propertyType, hosting.managementType))
 		return (
 			<StepScreen stepKey="agreement" hosting={hosting} onBack={f.toHub} primary={{ title: 'Continue', onPress: () => f.advance() }}>
-				<Notice tone="info" title="Nothing to do here">
+				<Notice tone="info" title="Not required">
 					Sales, land and advert-only listings don’t use a Kushi tenancy agreement.
 				</Notice>
 			</StepScreen>
@@ -76,10 +89,17 @@ export default function Agreement() {
 			onBack={f.leave}
 			loading={!f.ready}
 			intro="Kushi uses this to prepare the tenancy agreement both sides sign, so renters never have to chase paperwork."
-			primary={{ title: 'Save and continue', onPress: next, loading: busy || t.mutating, testID: 'step-next' }}
+			primary={{ title: valid && !kycDone ? 'Verify identity' : 'Save and continue', onPress: next, loading: busy || t.mutating, testID: 'step-next' }}
 			footnote={tried && !valid ? <KText v="xs" c="danger" center>{errors.mandate ?? errors.terms ?? errors.signature}</KText> : null}
 		>
-			<Block title="Your right to let it" sub="The owner’s details go into the agreement.">
+			{!kycDone ? (
+				<Card tone="amber">
+					<Eyebrow c="amber">Identity</Eyebrow>
+					<KText v="small">Kushi checks every host once before their first listing goes live, so renters know who they are dealing with. Owner details save after that check. It takes about 3 minutes and you won’t be asked again.</KText>
+					<Button title="Verify identity" size="sm" onPress={() => router.push('/verify' as Href)} style={{ alignSelf: 'flex-start' }} testID="agreement-verify" />
+				</Card>
+			) : null}
+			<Block title="Ownership" sub="The owner’s details go into the agreement.">
 				<MandateFields v={v} update={updateVerificationInput} tried={tried} agentFee={(hosting?.fees ?? []).some((x) => x.feeType === FeeType.AgentFee && Number(x.amount) > 0)} />
 			</Block>
 
@@ -106,7 +126,7 @@ export default function Agreement() {
 				</Card>
 				{t.tenancySummary.length ? (
 					<View style={{ gap: 8 }}>
-						<Eyebrow>In plain English</Eyebrow>
+						<Eyebrow>Summary</Eyebrow>
 						{t.tenancySummary.map((p, i) => (
 							<View key={i} style={{ flexDirection: 'row', gap: 8 }}>
 								<KText v="small" c="amber">
@@ -167,7 +187,7 @@ export default function Agreement() {
 				)}
 			</Block>
 
-			<Block title="Your signature" sub="It’s added to every agreement for this listing. You sign once.">
+			<Block title="Signature" sub="It’s added to every agreement for this listing. You sign once.">
 				<SignaturePad existingUrl={signature ?? undefined} onSave={t.handleHostSignatureSave} uploading={t.loading} />
 				{tried && errors.signature ? (
 					<KText v="xs" c="danger">

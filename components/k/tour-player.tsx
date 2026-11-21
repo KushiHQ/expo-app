@@ -92,7 +92,7 @@ function Stage({ uri, title, shareUrl, onClose }: Omit<Props, 'visible'>) {
 					{status === 'error' ? (
 						<View style={s.err}>
 							<KText v="bodyStrong" style={{ color: color.fg, textAlign: 'center' }}>
-								This video wouldn’t play
+								Video unavailable
 							</KText>
 							<KText v="micro" style={{ textAlign: 'center' }}>
 								{error?.message ?? 'Playback failed'}

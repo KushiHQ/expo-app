@@ -5,6 +5,10 @@ name: iOS Simulator · Guest journey
 # on an iPhone and an iPad.
 on:
   workflow_dispatch:
+    inputs:
+      flow:
+        description: 'Maestro flow in scripts/sim to run'
+        default: guest.yaml
   push:
     branches:
       - feat/redesign-guest
@@ -96,7 +100,7 @@ jobs:
         run: |
           mkdir -p sim-out/shots
           xcrun simctl spawn "$UDID" log stream --level debug --style compact --predicate 'process == "KushiHousing"' > sim-out/app.log 2>&1 &
-          cd sim-out && maestro --device "$UDID" test ../scripts/sim/guest.yaml --format junit --output report.xml || echo "TOUR_FAILED=1" >> "$GITHUB_ENV"
+          cd sim-out && maestro --device "$UDID" test ../scripts/sim/${{ inputs.flow || 'guest.yaml' }} --format junit --output report.xml || echo "TOUR_FAILED=1" >> "$GITHUB_ENV"
           cp -R ../scripts/sim/shots ./ 2>/dev/null || true
           sleep 5
           cp -R ~/Library/Logs/DiagnosticReports ./crashes 2>/dev/null || true
@@ -113,8 +117,9 @@ jobs:
           xcrun simctl bootstatus "$PAD" -b
           xcrun simctl install "$PAD" "$APP"
           mkdir -p sim-out/ipad
-          cd sim-out/ipad && maestro --device "$PAD" test ../../scripts/sim/guest.yaml --format junit --output report.xml || true
+          cd sim-out/ipad && maestro --device "$PAD" test ../../scripts/sim/${{ inputs.flow || 'guest.yaml' }} --format junit --output report.xml || true
           cp -R ../../scripts/sim/shots ./ 2>/dev/null || true
+          cp -R ~/.maestro/tests ./maestro 2>/dev/null || true
 
       - name: Upload
         if: always()

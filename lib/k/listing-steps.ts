@@ -46,7 +46,7 @@ export function mandateMissing(h: Hosting): string[] {
 export const STEPS: StepDef[] = [
 	{
 		key: 'basics',
-		title: 'The basics',
+		title: 'Basics',
 		blurb: 'Who manages it, what kind of property, rent or sale',
 		applies: () => true,
 		missing: (h) => {
@@ -117,7 +117,7 @@ export const STEPS: StepDef[] = [
 	},
 	{
 		key: 'publish',
-		title: 'Name and publish',
+		title: 'Publish',
 		blurb: 'Title, description, a final check, then go live',
 		applies: () => true,
 		missing: (h) => {

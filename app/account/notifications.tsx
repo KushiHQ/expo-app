@@ -66,7 +66,7 @@ export default function NotificationPreferences() {
 	return (
 		<Screen header={<Header eyebrow="You" title="Notifications" />} width="form" onRefresh={() => refetch({ requestPolicy: 'network-only' })} refreshing={false}>
 			<View style={{ gap: 8, paddingTop: 20 }}>
-				<Eyebrow>Choose what Kushi sends</Eyebrow>
+				<Eyebrow>Preferences</Eyebrow>
 				<KText v="small">Changes save straight away. Sign-in and security codes always go to your email, whatever you choose here.</KText>
 			</View>
 

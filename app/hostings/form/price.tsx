@@ -76,7 +76,7 @@ export default function Price() {
 					<MoneyField label={`Rent per ${noun}`} value={input.price} onChange={(v) => updateInput({ price: v || null })} error={tried ? errors.price : null} testID="field-price" />
 					{price ? (
 						<Card>
-							<KText v="label">What renters see</KText>
+							<KText v="label">Preview</KText>
 							<KV k="Rent" v={`${naira(price)} ${perInterval(interval)}`} strong />
 							{agentFee ? <KV k="First rent includes" v={`${naira(agentFee)} agent fee`} /> : null}
 							{serviceCharge ? <KV k="Service charge" v={naira(serviceCharge)} /> : null}
@@ -110,7 +110,7 @@ export default function Price() {
 
 			{payout ? (
 				<Block
-					title="Where the rent goes"
+					title="Payout account"
 					sub={isAgent ? 'Rent is held until the renter moves in, then paid here. As the owner’s agent, use the owner’s account; your agent fee goes to its own account.' : 'Payment is held safely until the renter moves in, then paid here.'}
 				>
 					<PayoutPicker value={input.paymentDetailsId} onChange={(paymentDetailsId) => updateInput({ paymentDetailsId })} error={tried ? errors.payout : null} />

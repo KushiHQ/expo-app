@@ -57,7 +57,6 @@ export default function PublicProfile() {
 					</View>
 				) : (
 					<Empty
-						eyebrow={error ? 'Couldn’t load' : 'Not found'}
 						title={error ? 'We couldn’t open this profile' : 'This profile isn’t available'}
 						body={error ? cleanError(error.message) : 'The account may have been closed.'}
 						action={error ? 'Try again' : undefined}
@@ -100,7 +99,7 @@ export default function PublicProfile() {
 
 			{p.listings.length ? (
 				<View style={{ gap: 10 }}>
-					<Eyebrow>Live listings · {p.listings.length}</Eyebrow>
+					<Eyebrow>Listings · {p.listings.length}</Eyebrow>
 					{p.listings.map((l) => (
 						<Pressable key={l.id} accessibilityRole="button" onPress={() => router.push(`/hostings/${l.id}`)} style={({ pressed }) => [s.listing, pressed && { opacity: 0.8 }]}>
 							<Photo uri={l.coverImage?.asset.publicUrl} style={{ width: 64, height: 64 }} />
@@ -189,7 +188,7 @@ function ReviewSheet({ open, onClose, agentId, name, onDone }: { open: boolean; 
 	}
 
 	return (
-		<Sheet open={open} onClose={onClose} eyebrow="Review" title={`How was ${name.split(' ')[0]}?`}>
+		<Sheet open={open} onClose={onClose} eyebrow="Review" title={`Rate ${name.split(' ')[0]}`}>
 			<KText v="small">Rate how they handled viewings, communication and keeping their word.</KText>
 			<View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10 }} accessibilityRole="adjustable" accessibilityLabel="Rating" accessibilityValue={{ text: rating ? `${rating} of 5` : 'Not rated' }}>
 				{[1, 2, 3, 4, 5].map((n) => (

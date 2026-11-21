@@ -115,7 +115,7 @@ export function RatingSheet({ open, chatId, onClose, onRated }: { open: boolean;
 	const [error, setError] = useState<string | null>(null);
 	const [{ fetching }, submit] = useSubmitSupportRatingMutation();
 	return (
-		<Sheet open={open} onClose={onClose} eyebrow="Conversation closed" title="How did we do?">
+		<Sheet open={open} onClose={onClose} eyebrow="Conversation closed" title="Rate support">
 			<KText v="small">Rate this conversation so we know what to keep doing and what to fix.</KText>
 			<View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10 }}>
 				{[1, 2, 3, 4, 5].map((n) => (
@@ -124,7 +124,7 @@ export function RatingSheet({ open, chatId, onClose, onRated }: { open: boolean;
 					</Pressable>
 				))}
 			</View>
-			<Field label="Anything to add?" optional multiline value={comment} onChangeText={setComment} maxLength={1000} />
+			<Field label="Comment" optional multiline value={comment} onChangeText={setComment} maxLength={1000} />
 			{error ? <Notice tone="danger">{error}</Notice> : null}
 			<Button
 				title="Send rating"

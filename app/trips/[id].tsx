@@ -42,7 +42,7 @@ export default function TripScreen() {
 	if (t && me && t.hosting.host?.user.id === me && t.guest.user.id !== me) return <Redirect href={`/applications/${t.id}`} />;
 	if (!t)
 		return (
-			<Screen header={<Header eyebrow="Your home" title="Loading…" />}>
+			<Screen header={<Header eyebrow="Home" title="Loading…" />}>
 				{fetching || (!data && !error) ? (
 					<View style={{ gap: 14, paddingTop: 18 }}>
 						<Skeleton style={{ height: 180, borderRadius: radius.lg }} />
@@ -52,7 +52,7 @@ export default function TripScreen() {
 				) : error ? (
 					<ErrorState title="We couldn’t load this home" body={clean(error.message).includes('Network') ? 'You seem to be offline. Check your connection and try again.' : clean(error.message)} onRetry={refresh} />
 				) : (
-					<Empty eyebrow="Off the map" title="We couldn’t find that application" body="It may have been removed. Everything you’ve applied for is under Homes." action="Go to Homes" onAction={() => router.replace('/trips')} />
+					<Empty title="We couldn’t find that application" body="It may have been removed. Everything you’ve applied for is under Homes." action="Go to Homes" onAction={() => router.replace('/trips')} />
 				)}
 			</Screen>
 		);
@@ -103,7 +103,7 @@ function TripBody({ t, refresh, refreshing }: { t: Trip; refresh: () => void; re
 		<Pressable accessibilityRole="button" accessibilityLabel={`Open the listing for ${t.hosting.title ?? 'this home'}`} onPress={() => router.push(`/hostings/${t.hosting.id}`)} style={({ pressed }) => [{ gap: 14, paddingTop: 18 }, pressed && { opacity: 0.85 }]}>
 			<Photo assetId={t.hosting.coverImage?.asset?.id} w={900} h={500} style={{ width: '100%', aspectRatio: wide ? 2.2 : 16 / 9 }} radius={radius.lg} priority />
 			<View style={{ gap: 6 }}>
-				<Pill tone={STAGE[stage].tone}>{stage === 'paid' ? `Paid · awaiting ${words.thing}` : STAGE[stage].label}</Pill>
+				<Pill tone={STAGE[stage].tone}>{STAGE[stage].label}</Pill>
 				<KText v="title">{t.hosting.title ?? 'Home'}</KText>
 				<View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
 					<MapPin size={13} color={color.muted} />
@@ -121,14 +121,14 @@ function TripBody({ t, refresh, refreshing }: { t: Trip; refresh: () => void; re
 		<Card tone={stage === 'accepted' || stage === 'paid' ? 'amber' : undefined}>
 			{stage === 'draft' ? (
 				<>
-					<KText v="title">Finish your application</KText>
+					<KText v="title">Draft</KText>
 					<KText v="small">You started but haven’t sent it yet. Your answers are saved — pick up where you left off.</KText>
 					<Button title="Continue application" testID="trip-continue" onPress={() => router.push(`/hostings/${t.hosting.id}/apply`)} />
 					<Button title="Discard application" variant="quiet" size="sm" onPress={() => setSheet('withdraw')} />
 				</>
 			) : stage === 'review' ? (
 				<>
-					<KText v="title">{t.status === 'SUBMITED' ? 'Kushi is checking your application' : 'Your application is with the host'}</KText>
+					<KText v="title">{t.status === 'SUBMITED' ? 'In review' : 'Pending'}</KText>
 					<KText v="small">
 						{t.status === 'SUBMITED'
 							? 'We check your details first, usually within a day. Then the host decides — typically within 3 business days. We’ll notify you either way.'
@@ -140,7 +140,7 @@ function TripBody({ t, refresh, refreshing }: { t: Trip; refresh: () => void; re
 				</>
 			) : stage === 'accepted' ? (
 				<>
-					<KText v="title">{hostName === 'your host' ? 'The host' : hostName} said yes — secure your home</KText>
+					<KText v="title">Approved</KText>
 					<KText v="small">Pay {b ? naira(num(b.amount)) : 'the total'} to Kushi. We hold it in escrow and release it to the host only after you confirm the handover (or {GRACE_DAYS} days after paying, if you don’t raise an issue).</KText>
 					{b?.paymentStatus === 'FAILED' ? <Notice tone="warn">Your last payment attempt didn’t go through. If money left your account, it’s confirmed automatically — otherwise try again.</Notice> : null}
 					{b && awaitingPayment(b) ? (
@@ -156,7 +156,7 @@ function TripBody({ t, refresh, refreshing }: { t: Trip; refresh: () => void; re
 				<>
 					<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
 						<KText v="title" style={{ flexShrink: 1 }}>
-							Paid — now get your {words.thing}
+							Paid
 						</KText>
 						{inGrace(b) ? <Pill tone="warn">{graceText(b.autoFinalizeAt)}</Pill> : null}
 					</View>
@@ -177,7 +177,7 @@ function TripBody({ t, refresh, refreshing }: { t: Trip; refresh: () => void; re
 				</>
 			) : stage === 'completed' ? (
 				<>
-					<KText v="title">Welcome home</KText>
+					<KText v="title">Moved in</KText>
 					<KText v="small">
 						Your tenancy runs {b?.commencementDate ? `from ${date(b.commencementDate)} ` : ''}until {date(b?.expiryDate)}. Your signed tenancy agreement was emailed to you and is saved below.
 					</KText>
@@ -204,7 +204,7 @@ function TripBody({ t, refresh, refreshing }: { t: Trip; refresh: () => void; re
 		<FeeBreakdown booking={b} stage={stage} />
 	) : stage === 'draft' || stage === 'review' ? (
 		<Card>
-			<KText v="heading">Due after the host accepts</KText>
+			<KText v="heading">Due after approval</KText>
 			<QuoteLines quote={quote} fetching={quoting} />
 			<KText v="xs">You won’t be charged until then. Prices can change if the host updates the listing.</KText>
 		</Card>
@@ -213,7 +213,7 @@ function TripBody({ t, refresh, refreshing }: { t: Trip; refresh: () => void; re
 	const g = t.guestFormData;
 	const details = (
 		<Card>
-			<KText v="heading">Your application</KText>
+			<KText v="heading">Application</KText>
 			<KV k="Name" v={t.fullName ?? '—'} />
 			<KV k="Phone" v={t.phoneNumber ?? '—'} />
 			{t.email ? <KV k="Email" v={t.email} /> : null}
@@ -229,7 +229,7 @@ function TripBody({ t, refresh, refreshing }: { t: Trip; refresh: () => void; re
 
 	const docs = (
 		<Card>
-			<KText v="heading">Documents & help</KText>
+			<KText v="heading">Documents</KText>
 			<View>
 				{b ? <Row icon={<FileText size={17} color={color.amber} />} title="Tenancy agreement" detail={b.tenancyAgreementAsset ? 'Signed copy · PDF' : 'Preview — the signed copy arrives when the booking completes'} onPress={() => setSheet('agreement')} /> : null}
 				{b?.paymentStatus === 'PAID' ? <Row icon={<Receipt size={17} color={color.amber} />} title="Receipt" detail={`${naira(num(b.amount))} · ${b.bookingReference}`} onPress={() => setSheet('receipt')} /> : null}
@@ -264,7 +264,7 @@ function TripBody({ t, refresh, refreshing }: { t: Trip; refresh: () => void; re
 	);
 
 	return (
-		<Screen header={<Header eyebrow="Your home" title={t.hosting.title ?? 'Home'} />} width={wide ? 'content' : 'reading'} padded onRefresh={refresh} refreshing={false}>
+		<Screen header={<Header eyebrow="Home" title={t.hosting.title ?? 'Home'} />} width={wide ? 'content' : 'reading'} padded onRefresh={refresh} refreshing={false}>
 			{wide ? (
 				<View style={{ flexDirection: 'row', gap: 28, alignItems: 'flex-start' }}>
 					<View style={{ flex: 1.35, gap: 20 }}>{main}</View>
@@ -297,7 +297,7 @@ function TripBody({ t, refresh, refreshing }: { t: Trip; refresh: () => void; re
 
 			{b ? (
 				<>
-					<Sheet open={sheet === 'keys-confirm'} onClose={close} title={`Do you have your ${words.thing}?`} eyebrow="This releases the payment">
+					<Sheet open={sheet === 'keys-confirm'} onClose={close} title={`Do you have your ${words.thing}?`}>
 						<KText v="small">
 							Confirming tells Kushi you’ve {words.thing === 'keys' ? 'received your keys and moved in' : 'taken possession'}. Kushi then pays the host and sends you the signed tenancy agreement. This can’t be undone, and you can’t cancel afterwards.
 						</KText>

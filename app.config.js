@@ -11,7 +11,7 @@ export default ({ config }) => ({
 	...config,
 	name: "Kushi Housing",
 	slug: "kushi",
-	version: "1.4.10",
+	version: "1.4.11",
 	orientation: "default",
 	icon: "./assets/icons/icon.png",
 	scheme: "kushi",
@@ -26,9 +26,9 @@ export default ({ config }) => ({
 		useNextNotificationsApi: true,
 		infoPlist: {
 			NSLocationWhenInUseUsageDescription:
-				"This app needs access to your location to determine the address of properties.",
+				"Kushi uses your location to show homes near you and to confirm where listing photos were taken.",
 			NSCameraUsageDescription:
-				"$(PRODUCT_NAME) needs camera access for identity verification.",
+				"Kushi uses the camera for your selfie check, for photos of properties you list, and for video calls.",
 			NSMicrophoneUsageDescription:
 				"$(PRODUCT_NAME) uses your microphone for voice and video calls, so the other person can hear you.",
 			ITSAppUsesNonExemptEncryption: false,
@@ -236,7 +236,7 @@ export default ({ config }) => ({
 			"@config-plugins/react-native-webrtc",
 			{
 				cameraPermission:
-					"$(PRODUCT_NAME) requires camera access in order to capture and transmit video",
+					"Kushi uses the camera for your selfie check, for photos of properties you list, and for video calls.",
 				microphonePermission:
 					"$(PRODUCT_NAME) uses your microphone for voice and video calls, so the other person can hear you.",
 				runServiceOnBoot: true,

@@ -10,23 +10,23 @@ import { centered, itemWidth, useLayout } from '@/lib/k/layout';
 import { naira } from '@/lib/k/format';
 import { TIERS, TIER_ORDER } from '@/lib/k/tiers';
 import { useHostingFilterStore } from '@/lib/stores/hostings';
+import { POPULAR_STATES, PRICE_BANDS, WIDEN_BELOW, exploreSummary, nextWidenLevel, priceBandOn, stateLabel, useHostingFilterHydrated, widenFilter, type WidenLevel } from '@/lib/k/explore';
 import { useUserStore } from '@/lib/stores/users';
 import { useInfiniteQuery } from '@/lib/hooks/use-infinite-query';
 import { usePropertyTypeConfig } from '@/lib/hooks/use-property-type-config';
 import { EventEmitter } from '@/lib/utils/event-emitter';
 import { ListingType, PublishStatus, useHostingsQuery, type HostingFilterInput } from '@/lib/services/graphql/generated';
 
-const PRICE: { label: string; min?: number; max?: number }[] = [
-	{ label: 'Any price' },
-	{ label: 'Under ₦500k', max: 500_000 },
-	{ label: '₦500k – ₦1.5m', min: 500_000, max: 1_500_000 },
-	{ label: '₦1.5m – ₦5m', min: 1_500_000, max: 5_000_000 },
-	{ label: 'Above ₦5m', min: 5_000_000 }
-];
+/** Explore's list query, held until the saved filter is read back so a launch doesn't fetch twice. */
+function useExploreHostingsQuery(options: Parameters<typeof useHostingsQuery>[0]) {
+	const hydrated = useHostingFilterHydrated();
+	return useHostingsQuery({ ...options, pause: options?.pause || !hydrated });
+}
 
 export default function Explore() {
 	const insets = useSafeAreaInsets();
-	const { filter, updateFilter, setFilter } = useHostingFilterStore();
+	const { filter, nearMe, updateFilter, setFilter } = useHostingFilterStore();
+	const hydrated = useHostingFilterHydrated();
 	const name = useUserStore((s) => s.user.user?.profile?.fullName?.split(' ')[0]);
 	const signedIn = useUserStore((s) => !!s.user.user?.id);
 	const { propertyTypes } = usePropertyTypeConfig();
@@ -40,13 +40,29 @@ export default function Explore() {
 	const colGap = 24;
 	const cardWidth = layout.compact ? undefined : itemWidth(layout.contentWidth - g * 2, cols, colGap);
 
-	const vars = useMemo(() => ({ filters: { ...filter, publishStatus: PublishStatus.Live, onSale: true } }), [filter]);
-	const { items, fetching, loadMore, hasNextPage, refresh, setVariables, showInitialSkeleton, showEmpty } = useInfiniteQuery(useHostingsQuery, {
+	// Widening (display only): when the person's filter finds fewer than WIDEN_BELOW homes,
+	// Explore drops the area + price (keeping the state), then the state. Their filter stays as
+	// they set it, and any change to it starts again from their own search.
+	const filterKey = JSON.stringify(filter) + (nearMe ? ':near' : '');
+	const [widen, setWiden] = useState<{ key: string; level: WidenLevel; counts: Partial<Record<WidenLevel, number>> }>({ key: '', level: 0, counts: {} });
+	const level: WidenLevel = widen.key === filterKey ? widen.level : 0;
+	const counts = useMemo(() => (widen.key === filterKey ? widen.counts : {}), [widen, filterKey]);
+	const vars = useMemo(() => ({ filters: { ...widenFilter(filter, level), publishStatus: PublishStatus.Live, onSale: true } }), [filter, level]);
+	const { items, fetching, error, loadMore, hasNextPage, refresh, setVariables, variables, showInitialSkeleton, showEmpty } = useInfiniteQuery(useExploreHostingsQuery, {
 		queryKey: 'hostings',
 		initialVariables: vars,
 		limit: 12
 	});
 	useEffect(() => setVariables(vars), [vars, setVariables]);
+	// The first page for the current variables has settled (hasNextPage only drops once it arrives).
+	const settled = hydrated && !fetching && !error && !hasNextPage && JSON.stringify(variables) === JSON.stringify(vars);
+	useEffect(() => {
+		if (!settled || items.length >= WIDEN_BELOW) return;
+		const next = nextWidenLevel(filter, level);
+		if (next === null) return;
+		setWiden({ key: filterKey, level: next, counts: { ...counts, [level]: items.length } });
+	}, [settled, items.length, filter, level, filterKey, counts]);
+	const summary = exploreSummary(filter, nearMe, level, counts);
 	useEffect(() => {
 		const top = () => list.current?.scrollToOffset({ offset: 0, animated: true });
 		EventEmitter.on('scrollToTop:index', top);
@@ -80,14 +96,14 @@ export default function Explore() {
 				<Search size={18} color={color.muted} />
 				<View style={{ flex: 1 }}>
 					<KText v="bodyStrong" numberOfLines={1}>
-						{filter.search || filter.state || 'Where do you want to live?'}
+						{nearMe ? 'Near you' : filter.search || stateLabel(filter.state) || 'Search city or area'}
 					</KText>
 					<KText v="xs" numberOfLines={1}>
 						{filter.listingType === ListingType.Sale ? 'Buying' : filter.listingType === ListingType.Rent ? 'Renting' : 'Rent or buy'} · {filter.propertyType ?? 'Any type'}
 					</KText>
 				</View>
-				{filter.search || filter.state ? (
-					<Pressable hitSlop={10} onPress={() => set({ search: undefined, state: undefined })} accessibilityLabel="Clear search">
+				{nearMe || filter.search || filter.state ? (
+					<Pressable hitSlop={10} onPress={() => set({ search: undefined, state: undefined, city: undefined })} accessibilityLabel="Clear search">
 						<X size={18} color={color.muted} />
 					</Pressable>
 				) : null}
@@ -106,6 +122,11 @@ export default function Explore() {
 					<Chip key={p.value} label={p.label} on={filter.propertyType === p.value} onPress={() => set({ propertyType: filter.propertyType === p.value ? undefined : p.value })} />
 				))}
 			</ScrollView>
+			{summary ? (
+				<KText v="small" testID="explore-summary">
+					{summary}
+				</KText>
+			) : null}
 		</View>
 	);
 
@@ -116,7 +137,7 @@ export default function Explore() {
 				key={`grid-${cols}`}
 				numColumns={cols}
 				columnWrapperStyle={cols > 1 ? { gap: colGap } : undefined}
-				data={showInitialSkeleton ? [] : items}
+				data={showInitialSkeleton || !hydrated ? [] : items}
 				keyExtractor={(h) => h.id}
 				renderItem={({ item }) => <ListingCard h={item} width={cardWidth} />}
 				ListHeaderComponent={header}
@@ -128,7 +149,7 @@ export default function Explore() {
 				onRefresh={refresh}
 				showsVerticalScrollIndicator={false}
 				ListEmptyComponent={
-					showInitialSkeleton ? (
+					showInitialSkeleton || !hydrated ? (
 						<View style={layout.compact ? { gap: 28 } : { flexDirection: 'row', flexWrap: 'wrap', gap: colGap, rowGap: 36 }}>
 							{(layout.compact ? [0, 1] : Array.from({ length: cols * 2 }, (_, i) => i)).map((i) => (
 								<View key={i} style={[{ gap: 10 }, cardWidth ? { width: cardWidth } : null]}>
@@ -140,7 +161,7 @@ export default function Explore() {
 						</View>
 					) : showEmpty ? (
 						<Empty
-							title="Uncharted territory"
+							title="No homes found"
 							body="No homes match yet. Widen your search or clear filters — new verified homes are added every week."
 							action={Object.keys(filter).length ? 'Clear search & filters' : undefined}
 							onAction={() => setFilter({})}
@@ -170,8 +191,8 @@ export default function Explore() {
 			>
 				<KText v="label">Price</KText>
 				<View style={s.wrap}>
-					{PRICE.map((p) => (
-						<Chip key={p.label} label={p.label} on={(filter.minPrice ?? undefined) === p.min && (filter.maxPrice ?? undefined) === p.max} onPress={() => set({ minPrice: p.min, maxPrice: p.max })} />
+					{PRICE_BANDS.map((p) => (
+						<Chip key={p.label} label={p.label} on={priceBandOn(p, filter)} onPress={() => set({ minPrice: p.min, maxPrice: p.max })} />
 					))}
 				</View>
 				<KText v="label">How verified</KText>
@@ -201,13 +222,12 @@ function SearchSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
 	useEffect(() => {
 		if (open) setQ(filter.search ?? '');
 	}, [open, filter.search]);
-	const STATES = ['Federal Capital Territory', 'Lagos', 'Nasarawa', 'Rivers', 'Oyo', 'Kaduna', 'Enugu', 'Abia'];
 	const go = (search?: string, state?: string) => {
 		updateFilter({ search: search?.trim() || undefined, state });
 		onClose();
 	};
 	return (
-		<Sheet open={open} onClose={onClose} title="Where to?">
+		<Sheet open={open} onClose={onClose} title="Search">
 			<View style={s.qBox}>
 				<Search size={18} color={color.muted} />
 				<TextInput
@@ -225,8 +245,8 @@ function SearchSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
 			<Button title={q.trim() ? `Search “${q.trim()}”` : 'Show all homes'} block onPress={() => go(q, undefined)} />
 			<KText v="label">Popular states</KText>
 			<View style={s.wrap}>
-				{STATES.map((st) => (
-					<Chip key={st} label={st === 'Federal Capital Territory' ? 'Abuja (FCT)' : st} on={filter.state === st} onPress={() => go(undefined, filter.state === st ? undefined : st)} />
+				{POPULAR_STATES.map((st) => (
+					<Chip key={st} label={stateLabel(st)} on={filter.state === st} onPress={() => go(undefined, filter.state === st ? undefined : st)} />
 				))}
 			</View>
 		</Sheet>

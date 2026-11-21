@@ -35,8 +35,8 @@ export default function DeleteAccount() {
 			footer={<Button title="Delete my account" variant="danger" size="lg" block loading={fetching} disabled={!sure} onPress={go} testID="delete-confirm" />}
 		>
 			<View style={{ gap: 8, paddingTop: 20 }}>
-				<Eyebrow c="danger">This can’t be undone</Eyebrow>
-				<KText v="title">Before you go</KText>
+				<Eyebrow c="danger">Warning</Eyebrow>
+				<KText v="title">This can’t be undone</KText>
 				<KText v="small">If something went wrong, tell us — we may be able to fix it. Deleting your account works like this:</KText>
 			</View>
 			<Card>

@@ -11,18 +11,18 @@ export const PUBLISH: Record<string, { label: string; tone: 'success' | 'info' |
 	LIVE: { label: 'Live', tone: 'success' },
 	INREVIEW: { label: 'In review', tone: 'info' },
 	DRAFT: { label: 'Draft', tone: 'neutral' },
-	REJECTED: { label: 'Needs changes', tone: 'danger' },
+	REJECTED: { label: 'Rejected', tone: 'danger' },
 	ARCHIVED: { label: 'Archived', tone: 'neutral' }
 };
 
 export const APP_STATUS: Record<string, { label: string; tone: 'live' | 'info' | 'success' | 'danger' | 'neutral' }> = {
 	IN_PROGRESS: { label: 'Draft', tone: 'neutral' },
 	SUBMITED: { label: 'New', tone: 'live' },
-	SYSTEM_VERIFIED: { label: 'Checked by Kushi', tone: 'live' },
-	ADMIN_VERIFIED: { label: 'Approved by Kushi', tone: 'live' },
-	HOST_VERIFIED: { label: 'Verified by you', tone: 'info' },
-	ACCEPTED: { label: 'Accepted', tone: 'success' },
-	REJECTED: { label: 'Declined', tone: 'danger' },
+	SYSTEM_VERIFIED: { label: 'In review', tone: 'live' },
+	ADMIN_VERIFIED: { label: 'Verified', tone: 'live' },
+	HOST_VERIFIED: { label: 'Reviewed', tone: 'info' },
+	ACCEPTED: { label: 'Approved', tone: 'success' },
+	REJECTED: { label: 'Rejected', tone: 'danger' },
 	CANCELLED: { label: 'Withdrawn', tone: 'neutral' }
 };
 export const DECIDABLE = ['SUBMITED', 'SYSTEM_VERIFIED', 'ADMIN_VERIFIED', 'HOST_VERIFIED'];

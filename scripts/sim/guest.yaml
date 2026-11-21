@@ -10,14 +10,24 @@ appId: com.kushicorp.kushi
     permissions:
       all: allow
 - extendedWaitUntil:
-    visible: "Start exploring"
+    visible:
+      id: "welcome-explore"
     timeout: 180000
-- tapOn: "Sign in"
+- tapOn:
+    id: "welcome-sign-in"
+- extendedWaitUntil:
+    visible:
+      id: "email"
+    timeout: 30000
+- waitForAnimationToEnd:
 - tapOn:
     id: "email"
+- waitForAnimationToEnd:
 - inputText: "qa.guest@kushi.test"
+- assertVisible: "qa.guest@kushi.test"
 - tapOn:
     id: "password"
+- waitForAnimationToEnd:
 - inputText: "KushiQA-2026!"
 - pressKey: Enter
 - extendedWaitUntil:
@@ -29,7 +39,7 @@ appId: com.kushicorp.kushi
 - tapOn:
     id: "tab-trips"
 - extendedWaitUntil:
-    visible: "Applications & homes"
+    visible: "Homes"
     timeout: 30000
 - waitForAnimationToEnd:
     timeout: 8000
@@ -95,6 +105,9 @@ appId: com.kushicorp.kushi
 # ── An accepted (unpaid) home → pay screen ────────────
 - stopApp
 - launchApp
+- tapOn:
+    text: "Open"
+    optional: true
 - extendedWaitUntil:
     visible:
       id: "tab-index"
@@ -124,6 +137,10 @@ appId: com.kushicorp.kushi
       id: "tab-index"
     timeout: 60000
 - openLink: "kushi://bookings"
+# iOS sometimes asks "Open in Kushi Housing?" and the alert stays over later screens.
+- tapOn:
+    text: "Open"
+    optional: true
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: shots/12-old-bookings-link

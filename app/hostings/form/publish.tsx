@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Linking, View } from 'react-native';
-import { router, useLocalSearchParams, type Href } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
 import { Check as CheckIcon, Eye, ShieldCheck, Sparkles } from 'lucide-react-native';
 import { Button, Card, Check, Eyebrow, Field, KText, Notice, Photo, Pill, Sheet, Spinner } from '@/components/k';
 import { Block, StepRow, StepScreen } from '@/components/k/listing-form';
@@ -11,7 +11,9 @@ import { useListingStep, cleanError } from '@/lib/k/use-listing-step';
 import { MIN_DESCRIPTION, PLACEHOLDER_TITLE, stepHref, stepsFor, type Hosting } from '@/lib/k/listing-steps';
 import { isAgentManaged } from '@/lib/constants/hosting/step-rules';
 import { useUploadStore } from '@/lib/stores/uploads';
-import { PublishStatus, useAiHostingContentSuggestionQuery, useHostingPublishBlocksQuery } from '@/lib/services/graphql/generated';
+import { PublishStatus, useAiHostingContentSuggestionQuery, useHostingPublishBlocksQuery, useKycStatusQuery } from '@/lib/services/graphql/generated';
+import { NotificationsCard } from '@/components/k/notifications-card';
+import { pushAllowed } from '@/lib/k/push';
 
 const TITLE_MAX = 80;
 const DESCRIPTION_MAX = 1500;
@@ -32,6 +34,15 @@ export default function Publish() {
 	// Reasons the server won't let it go live (e.g. it matches a listing already on Kushi).
 	const [{ data: blockData }, refetchBlocks] = useHostingPublishBlocksQuery({ variables: { hostingId: f.id ?? '' }, pause: !f.id, requestPolicy: 'network-only' });
 	const blocks = blockData?.hosting?.publishBlocks ?? [];
+	// Hosts verify their identity once, here at the end, instead of before starting a listing.
+	// cache-and-network + refetch on focus: KycStatus has no id, so the cache never learns it changed.
+	const [{ data: kycData }, refetchKyc] = useKycStatusQuery({ requestPolicy: 'cache-and-network' });
+	const kycDone = kycData?.kycStatus?.kycComplete ?? true;
+	useFocusEffect(useCallback(() => refetchKyc({ requestPolicy: 'network-only' }), [refetchKyc]));
+	const [pushOff, setPushOff] = useState(false);
+	useEffect(() => {
+		if (done) pushAllowed().then((on) => setPushOff(!on));
+	}, [done]);
 
 	const status = hosting?.publishStatus ?? PublishStatus.Draft;
 	const live = status === PublishStatus.Live;
@@ -74,7 +85,8 @@ export default function Publish() {
 		if (id) f.toHub(id);
 	}
 
-	const primary = live ? { title: 'Save changes', onPress: saveOnly } : ready ? { title: 'Publish listing', onPress: publish, disabled: tried && (!agree.truth || !agree.terms) } : { title: 'Save draft', onPress: saveOnly };
+	const verify = () => router.push('/verify' as Href);
+	const primary = live ? { title: 'Save changes', onPress: saveOnly } : ready && !kycDone ? { title: 'Verify identity', onPress: verify } : ready ? { title: 'Publish listing', onPress: publish, disabled: tried && (!agree.truth || !agree.terms) } : { title: 'Save draft', onPress: saveOnly };
 	const st = PUBLISH[status] ?? PUBLISH.DRAFT;
 
 	return (
@@ -88,6 +100,10 @@ export default function Publish() {
 				!live && !ready ? (
 					<KText v="xs" center style={{ color: color.fg2 }}>
 						{uploading ? 'Wait for your photos to finish uploading.' : blocking.length ? `Finish ${blocking.length} more step${blocking.length === 1 ? '' : 's'} to publish.` : 'Add a title and description to publish.'}
+					</KText>
+				) : !live && !kycDone ? (
+					<KText v="xs" center style={{ color: color.fg2 }}>
+						Verify your identity to publish.
 					</KText>
 				) : tried && !live && (!agree.truth || !agree.terms) ? (
 					<KText v="xs" c="danger" center>
@@ -118,7 +134,7 @@ export default function Publish() {
 				</Notice>
 			) : null}
 
-			<Block title="Name and describe it" sub="Say what makes it worth a visit: size, condition, the street, what’s nearby.">
+			<Block title="Title and description" sub="Say what makes it worth a visit: size, condition, the street, what’s nearby.">
 				<Button title={drafting ? 'Writing…' : 'Draft it for me'} variant="ghost" size="sm" icon={<Sparkles size={15} color={color.amber} />} loading={drafting} onPress={() => { setAiOpen(true); draft({ requestPolicy: 'network-only' }); }} style={{ alignSelf: 'flex-start' }} />
 				{aiOpen && !drafting && (ai?.aiHostingContentSuggestion || aiError) ? (
 					aiError ? (
@@ -141,20 +157,27 @@ export default function Publish() {
 				<Field label="Description" multiline value={input.description ?? ''} onChangeText={(description) => updateInput({ description })} maxLength={DESCRIPTION_MAX} placeholder="Bright 3-bedroom flat on a quiet, gated street. 24-hour power from a shared inverter, borehole water, and parking for two cars…" error={tried && !descOk ? `Write at least ${MIN_DESCRIPTION} characters.` : null} hint={`${(input.description ?? '').length}/${DESCRIPTION_MAX}`} style={{ minHeight: 140 }} testID="field-description" />
 			</Block>
 
-			<Block title="Final check" sub={blocking.length ? 'Tap a step to finish it.' : 'Everything’s in place.'}>
+			<Block title="Checklist" sub={blocking.length ? 'Tap a step to finish it.' : 'Everything’s in place.'}>
 				<View>
 					{others.map((s) => (
 						<StepRow key={s.key} step={s} onPress={() => f.id && router.push(stepHref(s.key, f.id))} />
 					))}
 				</View>
+				{!live && !kycDone ? (
+					<Card tone="amber">
+						<Eyebrow c="amber">Identity</Eyebrow>
+						<KText v="small">Kushi checks every host once before their first listing goes live, so renters know who they are dealing with. It takes about 3 minutes and you won’t be asked again.</KText>
+						<Button title="Verify identity" size="sm" onPress={verify} style={{ alignSelf: 'flex-start' }} testID="publish-verify" />
+					</Card>
+				) : null}
 				{uploading ? <Notice tone="info" title="Photos still uploading">You can publish once they’re done, so the listing never goes out with missing pictures.</Notice> : null}
 			</Block>
 
 			{!live ? (
-				<Block title="What happens when you publish">
-					<Next icon={<Eye size={16} color={color.amber} />} title="It goes live straight away" body="Renters can find it in search and on the map." />
+				<Block title="After publishing">
+					<Next icon={<Eye size={16} color={color.amber} />} title="Live immediately" body="Renters can find it in search and on the map." />
 					<Next icon={<CheckIcon size={16} color={color.amber} />} title={agent ? 'People contact you directly' : 'Renters apply through Kushi'} body={agent ? 'Enquiries come to your contact number and Kushi inbox.' : 'You’ll be notified of each application. Nothing is agreed until you accept it.'} />
-					{!agent ? <Next icon={<ShieldCheck size={16} color={color.amber} />} title="Get verified to stand out" body="Send documents for trust badges. Kushi reviews each request within 3–5 business days." /> : null}
+					{!agent ? <Next icon={<ShieldCheck size={16} color={color.amber} />} title="Verification" body="Send documents for trust badges. Kushi reviews each request within 3–5 business days." /> : null}
 				</Block>
 			) : null}
 
@@ -175,7 +198,7 @@ export default function Publish() {
 				</View>
 			) : (
 				<Card>
-					<KText v="bodyStrong">Take it off Kushi for now?</KText>
+					<KText v="bodyStrong">Unpublish</KText>
 					<KText v="small">Unpublishing hides it from renters until you publish it again.</KText>
 					<Button title="Unpublish" variant="ghost" size="sm" onPress={() => setUnpublish(true)} style={{ alignSelf: 'flex-start' }} />
 				</Card>
@@ -187,16 +210,17 @@ export default function Publish() {
 				<Button title="Keep it live" variant="ghost" block onPress={() => setUnpublish(false)} />
 			</Sheet>
 
-			<Sheet open={done} onClose={() => f.toHub()} title="You’re live" eyebrow="Published" dismissible={false}>
+			<Sheet open={done} onClose={() => f.toHub()} title="Listing published" dismissible={false}>
 				{busy ? <Spinner /> : null}
 				<KText v="small">{input.title?.trim()} is now on Kushi. We’ll let you know when someone {agent ? 'gets in touch' : 'applies'}.</KText>
+				{pushOff ? <NotificationsCard body="Applications, messages and calls from renters reach you as notifications, so you can answer while the renter is still looking." testID="published-notifications" /> : null}
 				{!agent ? (
-					<Notice tone="info" title="Next: get verified">
+					<Notice tone="info" title="Get verified">
 						Verified listings show a trust badge and rank higher. Upload the documents for each level and Kushi reviews them within 3–5 business days.
 					</Notice>
 				) : null}
 				{!agent ? <Button title="Get verified" block onPress={() => { setDone(false); router.replace(`/hostings/form/verification/overview?id=${f.id}` as Href); }} /> : null}
-				<Button title="See my listing" variant="ghost" block onPress={() => { setDone(false); router.replace(`/hostings/${f.id}` as Href); }} />
+				<Button title="View listing" variant="ghost" block onPress={() => { setDone(false); router.replace(`/hostings/${f.id}` as Href); }} />
 				<Button title="Done" variant="quiet" block onPress={() => { setDone(false); f.toHub(); }} />
 			</Sheet>
 		</StepScreen>

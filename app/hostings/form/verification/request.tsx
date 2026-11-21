@@ -243,7 +243,7 @@ export default function RequestVerification() {
 					) : mustPay ? (
 						docs.length ? (
 							<View style={{ gap: 6 }}>
-								<KText v="label">After paying, you’ll add</KText>
+								<KText v="label">Required documents</KText>
 								{docs.map((d) => (
 									<View key={d.title} style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
 										<FileText size={14} color={color.muted} style={{ marginTop: 2 }} />

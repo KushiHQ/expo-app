@@ -13,6 +13,7 @@ import { useLayout } from '@/lib/k/layout';
 import { LINKS } from '@/lib/k/account';
 import { useUserStore } from '@/lib/stores/users';
 import { UserType } from '@/lib/types/users';
+import { setHostIntent } from '@/lib/k/session';
 import { Rewards } from '@/components/k/rewards';
 
 /** The You tab: profile, verification status and every account setting in one tidy list. */
@@ -36,10 +37,16 @@ export function You({ mode = 'guest' }: { mode?: 'guest' | 'host' }) {
 	if (!me?.id)
 		return (
 			<Screen tabbed width="form">
-				<PageTitle eyebrow="You" title="Welcome to Kushi" sub="Sign in to apply for homes, message hosts and keep track of everything in one place." />
+				<PageTitle title="You" sub="Sign in to apply for homes, message hosts and keep track of everything in one place." />
 				<Button title="Sign in" size="lg" block onPress={() => router.push('/auth/sign-in')} testID="you-sign-in" />
 				<Button title="Create an account" variant="ghost" size="lg" block onPress={() => router.push('/auth/sign-up')} />
-				<HostCard onPress={() => router.push('/auth/sign-up')} />
+				<HostCard
+					onPress={async () => {
+						// After sign-up this opens in hosting, on New listing (not back in renter mode).
+						await setHostIntent(true);
+						router.push({ pathname: '/auth/sign-up', params: { mode: 'host' } });
+					}}
+				/>
 				<Legal />
 			</Screen>
 		);
@@ -81,7 +88,7 @@ export function You({ mode = 'guest' }: { mode?: 'guest' | 'host' }) {
 				<Row icon={<KeyRound size={17} color={color.fg2} />} title="Security" detail="Password and signed-in device" onPress={() => router.push('/account/security')} testID="you-security" />
 				<Row icon={<Bell size={17} color={color.fg2} />} title="Notifications" detail="What Kushi sends you" onPress={() => router.push('/account/notifications')} testID="you-notifications" />
 				<Row icon={<CreditCard size={17} color={color.fg2} />} title="Payments & receipts" detail="Escrow, refunds and payouts" onPress={() => router.push('/account/payments')} testID="you-payments" />
-				<Row icon={<UserRound size={17} color={color.fg2} />} title="Your public profile" detail="What hosts and renters see" onPress={() => router.push(`/users/${me.id}`)} testID="you-public-profile" />
+				<Row icon={<UserRound size={17} color={color.fg2} />} title="Public profile" detail="What hosts and renters see" onPress={() => router.push(`/users/${me.id}`)} testID="you-public-profile" />
 			</Group>
 
 			<Group title="Help">
@@ -143,7 +150,7 @@ function VerificationCard() {
 				<View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
 					<BadgeCheck size={22} color={color.success} />
 					<View style={{ flex: 1, gap: 2 }}>
-						<KText v="bodyStrong">You’re verified</KText>
+						<KText v="bodyStrong">Verified</KText>
 						<KText v="xs">{v.host ? 'Identity and BVN confirmed — you can list and get paid.' : 'Hosts see a verified-renter badge when you apply.'}</KText>
 					</View>
 					<ChevronRight size={18} color={color.dim} />
