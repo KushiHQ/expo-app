@@ -15,11 +15,19 @@ appId: com.kushicorp.kushi
     timeout: 180000
 - tapOn:
     id: "welcome-sign-in"
+- extendedWaitUntil:
+    visible:
+      id: "email"
+    timeout: 30000
+- waitForAnimationToEnd:
 - tapOn:
     id: "email"
+- waitForAnimationToEnd:
 - inputText: "qa.guest@kushi.test"
+- assertVisible: "qa.guest@kushi.test"
 - tapOn:
     id: "password"
+- waitForAnimationToEnd:
 - inputText: "KushiQA-2026!"
 - pressKey: Enter
 - extendedWaitUntil:
